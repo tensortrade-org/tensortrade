@@ -1,0 +1,15 @@
+*.DS_Store
+*.pyc
+*.swp
+dist/*
+build/*
+tags
+
+# test-related
+.coverage
+.cache
+.pytest_cache
+
+# developer environments
+.idea
+.vscode

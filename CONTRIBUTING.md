@@ -4,11 +4,11 @@ Found a bug? Have a new feature to suggest? Want to contribute changes to the co
 
 ## Bug reporting
 
-Your code doesn't work, and you have determined that the issue lies with EuphoricRL? Follow these steps to report a bug.
+Your code doesn't work, and you have determined that the issue lies with RLTrader? Follow these steps to report a bug.
 
-1. Your bug may already be fixed. Make sure to update to the current EuphoricRL master branch, as well as the latest TensorFlow master branch.
+1. Your bug may already be fixed. Make sure to update to the current RLTrader master branch, as well as the latest TensorFlow master branch.
 
-2. Search for similar issues. Make sure to delete `is:open` on the issue search to find solved tickets as well. It's possible somebody has encountered this bug already. Also remember to check out EuphoricRL's [FAQ](http://euphoric-rl.io/faq/). Still having a problem? Open an issue on Github to let us know.
+2. Search for similar issues. Make sure to delete `is:open` on the issue search to find solved tickets as well. It's possible somebody has encountered this bug already. Also remember to check out RLTrader's [FAQ](http://RLTrader.io/faq/). Still having a problem? Open an issue on Github to let us know.
 
 3. Make sure you provide us with useful information about your configuration: what OS are you using? What Tensorflow version are you using? Are you running on GPU? If so, what is your version of Cuda, of cuDNN? What is your GPU?
 
@@ -22,9 +22,9 @@ The more information you provide, the easier it is for us to validate that there
 
 ## Requesting a Feature
 
-You can also use Github issues to request features you would like to see in EuphoricRL, or changes in the EuphoricRL API.
+You can also use Github issues to request features you would like to see in RLTrader, or changes in the RLTrader API.
 
-1. Provide a clear and detailed explanation of the feature you want and why it's important to add. Keep in mind that we want features that will be useful to the majority of our users and not just a small subset. If you're just targeting a minority of users, consider writing an add-on library for EuphoricRL. It is crucial for EuphoricRL to avoid bloating the API and codebase.
+1. Provide a clear and detailed explanation of the feature you want and why it's important to add. Keep in mind that we want features that will be useful to the majority of our users and not just a small subset. If you're just targeting a minority of users, consider writing an add-on library for RLTrader. It is crucial for RLTrader to avoid bloating the API and codebase.
 
 2. Provide code snippets demonstrating the API you have in mind and illustrating the use cases of your feature. Of course, you don't need to write any real code at this point!
 
@@ -34,7 +34,7 @@ You can also use Github issues to request features you would like to see in Euph
 
 ## Requests for Contributions
 
-[This is the board](https://github.com/euphoric-ai/euphoric-rl/projects/1) where we list current outstanding issues and features to be added. If you want to start contributing to EuphoricRL, this is the place to start.
+[This is the board](https://github.com/notadamking/RLTrader/projects/1) where we list current outstanding issues and features to be added. If you want to start contributing to RLTrader, this is the place to start.
 
 ---
 
@@ -42,18 +42,18 @@ You can also use Github issues to request features you would like to see in Euph
 
 **Where should I submit my pull request?**
 
-1. **EuphoricRL improvements and bugfixes** go to the [EuphoricRL `master` branch](https://github.com/euphoric-ai/euphoric-rl/tree/master).
-2. **Experimental new features** such as layers and datasets go to [euphoric-rl-contrib](https://github.com/farizrahman4u/euphoric-rl-contrib). Unless it is a new feature listed in [Requests for Contributions](https://github.com/euphoric-ai/euphoric-rl/projects/1), in which case it belongs in core EuphoricRL. If you think your feature belongs in core EuphoricRL, you can submit a design doc to explain your feature and argue for it (see explanations below).
+1. **RLTrader improvements and bugfixes** go to the [RLTrader `master` branch](https://github.com/notadamking/RLTrader/tree/master).
+2. **Experimental new features** such as layers and datasets go to [RLTrader-contrib](https://github.com/farizrahman4u/RLTrader-contrib). Unless it is a new feature listed in [Requests for Contributions](https://github.com/notadamking/RLTrader/projects/1), in which case it belongs in core RLTrader. If you think your feature belongs in core RLTrader, you can submit a design doc to explain your feature and argue for it (see explanations below).
 
 Please note that PRs that are primarily about **code style** (as opposed to fixing bugs, improving docs, or adding new functionality) will likely be rejected.
 
 Here's a quick guide to submitting your improvements:
 
-1. If your PR introduces a change in functionality, make sure you start by writing a design doc and sending it to the EuphoricRL mailing list to discuss whether the change should be made, and how to handle it. This will save you from having your PR closed down the road! Of course, if your PR is a simple bug fix, you don't need to do that. The process for writing and submitting design docs is as follow:
+1. If your PR introduces a change in functionality, make sure you start by writing a design doc and sending it to the RLTrader mailing list to discuss whether the change should be made, and how to handle it. This will save you from having your PR closed down the road! Of course, if your PR is a simple bug fix, you don't need to do that. The process for writing and submitting design docs is as follow:
    - Start from [this Google Doc template](https://docs.google.com/document/d/1ZXNfce77LDW9tFAj6U5ctaJmI5mT7CQXOFMEAZo-mAA/edit#), and copy it to new Google doc.
    - Fill in the content. Note that you will need to insert code examples. To insert code, use a Google Doc extension such as [CodePretty](https://chrome.google.com/webstore/detail/code-pretty/igjbncgfgnfpbnifnnlcmjfbnidkndnh?hl=en) (there are several such extensions available).
    - Set sharing settings to "everyone with the link is allowed to comment"
-   - Send the document to `euphoric-rl-users@googlegroups.com` with a subject that starts with `[API DESIGN REVIEW]` (all caps) so that we notice it.
+   - Send the document to `RLTrader-users@googlegroups.com` with a subject that starts with `[API DESIGN REVIEW]` (all caps) so that we notice it.
    - Wait for comments, and answer them as they come. Edit the proposal as necessary.
    - The proposal will finally be approved or rejected. Once approved, you can send out Pull Requests or ask others to write Pull Requests.
 
@@ -63,7 +63,7 @@ Here's a quick guide to submitting your improvements:
 
 4) Write tests. Your code should have full unit test coverage. If you want to see your PR merged promptly, this is crucial.
 
-5) Run our test suite locally. It's easy: from the EuphoricRL folder, simply run: `py.test tests/`.
+5) Run our test suite locally. It's easy: from the RLTrader folder, simply run: `py.test tests/`.
 
    - You will need to install the test requirements as well: `pip install -e .[tests]`.
 
@@ -73,7 +73,7 @@ Here's a quick guide to submitting your improvements:
 
    - Install PEP8 packages: `pip install pep8 pytest-pep8 autopep8`
    - Run a standalone PEP8 check: `py.test --pep8 -m pep8`
-   - You can automatically fix some PEP8 error by running: `autopep8 -i --select <errors> <FILENAME>` for example: `autopep8 -i --select E128 tests/euphoric-rl/backend/test_backends.py`
+   - You can automatically fix some PEP8 error by running: `autopep8 -i --select <errors> <FILENAME>` for example: `autopep8 -i --select E128 tests/RLTrader/backend/test_backends.py`
 
 8) When committing, use appropriate, descriptive commit messages.
 
@@ -85,4 +85,4 @@ Here's a quick guide to submitting your improvements:
 
 ## Adding new examples
 
-Even if you don't contribute to the EuphoricRL source code, if you have an application of EuphoricRL that is concise and powerful, please consider adding it to our collection of examples. [Existing examples](https://github.com/euphoric-ai/euphoric-rl/tree/master/examples) show idiomatic EuphoricRL code: make sure to keep your own script in the same spirit.
+Even if you don't contribute to the RLTrader source code, if you have an application of RLTrader that is concise and powerful, please consider adding it to our collection of examples. [Existing examples](https://github.com/notadamking/RLTrader/tree/master/examples) show idiomatic RLTrader code: make sure to keep your own script in the same spirit.

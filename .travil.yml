@@ -1,0 +1,6 @@
+sudo: required
+
+services:
+  - docker
+
+script: bash docker/run_tests

@@ -1,11 +1,11 @@
 <em>Please make sure that this is a Bug or a Feature Request and provide all applicable information asked by the template.
-If your issue is an **implementation question**, please ask your question on [StackOverflow](http://stackoverflow.com/questions/tagged/euphoric-rl) or [on the EuphoricRL Slack channel](https://euphoric-rl-slack.com/) instead of opening a GitHub issue.</em>
+If your issue is an **implementation question**, please ask your question on [StackOverflow](http://stackoverflow.com/questions/tagged/RLTrader) or [on the RLTrader Slack channel](https://RLTrader-slack.com/) instead of opening a GitHub issue.</em>
 
 **System information**
 
 - Have I written custom code (as opposed to using example directory):
 - OS Platform and Distribution (e.g., Linux Ubuntu 16.04):
-- EuphoricRL version:
+- RLTrader version:
 - Tensorflow version:
 - Python version:
 - CUDA/cuDNN version:

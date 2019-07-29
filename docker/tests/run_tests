@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+set -e
+CWD="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
+N="rl-trader"
+docker build --tag $N -f docker/tests/Dockerfile "$CWD"
+
+docker run \
+    --user $(id -u):$(id -g) \
+    --interactive \
+    --tty \
+    --volume "${CWD}":/code \
+    "$N" \
+        python -m pytest -p no:warnings /code/test

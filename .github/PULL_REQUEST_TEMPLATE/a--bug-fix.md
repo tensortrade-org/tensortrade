@@ -6,7 +6,7 @@ labels: bugfix
 
 <!--
 Please make sure you've read and understood our contributing guidelines;
-https://github.com/euphoric-ai/euphoric-rl/blob/master/CONTRIBUTING.md
+https://github.com/notadamking/RLTrader/blob/master/CONTRIBUTING.md
 -->
 
 **- What bug I fixed**
