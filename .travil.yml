@@ -3,4 +3,4 @@ sudo: required
 services:
   - docker
 
-script: bash docker/run_tests
+script: bash docker/tests/run_tests
