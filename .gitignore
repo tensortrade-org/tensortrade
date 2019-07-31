@@ -1,6 +1,8 @@
+*.ipynb_checkpoints
 *.DS_Store
 *.pyc
 *.swp
+*__pycache__
 dist/*
 build/*
 tags

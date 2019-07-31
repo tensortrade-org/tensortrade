@@ -1,8 +1,8 @@
 from abc import ABCMeta, abstractmethod
-from typing import Callable, List
+from typing import Union, Callable, List
 
-from trader.features import FeaturePipeline
-from trader.performance import TradingPerformance
+from tensortrade.features import FeaturePipeline
+from tensortrade.performance import TradingPerformance
 
 
 class TradingAgent(object, metaclass=ABCMeta):
@@ -19,7 +19,7 @@ class TradingAgent(object, metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def predict(self, observation: List) -> int | tuple:
+    def predict(self, observation: List) -> Union[int, tuple]:
         pass
 
     @abstractmethod

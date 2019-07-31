@@ -3,7 +3,7 @@
 set -e
 CWD="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-N="rl-trader"
+N="tensortrade"
 docker build --tag $N -f docker/tests/Dockerfile "$CWD"
 
 docker run \

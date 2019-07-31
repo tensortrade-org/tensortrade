@@ -7,7 +7,7 @@ assignees: notadamking
 
 <!--
 Please make sure you've read and understood our contributing guidelines;
-https://github.com/notadamking/RLTrader/blob/master/CONTRIBUTING.md
+https://github.com/notadamking/Tensortrader/blob/master/CONTRIBUTING.md
 -->
 
 This pull request closes #issue_number_here .
@@ -25,4 +25,4 @@ including tests for the new feature you added.
 
 - [ ] I updated the docs.
 
-This pull request adds a new feature to RLTrader. @notadamking, could you please take a look at it?
+This pull request adds a new feature to Tensortrader. @notadamking, could you please take a look at it?

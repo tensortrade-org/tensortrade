@@ -1,16 +1,16 @@
 import numpy as np
 
-from typing import Dict
-from abc import ABCMeta, abstractmethod
+from typing import Union, Dict
+from abc import abstractmethod
 from gym import spaces
 
-from trader.exchanges import AssetExchange
+from tensortrade.exchanges import AssetExchange
 
 
-class ActionStrategy(object, metaclass=ABCMeta):
+class ActionStrategy(object):
     dtype: type = np.float16
 
-    def __init__(action_space_shape: tuple | int,
+    def __init__(self, action_space_shape: Union[int, tuple],
                  continuous_action_space: bool = False):
         self.action_space_shape = action_space_shape
         self.continuous_action_space = continuous_action_space
@@ -30,9 +30,9 @@ class ActionStrategy(object, metaclass=ABCMeta):
 
             return spaces.Discrete(self.action_space_shape)
 
-    def reset():
+    def reset(self):
         pass
 
     @abstractmethod
-    def suggest_trade(self, action: int | tuple, balance: float, assets_held: Dict[str, float], exchange: AssetExchange):
+    def suggest_trade(self, action: Union[int, tuple], exchange: AssetExchange):
         raise NotImplementedError
