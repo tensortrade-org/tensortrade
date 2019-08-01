@@ -5,7 +5,7 @@ long_description = '''
 A reinforcement learning library for training, evaluating, and deploying robust trading agents with TF2.
 '''
 
-setup(name='Tensortrader',
+setup(name='TensorTrade',
       version='2.2.4',
       description='A reinforcement learning library for training, evaluating, and deploying robust trading agents with TF2.',
       long_description=long_description,

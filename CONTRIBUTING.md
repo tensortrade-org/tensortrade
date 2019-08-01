@@ -4,11 +4,11 @@ Found a bug? Have a new feature to suggest? Want to contribute changes to the co
 
 ## Bug reporting
 
-Your code doesn't work, and you have determined that the issue lies with Tensortrader? Follow these steps to report a bug.
+Your code doesn't work, and you have determined that the issue lies with TensorTrade? Follow these steps to report a bug.
 
-1. Your bug may already be fixed. Make sure to update to the current Tensortrader master branch, as well as the latest TensorFlow master branch.
+1. Your bug may already be fixed. Make sure to update to the current TensorTrade master branch, as well as the latest TensorFlow master branch.
 
-2. Search for similar issues. Make sure to delete `is:open` on the issue search to find solved tickets as well. It's possible somebody has encountered this bug already. Also remember to check out Tensortrader's [FAQ](http://Tensortrader.io/faq/). Still having a problem? Open an issue on Github to let us know.
+2. Search for similar issues. Make sure to delete `is:open` on the issue search to find solved tickets as well. It's possible somebody has encountered this bug already. Also remember to check out TensorTrade's [FAQ](http://tensortrader.io/faq/). Still having a problem? Open an issue on Github to let us know.
 
 3. Make sure you provide us with useful information about your configuration: what OS are you using? What Tensorflow version are you using? Are you running on GPU? If so, what is your version of Cuda, of cuDNN? What is your GPU?
 
@@ -22,9 +22,9 @@ The more information you provide, the easier it is for us to validate that there
 
 ## Requesting a Feature
 
-You can also use Github issues to request features you would like to see in Tensortrader, or changes in the Tensortrader API.
+You can also use Github issues to request features you would like to see in TensorTrade, or changes in the TensorTrade API.
 
-1. Provide a clear and detailed explanation of the feature you want and why it's important to add. Keep in mind that we want features that will be useful to the majority of our users and not just a small subset. If you're just targeting a minority of users, consider writing an add-on library for Tensortrader. It is crucial for Tensortrader to avoid bloating the API and codebase.
+1. Provide a clear and detailed explanation of the feature you want and why it's important to add. Keep in mind that we want features that will be useful to the majority of our users and not just a small subset. If you're just targeting a minority of users, consider writing an add-on library for TensorTrade. It is crucial for TensorTrade to avoid bloating the API and codebase.
 
 2. Provide code snippets demonstrating the API you have in mind and illustrating the use cases of your feature. Of course, you don't need to write any real code at this point!
 
@@ -34,7 +34,7 @@ You can also use Github issues to request features you would like to see in Tens
 
 ## Requests for Contributions
 
-[This is the board](https://github.com/notadamking/Tensortrader/projects/1) where we list current outstanding issues and features to be added. If you want to start contributing to Tensortrader, this is the place to start.
+[This is the board](https://github.com/notadamking/tensortrader/projects/1) where we list current outstanding issues and features to be added. If you want to start contributing to TensorTrade, this is the place to start.
 
 ---
 
@@ -52,7 +52,7 @@ Here's a quick guide to submitting your improvements:
 
 4) Write tests. Your code should have full unit test coverage. If you want to see your PR merged promptly, this is crucial.
 
-5) Run our test suite locally. It's easy: from the Tensortrader folder, simply run: `py.test tests/`.
+5) Run our test suite locally. It's easy: from the TensorTrade folder, simply run: `py.test tests/`.
 
    - You will need to install the test requirements as well: `pip install -e .[tests]`.
 
@@ -62,7 +62,7 @@ Here's a quick guide to submitting your improvements:
 
    - Install PEP8 packages: `pip install pep8 pytest-pep8 autopep8`
    - Run a standalone PEP8 check: `py.test --pep8 -m pep8`
-   - You can automatically fix some PEP8 error by running: `autopep8 -i --select <errors> <FILENAME>` for example: `autopep8 -i --select E128 tests/Tensortrader/backend/test_backends.py`
+   - You can automatically fix some PEP8 error by running: `autopep8 -i --select <errors> <FILENAME>` for example: `autopep8 -i --select E128 tests/tensortrader/backend/test_backends.py`
 
 8) When committing, use appropriate, descriptive commit messages.
 
@@ -74,4 +74,4 @@ Here's a quick guide to submitting your improvements:
 
 ## Adding new examples
 
-Even if you don't contribute to the Tensortrader source code, if you have an application of Tensortrader that is concise and powerful, please consider adding it to our collection of examples. [Existing examples](https://github.com/notadamking/Tensortrader/tree/master/examples) show idiomatic Tensortrader code: make sure to keep your own script in the same spirit.
+Even if you don't contribute to the TensorTrade source code, if you have an application of TensorTrade that is concise and powerful, please consider adding it to our collection of examples. [Existing examples](https://github.com/notadamking/tensortrader/tree/master/examples) show idiomatic TensorTrade code: make sure to keep your own script in the same spirit.
