@@ -11,7 +11,7 @@ TensorTrade is an open source Python framework for building, training, evaluatin
 
 Allow state-of-the-art learning agents to improve your trading strategies and take you from idea to production, in a repeatable, maintable way.
 
-*The goal is to enable fast experimentation, while maintaining production-quality data pipelines.*
+*The goal of this framework is to enable fast experimentation, while maintaining production-quality data pipelines.*
 
 
 Read [the documentation](https://tensortrade.readthedocs.io).
