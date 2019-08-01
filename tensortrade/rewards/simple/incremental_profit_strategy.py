@@ -17,12 +17,12 @@ class IncrementalProfitStrategy(RewardStrategy):
     def reward(self, current_step: int, exchange: AssetExchange) -> float:
         reward = 0
 
-        if current_step < 2:
-            return reward
-
         current_price = exchange.current_price(symbol=self.asset_symbol, output_symbol=self.base_symbol)
         performance = exchange.performance()
         curr_balance = exchange.balance(symbol=self.base_symbol)
+
+        if len(performance) < 1:
+            return reward
 
         prev_balance = performance['balance'].values[-1]
 

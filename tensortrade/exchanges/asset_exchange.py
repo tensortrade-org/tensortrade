@@ -20,16 +20,24 @@ class AssetExchange(object, metaclass=ABCMeta):
     def set_max_allowed_slippage_percent(self, max_allowed_slippage_percent):
         self.max_allowed_slippage_percent = max_allowed_slippage_percent
 
+    def net_worth(self, output_symbol) -> float:
+        net_worth = self.balance(symbol=output_symbol)
+
+        for symbol, amount in dir(self.portfolio()).items():
+            current_price = self.current_price(symbol=symbol, output_symbol=output_symbol)
+            net_worth += current_price * amount
+
+        return net_worth
+
+    def profit_loss_percent(self, output_symbol) -> float:
+        return float(self.net_worth(output_symbol=output_symbol) / self.initial_balance(symbol=output_symbol))
+
     @abstractmethod
     def initial_balance(self, symbol: str) -> float:
         raise NotImplementedError
 
     @abstractmethod
     def balance(self, symbol: str) -> float:
-        raise NotImplementedError
-
-    @abstractmethod
-    def net_worth(self, output_symbol: str) -> float:
         raise NotImplementedError
 
     @abstractmethod
@@ -42,10 +50,6 @@ class AssetExchange(object, metaclass=ABCMeta):
 
     @abstractmethod
     def performance(self) -> pd.DataFrame:
-        raise NotImplementedError
-
-    @abstractmethod
-    def profit_loss_percent(self) -> float:
         raise NotImplementedError
 
     @abstractmethod

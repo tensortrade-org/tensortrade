@@ -3,24 +3,20 @@ import pandas as pd
 
 from gym import spaces
 from typing import Dict
-from stochastic.continuous import FractionalBrownianMotion
 
 from tensortrade.actions import TradeType
 from tensortrade.exchanges.asset_exchange import AssetExchange
 
 
-class GeneratedExchange(AssetExchange):
-    def __init__(self, commission_percent: float = 0.3, base_precision: float = 2, asset_precision: float = 8, **kwargs):
+class StaticExchange(AssetExchange):
+    def __init__(self, data_frame: pd.DataFrame, commission_percent: float = 0.3, base_precision: float = 2, asset_precision: float = 8, **kwargs):
         super().__init__(commission_percent, base_precision, asset_precision)
+
+        self.data_frame = data_frame
 
         self._initial_balance = kwargs.get('initial_balance', 1E5)
         self.max_allowed_slippage_percent = kwargs.get('max_allowed_slippage_percent', 3.0)
         self.min_order_amount = kwargs.get('min_order_amount', 1E-5)
-        self.base_price = kwargs.get('base_price', 3000)
-        self.base_volume = kwargs.get('base_volume', 1000)
-        self.hurst = kwargs.get('hurst', 0.58)
-
-        self.fbm = FractionalBrownianMotion(t=1, hurst=self.hurst)
 
         self.reset()
 
@@ -31,10 +27,12 @@ class GeneratedExchange(AssetExchange):
         self._trades = pd.DataFrame([], columns=['step', 'symbol', 'type', 'amount', 'price'])
         self._performance = pd.DataFrame([], columns=['balance', 'net_worth'])
 
-        self.data_frame = pd.DataFrame([], columns=['open', 'high', 'low', 'close', 'volume'])
-        self.data_frame.reset_index(drop=True)
+        df_min = self.data_frame.min()
+        df_max = self.data_frame.max()
 
-        self.current_step = 1
+        self.normalized_df = (self.data_frame - df_min) / (df_max - df_min)
+
+        self.current_step = 0
         
     def net_worth(self, output_symbol: str = 'USD') -> float:
         return super().net_worth(output_symbol=output_symbol)
@@ -111,50 +109,11 @@ class GeneratedExchange(AssetExchange):
                                  fill_price=fill_price)
 
     def has_next_observation(self):
-        return True
+        return self.current_step < len(self.normalized_df)
 
     def next_observation(self):
-        dates = np.linspace(0, 1, 2)
-        prices = self.fbm.sample(1)
-        volumes = self.fbm.sample(1)
-
-        price_frame = pd.DataFrame([], columns=['date', 'price'], dtype=float)
-        volume_frame = pd.DataFrame([], columns=['date', 'volume'], dtype=float)
-
-        price_frame['date'] = pd.to_datetime(dates, unit="m")
-        price_frame['price'] = prices
-
-        volume_frame['date'] = pd.to_datetime(dates, unit="m")
-        volume_frame['volume'] = volumes
-
-        price_frame.set_index('date')
-        price_frame.index = pd.to_datetime(price_frame.index, unit='s')
-
-        volume_frame.set_index('date')
-        volume_frame.index = pd.to_datetime(price_frame.index, unit='s')
-
-        ohlc = price_frame['price'].resample('1min').ohlc()
-        volume = volume_frame['volume'].resample('1min').sum()
-
-        ohlc.reset_index(drop=True)
-        volume.reset_index(drop=True)
-
-        self.data_frame = self.data_frame.append({
-            'open': float(ohlc['open'].values[-1] * self.base_price),
-            'high': float(ohlc['high'].values[-1] * self.base_price),
-            'low': float(ohlc['low'].values[-1] * self.base_price),
-            'close': float(ohlc['close'].values[-1] * self.base_price),
-            'volume': float(volume.values[-1] * self.base_volume),
-        }, ignore_index=True)
-
-        if len(self.data_frame) < 2:
-            return np.zeros(len(self.data_frame.columns)).astype(self.dtype)
-
-        df_min = self.data_frame.min()
-        df_max = self.data_frame.max()
-
-        normalized_df = (self.data_frame - df_min) / (df_max - df_min)
+        obs = self.normalized_df.values[self.current_step].astype(self.dtype)
 
         self.current_step += 1
 
-        return normalized_df.values[-1].astype(self.dtype)
+        return obs

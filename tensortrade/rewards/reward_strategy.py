@@ -2,7 +2,6 @@ import numpy as np
 import pandas as pd
 
 from abc import ABCMeta, abstractmethod
-from typing import List, Dict, Callable
 
 from tensortrade.exchanges import AssetExchange
 
@@ -10,7 +9,6 @@ from tensortrade.exchanges import AssetExchange
 class RewardStrategy(object, metaclass=ABCMeta):
     dtype: type = np.float16
 
-    @abstractmethod
     def __init__(self):
         pass
 

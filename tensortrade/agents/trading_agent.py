@@ -6,7 +6,6 @@ from tensortrade.performance import TradingPerformance
 
 
 class TradingAgent(object, metaclass=ABCMeta):
-    @abstractmethod
     def __init__(self):
         pass
 
