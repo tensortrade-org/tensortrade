@@ -7,11 +7,11 @@
 [![Python 3.6](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/downloads/release/python-360/)
 [![Github Release](https://img.shields.io/github/release/notadamking/tensortrade.svg)](https://github.com/notadamking/tensortrade)
 
-TensorTrade is an open source Python framework for building robust trading algorithms using reinforcement learning. 
+TensorTrade is an open source Python framework for building, training, evaluating, and deploying robust trading algorithms using reinforcement learning. 
 
-It allows anyone to take their trading strategies from idea to production, in a repeatable, maintable way.
+Allow state-of-the-art learning agents to improve your trading strategies and take you from idea to production, in a repeatable, maintable way.
 
-*The goal is to allow fast experimentation, while maintaining production-quality data pipelines.*
+*The goal is to enable fast experimentation, while maintaining production-quality data pipelines.*
 
 
 Read [the documentation](https://tensortrade.readthedocs.io).
