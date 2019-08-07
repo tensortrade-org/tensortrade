@@ -1,8 +1,8 @@
 from abc import ABCMeta, abstractmethod
 from typing import Union, Callable, List
 
-from tensortrade.features import FeaturePipeline
-from tensortrade.performance import TradingPerformance
+from tensortrade.agents.features import FeaturePipeline
+from tensortrade.exchanges.performance import TradingPerformance
 
 
 class TradingAgent(object, metaclass=ABCMeta):

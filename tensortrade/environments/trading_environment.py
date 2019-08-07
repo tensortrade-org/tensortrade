@@ -6,8 +6,8 @@ import numpy as np
 from gym import spaces
 from typing import Union
 
-from tensortrade.actions import ActionStrategy, TradeType
-from tensortrade.rewards import RewardStrategy
+from tensortrade.environments.actions import ActionStrategy, TradeType
+from tensortrade.environments.rewards import RewardStrategy
 from tensortrade.exchanges import AssetExchange
 
 
