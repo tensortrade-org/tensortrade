@@ -36,6 +36,7 @@ Read [the documentation](https://tensortrade.readthedocs.io).
 
 You can get started testing on Google Colab or your local machine, by viewing our [many examples](https://github.com/notadamking/tensortrade/tree/master/examples)
 
+
 ## Installation
 
 TensorTrade requires Python >= 3.6 for all functionality to work as expected.
@@ -43,6 +44,9 @@ TensorTrade requires Python >= 3.6 for all functionality to work as expected.
 ```bash
 pip install -r requirements.txt
 ``` 
+
+
+------------------
 
 ## Support
 
@@ -53,5 +57,15 @@ You can ask questions and join the development discussion:
 
 You can also post **bug reports and feature requests** in [GitHub issues](https://github.com/notadamking/tensortrade/issues). Make sure to read [our guidelines](https://github.com/notadamking/tensortrade/blob/master/CONTRIBUTING.md) first.
 
+If you would like to support this project financially, there are a few ways you can contribute.
 
-------------------
+Patreon: https://www.patreon.com/notadamking
+
+BTC Address: `1Lc47bhYvdyKGk1qN8oBHdYQTkbFLL3PFw`
+
+ETH Address: `0x9907A0cF64Ec9Fbf6Ed8FD4971090DE88222a9aC`
+
+![https://github.com/notadamking/tensortrade/graphs/contributors](https://contributors-img.firebaseapp.com/image?repo=notadamking/tensortrade)
+
+
+
