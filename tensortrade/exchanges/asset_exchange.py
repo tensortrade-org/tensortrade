@@ -23,7 +23,12 @@ class AssetExchange(object, metaclass=ABCMeta):
     def net_worth(self, output_symbol) -> float:
         net_worth = self.balance(symbol=output_symbol)
 
-        for symbol, amount in dir(self.portfolio()).items():
+        portfolio = self.portfolio()
+
+        if not portfolio:
+            return net_worth
+
+        for symbol, amount in portfolio.items():
             current_price = self.current_price(symbol=symbol, output_symbol=output_symbol)
             net_worth += current_price * amount
 
