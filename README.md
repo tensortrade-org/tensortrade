@@ -65,6 +65,9 @@ BTC Address: `1Lc47bhYvdyKGk1qN8oBHdYQTkbFLL3PFw`
 
 ETH Address: `0x9907A0cF64Ec9Fbf6Ed8FD4971090DE88222a9aC`
 
+
+## Contributors
+
 ![https://github.com/notadamking/tensortrade/graphs/contributors](https://contributors-img.firebaseapp.com/image?repo=notadamking/tensortrade)
 
 
