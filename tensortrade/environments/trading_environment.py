@@ -12,13 +12,26 @@ from tensortrade.exchanges import AssetExchange
 
 
 class TradingEnvironment(gym.Env):
-    '''A trading environment made for use with Gym-compatible reinforcement learning algorithms'''
+    '''A trading environment made for use with Gym-compatible reinforcement learning algorithms
+
+        The methods that are accessed publicly are "step", "reset" and "render"
+    '''
 
     def __init__(self,
                  action_strategy: ActionStrategy,
                  reward_strategy: RewardStrategy,
                  exchange: AssetExchange,
                  **kwargs):
+        '''Create the trading environment
+
+            # Arguments
+                action_strategy:  the action strategy
+                reward_strategy: the reward strategy
+                exchange: the AssetExchange object, that should be used
+                kwargs: additional arguments, to define log levels, floating point precision,
+
+        '''
+
         super().__init__()
 
         self.action_strategy = action_strategy
@@ -69,6 +82,22 @@ class TradingEnvironment(gym.Env):
         return {'current_step': self.current_step, 'exchange': self.exchange}
 
     def step(self, action):
+        '''Run one timestep of the environment's dynamics. When end of
+            episode is reached, you are responsible for calling `reset()`
+            to reset this environment's state.
+
+            Accepts an action and returns a tuple (observation, reward, done, info).
+
+            # Arguments:
+                action (object): an action provided by the agent
+
+            # Returns:
+                observation (Dataframe): provided by the exchange, usually normalized ohlc and volume information
+                reward (float) : amount of reward returned after previous action
+                done (bool): whether the episode has ended, in which case further step() calls will return undefined results
+                info (dict): contains auxiliary diagnostic information (helpful for debugging, and sometimes learning)
+        '''
+
         self._take_action(action)
 
         obs = self._next_observation()
@@ -79,6 +108,12 @@ class TradingEnvironment(gym.Env):
         return obs, reward, done, info
 
     def reset(self):
+        '''Resets the state of the environment and returns an initial observation.
+
+            # Returns:
+                observation: the initial observation.
+        '''
+
         self.action_strategy.reset()
         self.reward_strategy.reset()
         self.exchange.reset()
@@ -88,4 +123,6 @@ class TradingEnvironment(gym.Env):
         return self._next_observation()
 
     def render(self, mode='none'):
+        '''Renders the environment.'''
+
         pass
