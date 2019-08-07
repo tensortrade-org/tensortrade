@@ -5,7 +5,7 @@ from gym import spaces
 from typing import Dict
 from stochastic.continuous import FractionalBrownianMotion
 
-from tensortrade.actions import TradeType
+from tensortrade.environments.actions import TradeType
 from tensortrade.exchanges.asset_exchange import AssetExchange
 
 

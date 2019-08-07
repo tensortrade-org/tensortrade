@@ -4,7 +4,7 @@ import pandas as pd
 from gym import spaces
 from typing import Dict
 
-from tensortrade.actions import TradeType
+from tensortrade.environments.actions import TradeType
 from tensortrade.exchanges.asset_exchange import AssetExchange
 
 

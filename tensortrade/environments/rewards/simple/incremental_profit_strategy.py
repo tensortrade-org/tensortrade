@@ -2,7 +2,7 @@ import pandas as pd
 
 from typing import List, Dict, Callable
 
-from tensortrade.rewards import RewardStrategy
+from tensortrade.environments.rewards import RewardStrategy
 from tensortrade.exchanges import AssetExchange
 
 

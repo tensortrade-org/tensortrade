@@ -1,13 +1,13 @@
 from typing import Union, Dict
 
-from tensortrade.actions import ActionStrategy, TradeType
+from tensortrade.environments.actions import ActionStrategy, TradeType
 from tensortrade.exchanges import AssetExchange
 
 
 class SimpleContinuousStrategy(ActionStrategy):
     '''Simple continuous strategy, that executes trades on a continuous basis.'''
 
-    def __init__(self, base_sybmol: str = 'USD', asset_symbol: str = 'BTC'):
+    def __init__(self, base_symbol: str = 'USD', asset_symbol: str = 'BTC'):
         '''
             # Arguments
                 base_symbol: optional the symbol that defines the notional value

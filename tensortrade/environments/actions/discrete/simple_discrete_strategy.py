@@ -1,6 +1,6 @@
 from typing import Union, Dict
 
-from tensortrade.actions import ActionStrategy, TradeType
+from tensortrade.environments.actions import ActionStrategy, TradeType
 from tensortrade.exchanges import AssetExchange
 
 
