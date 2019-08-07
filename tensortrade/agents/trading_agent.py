@@ -6,11 +6,22 @@ from tensortrade.exchanges.performance import TradingPerformance
 
 
 class TradingAgent(object, metaclass=ABCMeta):
+    '''Abstract base class for reinforcement learning agents.'''
+
     def __init__(self):
         pass
 
     @abstractmethod
     def train(self, steps: int, callback: Callable[[TradingPerformance], [bool]]) -> TradingPerformance:
+        '''Trains the agent.
+
+        # Arguments:
+          steps:
+          callback: A `Callable`, object of type TradingPerformance, which
+
+        # Returns:
+          TradingPerformance
+        '''
         pass
 
     @abstractmethod
