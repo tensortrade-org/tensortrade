@@ -62,7 +62,7 @@ class StaticExchange(AssetExchange):
         if len(self.data_frame) is 0:
             self.next_observation()
 
-        return float(self.data_frame['close'].values[-1])
+        return float(self.data_frame['close'].values[self.current_step])
 
     def _update_account(self, symbol: str, trade_type: TradeType, fill_amount: float, fill_price: float):
         self._trades = self._trades.append({
