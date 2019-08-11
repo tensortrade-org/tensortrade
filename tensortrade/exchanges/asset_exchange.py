@@ -10,10 +10,8 @@ class AssetExchange(object, metaclass=ABCMeta):
     dtype: type = np.float16
 
     @abstractmethod
-    def __init__(self, commission_percent: float, base_precision: float, asset_precision: float):
-        self.commission_percent = commission_percent
-        self.base_precision = base_precision
-        self.asset_precision = asset_precision
+    def __init__(self):
+        pass
 
     def set_dtype(self, dtype):
         self.dtype = dtype
@@ -38,7 +36,8 @@ class AssetExchange(object, metaclass=ABCMeta):
             return net_worth
 
         for symbol, amount in portfolio.items():
-            current_price = self.current_price(symbol=symbol, output_symbol=output_symbol)
+            current_price = self.current_price(
+                symbol=symbol, output_symbol=output_symbol)
             net_worth += current_price * amount
 
         return net_worth

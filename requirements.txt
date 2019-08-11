@@ -1,4 +1,6 @@
 numpy
 pandas
+sklearn
 gym
 stochastic
+ccxt
