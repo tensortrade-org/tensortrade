@@ -164,4 +164,4 @@ class GeneratedExchange(AssetExchange):
         scaler = MinMaxScaler()
         scaled_frame = scaler.fit_transform(self.data_frame.values)
 
-        return scaled_frame.values[-1].astype(self.dtype)
+        return scaled_frame[-1].astype(self.dtype)
