@@ -1,2 +1,2 @@
-from .generated_exchange import GeneratedExchange
+from .fbm_exchange import FBMExchange
 from .static_exchange import StaticExchange

@@ -1,8 +1,8 @@
+import pandas as pd
+
 from abc import ABCMeta, abstractmethod
 from typing import Union, Callable, List
-
-from tensortrade.agents.features import FeaturePipeline
-from tensortrade.exchanges.performance import TradingPerformance
+from timeserio.pipeline import Pipeline
 
 
 class TradingAgent(object, metaclass=ABCMeta):
@@ -12,20 +12,18 @@ class TradingAgent(object, metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def train(self, steps: int, callback: Callable[[TradingPerformance], bool]) -> TradingPerformance:
+    def train(self, steps: int, callback: Callable[[pd.DataFrame], bool]) -> pd.DataFrame:
         '''Trains the agent.
 
         # Arguments:
-          steps:
-          callback: A `Callable`, object of type TradingPerformance, which
 
         # Returns:
-          TradingPerformance
+          pd.DataFrame
         '''
         pass
 
     @abstractmethod
-    def evaluate(self, steps: int, callback: Callable[[TradingPerformance], bool]) -> TradingPerformance:
+    def evaluate(self, steps: int, callback: Callable[[pd.DataFrame], bool]) -> pd.DataFrame:
         pass
 
     @abstractmethod
@@ -33,5 +31,5 @@ class TradingAgent(object, metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def add_feature_pipeline(self, pipeline: FeaturePipeline):
+    def add_feature_pipeline(self, pipeline: Pipeline):
         pass

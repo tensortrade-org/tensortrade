@@ -1,0 +1,1 @@
+from .wgan import WGAN

@@ -4,3 +4,4 @@ sklearn
 gym
 stochastic
 ccxt
+timeserio
