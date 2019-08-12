@@ -1,0 +1,711 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>&lt;no title&gt; &mdash; TensorTrade 0.0.1 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/theme_overrides.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html">
+          
+
+          
+            
+            <img src="../_static/logo.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Home</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Overview</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../overview/getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../overview/getting_started.html#installation">Installation</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api/modules.html">API reference</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">TensorTrade</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>&lt;no title&gt;</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/examples/train_and_evaluate.ipynb.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput,
+div.nbinput div.prompt,
+div.nbinput div.input_area,
+div.nbinput div[class*=highlight],
+div.nbinput div[class*=highlight] pre,
+div.nboutput,
+div.nbinput div.prompt,
+div.nbinput div.output_area,
+div.nboutput div[class*=highlight],
+div.nboutput div[class*=highlight] pre {
+    background: none;
+    border: none;
+    padding: 0 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+/* avoid gaps between output lines */
+div.nboutput div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput,
+div.nboutput {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput,
+    div.nboutput {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput div.prompt pre {
+    color: #307FC1;
+}
+
+/* output prompt */
+div.nboutput div.prompt pre {
+    color: #BF5B3D;
+}
+
+/* all prompts */
+div.nbinput div.prompt,
+div.nboutput div.prompt {
+    min-width: 5ex;
+    padding-top: 0.4em;
+    padding-right: 0.4em;
+    text-align: right;
+    flex: 0;
+}
+@media (max-width: 540px) {
+    div.nbinput div.prompt,
+    div.nboutput div.prompt {
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput div.prompt.empty {
+        padding: 0;
+    }
+}
+
+/* disable scrollbars on prompts */
+div.nbinput div.prompt pre,
+div.nboutput div.prompt pre {
+    overflow: hidden;
+}
+
+/* input/output area */
+div.nbinput div.input_area,
+div.nboutput div.output_area {
+    padding: 0.4em;
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput div.input_area,
+    div.nboutput div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput div.input_area {
+    border: 1px solid #e0e0e0;
+    border-radius: 2px;
+    background: #f5f5f5;
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.imgmath center alignment in output cells */
+div.nboutput div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-default-inverse-fg { color: #FFFFFF; }
+.ansi-default-inverse-bg { background-color: #000000; }
+
+.ansi-bold { font-weight: bold; }
+.ansi-underline { text-decoration: underline; }
+
+/* Some additional styling taken form the Jupyter notebook CSS */
+div.rendered_html table {
+  border: none;
+  border-collapse: collapse;
+  border-spacing: 0;
+  color: black;
+  font-size: 12px;
+  table-layout: fixed;
+}
+div.rendered_html thead {
+  border-bottom: 1px solid black;
+  vertical-align: bottom;
+}
+div.rendered_html tr,
+div.rendered_html th,
+div.rendered_html td {
+  text-align: right;
+  vertical-align: middle;
+  padding: 0.5em 0.5em;
+  line-height: normal;
+  white-space: normal;
+  max-width: none;
+  border: none;
+}
+div.rendered_html th {
+  font-weight: bold;
+}
+div.rendered_html tbody tr:nth-child(odd) {
+  background: #f5f5f5;
+}
+div.rendered_html tbody tr:hover {
+  background: rgba(66, 165, 245, 0.2);
+}
+
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="admonition note">
+<p>This page was generated from <a class="reference external" href="https://github.com/notadamking/tensortrade/blob/c5042c7c19728d46e8baa212a6c0859221cc0f7a/docs/source/examples/train_and_evaluate.ipynb">docs/source/examples/train_and_evaluate.ipynb</a>.</p>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">stable_baselines.common.policies</span> <span class="k">import</span> <span class="n">MlpLnLstmPolicy</span>
+<span class="kn">from</span> <span class="nn">stable_baselines.common.vec_env</span> <span class="k">import</span> <span class="n">DummyVecEnv</span>
+<span class="kn">from</span> <span class="nn">stable_baselines</span> <span class="k">import</span> <span class="n">PPO2</span>
+
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)))</span>
+
+<span class="kn">from</span> <span class="nn">tensortrade.environments</span> <span class="k">import</span> <span class="n">TradingEnvironment</span>
+<span class="kn">from</span> <span class="nn">tensortrade.environments.actions.discrete</span> <span class="k">import</span> <span class="n">SimpleDiscreteStrategy</span>
+<span class="kn">from</span> <span class="nn">tensortrade.environments.rewards.simple</span> <span class="k">import</span> <span class="n">IncrementalProfitStrategy</span>
+<span class="kn">from</span> <span class="nn">tensortrade.exchanges.simulated</span> <span class="k">import</span> <span class="n">GeneratedExchange</span>
+
+<span class="n">env</span> <span class="o">=</span> <span class="n">DummyVecEnv</span><span class="p">([</span><span class="k">lambda</span><span class="p">:</span> <span class="n">TradingEnvironment</span><span class="p">(</span><span class="n">action_strategy</span><span class="o">=</span><span class="n">SimpleDiscreteStrategy</span><span class="p">(),</span>
+                                              <span class="n">reward_strategy</span><span class="o">=</span><span class="n">IncrementalProfitStrategy</span><span class="p">(),</span>
+                                              <span class="n">exchange</span><span class="o">=</span><span class="n">GeneratedExchange</span><span class="p">())])</span>
+
+<span class="n">agent</span> <span class="o">=</span> <span class="n">PPO2</span><span class="p">(</span><span class="n">MlpLnLstmPolicy</span><span class="p">,</span> <span class="n">env</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">nminibatches</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="n">agent</span><span class="o">.</span><span class="n">learn</span><span class="p">(</span><span class="mi">750</span><span class="p">)</span>
+
+<span class="n">obs</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+
+
+<span class="n">state</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">exchange</span> <span class="o">=</span> <span class="kc">None</span>
+
+<span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">250</span><span class="p">):</span>
+    <span class="n">action</span><span class="p">,</span> <span class="n">state</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">)</span>
+    <span class="n">obs</span><span class="p">,</span> <span class="n">reward</span> <span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+
+    <span class="n">exchange</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;exchange&#39;</span><span class="p">]</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Trades: &#39;</span><span class="p">,</span> <span class="n">exchange</span><span class="o">.</span><span class="n">trades</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Balance: &#39;</span><span class="p">,</span> <span class="n">exchange</span><span class="o">.</span><span class="n">balance</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Portfolio: &#39;</span><span class="p">,</span> <span class="n">exchange</span><span class="o">.</span><span class="n">portfolio</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;P/L: &#39;</span><span class="p">,</span> <span class="n">exchange</span><span class="o">.</span><span class="n">profit_loss_percent</span><span class="p">())</span>
+
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/Users/adam/anaconda3/envs/tensortrade/lib/python3.6/site-packages/tensorflow/python/framework/dtypes.py:516: FutureWarning: Passing (type, 1) or &#39;1type&#39; as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / &#39;(1,)type&#39;.
+  _np_qint8 = np.dtype([(&#34;qint8&#34;, np.int8, 1)])
+/Users/adam/anaconda3/envs/tensortrade/lib/python3.6/site-packages/tensorflow/python/framework/dtypes.py:517: FutureWarning: Passing (type, 1) or &#39;1type&#39; as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / &#39;(1,)type&#39;.
+  _np_quint8 = np.dtype([(&#34;quint8&#34;, np.uint8, 1)])
+/Users/adam/anaconda3/envs/tensortrade/lib/python3.6/site-packages/tensorflow/python/framework/dtypes.py:518: FutureWarning: Passing (type, 1) or &#39;1type&#39; as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / &#39;(1,)type&#39;.
+  _np_qint16 = np.dtype([(&#34;qint16&#34;, np.int16, 1)])
+/Users/adam/anaconda3/envs/tensortrade/lib/python3.6/site-packages/tensorflow/python/framework/dtypes.py:519: FutureWarning: Passing (type, 1) or &#39;1type&#39; as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / &#39;(1,)type&#39;.
+  _np_quint16 = np.dtype([(&#34;quint16&#34;, np.uint16, 1)])
+/Users/adam/anaconda3/envs/tensortrade/lib/python3.6/site-packages/tensorflow/python/framework/dtypes.py:520: FutureWarning: Passing (type, 1) or &#39;1type&#39; as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / &#39;(1,)type&#39;.
+  _np_qint32 = np.dtype([(&#34;qint32&#34;, np.int32, 1)])
+/Users/adam/anaconda3/envs/tensortrade/lib/python3.6/site-packages/tensorflow/python/framework/dtypes.py:525: FutureWarning: Passing (type, 1) or &#39;1type&#39; as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / &#39;(1,)type&#39;.
+  np_resource = np.dtype([(&#34;resource&#34;, np.ubyte, 1)])
+/Users/adam/anaconda3/envs/tensortrade/lib/python3.6/site-packages/tensorboard/compat/tensorflow_stub/dtypes.py:541: FutureWarning: Passing (type, 1) or &#39;1type&#39; as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / &#39;(1,)type&#39;.
+  _np_qint8 = np.dtype([(&#34;qint8&#34;, np.int8, 1)])
+/Users/adam/anaconda3/envs/tensortrade/lib/python3.6/site-packages/tensorboard/compat/tensorflow_stub/dtypes.py:542: FutureWarning: Passing (type, 1) or &#39;1type&#39; as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / &#39;(1,)type&#39;.
+  _np_quint8 = np.dtype([(&#34;quint8&#34;, np.uint8, 1)])
+/Users/adam/anaconda3/envs/tensortrade/lib/python3.6/site-packages/tensorboard/compat/tensorflow_stub/dtypes.py:543: FutureWarning: Passing (type, 1) or &#39;1type&#39; as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / &#39;(1,)type&#39;.
+  _np_qint16 = np.dtype([(&#34;qint16&#34;, np.int16, 1)])
+/Users/adam/anaconda3/envs/tensortrade/lib/python3.6/site-packages/tensorboard/compat/tensorflow_stub/dtypes.py:544: FutureWarning: Passing (type, 1) or &#39;1type&#39; as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / &#39;(1,)type&#39;.
+  _np_quint16 = np.dtype([(&#34;quint16&#34;, np.uint16, 1)])
+/Users/adam/anaconda3/envs/tensortrade/lib/python3.6/site-packages/tensorboard/compat/tensorflow_stub/dtypes.py:545: FutureWarning: Passing (type, 1) or &#39;1type&#39; as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / &#39;(1,)type&#39;.
+  _np_qint32 = np.dtype([(&#34;qint32&#34;, np.int32, 1)])
+/Users/adam/anaconda3/envs/tensortrade/lib/python3.6/site-packages/tensorboard/compat/tensorflow_stub/dtypes.py:550: FutureWarning: Passing (type, 1) or &#39;1type&#39; as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / &#39;(1,)type&#39;.
+  np_resource = np.dtype([(&#34;resource&#34;, np.ubyte, 1)])
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">KeyboardInterrupt</span>                         Traceback (most recent call last)
+<span class="ansi-green-fg">&lt;ipython-input-1-0e298660d99e&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
+<span class="ansi-green-intense-fg ansi-bold">     19</span> agent <span class="ansi-blue-fg">=</span> PPO2<span class="ansi-blue-fg">(</span>MlpLnLstmPolicy<span class="ansi-blue-fg">,</span> env<span class="ansi-blue-fg">,</span> verbose<span class="ansi-blue-fg">=</span><span class="ansi-cyan-fg">1</span><span class="ansi-blue-fg">,</span> nminibatches<span class="ansi-blue-fg">=</span><span class="ansi-cyan-fg">1</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">     20</span>
+<span class="ansi-green-fg">---&gt; 21</span><span class="ansi-red-fg"> </span>agent<span class="ansi-blue-fg">.</span>learn<span class="ansi-blue-fg">(</span><span class="ansi-cyan-fg">7500</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">     22</span>
+<span class="ansi-green-intense-fg ansi-bold">     23</span> obs <span class="ansi-blue-fg">=</span> env<span class="ansi-blue-fg">.</span>reset<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+
+<span class="ansi-green-fg">~/anaconda3/envs/tensortrade/lib/python3.6/site-packages/stable_baselines/ppo2/ppo2.py</span> in <span class="ansi-cyan-fg">learn</span><span class="ansi-blue-fg">(self, total_timesteps, callback, seed, log_interval, tb_log_name, reset_num_timesteps)</span>
+<span class="ansi-green-intense-fg ansi-bold">    332</span>                 cliprange_vf_now <span class="ansi-blue-fg">=</span> cliprange_vf<span class="ansi-blue-fg">(</span>frac<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    333</span>                 <span class="ansi-red-fg"># true_reward is the reward without discount</span>
+<span class="ansi-green-fg">--&gt; 334</span><span class="ansi-red-fg">                 </span>obs<span class="ansi-blue-fg">,</span> returns<span class="ansi-blue-fg">,</span> masks<span class="ansi-blue-fg">,</span> actions<span class="ansi-blue-fg">,</span> values<span class="ansi-blue-fg">,</span> neglogpacs<span class="ansi-blue-fg">,</span> states<span class="ansi-blue-fg">,</span> ep_infos<span class="ansi-blue-fg">,</span> true_reward <span class="ansi-blue-fg">=</span> runner<span class="ansi-blue-fg">.</span>run<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    335</span>                 self<span class="ansi-blue-fg">.</span>num_timesteps <span class="ansi-blue-fg">+=</span> self<span class="ansi-blue-fg">.</span>n_batch
+<span class="ansi-green-intense-fg ansi-bold">    336</span>                 ep_info_buf<span class="ansi-blue-fg">.</span>extend<span class="ansi-blue-fg">(</span>ep_infos<span class="ansi-blue-fg">)</span>
+
+<span class="ansi-green-fg">~/anaconda3/envs/tensortrade/lib/python3.6/site-packages/stable_baselines/ppo2/ppo2.py</span> in <span class="ansi-cyan-fg">run</span><span class="ansi-blue-fg">(self)</span>
+<span class="ansi-green-intense-fg ansi-bold">    473</span>             <span class="ansi-green-fg">if</span> isinstance<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">.</span>env<span class="ansi-blue-fg">.</span>action_space<span class="ansi-blue-fg">,</span> gym<span class="ansi-blue-fg">.</span>spaces<span class="ansi-blue-fg">.</span>Box<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">    474</span>                 clipped_actions <span class="ansi-blue-fg">=</span> np<span class="ansi-blue-fg">.</span>clip<span class="ansi-blue-fg">(</span>actions<span class="ansi-blue-fg">,</span> self<span class="ansi-blue-fg">.</span>env<span class="ansi-blue-fg">.</span>action_space<span class="ansi-blue-fg">.</span>low<span class="ansi-blue-fg">,</span> self<span class="ansi-blue-fg">.</span>env<span class="ansi-blue-fg">.</span>action_space<span class="ansi-blue-fg">.</span>high<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-fg">--&gt; 475</span><span class="ansi-red-fg">             </span>self<span class="ansi-blue-fg">.</span>obs<span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">:</span><span class="ansi-blue-fg">]</span><span class="ansi-blue-fg">,</span> rewards<span class="ansi-blue-fg">,</span> self<span class="ansi-blue-fg">.</span>dones<span class="ansi-blue-fg">,</span> infos <span class="ansi-blue-fg">=</span> self<span class="ansi-blue-fg">.</span>env<span class="ansi-blue-fg">.</span>step<span class="ansi-blue-fg">(</span>clipped_actions<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    476</span>             <span class="ansi-green-fg">for</span> info <span class="ansi-green-fg">in</span> infos<span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">    477</span>                 maybe_ep_info <span class="ansi-blue-fg">=</span> info<span class="ansi-blue-fg">.</span>get<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">&#39;episode&#39;</span><span class="ansi-blue-fg">)</span>
+
+<span class="ansi-green-fg">~/anaconda3/envs/tensortrade/lib/python3.6/site-packages/stable_baselines/common/vec_env/base_vec_env.py</span> in <span class="ansi-cyan-fg">step</span><span class="ansi-blue-fg">(self, actions)</span>
+<span class="ansi-green-intense-fg ansi-bold">    132</span>         &#34;&#34;&#34;
+<span class="ansi-green-intense-fg ansi-bold">    133</span>         self<span class="ansi-blue-fg">.</span>step_async<span class="ansi-blue-fg">(</span>actions<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-fg">--&gt; 134</span><span class="ansi-red-fg">         </span><span class="ansi-green-fg">return</span> self<span class="ansi-blue-fg">.</span>step_wait<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    135</span>
+<span class="ansi-green-intense-fg ansi-bold">    136</span>     <span class="ansi-green-fg">def</span> get_images<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+
+<span class="ansi-green-fg">~/anaconda3/envs/tensortrade/lib/python3.6/site-packages/stable_baselines/common/vec_env/dummy_vec_env.py</span> in <span class="ansi-cyan-fg">step_wait</span><span class="ansi-blue-fg">(self)</span>
+<span class="ansi-green-intense-fg ansi-bold">     38</span>         <span class="ansi-green-fg">for</span> env_idx <span class="ansi-green-fg">in</span> range<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">.</span>num_envs<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">     39</span>             obs<span class="ansi-blue-fg">,</span> self<span class="ansi-blue-fg">.</span>buf_rews<span class="ansi-blue-fg">[</span>env_idx<span class="ansi-blue-fg">]</span><span class="ansi-blue-fg">,</span> self<span class="ansi-blue-fg">.</span>buf_dones<span class="ansi-blue-fg">[</span>env_idx<span class="ansi-blue-fg">]</span><span class="ansi-blue-fg">,</span> self<span class="ansi-blue-fg">.</span>buf_infos<span class="ansi-blue-fg">[</span>env_idx<span class="ansi-blue-fg">]</span> <span class="ansi-blue-fg">=</span><span class="ansi-red-fg">\</span>
+<span class="ansi-green-fg">---&gt; 40</span><span class="ansi-red-fg">                 </span>self<span class="ansi-blue-fg">.</span>envs<span class="ansi-blue-fg">[</span>env_idx<span class="ansi-blue-fg">]</span><span class="ansi-blue-fg">.</span>step<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">.</span>actions<span class="ansi-blue-fg">[</span>env_idx<span class="ansi-blue-fg">]</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">     41</span>             <span class="ansi-green-fg">if</span> self<span class="ansi-blue-fg">.</span>buf_dones<span class="ansi-blue-fg">[</span>env_idx<span class="ansi-blue-fg">]</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">     42</span>                 <span class="ansi-red-fg"># save final observation where user can get it, then reset</span>
+
+<span class="ansi-green-fg">~/Desktop/Hedger/tensortrade/tensortrade/environments/trading_environment.py</span> in <span class="ansi-cyan-fg">step</span><span class="ansi-blue-fg">(self, action)</span>
+<span class="ansi-green-intense-fg ansi-bold">     99</span>         &#39;&#39;&#39;
+<span class="ansi-green-intense-fg ansi-bold">    100</span>
+<span class="ansi-green-fg">--&gt; 101</span><span class="ansi-red-fg">         </span>self<span class="ansi-blue-fg">.</span>_take_action<span class="ansi-blue-fg">(</span>action<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    102</span>
+<span class="ansi-green-intense-fg ansi-bold">    103</span>         obs <span class="ansi-blue-fg">=</span> self<span class="ansi-blue-fg">.</span>_next_observation<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+
+<span class="ansi-green-fg">~/Desktop/Hedger/tensortrade/tensortrade/environments/trading_environment.py</span> in <span class="ansi-cyan-fg">_take_action</span><span class="ansi-blue-fg">(self, action)</span>
+<span class="ansi-green-intense-fg ansi-bold">     58</span>         symbol<span class="ansi-blue-fg">,</span> trade_type<span class="ansi-blue-fg">,</span> amount<span class="ansi-blue-fg">,</span> price <span class="ansi-blue-fg">=</span> self<span class="ansi-blue-fg">.</span>action_strategy<span class="ansi-blue-fg">.</span>suggest_trade<span class="ansi-blue-fg">(</span>action<span class="ansi-blue-fg">=</span>action<span class="ansi-blue-fg">,</span> exchange<span class="ansi-blue-fg">=</span>self<span class="ansi-blue-fg">.</span>exchange<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">     59</span>
+<span class="ansi-green-fg">---&gt; 60</span><span class="ansi-red-fg">         </span>self<span class="ansi-blue-fg">.</span>exchange<span class="ansi-blue-fg">.</span>execute_trade<span class="ansi-blue-fg">(</span>symbol<span class="ansi-blue-fg">=</span>symbol<span class="ansi-blue-fg">,</span> trade_type<span class="ansi-blue-fg">=</span>trade_type<span class="ansi-blue-fg">,</span> amount<span class="ansi-blue-fg">=</span>amount<span class="ansi-blue-fg">,</span> price<span class="ansi-blue-fg">=</span>price<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">     61</span>
+<span class="ansi-green-intense-fg ansi-bold">     62</span>     <span class="ansi-green-fg">def</span> _next_observation<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+
+<span class="ansi-green-fg">~/Desktop/Hedger/tensortrade/tensortrade/exchanges/simulated/generated_exchange.py</span> in <span class="ansi-cyan-fg">execute_trade</span><span class="ansi-blue-fg">(self, symbol, trade_type, amount, price)</span>
+<span class="ansi-green-intense-fg ansi-bold">    119</span>                                  trade_type<span class="ansi-blue-fg">=</span>trade_type<span class="ansi-blue-fg">,</span>
+<span class="ansi-green-intense-fg ansi-bold">    120</span>                                  fill_amount<span class="ansi-blue-fg">=</span>fill_amount<span class="ansi-blue-fg">,</span>
+<span class="ansi-green-fg">--&gt; 121</span><span class="ansi-red-fg">                                  fill_price=fill_price)
+</span><span class="ansi-green-intense-fg ansi-bold">    122</span>
+<span class="ansi-green-intense-fg ansi-bold">    123</span>     <span class="ansi-green-fg">def</span> has_next_observation<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+
+<span class="ansi-green-fg">~/Desktop/Hedger/tensortrade/tensortrade/exchanges/simulated/generated_exchange.py</span> in <span class="ansi-cyan-fg">_update_account</span><span class="ansi-blue-fg">(self, symbol, trade_type, fill_amount, fill_price)</span>
+<span class="ansi-green-intense-fg ansi-bold">     91</span>             <span class="ansi-blue-fg">&#39;balance&#39;</span><span class="ansi-blue-fg">:</span> self<span class="ansi-blue-fg">.</span>_balance<span class="ansi-blue-fg">,</span>
+<span class="ansi-green-intense-fg ansi-bold">     92</span>             <span class="ansi-blue-fg">&#39;net_worth&#39;</span><span class="ansi-blue-fg">:</span> self<span class="ansi-blue-fg">.</span>net_worth<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">,</span>
+<span class="ansi-green-fg">---&gt; 93</span><span class="ansi-red-fg">         }, ignore_index=True)
+</span><span class="ansi-green-intense-fg ansi-bold">     94</span>
+<span class="ansi-green-intense-fg ansi-bold">     95</span>     <span class="ansi-green-fg">def</span> execute_trade<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">,</span> symbol<span class="ansi-blue-fg">:</span> str<span class="ansi-blue-fg">,</span> trade_type<span class="ansi-blue-fg">:</span> TradeType<span class="ansi-blue-fg">,</span> amount<span class="ansi-blue-fg">:</span> float<span class="ansi-blue-fg">,</span> price<span class="ansi-blue-fg">:</span> float<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+
+<span class="ansi-green-fg">~/anaconda3/envs/tensortrade/lib/python3.6/site-packages/pandas/core/frame.py</span> in <span class="ansi-cyan-fg">append</span><span class="ansi-blue-fg">(self, other, ignore_index, verify_integrity, sort)</span>
+<span class="ansi-green-intense-fg ansi-bold">   7114</span>             ignore_index<span class="ansi-blue-fg">=</span>ignore_index<span class="ansi-blue-fg">,</span>
+<span class="ansi-green-intense-fg ansi-bold">   7115</span>             verify_integrity<span class="ansi-blue-fg">=</span>verify_integrity<span class="ansi-blue-fg">,</span>
+<span class="ansi-green-fg">-&gt; 7116</span><span class="ansi-red-fg">             </span>sort<span class="ansi-blue-fg">=</span>sort<span class="ansi-blue-fg">,</span>
+<span class="ansi-green-intense-fg ansi-bold">   7117</span>         )
+<span class="ansi-green-intense-fg ansi-bold">   7118</span>
+
+<span class="ansi-green-fg">~/anaconda3/envs/tensortrade/lib/python3.6/site-packages/pandas/core/reshape/concat.py</span> in <span class="ansi-cyan-fg">concat</span><span class="ansi-blue-fg">(objs, axis, join, join_axes, ignore_index, keys, levels, names, verify_integrity, sort, copy)</span>
+<span class="ansi-green-intense-fg ansi-bold">    256</span>     )
+<span class="ansi-green-intense-fg ansi-bold">    257</span>
+<span class="ansi-green-fg">--&gt; 258</span><span class="ansi-red-fg">     </span><span class="ansi-green-fg">return</span> op<span class="ansi-blue-fg">.</span>get_result<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    259</span>
+<span class="ansi-green-intense-fg ansi-bold">    260</span>
+
+<span class="ansi-green-fg">~/anaconda3/envs/tensortrade/lib/python3.6/site-packages/pandas/core/reshape/concat.py</span> in <span class="ansi-cyan-fg">get_result</span><span class="ansi-blue-fg">(self)</span>
+<span class="ansi-green-intense-fg ansi-bold">    471</span>
+<span class="ansi-green-intense-fg ansi-bold">    472</span>             new_data = concatenate_block_managers(
+<span class="ansi-green-fg">--&gt; 473</span><span class="ansi-red-fg">                 </span>mgrs_indexers<span class="ansi-blue-fg">,</span> self<span class="ansi-blue-fg">.</span>new_axes<span class="ansi-blue-fg">,</span> concat_axis<span class="ansi-blue-fg">=</span>self<span class="ansi-blue-fg">.</span>axis<span class="ansi-blue-fg">,</span> copy<span class="ansi-blue-fg">=</span>self<span class="ansi-blue-fg">.</span>copy
+<span class="ansi-green-intense-fg ansi-bold">    474</span>             )
+<span class="ansi-green-intense-fg ansi-bold">    475</span>             <span class="ansi-green-fg">if</span> <span class="ansi-green-fg">not</span> self<span class="ansi-blue-fg">.</span>copy<span class="ansi-blue-fg">:</span>
+
+<span class="ansi-green-fg">~/anaconda3/envs/tensortrade/lib/python3.6/site-packages/pandas/core/internals/managers.py</span> in <span class="ansi-cyan-fg">concatenate_block_managers</span><span class="ansi-blue-fg">(mgrs_indexers, axes, concat_axis, copy)</span>
+<span class="ansi-green-intense-fg ansi-bold">   2051</span>         <span class="ansi-green-fg">else</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">   2052</span>             b = make_block(
+<span class="ansi-green-fg">-&gt; 2053</span><span class="ansi-red-fg">                 </span>concatenate_join_units<span class="ansi-blue-fg">(</span>join_units<span class="ansi-blue-fg">,</span> concat_axis<span class="ansi-blue-fg">,</span> copy<span class="ansi-blue-fg">=</span>copy<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">,</span>
+<span class="ansi-green-intense-fg ansi-bold">   2054</span>                 placement<span class="ansi-blue-fg">=</span>placement<span class="ansi-blue-fg">,</span>
+<span class="ansi-green-intense-fg ansi-bold">   2055</span>             )
+
+<span class="ansi-green-fg">~/anaconda3/envs/tensortrade/lib/python3.6/site-packages/pandas/core/internals/concat.py</span> in <span class="ansi-cyan-fg">concatenate_join_units</span><span class="ansi-blue-fg">(join_units, concat_axis, copy)</span>
+<span class="ansi-green-intense-fg ansi-bold">    247</span>         <span class="ansi-green-fg">raise</span> AssertionError<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">&#34;Concatenating join units along axis0&#34;</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    248</span>
+<span class="ansi-green-fg">--&gt; 249</span><span class="ansi-red-fg">     </span>empty_dtype<span class="ansi-blue-fg">,</span> upcasted_na <span class="ansi-blue-fg">=</span> get_empty_dtype_and_na<span class="ansi-blue-fg">(</span>join_units<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    250</span>
+<span class="ansi-green-intense-fg ansi-bold">    251</span>     to_concat = [
+
+<span class="ansi-green-fg">~/anaconda3/envs/tensortrade/lib/python3.6/site-packages/pandas/core/internals/concat.py</span> in <span class="ansi-cyan-fg">get_empty_dtype_and_na</span><span class="ansi-blue-fg">(join_units)</span>
+<span class="ansi-green-intense-fg ansi-bold">    331</span>         <span class="ansi-red-fg"># are only null blocks, when same upcasting rules must be applied to</span>
+<span class="ansi-green-intense-fg ansi-bold">    332</span>         <span class="ansi-red-fg"># null upcast classes.</span>
+<span class="ansi-green-fg">--&gt; 333</span><span class="ansi-red-fg">         </span><span class="ansi-green-fg">if</span> unit<span class="ansi-blue-fg">.</span>is_na<span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">    334</span>             null_upcast_classes<span class="ansi-blue-fg">[</span>upcast_cls<span class="ansi-blue-fg">]</span><span class="ansi-blue-fg">.</span>append<span class="ansi-blue-fg">(</span>dtype<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    335</span>         <span class="ansi-green-fg">else</span><span class="ansi-blue-fg">:</span>
+
+<span class="ansi-green-fg">pandas/_libs/properties.pyx</span> in <span class="ansi-cyan-fg">pandas._libs.properties.CachedProperty.__get__</span><span class="ansi-blue-fg">()</span>
+
+<span class="ansi-green-fg">~/anaconda3/envs/tensortrade/lib/python3.6/site-packages/pandas/core/internals/concat.py</span> in <span class="ansi-cyan-fg">is_na</span><span class="ansi-blue-fg">(self)</span>
+<span class="ansi-green-intense-fg ansi-bold">    170</span>         chunk_len <span class="ansi-blue-fg">=</span> max<span class="ansi-blue-fg">(</span>total_len <span class="ansi-blue-fg">//</span> <span class="ansi-cyan-fg">40</span><span class="ansi-blue-fg">,</span> <span class="ansi-cyan-fg">1000</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    171</span>         <span class="ansi-green-fg">for</span> i <span class="ansi-green-fg">in</span> range<span class="ansi-blue-fg">(</span><span class="ansi-cyan-fg">0</span><span class="ansi-blue-fg">,</span> total_len<span class="ansi-blue-fg">,</span> chunk_len<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">--&gt; 172</span><span class="ansi-red-fg">             </span><span class="ansi-green-fg">if</span> <span class="ansi-green-fg">not</span> isna<span class="ansi-blue-fg">(</span>values_flat<span class="ansi-blue-fg">[</span>i <span class="ansi-blue-fg">:</span> i <span class="ansi-blue-fg">+</span> chunk_len<span class="ansi-blue-fg">]</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">.</span>all<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">    173</span>                 <span class="ansi-green-fg">return</span> <span class="ansi-green-fg">False</span>
+<span class="ansi-green-intense-fg ansi-bold">    174</span>
+
+<span class="ansi-green-fg">~/anaconda3/envs/tensortrade/lib/python3.6/site-packages/pandas/core/dtypes/missing.py</span> in <span class="ansi-cyan-fg">isna</span><span class="ansi-blue-fg">(obj)</span>
+<span class="ansi-green-intense-fg ansi-bold">    120</span>     Name<span class="ansi-blue-fg">:</span> <span class="ansi-cyan-fg">1</span><span class="ansi-blue-fg">,</span> dtype<span class="ansi-blue-fg">:</span> bool
+<span class="ansi-green-intense-fg ansi-bold">    121</span>     &#34;&#34;&#34;
+<span class="ansi-green-fg">--&gt; 122</span><span class="ansi-red-fg">     </span><span class="ansi-green-fg">return</span> _isna<span class="ansi-blue-fg">(</span>obj<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    123</span>
+<span class="ansi-green-intense-fg ansi-bold">    124</span>
+
+<span class="ansi-green-fg">~/anaconda3/envs/tensortrade/lib/python3.6/site-packages/pandas/core/dtypes/missing.py</span> in <span class="ansi-cyan-fg">_isna_new</span><span class="ansi-blue-fg">(obj)</span>
+<span class="ansi-green-intense-fg ansi-bold">    143</span>         ),
+<span class="ansi-green-intense-fg ansi-bold">    144</span>     ):
+<span class="ansi-green-fg">--&gt; 145</span><span class="ansi-red-fg">         </span><span class="ansi-green-fg">return</span> _isna_ndarraylike<span class="ansi-blue-fg">(</span>obj<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    146</span>     <span class="ansi-green-fg">elif</span> isinstance<span class="ansi-blue-fg">(</span>obj<span class="ansi-blue-fg">,</span> ABCGeneric<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">    147</span>         <span class="ansi-green-fg">return</span> obj<span class="ansi-blue-fg">.</span>_constructor<span class="ansi-blue-fg">(</span>obj<span class="ansi-blue-fg">.</span>_data<span class="ansi-blue-fg">.</span>isna<span class="ansi-blue-fg">(</span>func<span class="ansi-blue-fg">=</span>isna<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">)</span>
+
+<span class="ansi-green-fg">~/anaconda3/envs/tensortrade/lib/python3.6/site-packages/pandas/core/dtypes/missing.py</span> in <span class="ansi-cyan-fg">_isna_ndarraylike</span><span class="ansi-blue-fg">(obj)</span>
+<span class="ansi-green-intense-fg ansi-bold">    246</span>             result<span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">...</span><span class="ansi-blue-fg">]</span> <span class="ansi-blue-fg">=</span> vec<span class="ansi-blue-fg">.</span>reshape<span class="ansi-blue-fg">(</span>shape<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    247</span>
+<span class="ansi-green-fg">--&gt; 248</span><span class="ansi-red-fg">     </span><span class="ansi-green-fg">elif</span> needs_i8_conversion<span class="ansi-blue-fg">(</span>dtype<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">    249</span>         <span class="ansi-red-fg"># this is the NaT pattern</span>
+<span class="ansi-green-intense-fg ansi-bold">    250</span>         result <span class="ansi-blue-fg">=</span> values<span class="ansi-blue-fg">.</span>view<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">&#34;i8&#34;</span><span class="ansi-blue-fg">)</span> <span class="ansi-blue-fg">==</span> iNaT
+
+<span class="ansi-green-fg">~/anaconda3/envs/tensortrade/lib/python3.6/site-packages/pandas/core/dtypes/common.py</span> in <span class="ansi-cyan-fg">needs_i8_conversion</span><span class="ansi-blue-fg">(arr_or_dtype)</span>
+<span class="ansi-green-intense-fg ansi-bold">   1502</span>         <span class="ansi-green-fg">return</span> <span class="ansi-green-fg">False</span>
+<span class="ansi-green-intense-fg ansi-bold">   1503</span>     return (
+<span class="ansi-green-fg">-&gt; 1504</span><span class="ansi-red-fg">         </span>is_datetime_or_timedelta_dtype<span class="ansi-blue-fg">(</span>arr_or_dtype<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">   1505</span>         <span class="ansi-green-fg">or</span> is_datetime64tz_dtype<span class="ansi-blue-fg">(</span>arr_or_dtype<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">   1506</span>         <span class="ansi-green-fg">or</span> is_period_dtype<span class="ansi-blue-fg">(</span>arr_or_dtype<span class="ansi-blue-fg">)</span>
+
+<span class="ansi-green-fg">~/anaconda3/envs/tensortrade/lib/python3.6/site-packages/pandas/core/dtypes/common.py</span> in <span class="ansi-cyan-fg">is_datetime_or_timedelta_dtype</span><span class="ansi-blue-fg">(arr_or_dtype)</span>
+<span class="ansi-green-intense-fg ansi-bold">   1318</span>     &#34;&#34;&#34;
+<span class="ansi-green-intense-fg ansi-bold">   1319</span>
+<span class="ansi-green-fg">-&gt; 1320</span><span class="ansi-red-fg">     </span><span class="ansi-green-fg">return</span> _is_dtype_type<span class="ansi-blue-fg">(</span>arr_or_dtype<span class="ansi-blue-fg">,</span> classes<span class="ansi-blue-fg">(</span>np<span class="ansi-blue-fg">.</span>datetime64<span class="ansi-blue-fg">,</span> np<span class="ansi-blue-fg">.</span>timedelta64<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">   1321</span>
+<span class="ansi-green-intense-fg ansi-bold">   1322</span>
+
+<span class="ansi-red-fg">KeyboardInterrupt</span>:
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[24]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[24]:
+</pre></div>
+</div>
+<div class="output_area highlight-none notranslate"><div class="highlight"><pre>
+<span></span>array([[0.00000000e+00, 8.43373494e-02, 1.21247740e-02, 1.21151222e-02],
+       [0.00000000e+00, 1.56626506e-01, 7.66582130e-05, 7.66271944e-05],
+       [0.00000000e+00, 1.56626506e-01, 3.18131584e-03, 3.17951825e-03],
+       ...,
+       [0.00000000e+00, 1.00000000e+00, 1.20225631e-02, 1.20477253e-02],
+       [0.00000000e+00, 9.75903614e-01, 7.98523052e-04, 8.00206886e-04],
+       [0.00000000e+00, 9.87951807e-01, 6.50955992e-03, 6.52297292e-03]])
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>
+</pre></div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Adam King
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

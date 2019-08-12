@@ -1,4 +1,4 @@
-from typing import Union, Dict
+from typing import Union
 
 from tensortrade.environments.actions import ActionStrategy, TradeType
 from tensortrade.exchanges import AssetExchange
@@ -33,7 +33,8 @@ class SimpleContinuousStrategy(ActionStrategy):
         action_type, trade_amount = action
         trade_type = TradeType(int(action_type * 3))
 
-        current_price = exchange.current_price(symbol=self.asset_symbol, output_symbol=self.base_symbol)
+        current_price = exchange.current_price(
+            symbol=self.asset_symbol, output_symbol=self.base_symbol)
         commission_percent = exchange.commission_percent
         base_precision = exchange.base_precision
         asset_precision = exchange.asset_precision
@@ -51,6 +52,7 @@ class SimpleContinuousStrategy(ActionStrategy):
             portfolio = exchange.portfolio()
             price_adjustment = 1 + (commission_percent / 100)
             price = round(current_price * price_adjustment, base_precision)
-            amount_to_trade = round(portfolio.get(self.asset_symbol, 0) * trade_amount, asset_precision)
+            amount_to_trade = round(portfolio.get(self.asset_symbol, 0)
+                                    * trade_amount, asset_precision)
 
         return self.asset_symbol, trade_type, amount_to_trade, price

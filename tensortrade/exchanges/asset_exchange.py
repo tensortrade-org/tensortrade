@@ -1,4 +1,3 @@
-import numpy as np
 import pandas as pd
 
 from abc import ABCMeta, abstractmethod
@@ -7,8 +6,6 @@ from typing import Dict
 
 class AssetExchange(object, metaclass=ABCMeta):
     '''Abstract base class for asset exchanges'''
-    dtype: type = np.float16
-
     @abstractmethod
     def __init__(self):
         pass

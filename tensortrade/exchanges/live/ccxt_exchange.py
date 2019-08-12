@@ -1,13 +1,11 @@
 import time
-import asyncio
 import numpy as np
 import pandas as pd
 
 from gym import spaces
 from typing import Dict
-from ccxt.base import Exchange
+from ccxt import Exchange
 from sklearn.preprocessing import MinMaxScaler
-from stochastic.continuous import FractionalBrownianMotion
 
 from tensortrade.environments.actions import TradeType
 from tensortrade.exchanges.asset_exchange import AssetExchange

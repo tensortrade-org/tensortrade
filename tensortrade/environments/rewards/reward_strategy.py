@@ -1,4 +1,3 @@
-import numpy as np
 import pandas as pd
 
 from abc import ABCMeta, abstractmethod
@@ -7,8 +6,6 @@ from tensortrade.exchanges import AssetExchange
 
 
 class RewardStrategy(object, metaclass=ABCMeta):
-    dtype: type = np.float16
-
     def __init__(self):
         pass
 

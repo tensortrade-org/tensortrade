@@ -12,7 +12,7 @@ class TradingAgent(object, metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def train(self, steps: int, callback: Callable[[TradingPerformance], [bool]]) -> TradingPerformance:
+    def train(self, steps: int, callback: Callable[[TradingPerformance], bool]) -> TradingPerformance:
         '''Trains the agent.
 
         # Arguments:
@@ -25,7 +25,7 @@ class TradingAgent(object, metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def evaluate(self, steps: int, callback: Callable[[TradingPerformance], [bool]]) -> TradingPerformance:
+    def evaluate(self, steps: int, callback: Callable[[TradingPerformance], bool]) -> TradingPerformance:
         pass
 
     @abstractmethod

@@ -1,7 +1,5 @@
 import pandas as pd
 
-from typing import List, Dict, Callable
-
 from tensortrade.environments.rewards import RewardStrategy
 from tensortrade.exchanges import AssetExchange
 
@@ -19,7 +17,8 @@ class IncrementalProfitStrategy(RewardStrategy):
     def reward(self, current_step: int, exchange: AssetExchange) -> float:
         reward = 0
 
-        current_price = exchange.current_price(symbol=self.asset_symbol, output_symbol=self.base_symbol)
+        current_price = exchange.current_price(
+            symbol=self.asset_symbol, output_symbol=self.base_symbol)
         performance = exchange.performance()
         curr_balance = exchange.balance(symbol=self.base_symbol)
 
