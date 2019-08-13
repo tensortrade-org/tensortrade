@@ -38,13 +38,13 @@ class TradingEnvironment(gym.Env):
         self.reward_strategy = reward_strategy
         self.exchange = exchange
 
-        self.space_dtype: type = kwargs.get('space_dtype', np.float16)
+        self.observation_space_dtype: type = kwargs.get('observation_space_dtype', np.float16)
+        self.action_space_dtype: type = kwargs.get('action_space_dtype', np.float16)
         self.logger_name: int = kwargs.get('logger_name', __name__)
         self.log_level: int = kwargs.get('log_level', logging.DEBUG)
 
-        self.action_strategy.set_dtype(self.space_dtype)
-        self.reward_strategy.set_dtype(self.space_dtype)
-        self.exchange.set_dtype(self.space_dtype)
+        self.action_strategy.set_dtype(self.action_space_dtype)
+        self.exchange.set_dtype(self.observation_space_dtype)
 
         self.logger = logging.getLogger(self.logger_name)
         self.logger.setLevel(self.log_level)
