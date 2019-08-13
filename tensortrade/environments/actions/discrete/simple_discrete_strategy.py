@@ -34,7 +34,7 @@ class SimpleDiscreteStrategy(ActionStrategy):
         trade_amount = float(1 / (action % self.n_bins + 1))
 
         current_price = exchange.current_price(
-            symbol=self.asset_symbol, output_symbol=self.base_symbol)
+            symbol=self.asset_symbol, base_symbol=self.base_symbol)
         commission_percent = exchange.commission_percent
         base_precision = exchange.base_precision
         asset_precision = exchange.asset_precision

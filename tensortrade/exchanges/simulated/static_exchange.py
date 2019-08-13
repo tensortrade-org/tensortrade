@@ -33,16 +33,16 @@ class StaticExchange(AssetExchange):
 
         self.current_step = 0
 
-    def net_worth(self, output_symbol: str = 'USD') -> float:
-        return super().net_worth(output_symbol=output_symbol)
+    def net_worth(self, base_symbol: str = 'USD') -> float:
+        return super().net_worth(base_symbol=base_symbol)
 
-    def profit_loss_percent(self, output_symbol: str = 'USD') -> float:
-        return super().profit_loss_percent(output_symbol=output_symbol)
+    def profit_loss_percent(self, base_symbol: str ='USD') -> float:
+        return super().profit_loss_percent(base_symbol=base_symbol)
 
-    def initial_balance(self, symbol: str = 'USD') -> float:
+    def initial_balance(self, base_symbol: str = 'USD') -> float:
         return self._initial_balance
 
-    def balance(self, symbol: str = 'USD') -> float:
+    def balance(self, base_symbol: str = 'USD') -> float:
         return self._balance
 
     def portfolio(self) -> Dict[str, float]:
@@ -57,7 +57,7 @@ class StaticExchange(AssetExchange):
     def observation_space(self):
         return spaces.Box(low=0, high=1, shape=(1, 5), dtype=self.dtype)
 
-    def current_price(self, symbol: str, output_symbol: str = 'USD'):
+    def current_price(self, symbol: str, base_symbol: str = 'USD'):
         if len(self.data_frame) is 0:
             self.next_observation()
 

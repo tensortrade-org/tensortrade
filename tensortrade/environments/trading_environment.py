@@ -1,14 +1,14 @@
 import gym
 import logging
-import pandas as pd
 import numpy as np
 
-from gym import spaces
 from typing import Union
 
-from tensortrade.environments.actions import ActionStrategy, TradeType
+from tensortrade.environments.actions import ActionStrategy
 from tensortrade.environments.rewards import RewardStrategy
 from tensortrade.exchanges import AssetExchange
+
+DefaultActionDtype = Union[int, float]
 
 
 class TradingEnvironment(gym.Env):
@@ -39,8 +39,8 @@ class TradingEnvironment(gym.Env):
         self.exchange = exchange
 
         self.observation_space_dtype: type = kwargs.get('observation_space_dtype', np.float16)
-        self.action_space_dtype: type = kwargs.get('action_space_dtype', np.float16)
-        self.logger_name: int = kwargs.get('logger_name', __name__)
+        self.action_space_dtype: type = kwargs.get('action_space_dtype', DefaultActionDtype)
+        self.logger_name: str = kwargs.get('logger_name', __name__)
         self.log_level: int = kwargs.get('log_level', logging.DEBUG)
 
         self.action_strategy.set_dtype(self.action_space_dtype)
@@ -52,9 +52,11 @@ class TradingEnvironment(gym.Env):
         self.action_space = self.action_strategy.action_space()
         self.observation_space = self.exchange.observation_space()
 
+        self.base_symbol = kwargs.get('base_symbol', 'USD')
+
         logging.getLogger('tensorflow').disabled = kwargs.get('disable_tensorflow_logger', True)
 
-    def _take_action(self, action: Union[int, float]):
+    def _take_action(self, action: DefaultActionDtype):
         symbol, trade_type, amount, price = self.action_strategy.suggest_trade(action=action, exchange=self.exchange)
 
         self.exchange.execute_trade(symbol=symbol, trade_type=trade_type, amount=amount, price=price)
@@ -73,7 +75,7 @@ class TradingEnvironment(gym.Env):
         return reward if np.isfinite(reward) else 0
 
     def _done(self):
-        lost_90_percent_net_worth = self.exchange.profit_loss_percent() < 0.1
+        lost_90_percent_net_worth = self.exchange.profit_loss_percent(base_symbol=self.base_symbol) < 0.1
         has_next_obs: bool = self.exchange.has_next_observation()
 
         return lost_90_percent_net_worth or not has_next_obs
@@ -81,7 +83,7 @@ class TradingEnvironment(gym.Env):
     def _info(self):
         return {'current_step': self.current_step, 'exchange': self.exchange}
 
-    def step(self, action):
+    def step(self, action: DefaultActionDtype):
         '''Run one timestep of the environment's dynamics. When end of
             episode is reached, you are responsible for calling `reset()`
             to reset this environment's state.

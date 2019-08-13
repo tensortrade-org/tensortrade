@@ -29,17 +29,17 @@ class CCXTExchange(AssetExchange):
 
         self._performance = pd.DataFrame([], columns=['balance', 'net_worth'])
 
-    def net_worth(self, output_symbol: str = 'BTC') -> float:
-        return super().net_worth(output_symbol=output_symbol)
+    def net_worth(self, base_symbol: str = 'BTC') -> float:
+        return super().net_worth(base_symbol=base_symbol)
 
-    def profit_loss_percent(self, output_symbol: str = 'BTC') -> float:
-        return super().profit_loss_percent(output_symbol=output_symbol)
+    def profit_loss_percent(self, base_symbol: str = 'BTC') -> float:
+        return super().profit_loss_percent(base_symbol=base_symbol)
 
-    def initial_balance(self, symbol: str = 'BTC') -> float:
+    def initial_balance(self, base_symbol: str) -> float:
         return self._initial_balance
 
-    def balance(self, symbol: str = 'BTC') -> float:
-        return self.exchange.fetch_free_balance()[symbol]
+    def balance(self, base_symbol: str = 'BTC') -> float:
+        return self.exchange.fetch_free_balance()[base_symbol]
 
     def portfolio(self) -> Dict[str, float]:
         portfolio = self.exchange.fetch_free_balance()
@@ -63,7 +63,7 @@ class CCXTExchange(AssetExchange):
 
         return spaces.Box(low=0, high=1, shape=(self.observation_window_size, 4), dtype=self.dtype)
 
-    def current_price(self, symbol: str, output_symbol: str = 'BTC'):
+    def current_price(self, symbol: str, base_symbol: str = 'BTC'):
         return self.exchange.fetch_ticker(symbol)['close']
 
     def execute_trade(self, symbol: str, trade_type: TradeType, amount: float, price: float):

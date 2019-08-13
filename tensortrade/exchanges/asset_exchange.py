@@ -16,16 +16,16 @@ class AssetExchange(object, metaclass=ABCMeta):
     def set_max_allowed_slippage_percent(self, max_allowed_slippage_percent):
         self.max_allowed_slippage_percent = max_allowed_slippage_percent
 
-    def net_worth(self, output_symbol) -> float:
+    def net_worth(self, base_symbol) -> float:
         '''Calculate the net worth of the current account in this exchange
 
             # Arguments
-            output_symbol: the notional value, that should be used to display the account value
+            base_symbol: the notional value, that should be used to display the account value
 
             # Returns
             the total portfolio value of this account
         '''
-        net_worth = self.balance(symbol=output_symbol)
+        net_worth = self.balance(base_symbol=base_symbol)
 
         portfolio = self.portfolio()
 
@@ -34,21 +34,21 @@ class AssetExchange(object, metaclass=ABCMeta):
 
         for symbol, amount in portfolio.items():
             current_price = self.current_price(
-                symbol=symbol, output_symbol=output_symbol)
+                symbol=symbol, base_symbol=base_symbol)
             net_worth += current_price * amount
 
         return net_worth
 
-    def profit_loss_percent(self, output_symbol) -> float:
+    def profit_loss_percent(self, base_symbol) -> float:
         '''Calculate the percentage change since the initial balance in the output_symbol notional value'''
-        return float(self.net_worth(output_symbol=output_symbol) / self.initial_balance(symbol=output_symbol))
+        return float(self.net_worth(base_symbol=base_symbol) / self.initial_balance(base_symbol=base_symbol))
 
     @abstractmethod
-    def initial_balance(self, symbol: str) -> float:
+    def initial_balance(self, base_symbol: str) -> float:
         raise NotImplementedError
 
     @abstractmethod
-    def balance(self, symbol: str) -> float:
+    def balance(self, base_symbol: str) -> float:
         raise NotImplementedError
 
     @abstractmethod
@@ -68,7 +68,7 @@ class AssetExchange(object, metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def current_price(self, symbol: str, output_symbol: str) -> float:
+    def current_price(self, symbol: str, base_symbol: str) -> float:
         raise NotImplementedError
 
     @abstractmethod
@@ -80,7 +80,7 @@ class AssetExchange(object, metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def execute_trade(self):
+    def execute_trade(self, **kwargs):
         raise NotImplementedError
 
     @abstractmethod
