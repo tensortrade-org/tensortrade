@@ -5,3 +5,5 @@ gym
 stochastic
 ccxt
 timeserio
+pydot
+graphviz
