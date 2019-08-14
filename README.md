@@ -22,7 +22,7 @@ Allow state-of-the-art learning agents to improve your trading strategies and ta
 *The goal of this framework is to enable fast experimentation, while maintaining production-quality data pipelines.*
 
 
-Read [the documentation](https://tensortrade.readthedocs.io).
+Read [the documentation](https://tensortrade.org).
 
 
 ------------------
