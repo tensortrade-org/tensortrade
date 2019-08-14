@@ -16,7 +16,8 @@
    :maxdepth: 1
    :caption: Examples
 
-   examples/first_example
+   examples/tf2_playground
+   examples/train_and_evaluate
 
 .. toctree::
    :maxdepth: 1

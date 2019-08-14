@@ -12,9 +12,7 @@ Subpackages
 .. toctree::
 
    tensortrade.exchanges.live
-   tensortrade.exchanges.performance
    tensortrade.exchanges.simulated
-   tensortrade.exchanges.slippage
 
 Submodules
 ----------

@@ -6,13 +6,6 @@ tensortrade.agents package
    :undoc-members:
    :show-inheritance:
 
-Subpackages
------------
-
-.. toctree::
-
-   tensortrade.agents.features
-
 Submodules
 ----------
 
