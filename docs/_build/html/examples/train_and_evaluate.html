@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>&lt;no title&gt; &mdash; TensorTrade 0.0.1 documentation</title>
+  <title>Train and Evaluate &mdash; TensorTrade 0.0.1 documentation</title>
   
 
   
@@ -37,7 +37,9 @@
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../_static/theme_overrides.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
-    <link rel="search" title="Search" href="../search.html" /> 
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="tensortrade" href="../api/modules.html" />
+    <link rel="prev" title="Getting Started" href="../overview/getting_started.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -96,6 +98,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../overview/getting_started.html">Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../overview/getting_started.html#installation">Installation</a></li>
 </ul>
+<p class="caption"><span class="caption-text">Examples</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Train and Evaluate</a></li>
+</ul>
 <p class="caption"><span class="caption-text">API reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../api/modules.html">API reference</a></li>
@@ -144,13 +150,13 @@
     
       <li><a href="../index.html">Docs</a> &raquo;</li>
         
-      <li>&lt;no title&gt;</li>
+      <li>Train and Evaluate</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="../_sources/examples/train_and_evaluate.ipynb.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/examples/Train_and_Evaluate.ipynb.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -386,8 +392,10 @@ div.rendered_html tbody tr:hover {
 }
 </style>
 <div class="admonition note">
-<p>This page was generated from <a class="reference external" href="https://github.com/notadamking/tensortrade/blob/f2e683967939d8a70bbb376715a1e4e3ed208530/docs/source/examples/train_and_evaluate.ipynb">docs/source/examples/train_and_evaluate.ipynb</a>.</p>
+<p>This page was generated from <a class="reference external" href="https://github.com/notadamking/tensortrade/blob/b19a5fc79d3f06c6f4700375fbf5b3112ac4f03a/docs/source/examples/Train_and_Evaluate.ipynb">docs/source/examples/Train_and_Evaluate.ipynb</a>.</p>
 </div>
+<div class="section" id="Train-and-Evaluate">
+<h1>Train and Evaluate<a class="headerlink" href="#Train-and-Evaluate" title="Permalink to this headline">¶</a></h1>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
@@ -400,20 +408,20 @@ div.rendered_html tbody tr:hover {
 <span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">import</span> <span class="nn">os</span>
 
-<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)))</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="s1">&#39;../..&#39;</span><span class="p">)))</span>
 
 <span class="kn">from</span> <span class="nn">tensortrade.environments</span> <span class="k">import</span> <span class="n">TradingEnvironment</span>
 <span class="kn">from</span> <span class="nn">tensortrade.environments.actions.discrete</span> <span class="k">import</span> <span class="n">SimpleDiscreteStrategy</span>
 <span class="kn">from</span> <span class="nn">tensortrade.environments.rewards.simple</span> <span class="k">import</span> <span class="n">IncrementalProfitStrategy</span>
-<span class="kn">from</span> <span class="nn">tensortrade.exchanges.simulated</span> <span class="k">import</span> <span class="n">GeneratedExchange</span>
+<span class="kn">from</span> <span class="nn">tensortrade.exchanges.simulated</span> <span class="k">import</span> <span class="n">FBMExchange</span>
 
 <span class="n">env</span> <span class="o">=</span> <span class="n">DummyVecEnv</span><span class="p">([</span><span class="k">lambda</span><span class="p">:</span> <span class="n">TradingEnvironment</span><span class="p">(</span><span class="n">action_strategy</span><span class="o">=</span><span class="n">SimpleDiscreteStrategy</span><span class="p">(),</span>
                                               <span class="n">reward_strategy</span><span class="o">=</span><span class="n">IncrementalProfitStrategy</span><span class="p">(),</span>
-                                              <span class="n">exchange</span><span class="o">=</span><span class="n">GeneratedExchange</span><span class="p">())])</span>
+                                              <span class="n">exchange</span><span class="o">=</span><span class="n">FBMExchange</span><span class="p">())])</span>
 
 <span class="n">agent</span> <span class="o">=</span> <span class="n">PPO2</span><span class="p">(</span><span class="n">MlpLnLstmPolicy</span><span class="p">,</span> <span class="n">env</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">nminibatches</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
-<span class="n">agent</span><span class="o">.</span><span class="n">learn</span><span class="p">(</span><span class="mi">750</span><span class="p">)</span>
+<span class="n">agent</span><span class="o">.</span><span class="n">learn</span><span class="p">(</span><span class="mi">7500</span><span class="p">)</span>
 
 <span class="n">obs</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
 
@@ -421,7 +429,7 @@ div.rendered_html tbody tr:hover {
 <span class="n">state</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="n">exchange</span> <span class="o">=</span> <span class="kc">None</span>
 
-<span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">250</span><span class="p">):</span>
+<span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2500</span><span class="p">):</span>
     <span class="n">action</span><span class="p">,</span> <span class="n">state</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">)</span>
     <span class="n">obs</span><span class="p">,</span> <span class="n">reward</span> <span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
 
@@ -471,181 +479,795 @@ div.rendered_html tbody tr:hover {
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">KeyboardInterrupt</span>                         Traceback (most recent call last)
-<span class="ansi-green-fg">&lt;ipython-input-1-0e298660d99e&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
-<span class="ansi-green-intense-fg ansi-bold">     19</span> agent <span class="ansi-blue-fg">=</span> PPO2<span class="ansi-blue-fg">(</span>MlpLnLstmPolicy<span class="ansi-blue-fg">,</span> env<span class="ansi-blue-fg">,</span> verbose<span class="ansi-blue-fg">=</span><span class="ansi-cyan-fg">1</span><span class="ansi-blue-fg">,</span> nminibatches<span class="ansi-blue-fg">=</span><span class="ansi-cyan-fg">1</span><span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">     20</span>
-<span class="ansi-green-fg">---&gt; 21</span><span class="ansi-red-fg"> </span>agent<span class="ansi-blue-fg">.</span>learn<span class="ansi-blue-fg">(</span><span class="ansi-cyan-fg">7500</span><span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">     22</span>
-<span class="ansi-green-intense-fg ansi-bold">     23</span> obs <span class="ansi-blue-fg">=</span> env<span class="ansi-blue-fg">.</span>reset<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
-
-<span class="ansi-green-fg">~/anaconda3/envs/tensortrade/lib/python3.6/site-packages/stable_baselines/ppo2/ppo2.py</span> in <span class="ansi-cyan-fg">learn</span><span class="ansi-blue-fg">(self, total_timesteps, callback, seed, log_interval, tb_log_name, reset_num_timesteps)</span>
-<span class="ansi-green-intense-fg ansi-bold">    332</span>                 cliprange_vf_now <span class="ansi-blue-fg">=</span> cliprange_vf<span class="ansi-blue-fg">(</span>frac<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">    333</span>                 <span class="ansi-red-fg"># true_reward is the reward without discount</span>
-<span class="ansi-green-fg">--&gt; 334</span><span class="ansi-red-fg">                 </span>obs<span class="ansi-blue-fg">,</span> returns<span class="ansi-blue-fg">,</span> masks<span class="ansi-blue-fg">,</span> actions<span class="ansi-blue-fg">,</span> values<span class="ansi-blue-fg">,</span> neglogpacs<span class="ansi-blue-fg">,</span> states<span class="ansi-blue-fg">,</span> ep_infos<span class="ansi-blue-fg">,</span> true_reward <span class="ansi-blue-fg">=</span> runner<span class="ansi-blue-fg">.</span>run<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">    335</span>                 self<span class="ansi-blue-fg">.</span>num_timesteps <span class="ansi-blue-fg">+=</span> self<span class="ansi-blue-fg">.</span>n_batch
-<span class="ansi-green-intense-fg ansi-bold">    336</span>                 ep_info_buf<span class="ansi-blue-fg">.</span>extend<span class="ansi-blue-fg">(</span>ep_infos<span class="ansi-blue-fg">)</span>
-
-<span class="ansi-green-fg">~/anaconda3/envs/tensortrade/lib/python3.6/site-packages/stable_baselines/ppo2/ppo2.py</span> in <span class="ansi-cyan-fg">run</span><span class="ansi-blue-fg">(self)</span>
-<span class="ansi-green-intense-fg ansi-bold">    473</span>             <span class="ansi-green-fg">if</span> isinstance<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">.</span>env<span class="ansi-blue-fg">.</span>action_space<span class="ansi-blue-fg">,</span> gym<span class="ansi-blue-fg">.</span>spaces<span class="ansi-blue-fg">.</span>Box<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-intense-fg ansi-bold">    474</span>                 clipped_actions <span class="ansi-blue-fg">=</span> np<span class="ansi-blue-fg">.</span>clip<span class="ansi-blue-fg">(</span>actions<span class="ansi-blue-fg">,</span> self<span class="ansi-blue-fg">.</span>env<span class="ansi-blue-fg">.</span>action_space<span class="ansi-blue-fg">.</span>low<span class="ansi-blue-fg">,</span> self<span class="ansi-blue-fg">.</span>env<span class="ansi-blue-fg">.</span>action_space<span class="ansi-blue-fg">.</span>high<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-fg">--&gt; 475</span><span class="ansi-red-fg">             </span>self<span class="ansi-blue-fg">.</span>obs<span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">:</span><span class="ansi-blue-fg">]</span><span class="ansi-blue-fg">,</span> rewards<span class="ansi-blue-fg">,</span> self<span class="ansi-blue-fg">.</span>dones<span class="ansi-blue-fg">,</span> infos <span class="ansi-blue-fg">=</span> self<span class="ansi-blue-fg">.</span>env<span class="ansi-blue-fg">.</span>step<span class="ansi-blue-fg">(</span>clipped_actions<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">    476</span>             <span class="ansi-green-fg">for</span> info <span class="ansi-green-fg">in</span> infos<span class="ansi-blue-fg">:</span>
-<span class="ansi-green-intense-fg ansi-bold">    477</span>                 maybe_ep_info <span class="ansi-blue-fg">=</span> info<span class="ansi-blue-fg">.</span>get<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">&#39;episode&#39;</span><span class="ansi-blue-fg">)</span>
-
-<span class="ansi-green-fg">~/anaconda3/envs/tensortrade/lib/python3.6/site-packages/stable_baselines/common/vec_env/base_vec_env.py</span> in <span class="ansi-cyan-fg">step</span><span class="ansi-blue-fg">(self, actions)</span>
-<span class="ansi-green-intense-fg ansi-bold">    132</span>         &#34;&#34;&#34;
-<span class="ansi-green-intense-fg ansi-bold">    133</span>         self<span class="ansi-blue-fg">.</span>step_async<span class="ansi-blue-fg">(</span>actions<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-fg">--&gt; 134</span><span class="ansi-red-fg">         </span><span class="ansi-green-fg">return</span> self<span class="ansi-blue-fg">.</span>step_wait<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">    135</span>
-<span class="ansi-green-intense-fg ansi-bold">    136</span>     <span class="ansi-green-fg">def</span> get_images<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
-
-<span class="ansi-green-fg">~/anaconda3/envs/tensortrade/lib/python3.6/site-packages/stable_baselines/common/vec_env/dummy_vec_env.py</span> in <span class="ansi-cyan-fg">step_wait</span><span class="ansi-blue-fg">(self)</span>
-<span class="ansi-green-intense-fg ansi-bold">     38</span>         <span class="ansi-green-fg">for</span> env_idx <span class="ansi-green-fg">in</span> range<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">.</span>num_envs<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-intense-fg ansi-bold">     39</span>             obs<span class="ansi-blue-fg">,</span> self<span class="ansi-blue-fg">.</span>buf_rews<span class="ansi-blue-fg">[</span>env_idx<span class="ansi-blue-fg">]</span><span class="ansi-blue-fg">,</span> self<span class="ansi-blue-fg">.</span>buf_dones<span class="ansi-blue-fg">[</span>env_idx<span class="ansi-blue-fg">]</span><span class="ansi-blue-fg">,</span> self<span class="ansi-blue-fg">.</span>buf_infos<span class="ansi-blue-fg">[</span>env_idx<span class="ansi-blue-fg">]</span> <span class="ansi-blue-fg">=</span><span class="ansi-red-fg">\</span>
-<span class="ansi-green-fg">---&gt; 40</span><span class="ansi-red-fg">                 </span>self<span class="ansi-blue-fg">.</span>envs<span class="ansi-blue-fg">[</span>env_idx<span class="ansi-blue-fg">]</span><span class="ansi-blue-fg">.</span>step<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">.</span>actions<span class="ansi-blue-fg">[</span>env_idx<span class="ansi-blue-fg">]</span><span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">     41</span>             <span class="ansi-green-fg">if</span> self<span class="ansi-blue-fg">.</span>buf_dones<span class="ansi-blue-fg">[</span>env_idx<span class="ansi-blue-fg">]</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-intense-fg ansi-bold">     42</span>                 <span class="ansi-red-fg"># save final observation where user can get it, then reset</span>
-
-<span class="ansi-green-fg">~/Desktop/Hedger/tensortrade/tensortrade/environments/trading_environment.py</span> in <span class="ansi-cyan-fg">step</span><span class="ansi-blue-fg">(self, action)</span>
-<span class="ansi-green-intense-fg ansi-bold">     99</span>         &#39;&#39;&#39;
-<span class="ansi-green-intense-fg ansi-bold">    100</span>
-<span class="ansi-green-fg">--&gt; 101</span><span class="ansi-red-fg">         </span>self<span class="ansi-blue-fg">.</span>_take_action<span class="ansi-blue-fg">(</span>action<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">    102</span>
-<span class="ansi-green-intense-fg ansi-bold">    103</span>         obs <span class="ansi-blue-fg">=</span> self<span class="ansi-blue-fg">.</span>_next_observation<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
-
-<span class="ansi-green-fg">~/Desktop/Hedger/tensortrade/tensortrade/environments/trading_environment.py</span> in <span class="ansi-cyan-fg">_take_action</span><span class="ansi-blue-fg">(self, action)</span>
-<span class="ansi-green-intense-fg ansi-bold">     58</span>         symbol<span class="ansi-blue-fg">,</span> trade_type<span class="ansi-blue-fg">,</span> amount<span class="ansi-blue-fg">,</span> price <span class="ansi-blue-fg">=</span> self<span class="ansi-blue-fg">.</span>action_strategy<span class="ansi-blue-fg">.</span>suggest_trade<span class="ansi-blue-fg">(</span>action<span class="ansi-blue-fg">=</span>action<span class="ansi-blue-fg">,</span> exchange<span class="ansi-blue-fg">=</span>self<span class="ansi-blue-fg">.</span>exchange<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">     59</span>
-<span class="ansi-green-fg">---&gt; 60</span><span class="ansi-red-fg">         </span>self<span class="ansi-blue-fg">.</span>exchange<span class="ansi-blue-fg">.</span>execute_trade<span class="ansi-blue-fg">(</span>symbol<span class="ansi-blue-fg">=</span>symbol<span class="ansi-blue-fg">,</span> trade_type<span class="ansi-blue-fg">=</span>trade_type<span class="ansi-blue-fg">,</span> amount<span class="ansi-blue-fg">=</span>amount<span class="ansi-blue-fg">,</span> price<span class="ansi-blue-fg">=</span>price<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">     61</span>
-<span class="ansi-green-intense-fg ansi-bold">     62</span>     <span class="ansi-green-fg">def</span> _next_observation<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
-
-<span class="ansi-green-fg">~/Desktop/Hedger/tensortrade/tensortrade/exchanges/simulated/generated_exchange.py</span> in <span class="ansi-cyan-fg">execute_trade</span><span class="ansi-blue-fg">(self, symbol, trade_type, amount, price)</span>
-<span class="ansi-green-intense-fg ansi-bold">    119</span>                                  trade_type<span class="ansi-blue-fg">=</span>trade_type<span class="ansi-blue-fg">,</span>
-<span class="ansi-green-intense-fg ansi-bold">    120</span>                                  fill_amount<span class="ansi-blue-fg">=</span>fill_amount<span class="ansi-blue-fg">,</span>
-<span class="ansi-green-fg">--&gt; 121</span><span class="ansi-red-fg">                                  fill_price=fill_price)
-</span><span class="ansi-green-intense-fg ansi-bold">    122</span>
-<span class="ansi-green-intense-fg ansi-bold">    123</span>     <span class="ansi-green-fg">def</span> has_next_observation<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
-
-<span class="ansi-green-fg">~/Desktop/Hedger/tensortrade/tensortrade/exchanges/simulated/generated_exchange.py</span> in <span class="ansi-cyan-fg">_update_account</span><span class="ansi-blue-fg">(self, symbol, trade_type, fill_amount, fill_price)</span>
-<span class="ansi-green-intense-fg ansi-bold">     91</span>             <span class="ansi-blue-fg">&#39;balance&#39;</span><span class="ansi-blue-fg">:</span> self<span class="ansi-blue-fg">.</span>_balance<span class="ansi-blue-fg">,</span>
-<span class="ansi-green-intense-fg ansi-bold">     92</span>             <span class="ansi-blue-fg">&#39;net_worth&#39;</span><span class="ansi-blue-fg">:</span> self<span class="ansi-blue-fg">.</span>net_worth<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">,</span>
-<span class="ansi-green-fg">---&gt; 93</span><span class="ansi-red-fg">         }, ignore_index=True)
-</span><span class="ansi-green-intense-fg ansi-bold">     94</span>
-<span class="ansi-green-intense-fg ansi-bold">     95</span>     <span class="ansi-green-fg">def</span> execute_trade<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">,</span> symbol<span class="ansi-blue-fg">:</span> str<span class="ansi-blue-fg">,</span> trade_type<span class="ansi-blue-fg">:</span> TradeType<span class="ansi-blue-fg">,</span> amount<span class="ansi-blue-fg">:</span> float<span class="ansi-blue-fg">,</span> price<span class="ansi-blue-fg">:</span> float<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
-
-<span class="ansi-green-fg">~/anaconda3/envs/tensortrade/lib/python3.6/site-packages/pandas/core/frame.py</span> in <span class="ansi-cyan-fg">append</span><span class="ansi-blue-fg">(self, other, ignore_index, verify_integrity, sort)</span>
-<span class="ansi-green-intense-fg ansi-bold">   7114</span>             ignore_index<span class="ansi-blue-fg">=</span>ignore_index<span class="ansi-blue-fg">,</span>
-<span class="ansi-green-intense-fg ansi-bold">   7115</span>             verify_integrity<span class="ansi-blue-fg">=</span>verify_integrity<span class="ansi-blue-fg">,</span>
-<span class="ansi-green-fg">-&gt; 7116</span><span class="ansi-red-fg">             </span>sort<span class="ansi-blue-fg">=</span>sort<span class="ansi-blue-fg">,</span>
-<span class="ansi-green-intense-fg ansi-bold">   7117</span>         )
-<span class="ansi-green-intense-fg ansi-bold">   7118</span>
-
-<span class="ansi-green-fg">~/anaconda3/envs/tensortrade/lib/python3.6/site-packages/pandas/core/reshape/concat.py</span> in <span class="ansi-cyan-fg">concat</span><span class="ansi-blue-fg">(objs, axis, join, join_axes, ignore_index, keys, levels, names, verify_integrity, sort, copy)</span>
-<span class="ansi-green-intense-fg ansi-bold">    256</span>     )
-<span class="ansi-green-intense-fg ansi-bold">    257</span>
-<span class="ansi-green-fg">--&gt; 258</span><span class="ansi-red-fg">     </span><span class="ansi-green-fg">return</span> op<span class="ansi-blue-fg">.</span>get_result<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">    259</span>
-<span class="ansi-green-intense-fg ansi-bold">    260</span>
-
-<span class="ansi-green-fg">~/anaconda3/envs/tensortrade/lib/python3.6/site-packages/pandas/core/reshape/concat.py</span> in <span class="ansi-cyan-fg">get_result</span><span class="ansi-blue-fg">(self)</span>
-<span class="ansi-green-intense-fg ansi-bold">    471</span>
-<span class="ansi-green-intense-fg ansi-bold">    472</span>             new_data = concatenate_block_managers(
-<span class="ansi-green-fg">--&gt; 473</span><span class="ansi-red-fg">                 </span>mgrs_indexers<span class="ansi-blue-fg">,</span> self<span class="ansi-blue-fg">.</span>new_axes<span class="ansi-blue-fg">,</span> concat_axis<span class="ansi-blue-fg">=</span>self<span class="ansi-blue-fg">.</span>axis<span class="ansi-blue-fg">,</span> copy<span class="ansi-blue-fg">=</span>self<span class="ansi-blue-fg">.</span>copy
-<span class="ansi-green-intense-fg ansi-bold">    474</span>             )
-<span class="ansi-green-intense-fg ansi-bold">    475</span>             <span class="ansi-green-fg">if</span> <span class="ansi-green-fg">not</span> self<span class="ansi-blue-fg">.</span>copy<span class="ansi-blue-fg">:</span>
-
-<span class="ansi-green-fg">~/anaconda3/envs/tensortrade/lib/python3.6/site-packages/pandas/core/internals/managers.py</span> in <span class="ansi-cyan-fg">concatenate_block_managers</span><span class="ansi-blue-fg">(mgrs_indexers, axes, concat_axis, copy)</span>
-<span class="ansi-green-intense-fg ansi-bold">   2051</span>         <span class="ansi-green-fg">else</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-intense-fg ansi-bold">   2052</span>             b = make_block(
-<span class="ansi-green-fg">-&gt; 2053</span><span class="ansi-red-fg">                 </span>concatenate_join_units<span class="ansi-blue-fg">(</span>join_units<span class="ansi-blue-fg">,</span> concat_axis<span class="ansi-blue-fg">,</span> copy<span class="ansi-blue-fg">=</span>copy<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">,</span>
-<span class="ansi-green-intense-fg ansi-bold">   2054</span>                 placement<span class="ansi-blue-fg">=</span>placement<span class="ansi-blue-fg">,</span>
-<span class="ansi-green-intense-fg ansi-bold">   2055</span>             )
-
-<span class="ansi-green-fg">~/anaconda3/envs/tensortrade/lib/python3.6/site-packages/pandas/core/internals/concat.py</span> in <span class="ansi-cyan-fg">concatenate_join_units</span><span class="ansi-blue-fg">(join_units, concat_axis, copy)</span>
-<span class="ansi-green-intense-fg ansi-bold">    247</span>         <span class="ansi-green-fg">raise</span> AssertionError<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">&#34;Concatenating join units along axis0&#34;</span><span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">    248</span>
-<span class="ansi-green-fg">--&gt; 249</span><span class="ansi-red-fg">     </span>empty_dtype<span class="ansi-blue-fg">,</span> upcasted_na <span class="ansi-blue-fg">=</span> get_empty_dtype_and_na<span class="ansi-blue-fg">(</span>join_units<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">    250</span>
-<span class="ansi-green-intense-fg ansi-bold">    251</span>     to_concat = [
-
-<span class="ansi-green-fg">~/anaconda3/envs/tensortrade/lib/python3.6/site-packages/pandas/core/internals/concat.py</span> in <span class="ansi-cyan-fg">get_empty_dtype_and_na</span><span class="ansi-blue-fg">(join_units)</span>
-<span class="ansi-green-intense-fg ansi-bold">    331</span>         <span class="ansi-red-fg"># are only null blocks, when same upcasting rules must be applied to</span>
-<span class="ansi-green-intense-fg ansi-bold">    332</span>         <span class="ansi-red-fg"># null upcast classes.</span>
-<span class="ansi-green-fg">--&gt; 333</span><span class="ansi-red-fg">         </span><span class="ansi-green-fg">if</span> unit<span class="ansi-blue-fg">.</span>is_na<span class="ansi-blue-fg">:</span>
-<span class="ansi-green-intense-fg ansi-bold">    334</span>             null_upcast_classes<span class="ansi-blue-fg">[</span>upcast_cls<span class="ansi-blue-fg">]</span><span class="ansi-blue-fg">.</span>append<span class="ansi-blue-fg">(</span>dtype<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">    335</span>         <span class="ansi-green-fg">else</span><span class="ansi-blue-fg">:</span>
-
-<span class="ansi-green-fg">pandas/_libs/properties.pyx</span> in <span class="ansi-cyan-fg">pandas._libs.properties.CachedProperty.__get__</span><span class="ansi-blue-fg">()</span>
-
-<span class="ansi-green-fg">~/anaconda3/envs/tensortrade/lib/python3.6/site-packages/pandas/core/internals/concat.py</span> in <span class="ansi-cyan-fg">is_na</span><span class="ansi-blue-fg">(self)</span>
-<span class="ansi-green-intense-fg ansi-bold">    170</span>         chunk_len <span class="ansi-blue-fg">=</span> max<span class="ansi-blue-fg">(</span>total_len <span class="ansi-blue-fg">//</span> <span class="ansi-cyan-fg">40</span><span class="ansi-blue-fg">,</span> <span class="ansi-cyan-fg">1000</span><span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">    171</span>         <span class="ansi-green-fg">for</span> i <span class="ansi-green-fg">in</span> range<span class="ansi-blue-fg">(</span><span class="ansi-cyan-fg">0</span><span class="ansi-blue-fg">,</span> total_len<span class="ansi-blue-fg">,</span> chunk_len<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-fg">--&gt; 172</span><span class="ansi-red-fg">             </span><span class="ansi-green-fg">if</span> <span class="ansi-green-fg">not</span> isna<span class="ansi-blue-fg">(</span>values_flat<span class="ansi-blue-fg">[</span>i <span class="ansi-blue-fg">:</span> i <span class="ansi-blue-fg">+</span> chunk_len<span class="ansi-blue-fg">]</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">.</span>all<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-intense-fg ansi-bold">    173</span>                 <span class="ansi-green-fg">return</span> <span class="ansi-green-fg">False</span>
-<span class="ansi-green-intense-fg ansi-bold">    174</span>
-
-<span class="ansi-green-fg">~/anaconda3/envs/tensortrade/lib/python3.6/site-packages/pandas/core/dtypes/missing.py</span> in <span class="ansi-cyan-fg">isna</span><span class="ansi-blue-fg">(obj)</span>
-<span class="ansi-green-intense-fg ansi-bold">    120</span>     Name<span class="ansi-blue-fg">:</span> <span class="ansi-cyan-fg">1</span><span class="ansi-blue-fg">,</span> dtype<span class="ansi-blue-fg">:</span> bool
-<span class="ansi-green-intense-fg ansi-bold">    121</span>     &#34;&#34;&#34;
-<span class="ansi-green-fg">--&gt; 122</span><span class="ansi-red-fg">     </span><span class="ansi-green-fg">return</span> _isna<span class="ansi-blue-fg">(</span>obj<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">    123</span>
-<span class="ansi-green-intense-fg ansi-bold">    124</span>
-
-<span class="ansi-green-fg">~/anaconda3/envs/tensortrade/lib/python3.6/site-packages/pandas/core/dtypes/missing.py</span> in <span class="ansi-cyan-fg">_isna_new</span><span class="ansi-blue-fg">(obj)</span>
-<span class="ansi-green-intense-fg ansi-bold">    143</span>         ),
-<span class="ansi-green-intense-fg ansi-bold">    144</span>     ):
-<span class="ansi-green-fg">--&gt; 145</span><span class="ansi-red-fg">         </span><span class="ansi-green-fg">return</span> _isna_ndarraylike<span class="ansi-blue-fg">(</span>obj<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">    146</span>     <span class="ansi-green-fg">elif</span> isinstance<span class="ansi-blue-fg">(</span>obj<span class="ansi-blue-fg">,</span> ABCGeneric<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-intense-fg ansi-bold">    147</span>         <span class="ansi-green-fg">return</span> obj<span class="ansi-blue-fg">.</span>_constructor<span class="ansi-blue-fg">(</span>obj<span class="ansi-blue-fg">.</span>_data<span class="ansi-blue-fg">.</span>isna<span class="ansi-blue-fg">(</span>func<span class="ansi-blue-fg">=</span>isna<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">)</span>
-
-<span class="ansi-green-fg">~/anaconda3/envs/tensortrade/lib/python3.6/site-packages/pandas/core/dtypes/missing.py</span> in <span class="ansi-cyan-fg">_isna_ndarraylike</span><span class="ansi-blue-fg">(obj)</span>
-<span class="ansi-green-intense-fg ansi-bold">    246</span>             result<span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">...</span><span class="ansi-blue-fg">]</span> <span class="ansi-blue-fg">=</span> vec<span class="ansi-blue-fg">.</span>reshape<span class="ansi-blue-fg">(</span>shape<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">    247</span>
-<span class="ansi-green-fg">--&gt; 248</span><span class="ansi-red-fg">     </span><span class="ansi-green-fg">elif</span> needs_i8_conversion<span class="ansi-blue-fg">(</span>dtype<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-intense-fg ansi-bold">    249</span>         <span class="ansi-red-fg"># this is the NaT pattern</span>
-<span class="ansi-green-intense-fg ansi-bold">    250</span>         result <span class="ansi-blue-fg">=</span> values<span class="ansi-blue-fg">.</span>view<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">&#34;i8&#34;</span><span class="ansi-blue-fg">)</span> <span class="ansi-blue-fg">==</span> iNaT
-
-<span class="ansi-green-fg">~/anaconda3/envs/tensortrade/lib/python3.6/site-packages/pandas/core/dtypes/common.py</span> in <span class="ansi-cyan-fg">needs_i8_conversion</span><span class="ansi-blue-fg">(arr_or_dtype)</span>
-<span class="ansi-green-intense-fg ansi-bold">   1502</span>         <span class="ansi-green-fg">return</span> <span class="ansi-green-fg">False</span>
-<span class="ansi-green-intense-fg ansi-bold">   1503</span>     return (
-<span class="ansi-green-fg">-&gt; 1504</span><span class="ansi-red-fg">         </span>is_datetime_or_timedelta_dtype<span class="ansi-blue-fg">(</span>arr_or_dtype<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">   1505</span>         <span class="ansi-green-fg">or</span> is_datetime64tz_dtype<span class="ansi-blue-fg">(</span>arr_or_dtype<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">   1506</span>         <span class="ansi-green-fg">or</span> is_period_dtype<span class="ansi-blue-fg">(</span>arr_or_dtype<span class="ansi-blue-fg">)</span>
-
-<span class="ansi-green-fg">~/anaconda3/envs/tensortrade/lib/python3.6/site-packages/pandas/core/dtypes/common.py</span> in <span class="ansi-cyan-fg">is_datetime_or_timedelta_dtype</span><span class="ansi-blue-fg">(arr_or_dtype)</span>
-<span class="ansi-green-intense-fg ansi-bold">   1318</span>     &#34;&#34;&#34;
-<span class="ansi-green-intense-fg ansi-bold">   1319</span>
-<span class="ansi-green-fg">-&gt; 1320</span><span class="ansi-red-fg">     </span><span class="ansi-green-fg">return</span> _is_dtype_type<span class="ansi-blue-fg">(</span>arr_or_dtype<span class="ansi-blue-fg">,</span> classes<span class="ansi-blue-fg">(</span>np<span class="ansi-blue-fg">.</span>datetime64<span class="ansi-blue-fg">,</span> np<span class="ansi-blue-fg">.</span>timedelta64<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">   1321</span>
-<span class="ansi-green-intense-fg ansi-bold">   1322</span>
-
-<span class="ansi-red-fg">KeyboardInterrupt</span>:
+-------------------------------------
+| approxkl           | 0.015686866  |
+| clipfrac           | 0.19921875   |
+| explained_variance | -11.1        |
+| fps                | 7            |
+| n_updates          | 1            |
+| policy_entropy     | 3.134857     |
+| policy_loss        | -0.029379755 |
+| serial_timesteps   | 128          |
+| time_elapsed       | 2.15e-06     |
+| total_timesteps    | 128          |
+| value_loss         | 0.020201866  |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.004347246  |
+| clipfrac           | 0.056640625  |
+| explained_variance | -31.4        |
+| fps                | 67           |
+| n_updates          | 2            |
+| policy_entropy     | 3.1364708    |
+| policy_loss        | -0.034043223 |
+| serial_timesteps   | 256          |
+| time_elapsed       | 17.8         |
+| total_timesteps    | 256          |
+| value_loss         | 0.016545191  |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.0041049235 |
+| clipfrac           | 0.056640625  |
+| explained_variance | -26.2        |
+| fps                | 71           |
+| n_updates          | 3            |
+| policy_entropy     | 3.1393285    |
+| policy_loss        | -0.032377902 |
+| serial_timesteps   | 384          |
+| time_elapsed       | 19.7         |
+| total_timesteps    | 384          |
+| value_loss         | 0.012273217  |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.006468634  |
+| clipfrac           | 0.09375      |
+| explained_variance | -2.42        |
+| fps                | 69           |
+| n_updates          | 4            |
+| policy_entropy     | 3.1348906    |
+| policy_loss        | -0.03826902  |
+| serial_timesteps   | 512          |
+| time_elapsed       | 21.5         |
+| total_timesteps    | 512          |
+| value_loss         | 0.0066311737 |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.007191459  |
+| clipfrac           | 0.1015625    |
+| explained_variance | -16          |
+| fps                | 69           |
+| n_updates          | 5            |
+| policy_entropy     | 3.1227515    |
+| policy_loss        | -0.038608577 |
+| serial_timesteps   | 640          |
+| time_elapsed       | 23.3         |
+| total_timesteps    | 640          |
+| value_loss         | 0.012630895  |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.0045953994 |
+| clipfrac           | 0.060546875  |
+| explained_variance | -3.16        |
+| fps                | 68           |
+| n_updates          | 6            |
+| policy_entropy     | 3.1100907    |
+| policy_loss        | -0.035558037 |
+| serial_timesteps   | 768          |
+| time_elapsed       | 25.2         |
+| total_timesteps    | 768          |
+| value_loss         | 0.009172132  |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.009143541  |
+| clipfrac           | 0.103515625  |
+| explained_variance | -19.3        |
+| fps                | 71           |
+| n_updates          | 7            |
+| policy_entropy     | 3.1050773    |
+| policy_loss        | -0.035926923 |
+| serial_timesteps   | 896          |
+| time_elapsed       | 27           |
+| total_timesteps    | 896          |
+| value_loss         | 0.0067858095 |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.003506794  |
+| clipfrac           | 0.037109375  |
+| explained_variance | -11.9        |
+| fps                | 70           |
+| n_updates          | 8            |
+| policy_entropy     | 3.1087527    |
+| policy_loss        | -0.03510943  |
+| serial_timesteps   | 1024         |
+| time_elapsed       | 28.8         |
+| total_timesteps    | 1024         |
+| value_loss         | 0.0060115107 |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.0057391115 |
+| clipfrac           | 0.076171875  |
+| explained_variance | -21.9        |
+| fps                | 68           |
+| n_updates          | 9            |
+| policy_entropy     | 3.0899982    |
+| policy_loss        | -0.04027173  |
+| serial_timesteps   | 1152         |
+| time_elapsed       | 30.7         |
+| total_timesteps    | 1152         |
+| value_loss         | 0.008043544  |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.007443852  |
+| clipfrac           | 0.10546875   |
+| explained_variance | -6.41        |
+| fps                | 71           |
+| n_updates          | 10           |
+| policy_entropy     | 3.0799294    |
+| policy_loss        | -0.030166402 |
+| serial_timesteps   | 1280         |
+| time_elapsed       | 32.5         |
+| total_timesteps    | 1280         |
+| value_loss         | 0.007881636  |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.0044689896 |
+| clipfrac           | 0.060546875  |
+| explained_variance | -3           |
+| fps                | 69           |
+| n_updates          | 11           |
+| policy_entropy     | 3.077082     |
+| policy_loss        | -0.02097323  |
+| serial_timesteps   | 1408         |
+| time_elapsed       | 34.3         |
+| total_timesteps    | 1408         |
+| value_loss         | 0.005172204  |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.0050849114 |
+| clipfrac           | 0.06640625   |
+| explained_variance | -2.86        |
+| fps                | 71           |
+| n_updates          | 12           |
+| policy_entropy     | 3.0792596    |
+| policy_loss        | -0.031660907 |
+| serial_timesteps   | 1536         |
+| time_elapsed       | 36.2         |
+| total_timesteps    | 1536         |
+| value_loss         | 0.0035120992 |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.005501705  |
+| clipfrac           | 0.072265625  |
+| explained_variance | -6.78        |
+| fps                | 69           |
+| n_updates          | 13           |
+| policy_entropy     | 3.0667455    |
+| policy_loss        | -0.0353304   |
+| serial_timesteps   | 1664         |
+| time_elapsed       | 38           |
+| total_timesteps    | 1664         |
+| value_loss         | 0.0035197046 |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.0034935924 |
+| clipfrac           | 0.03515625   |
+| explained_variance | -1.97        |
+| fps                | 70           |
+| n_updates          | 14           |
+| policy_entropy     | 3.0474973    |
+| policy_loss        | -0.02214749  |
+| serial_timesteps   | 1792         |
+| time_elapsed       | 39.8         |
+| total_timesteps    | 1792         |
+| value_loss         | 0.008100608  |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.0050987806 |
+| clipfrac           | 0.07421875   |
+| explained_variance | -7.62        |
+| fps                | 69           |
+| n_updates          | 15           |
+| policy_entropy     | 3.013968     |
+| policy_loss        | -0.035785682 |
+| serial_timesteps   | 1920         |
+| time_elapsed       | 41.6         |
+| total_timesteps    | 1920         |
+| value_loss         | 0.005753589  |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.0042615556 |
+| clipfrac           | 0.048828125  |
+| explained_variance | -3.22        |
+| fps                | 69           |
+| n_updates          | 16           |
+| policy_entropy     | 3.054264     |
+| policy_loss        | -0.025227852 |
+| serial_timesteps   | 2048         |
+| time_elapsed       | 43.5         |
+| total_timesteps    | 2048         |
+| value_loss         | 0.0059471955 |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.0046438547 |
+| clipfrac           | 0.06640625   |
+| explained_variance | -11.8        |
+| fps                | 69           |
+| n_updates          | 17           |
+| policy_entropy     | 3.0322256    |
+| policy_loss        | -0.035015304 |
+| serial_timesteps   | 2176         |
+| time_elapsed       | 45.3         |
+| total_timesteps    | 2176         |
+| value_loss         | 0.0070840833 |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.003370538  |
+| clipfrac           | 0.029296875  |
+| explained_variance | -13.7        |
+| fps                | 70           |
+| n_updates          | 18           |
+| policy_entropy     | 3.0704434    |
+| policy_loss        | -0.023219515 |
+| serial_timesteps   | 2304         |
+| time_elapsed       | 47.2         |
+| total_timesteps    | 2304         |
+| value_loss         | 0.0028484792 |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.006409786  |
+| clipfrac           | 0.091796875  |
+| explained_variance | -9.48        |
+| fps                | 70           |
+| n_updates          | 19           |
+| policy_entropy     | 2.987904     |
+| policy_loss        | -0.035213843 |
+| serial_timesteps   | 2432         |
+| time_elapsed       | 49           |
+| total_timesteps    | 2432         |
+| value_loss         | 0.0047854204 |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.006497549  |
+| clipfrac           | 0.09375      |
+| explained_variance | -11.7        |
+| fps                | 68           |
+| n_updates          | 20           |
+| policy_entropy     | 2.9115448    |
+| policy_loss        | -0.030990526 |
+| serial_timesteps   | 2560         |
+| time_elapsed       | 50.8         |
+| total_timesteps    | 2560         |
+| value_loss         | 0.004396537  |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.0057365038 |
+| clipfrac           | 0.076171875  |
+| explained_variance | -3.01        |
+| fps                | 71           |
+| n_updates          | 21           |
+| policy_entropy     | 3.0100975    |
+| policy_loss        | -0.030712336 |
+| serial_timesteps   | 2688         |
+| time_elapsed       | 52.7         |
+| total_timesteps    | 2688         |
+| value_loss         | 0.0028251242 |
+-------------------------------------
+------------------------------------
+| approxkl           | 0.012113415 |
+| clipfrac           | 0.17773438  |
+| explained_variance | -6.15       |
+| fps                | 67          |
+| n_updates          | 22          |
+| policy_entropy     | 2.9067888   |
+| policy_loss        | -0.03025525 |
+| serial_timesteps   | 2816        |
+| time_elapsed       | 54.5        |
+| total_timesteps    | 2816        |
+| value_loss         | 0.00661547  |
+------------------------------------
+-------------------------------------
+| approxkl           | 0.0146746095 |
+| clipfrac           | 0.21484375   |
+| explained_variance | -8.17        |
+| fps                | 69           |
+| n_updates          | 23           |
+| policy_entropy     | 2.944471     |
+| policy_loss        | -0.025846934 |
+| serial_timesteps   | 2944         |
+| time_elapsed       | 56.4         |
+| total_timesteps    | 2944         |
+| value_loss         | 0.007340616  |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.0034283446 |
+| clipfrac           | 0.046875     |
+| explained_variance | -14.4        |
+| fps                | 69           |
+| n_updates          | 24           |
+| policy_entropy     | 2.9670064    |
+| policy_loss        | -0.030686371 |
+| serial_timesteps   | 3072         |
+| time_elapsed       | 58.2         |
+| total_timesteps    | 3072         |
+| value_loss         | 0.003749698  |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.0066144066 |
+| clipfrac           | 0.08203125   |
+| explained_variance | -15          |
+| fps                | 69           |
+| n_updates          | 25           |
+| policy_entropy     | 2.890479     |
+| policy_loss        | -0.03531905  |
+| serial_timesteps   | 3200         |
+| time_elapsed       | 60           |
+| total_timesteps    | 3200         |
+| value_loss         | 0.005126408  |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.003699907  |
+| clipfrac           | 0.046875     |
+| explained_variance | -16.7        |
+| fps                | 68           |
+| n_updates          | 26           |
+| policy_entropy     | 2.92478      |
+| policy_loss        | -0.018177195 |
+| serial_timesteps   | 3328         |
+| time_elapsed       | 61.9         |
+| total_timesteps    | 3328         |
+| value_loss         | 0.0030545066 |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.002150026  |
+| clipfrac           | 0.01953125   |
+| explained_variance | -5.88        |
+| fps                | 70           |
+| n_updates          | 27           |
+| policy_entropy     | 2.8929558    |
+| policy_loss        | -0.021653675 |
+| serial_timesteps   | 3456         |
+| time_elapsed       | 63.7         |
+| total_timesteps    | 3456         |
+| value_loss         | 0.0018296412 |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.0032687292 |
+| clipfrac           | 0.0390625    |
+| explained_variance | -1.25        |
+| fps                | 68           |
+| n_updates          | 28           |
+| policy_entropy     | 2.8655734    |
+| policy_loss        | -0.019367348 |
+| serial_timesteps   | 3584         |
+| time_elapsed       | 65.6         |
+| total_timesteps    | 3584         |
+| value_loss         | 0.0035883968 |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.0031826072 |
+| clipfrac           | 0.03515625   |
+| explained_variance | -13.6        |
+| fps                | 71           |
+| n_updates          | 29           |
+| policy_entropy     | 3.0322828    |
+| policy_loss        | -0.019959493 |
+| serial_timesteps   | 3712         |
+| time_elapsed       | 67.4         |
+| total_timesteps    | 3712         |
+| value_loss         | 0.0012646548 |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.0046773874 |
+| clipfrac           | 0.060546875  |
+| explained_variance | -4.85        |
+| fps                | 69           |
+| n_updates          | 30           |
+| policy_entropy     | 2.8930268    |
+| policy_loss        | -0.023547584 |
+| serial_timesteps   | 3840         |
+| time_elapsed       | 69.2         |
+| total_timesteps    | 3840         |
+| value_loss         | 0.0041705496 |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.0043210257 |
+| clipfrac           | 0.068359375  |
+| explained_variance | -6.2         |
+| fps                | 69           |
+| n_updates          | 31           |
+| policy_entropy     | 2.8908312    |
+| policy_loss        | -0.019220026 |
+| serial_timesteps   | 3968         |
+| time_elapsed       | 71.1         |
+| total_timesteps    | 3968         |
+| value_loss         | 0.0037358692 |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.0040041767 |
+| clipfrac           | 0.04296875   |
+| explained_variance | -6.06        |
+| fps                | 68           |
+| n_updates          | 32           |
+| policy_entropy     | 2.9260547    |
+| policy_loss        | -0.016887084 |
+| serial_timesteps   | 4096         |
+| time_elapsed       | 72.9         |
+| total_timesteps    | 4096         |
+| value_loss         | 0.0020238855 |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.0012021571 |
+| clipfrac           | 0.0078125    |
+| explained_variance | -12.6        |
+| fps                | 69           |
+| n_updates          | 33           |
+| policy_entropy     | 2.93147      |
+| policy_loss        | -0.017369535 |
+| serial_timesteps   | 4224         |
+| time_elapsed       | 74.8         |
+| total_timesteps    | 4224         |
+| value_loss         | 0.0013570841 |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.0019108081 |
+| clipfrac           | 0.017578125  |
+| explained_variance | -15          |
+| fps                | 68           |
+| n_updates          | 34           |
+| policy_entropy     | 2.9702377    |
+| policy_loss        | -0.018420639 |
+| serial_timesteps   | 4352         |
+| time_elapsed       | 76.6         |
+| total_timesteps    | 4352         |
+| value_loss         | 0.0011553135 |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.0025978086 |
+| clipfrac           | 0.0234375    |
+| explained_variance | -8.3         |
+| fps                | 70           |
+| n_updates          | 35           |
+| policy_entropy     | 2.9254403    |
+| policy_loss        | -0.021094114 |
+| serial_timesteps   | 4480         |
+| time_elapsed       | 78.5         |
+| total_timesteps    | 4480         |
+| value_loss         | 0.0015350427 |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.006608707  |
+| clipfrac           | 0.056640625  |
+| explained_variance | -26.4        |
+| fps                | 67           |
+| n_updates          | 36           |
+| policy_entropy     | 2.913075     |
+| policy_loss        | -0.024067963 |
+| serial_timesteps   | 4608         |
+| time_elapsed       | 80.3         |
+| total_timesteps    | 4608         |
+| value_loss         | 0.0035330513 |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.0019106918 |
+| clipfrac           | 0.017578125  |
+| explained_variance | -55          |
+| fps                | 66           |
+| n_updates          | 37           |
+| policy_entropy     | 2.8730893    |
+| policy_loss        | -0.017963056 |
+| serial_timesteps   | 4736         |
+| time_elapsed       | 82.2         |
+| total_timesteps    | 4736         |
+| value_loss         | 0.0036009694 |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.0031097014 |
+| clipfrac           | 0.044921875  |
+| explained_variance | -9.51        |
+| fps                | 70           |
+| n_updates          | 38           |
+| policy_entropy     | 2.959231     |
+| policy_loss        | -0.01630649  |
+| serial_timesteps   | 4864         |
+| time_elapsed       | 84.2         |
+| total_timesteps    | 4864         |
+| value_loss         | 0.002043393  |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.0055523003 |
+| clipfrac           | 0.078125     |
+| explained_variance | -6.08        |
+| fps                | 69           |
+| n_updates          | 39           |
+| policy_entropy     | 2.9998493    |
+| policy_loss        | -0.015639752 |
+| serial_timesteps   | 4992         |
+| time_elapsed       | 86           |
+| total_timesteps    | 4992         |
+| value_loss         | 0.0021584725 |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.0026856214 |
+| clipfrac           | 0.037109375  |
+| explained_variance | -1.6         |
+| fps                | 69           |
+| n_updates          | 40           |
+| policy_entropy     | 2.9725153    |
+| policy_loss        | -0.02278446  |
+| serial_timesteps   | 5120         |
+| time_elapsed       | 87.8         |
+| total_timesteps    | 5120         |
+| value_loss         | 0.0015180153 |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.0050681173 |
+| clipfrac           | 0.072265625  |
+| explained_variance | -1.07        |
+| fps                | 68           |
+| n_updates          | 41           |
+| policy_entropy     | 2.9678023    |
+| policy_loss        | -0.023771033 |
+| serial_timesteps   | 5248         |
+| time_elapsed       | 89.7         |
+| total_timesteps    | 5248         |
+| value_loss         | 0.0019685589 |
+-------------------------------------
+------------------------------------
+| approxkl           | 0.002366711 |
+| clipfrac           | 0.017578125 |
+| explained_variance | -2.27       |
+| fps                | 68          |
+| n_updates          | 42          |
+| policy_entropy     | 2.8985653   |
+| policy_loss        | -0.01842171 |
+| serial_timesteps   | 5376        |
+| time_elapsed       | 91.5        |
+| total_timesteps    | 5376        |
+| value_loss         | 0.002921396 |
+------------------------------------
+-------------------------------------
+| approxkl           | 0.0028212247 |
+| clipfrac           | 0.01953125   |
+| explained_variance | -16          |
+| fps                | 67           |
+| n_updates          | 43           |
+| policy_entropy     | 2.727889     |
+| policy_loss        | -0.016308056 |
+| serial_timesteps   | 5504         |
+| time_elapsed       | 93.4         |
+| total_timesteps    | 5504         |
+| value_loss         | 0.0025135535 |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.0029022442 |
+| clipfrac           | 0.033203125  |
+| explained_variance | -14.2        |
+| fps                | 70           |
+| n_updates          | 44           |
+| policy_entropy     | 2.7630188    |
+| policy_loss        | -0.014299568 |
+| serial_timesteps   | 5632         |
+| time_elapsed       | 95.3         |
+| total_timesteps    | 5632         |
+| value_loss         | 0.0023147538 |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.0023487343 |
+| clipfrac           | 0.021484375  |
+| explained_variance | -1.6         |
+| fps                | 70           |
+| n_updates          | 45           |
+| policy_entropy     | 2.8351898    |
+| policy_loss        | -0.023787765 |
+| serial_timesteps   | 5760         |
+| time_elapsed       | 97.1         |
+| total_timesteps    | 5760         |
+| value_loss         | 0.0015088979 |
+-------------------------------------
+--------------------------------------
+| approxkl           | 0.003383174   |
+| clipfrac           | 0.02734375    |
+| explained_variance | -6.14         |
+| fps                | 68            |
+| n_updates          | 46            |
+| policy_entropy     | 2.767811      |
+| policy_loss        | -0.0118945595 |
+| serial_timesteps   | 5888          |
+| time_elapsed       | 98.9          |
+| total_timesteps    | 5888          |
+| value_loss         | 0.0018752434  |
+--------------------------------------
+-------------------------------------
+| approxkl           | 0.0054951496 |
+| clipfrac           | 0.087890625  |
+| explained_variance | -3.93        |
+| fps                | 71           |
+| n_updates          | 47           |
+| policy_entropy     | 2.7721267    |
+| policy_loss        | -0.018674687 |
+| serial_timesteps   | 6016         |
+| time_elapsed       | 101          |
+| total_timesteps    | 6016         |
+| value_loss         | 0.0030725007 |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.005166732  |
+| clipfrac           | 0.072265625  |
+| explained_variance | -6.76        |
+| fps                | 70           |
+| n_updates          | 48           |
+| policy_entropy     | 2.7568529    |
+| policy_loss        | -0.020239295 |
+| serial_timesteps   | 6144         |
+| time_elapsed       | 103          |
+| total_timesteps    | 6144         |
+| value_loss         | 0.001575322  |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.0023357992 |
+| clipfrac           | 0.015625     |
+| explained_variance | -22.2        |
+| fps                | 70           |
+| n_updates          | 49           |
+| policy_entropy     | 2.8430831    |
+| policy_loss        | -0.022799034 |
+| serial_timesteps   | 6272         |
+| time_elapsed       | 104          |
+| total_timesteps    | 6272         |
+| value_loss         | 0.0009444702 |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.0031195018 |
+| clipfrac           | 0.041015625  |
+| explained_variance | -12.9        |
+| fps                | 72           |
+| n_updates          | 50           |
+| policy_entropy     | 2.7206206    |
+| policy_loss        | -0.01435154  |
+| serial_timesteps   | 6400         |
+| time_elapsed       | 106          |
+| total_timesteps    | 6400         |
+| value_loss         | 0.0013185022 |
+-------------------------------------
+--------------------------------------
+| approxkl           | 0.00095344835 |
+| clipfrac           | 0.0078125     |
+| explained_variance | -17.3         |
+| fps                | 70            |
+| n_updates          | 51            |
+| policy_entropy     | 2.7875803     |
+| policy_loss        | -0.01313178   |
+| serial_timesteps   | 6528          |
+| time_elapsed       | 108           |
+| total_timesteps    | 6528          |
+| value_loss         | 0.0011184063  |
+--------------------------------------
+--------------------------------------
+| approxkl           | 0.00098653    |
+| clipfrac           | 0.001953125   |
+| explained_variance | -4.97         |
+| fps                | 70            |
+| n_updates          | 52            |
+| policy_entropy     | 2.8630807     |
+| policy_loss        | -0.013609     |
+| serial_timesteps   | 6656          |
+| time_elapsed       | 110           |
+| total_timesteps    | 6656          |
+| value_loss         | 0.00043460756 |
+--------------------------------------
+--------------------------------------
+| approxkl           | 0.0021617394  |
+| clipfrac           | 0.01953125    |
+| explained_variance | -5.83         |
+| fps                | 72            |
+| n_updates          | 53            |
+| policy_entropy     | 2.7797117     |
+| policy_loss        | -0.011913329  |
+| serial_timesteps   | 6784          |
+| time_elapsed       | 112           |
+| total_timesteps    | 6784          |
+| value_loss         | 0.00082066684 |
+--------------------------------------
+-------------------------------------
+| approxkl           | 0.0008222591 |
+| clipfrac           | 0.00390625   |
+| explained_variance | -7.08        |
+| fps                | 71           |
+| n_updates          | 54           |
+| policy_entropy     | 2.833537     |
+| policy_loss        | -0.015941361 |
+| serial_timesteps   | 6912         |
+| time_elapsed       | 113          |
+| total_timesteps    | 6912         |
+| value_loss         | 0.0007032367 |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.0014184254 |
+| clipfrac           | 0.017578125  |
+| explained_variance | -28.3        |
+| fps                | 72           |
+| n_updates          | 55           |
+| policy_entropy     | 2.7140934    |
+| policy_loss        | -0.014024768 |
+| serial_timesteps   | 7040         |
+| time_elapsed       | 115          |
+| total_timesteps    | 7040         |
+| value_loss         | 0.0008782122 |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.0015884313 |
+| clipfrac           | 0.013671875  |
+| explained_variance | -3.52        |
+| fps                | 72           |
+| n_updates          | 56           |
+| policy_entropy     | 2.763313     |
+| policy_loss        | -0.01653451  |
+| serial_timesteps   | 7168         |
+| time_elapsed       | 117          |
+| total_timesteps    | 7168         |
+| value_loss         | 0.0007462099 |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.0026966752 |
+| clipfrac           | 0.029296875  |
+| explained_variance | -14.4        |
+| fps                | 69           |
+| n_updates          | 57           |
+| policy_entropy     | 2.7797394    |
+| policy_loss        | -0.015155458 |
+| serial_timesteps   | 7296         |
+| time_elapsed       | 119          |
+| total_timesteps    | 7296         |
+| value_loss         | 0.0014343347 |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.0009096245 |
+| clipfrac           | 0.01171875   |
+| explained_variance | -3.86        |
+| fps                | 67           |
+| n_updates          | 58           |
+| policy_entropy     | 2.9111753    |
+| policy_loss        | -0.015380679 |
+| serial_timesteps   | 7424         |
+| time_elapsed       | 121          |
+| total_timesteps    | 7424         |
+| value_loss         | 0.0008800622 |
+-------------------------------------
+Trades:     step symbol            type    amount    price
+0     2    BTC   TradeType.BUY  2.279120  1994.39
+1     3    BTC  TradeType.SELL  1.139560 -1319.70
+2     4    BTC  TradeType.SELL  0.081397  1366.03
+3     6    BTC  TradeType.SELL  0.046007  1812.45
+4     7    BTC  TradeType.SELL  0.044007  1470.17
+5    11    BTC   TradeType.BUY  7.004290  1034.64
+6    14    BTC  TradeType.SELL  0.468967  1376.94
+7    15    BTC  TradeType.SELL  3.751736 -2605.11
+8    19    BTC  TradeType.SELL  1.875868  4946.33
+9    21    BTC  TradeType.SELL  0.081559 -2374.77
+10   23    BTC  TradeType.SELL  0.128165   127.56
+11   24    BTC  TradeType.SELL  0.083307  -191.49
+12   25    BTC  TradeType.SELL  0.316567  -807.35
+13   27    BTC  TradeType.SELL  0.063313 -2485.67
+14   29    BTC  TradeType.SELL  0.085925  1897.57
+15   30    BTC  TradeType.SELL  0.139629 -1794.40
+16   31    BTC  TradeType.SELL  0.195480   612.75
+17   33    BTC   TradeType.BUY  1.750050  4944.99
+18   38    BTC  TradeType.SELL  0.110086 -5482.71
+19   39    BTC  TradeType.SELL  0.484377   -49.09
+20   41    BTC  TradeType.SELL  0.968754 -1990.78
+21   44    BTC  TradeType.SELL  0.056986  2792.90
+22   45    BTC  TradeType.SELL  0.053633 -1100.48
+Balance:  75430.0071737541
+Portfolio:  {&#39;BTC&#39;: 0.8581350600000001}
+P/L:  0.7376095855332863
 </pre></div></div>
 </div>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[24]:
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span>
-</pre></div>
-</div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[24]:
-</pre></div>
-</div>
-<div class="output_area highlight-none notranslate"><div class="highlight"><pre>
-<span></span>array([[0.00000000e+00, 8.43373494e-02, 1.21247740e-02, 1.21151222e-02],
-       [0.00000000e+00, 1.56626506e-01, 7.66582130e-05, 7.66271944e-05],
-       [0.00000000e+00, 1.56626506e-01, 3.18131584e-03, 3.17951825e-03],
-       ...,
-       [0.00000000e+00, 1.00000000e+00, 1.20225631e-02, 1.20477253e-02],
-       [0.00000000e+00, 9.75903614e-01, 7.98523052e-04, 8.00206886e-04],
-       [0.00000000e+00, 9.87951807e-01, 6.50955992e-03, 6.52297292e-03]])
 </pre></div>
 </div>
 </div>
@@ -665,6 +1287,7 @@ div.rendered_html tbody tr:hover {
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span>
 </pre></div>
+</div>
 </div>
 </div>
 
@@ -673,6 +1296,15 @@ div.rendered_html tbody tr:hover {
            
           </div>
           <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../api/modules.html" class="btn btn-neutral float-right" title="tensortrade" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="../overview/getting_started.html" class="btn btn-neutral float-left" title="Getting Started" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
   
 
   <hr/>

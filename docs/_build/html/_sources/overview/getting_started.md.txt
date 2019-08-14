@@ -9,3 +9,11 @@ TensorTrade requires Python >= 3.6 for all functionality to work as expected.
 ```bash
 pip install -r requirements.txt
 ```
+
+---
+
+<div align="center">
+  <img src="https://github.com/notadamking/tensortrade/blob/master/docs/source/_static/sequence_diagram.png">
+</div>
+
+---

@@ -39,7 +39,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="tensortrade.environments package" href="tensortrade.environments.html" />
-    <link rel="prev" title="tensortrade.agents.features.feature_pipeline module" href="tensortrade.agents.features.feature_pipeline.html" /> 
+    <link rel="prev" title="tensortrade.agents package" href="tensortrade.agents.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -97,6 +97,10 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../overview/getting_started.html">Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../overview/getting_started.html#installation">Installation</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../examples/Train_and_Evaluate.html">Train and Evaluate</a></li>
 </ul>
 <p class="caption"><span class="caption-text">API reference</span></p>
 <ul class="current">
@@ -207,58 +211,8 @@
     text-align: unset;
 }
 </style>
-<div class="section" id="module-tensortrade.agents.trading_agent">
-<span id="tensortrade-agents-trading-agent-module"></span><h1>tensortrade.agents.trading_agent module<a class="headerlink" href="#module-tensortrade.agents.trading_agent" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
-<dt id="tensortrade.agents.trading_agent.TradingAgent">
-<em class="property">class </em><code class="sig-prename descclassname">tensortrade.agents.trading_agent.</code><code class="sig-name descname">TradingAgent</code><a class="reference internal" href="../_modules/tensortrade/agents/trading_agent.html#TradingAgent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tensortrade.agents.trading_agent.TradingAgent" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<p>Abstract base class for reinforcement learning agents.</p>
-<dl class="method">
-<dt id="tensortrade.agents.trading_agent.TradingAgent.add_feature_pipeline">
-<em class="property">abstract </em><code class="sig-name descname">add_feature_pipeline</code><span class="sig-paren">(</span><em class="sig-param">pipeline</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tensortrade/agents/trading_agent.html#TradingAgent.add_feature_pipeline"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tensortrade.agents.trading_agent.TradingAgent.add_feature_pipeline" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="tensortrade.agents.trading_agent.TradingAgent.evaluate">
-<em class="property">abstract </em><code class="sig-name descname">evaluate</code><span class="sig-paren">(</span><em class="sig-param">steps</em>, <em class="sig-param">callback</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tensortrade/agents/trading_agent.html#TradingAgent.evaluate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tensortrade.agents.trading_agent.TradingAgent.evaluate" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference internal" href="tensortrade.exchanges.performance.trading_performance.html#tensortrade.exchanges.performance.trading_performance.TradingPerformance" title="tensortrade.exchanges.performance.trading_performance.TradingPerformance"><code class="xref py py-class docutils literal notranslate"><span class="pre">TradingPerformance</span></code></a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="tensortrade.agents.trading_agent.TradingAgent.predict">
-<em class="property">abstract </em><code class="sig-name descname">predict</code><span class="sig-paren">(</span><em class="sig-param">observation</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tensortrade/agents/trading_agent.html#TradingAgent.predict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tensortrade.agents.trading_agent.TradingAgent.predict" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a>]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="tensortrade.agents.trading_agent.TradingAgent.train">
-<em class="property">abstract </em><code class="sig-name descname">train</code><span class="sig-paren">(</span><em class="sig-param">steps</em>, <em class="sig-param">callback</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tensortrade/agents/trading_agent.html#TradingAgent.train"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tensortrade.agents.trading_agent.TradingAgent.train" title="Permalink to this definition">¶</a></dt>
-<dd><p>Trains the agent.</p>
-<dl class="simple">
-<dt># Arguments:</dt><dd><p>steps:
-callback: A <cite>Callable</cite>, object of type TradingPerformance, which</p>
-</dd>
-<dt># Returns:</dt><dd><p>TradingPerformance</p>
-</dd>
-</dl>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference internal" href="tensortrade.exchanges.performance.trading_performance.html#tensortrade.exchanges.performance.trading_performance.TradingPerformance" title="tensortrade.exchanges.performance.trading_performance.TradingPerformance"><code class="xref py py-class docutils literal notranslate"><span class="pre">TradingPerformance</span></code></a></p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
+<div class="section" id="tensortrade-agents-trading-agent-module">
+<h1>tensortrade.agents.trading_agent module<a class="headerlink" href="#tensortrade-agents-trading-agent-module" title="Permalink to this headline">¶</a></h1>
 </div>
 
 
@@ -272,7 +226,7 @@ callback: A <cite>Callable</cite>, object of type TradingPerformance, which</p>
         <a href="tensortrade.environments.html" class="btn btn-neutral float-right" title="tensortrade.environments package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="tensortrade.agents.features.feature_pipeline.html" class="btn btn-neutral float-left" title="tensortrade.agents.features.feature_pipeline module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="tensortrade.agents.html" class="btn btn-neutral float-left" title="tensortrade.agents package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

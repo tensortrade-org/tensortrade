@@ -97,6 +97,10 @@
 <li class="toctree-l1"><a class="reference internal" href="overview/getting_started.html">Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="overview/getting_started.html#installation">Installation</a></li>
 </ul>
+<p class="caption"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="examples/Train_and_Evaluate.html">Train and Evaluate</a></li>
+</ul>
 <p class="caption"><span class="caption-text">API reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="api/modules.html">API reference</a></li>
@@ -171,7 +175,6 @@
  | <a href="#B"><strong>B</strong></a>
  | <a href="#C"><strong>C</strong></a>
  | <a href="#E"><strong>E</strong></a>
- | <a href="#F"><strong>F</strong></a>
  | <a href="#H"><strong>H</strong></a>
  | <a href="#I"><strong>I</strong></a>
  | <a href="#N"><strong>N</strong></a>
@@ -201,11 +204,9 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/tensortrade.environments.actions.action_strategy.html#tensortrade.environments.actions.action_strategy.ActionStrategy.action_space">action_space() (tensortrade.environments.actions.action_strategy.ActionStrategy method)</a>
 </li>
-      <li><a href="api/tensortrade.environments.actions.action_strategy.html#tensortrade.environments.actions.action_strategy.ActionStrategy">ActionStrategy (class in tensortrade.environments.actions.action_strategy)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/tensortrade.agents.trading_agent.html#tensortrade.agents.trading_agent.TradingAgent.add_feature_pipeline">add_feature_pipeline() (tensortrade.agents.trading_agent.TradingAgent method)</a>
+      <li><a href="api/tensortrade.environments.actions.action_strategy.html#tensortrade.environments.actions.action_strategy.ActionStrategy">ActionStrategy (class in tensortrade.environments.actions.action_strategy)</a>
 </li>
       <li><a href="api/tensortrade.exchanges.asset_exchange.html#tensortrade.exchanges.asset_exchange.AssetExchange">AssetExchange (class in tensortrade.exchanges.asset_exchange)</a>
 </li>
@@ -247,28 +248,12 @@
 <h2 id="E">E</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/tensortrade.agents.trading_agent.html#tensortrade.agents.trading_agent.TradingAgent.evaluate">evaluate() (tensortrade.agents.trading_agent.TradingAgent method)</a>
-</li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/tensortrade.exchanges.asset_exchange.html#tensortrade.exchanges.asset_exchange.AssetExchange.execute_trade">execute_trade() (tensortrade.exchanges.asset_exchange.AssetExchange method)</a>
 
       <ul>
         <li><a href="api/tensortrade.exchanges.live.ccxt_exchange.html#tensortrade.exchanges.live.ccxt_exchange.CCXTExchange.execute_trade">(tensortrade.exchanges.live.ccxt_exchange.CCXTExchange method)</a>
 </li>
       </ul></li>
-  </ul></td>
-</tr></table>
-
-<h2 id="F">F</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/tensortrade.agents.features.feature_pipeline.html#tensortrade.agents.features.feature_pipeline.FeaturePipeline">FeaturePipeline (class in tensortrade.agents.features.feature_pipeline)</a>
-</li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/tensortrade.exchanges.slippage.slippage_model.html#tensortrade.exchanges.slippage.slippage_model.SlippageModel.fill_order">fill_order() (tensortrade.exchanges.slippage.slippage_model.SlippageModel method)</a>
-</li>
   </ul></td>
 </tr></table>
 
@@ -353,8 +338,6 @@
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/tensortrade.agents.trading_agent.html#tensortrade.agents.trading_agent.TradingAgent.predict">predict() (tensortrade.agents.trading_agent.TradingAgent method)</a>
-</li>
       <li><a href="api/tensortrade.exchanges.asset_exchange.html#tensortrade.exchanges.asset_exchange.AssetExchange.profit_loss_percent">profit_loss_percent() (tensortrade.exchanges.asset_exchange.AssetExchange method)</a>
 
       <ul>
@@ -407,13 +390,11 @@
       </ul></li>
       <li><a href="api/tensortrade.exchanges.asset_exchange.html#tensortrade.exchanges.asset_exchange.AssetExchange.set_max_allowed_slippage_percent">set_max_allowed_slippage_percent() (tensortrade.exchanges.asset_exchange.AssetExchange method)</a>
 </li>
-      <li><a href="api/tensortrade.environments.actions.continuous.simple_continuous_strategy.html#tensortrade.environments.actions.continuous.simple_continuous_strategy.SimpleContinuousStrategy">SimpleContinuousStrategy (class in tensortrade.environments.actions.continuous.simple_continuous_strategy)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/tensortrade.environments.actions.discrete.simple_discrete_strategy.html#tensortrade.environments.actions.discrete.simple_discrete_strategy.SimpleDiscreteStrategy">SimpleDiscreteStrategy (class in tensortrade.environments.actions.discrete.simple_discrete_strategy)</a>
+      <li><a href="api/tensortrade.environments.actions.continuous.simple_continuous_strategy.html#tensortrade.environments.actions.continuous.simple_continuous_strategy.SimpleContinuousStrategy">SimpleContinuousStrategy (class in tensortrade.environments.actions.continuous.simple_continuous_strategy)</a>
 </li>
-      <li><a href="api/tensortrade.exchanges.slippage.slippage_model.html#tensortrade.exchanges.slippage.slippage_model.SlippageModel">SlippageModel (class in tensortrade.exchanges.slippage.slippage_model)</a>
+      <li><a href="api/tensortrade.environments.actions.discrete.simple_discrete_strategy.html#tensortrade.environments.actions.discrete.simple_discrete_strategy.SimpleDiscreteStrategy">SimpleDiscreteStrategy (class in tensortrade.environments.actions.discrete.simple_discrete_strategy)</a>
 </li>
       <li><a href="api/tensortrade.environments.trading_environment.html#tensortrade.environments.trading_environment.TradingEnvironment.step">step() (tensortrade.environments.trading_environment.TradingEnvironment method)</a>
 </li>
@@ -432,14 +413,6 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/tensortrade.html#module-tensortrade">tensortrade (module)</a>
-</li>
-      <li><a href="api/tensortrade.agents.html#module-tensortrade.agents">tensortrade.agents (module)</a>
-</li>
-      <li><a href="api/tensortrade.agents.features.html#module-tensortrade.agents.features">tensortrade.agents.features (module)</a>
-</li>
-      <li><a href="api/tensortrade.agents.features.feature_pipeline.html#module-tensortrade.agents.features.feature_pipeline">tensortrade.agents.features.feature_pipeline (module)</a>
-</li>
-      <li><a href="api/tensortrade.agents.trading_agent.html#module-tensortrade.agents.trading_agent">tensortrade.agents.trading_agent (module)</a>
 </li>
       <li><a href="api/tensortrade.environments.html#module-tensortrade.environments">tensortrade.environments (module)</a>
 </li>
@@ -461,12 +434,12 @@
 </li>
       <li><a href="api/tensortrade.environments.rewards.reward_strategy.html#module-tensortrade.environments.rewards.reward_strategy">tensortrade.environments.rewards.reward_strategy (module)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/tensortrade.environments.rewards.simple.html#module-tensortrade.environments.rewards.simple">tensortrade.environments.rewards.simple (module)</a>
 </li>
       <li><a href="api/tensortrade.environments.rewards.simple.incremental_profit_strategy.html#module-tensortrade.environments.rewards.simple.incremental_profit_strategy">tensortrade.environments.rewards.simple.incremental_profit_strategy (module)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/tensortrade.environments.trading_environment.html#module-tensortrade.environments.trading_environment">tensortrade.environments.trading_environment (module)</a>
 </li>
       <li><a href="api/tensortrade.exchanges.html#module-tensortrade.exchanges">tensortrade.exchanges (module)</a>
@@ -476,14 +449,6 @@
       <li><a href="api/tensortrade.exchanges.live.html#module-tensortrade.exchanges.live">tensortrade.exchanges.live (module)</a>
 </li>
       <li><a href="api/tensortrade.exchanges.live.ccxt_exchange.html#module-tensortrade.exchanges.live.ccxt_exchange">tensortrade.exchanges.live.ccxt_exchange (module)</a>
-</li>
-      <li><a href="api/tensortrade.exchanges.performance.html#module-tensortrade.exchanges.performance">tensortrade.exchanges.performance (module)</a>
-</li>
-      <li><a href="api/tensortrade.exchanges.performance.trading_performance.html#module-tensortrade.exchanges.performance.trading_performance">tensortrade.exchanges.performance.trading_performance (module)</a>
-</li>
-      <li><a href="api/tensortrade.exchanges.slippage.html#module-tensortrade.exchanges.slippage">tensortrade.exchanges.slippage (module)</a>
-</li>
-      <li><a href="api/tensortrade.exchanges.slippage.slippage_model.html#module-tensortrade.exchanges.slippage.slippage_model">tensortrade.exchanges.slippage.slippage_model (module)</a>
 </li>
       <li><a href="api/tensortrade.version.html#module-tensortrade.version">tensortrade.version (module)</a>
 </li>
@@ -495,13 +460,7 @@
       </ul></li>
       <li><a href="api/tensortrade.environments.actions.trade_type.html#tensortrade.environments.actions.trade_type.TradeType">TradeType (class in tensortrade.environments.actions.trade_type)</a>
 </li>
-      <li><a href="api/tensortrade.agents.trading_agent.html#tensortrade.agents.trading_agent.TradingAgent">TradingAgent (class in tensortrade.agents.trading_agent)</a>
-</li>
       <li><a href="api/tensortrade.environments.trading_environment.html#tensortrade.environments.trading_environment.TradingEnvironment">TradingEnvironment (class in tensortrade.environments.trading_environment)</a>
-</li>
-      <li><a href="api/tensortrade.exchanges.performance.trading_performance.html#tensortrade.exchanges.performance.trading_performance.TradingPerformance">TradingPerformance (class in tensortrade.exchanges.performance.trading_performance)</a>
-</li>
-      <li><a href="api/tensortrade.agents.trading_agent.html#tensortrade.agents.trading_agent.TradingAgent.train">train() (tensortrade.agents.trading_agent.TradingAgent method)</a>
 </li>
   </ul></td>
 </tr></table>
