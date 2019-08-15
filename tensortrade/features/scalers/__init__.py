@@ -1,0 +1,1 @@
+from .min_max_normalizer import MinMaxNormalizer
