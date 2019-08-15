@@ -5,7 +5,7 @@ from typing import Dict
 
 
 class AssetExchange(object, metaclass=ABCMeta):
-    '''Abstract base class for asset exchanges'''
+    """Abstract base class for asset exchanges"""
     @abstractmethod
     def __init__(self):
         pass
@@ -17,14 +17,14 @@ class AssetExchange(object, metaclass=ABCMeta):
         self.max_allowed_slippage_percent = max_allowed_slippage_percent
 
     def net_worth(self, output_symbol) -> float:
-        '''Calculate the net worth of the current account in this exchange
+        """Calculate the net worth of the current account in this exchange
 
             # Arguments
             output_symbol: the notional value, that should be used to display the account value
 
             # Returns
             the total portfolio value of this account
-        '''
+        """
         net_worth = self.balance(symbol=output_symbol)
 
         portfolio = self.portfolio()
@@ -40,7 +40,7 @@ class AssetExchange(object, metaclass=ABCMeta):
         return net_worth
 
     def profit_loss_percent(self, output_symbol) -> float:
-        '''Calculate the percentage change since the initial balance in the output_symbol notional value'''
+        """Calculate the percentage change since the initial balance in the output_symbol notional value"""
         return float(self.net_worth(output_symbol=output_symbol) / self.initial_balance(symbol=output_symbol))
 
     @abstractmethod

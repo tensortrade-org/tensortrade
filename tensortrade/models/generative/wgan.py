@@ -5,13 +5,8 @@ import tensorflow as tf
 
 
 class WGAN(tf.keras.Model):
-    """
-    Extends:
-        tf.keras.Model
-    """
-
     def __init__(self, generator: tf.keras.Sequential, discriminator: tf.keras.Sequential,  **kwargs):
-        super(WGAN, self).__init__()
+        super().__init__()
 
         self.n_samples = kwargs.get('n_samples', 64)
         self.gradient_penalty_weight = kwargs.get('gradient_penalty_weight', 10.0)
@@ -33,10 +28,24 @@ class WGAN(tf.keras.Model):
     def discriminate(self, x):
         return self.discriminator(x)
 
-    def compute_loss(self, x):
-        """ passes through the network and computes loss
-        """
+    def generate_random(self):
+        return self.generate(tf.random.normal(shape=(1, self.n_samples)))
 
+    def gradient_penalty(self, x, x_gen):
+        epsilon = tf.random.uniform([x.shape[0], 1, 1, 1], 0.0, 1.0)
+        x_hat = epsilon * x + (1 - epsilon) * x_gen
+
+        with tf.GradientTape() as t:
+            t.watch(x_hat)
+            d_hat = self.discriminate(x_hat)
+
+        gradients = t.gradient(d_hat, x_hat)
+        ddx = tf.sqrt(tf.reduce_sum(gradients ** 2, axis=[1, 2]))
+        d_regularizer = tf.reduce_mean((ddx - 1.0) ** 2)
+
+        return d_regularizer
+
+    def compute_loss(self, x):
         z_samp = tf.random.normal([x.shape[0], 1, 1, self.n_samples])
 
         x_gen = self.generate(z_samp)
@@ -55,42 +64,21 @@ class WGAN(tf.keras.Model):
         return disc_loss, gen_loss
 
     def compute_gradients(self, x):
-        """ passes through the network and computes loss
-        """
         with tf.GradientTape() as gen_tape, tf.GradientTape() as disc_tape:
             disc_loss, gen_loss = self.compute_loss(x)
 
         gen_gradients = gen_tape.gradient(gen_loss, self.generator.trainable_variables)
-
         disc_gradients = disc_tape.gradient(
             disc_loss, self.discriminator.trainable_variables)
 
         return gen_gradients, disc_gradients
 
-    def apply_gradients(self, gen_gradients, disc_gradients):
-        self.gen_optimizer.apply_gradients(
-            zip(gen_gradients, self.generator.trainable_variables)
-        )
-
-        self.disc_optimizer.apply_gradients(
-            zip(disc_gradients, self.discriminator.trainable_variables)
-        )
-
-    def gradient_penalty(self, x, x_gen):
-        epsilon = tf.random.uniform([x.shape[0], 1, 1, 1], 0.0, 1.0)
-        x_hat = epsilon * x + (1 - epsilon) * x_gen
-
-        with tf.GradientTape() as t:
-            t.watch(x_hat)
-            d_hat = self.discriminate(x_hat)
-
-        gradients = t.gradient(d_hat, x_hat)
-        ddx = tf.sqrt(tf.reduce_sum(gradients ** 2, axis=[1, 2]))
-        d_regularizer = tf.reduce_mean((ddx - 1.0) ** 2)
-
-        return d_regularizer
+    def apply_gradient(self, model, optimizer, gradients):
+        optimizer.apply_gradients(zip(gradients, model.trainable_variables))
 
     @tf.function
     def train(self, train_x):
         gen_gradients, disc_gradients = self.compute_gradients(train_x)
-        self.apply_gradients(gen_gradients, disc_gradients)
+
+        self.apply_gradient(self.generator, self.gen_optimizer, gen_gradients)
+        self.apply_gradient(self.discriminator, self.disc_optimizer, disc_gradients)

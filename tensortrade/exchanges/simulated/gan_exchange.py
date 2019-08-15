@@ -22,22 +22,26 @@ class GANExchange(AssetExchange):
         self.asset_precision = kwargs.get('asset_precision', 8)
         self.min_order_amount = kwargs.get('min_order_amount', 1E-5)
 
+        self.items_per_gen = kwargs.get('items_per_gen', 1000)
+
         n_samples = kwargs.get('n_samples', 64)
-        output_shape = kwargs.get('output_shape', (1, 1024, 1024))
+        output_shape = kwargs.get('output_shape', (self.items_per_gen, 5, 1))
 
         generator = tf.keras.Sequential([
             tf.keras.layers.InputLayer(input_shape=(1, n_samples)),
-            tf.keras.layers.Dense(units=7 * 7 * n_samples, activation="relu"),
-            tf.keras.layers.Reshape(target_shape=(7, 7, n_samples)),
+            tf.keras.layers.Dense(units=(self.items_per_gen + 3) *
+                                  8 * n_samples, activation="relu"),
+            tf.keras.layers.Reshape(target_shape=((self.items_per_gen + 3), 8, n_samples)),
             tf.keras.layers.Conv2DTranspose(
-                filters=64, kernel_size=3, strides=(2, 2), padding="SAME", activation="relu"
+                filters=64, kernel_size=3, strides=(1, 1), padding="SAME", activation="relu"
             ),
             tf.keras.layers.Conv2DTranspose(
-                filters=32, kernel_size=3, strides=(2, 2), padding="SAME", activation="relu"
+                filters=32, kernel_size=3, strides=(1, 1), padding="SAME", activation="relu"
             ),
             tf.keras.layers.Conv2DTranspose(
                 filters=1, kernel_size=3, strides=(1, 1), padding="SAME", activation="sigmoid"
             ),
+            tf.keras.layers.Reshape(target_shape=(output_shape))
         ])
 
         discriminator = tf.keras.Sequential([
@@ -154,14 +158,14 @@ class GANExchange(AssetExchange):
         return True
 
     def next_observation(self):
-        ohlcv = self.gan.generate(0)
+        ohlcv = self.gan.generate_random()
 
         self.data_frame = self.data_frame.append({
-            'open': float(ohlcv['open']),
-            'high': float(ohlcv['high']),
-            'low': float(ohlcv['low']),
-            'close': float(ohlcv['close']),
-            'volume': float(ohlcv['volume']),
+            'open': float(ohlcv[0]),
+            'high': float(ohlcv[1]),
+            'low': float(ohlcv[2]),
+            'close': float(ohlcv[3]),
+            'volume': float(ohlcv[4]),
         }, ignore_index=True)
 
         self.current_step += 1
@@ -169,4 +173,4 @@ class GANExchange(AssetExchange):
         scaler = MinMaxScaler()
         scaled_frame = scaler.fit_transform(self.data_frame.values)
 
-        return scaled_frame.values[-1].astype(self.dtype)
+        return scaled_frame[-1].astype(self.dtype)
