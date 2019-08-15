@@ -1,0 +1,298 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>tensortrade.exchanges.asset_exchange &mdash; TensorTrade 0.0.1 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/theme_overrides.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html">
+          
+
+          
+            
+            <img src="../../../_static/logo.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../index.html">Home</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Overview</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../overview/getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../overview/getting_started.html#installation">Installation</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/Train_and_Evaluate.html">Train and Evaluate</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/modules.html">API reference</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">TensorTrade</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>tensortrade.exchanges.asset_exchange</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for tensortrade.exchanges.asset_exchange</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="kn">from</span> <span class="nn">abc</span> <span class="k">import</span> <span class="n">ABCMeta</span><span class="p">,</span> <span class="n">abstractmethod</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Dict</span>
+
+
+<div class="viewcode-block" id="AssetExchange"><a class="viewcode-back" href="../../../api/tensortrade.exchanges.asset_exchange.html#tensortrade.exchanges.asset_exchange.AssetExchange">[docs]</a><span class="k">class</span> <span class="nc">AssetExchange</span><span class="p">(</span><span class="nb">object</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Abstract base class for asset exchanges&quot;&quot;&quot;</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+<div class="viewcode-block" id="AssetExchange.set_dtype"><a class="viewcode-back" href="../../../api/tensortrade.exchanges.asset_exchange.html#tensortrade.exchanges.asset_exchange.AssetExchange.set_dtype">[docs]</a>    <span class="k">def</span> <span class="nf">set_dtype</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dtype</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">dtype</span></div>
+
+<div class="viewcode-block" id="AssetExchange.set_max_allowed_slippage_percent"><a class="viewcode-back" href="../../../api/tensortrade.exchanges.asset_exchange.html#tensortrade.exchanges.asset_exchange.AssetExchange.set_max_allowed_slippage_percent">[docs]</a>    <span class="k">def</span> <span class="nf">set_max_allowed_slippage_percent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">max_allowed_slippage_percent</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_allowed_slippage_percent</span> <span class="o">=</span> <span class="n">max_allowed_slippage_percent</span></div>
+
+<div class="viewcode-block" id="AssetExchange.net_worth"><a class="viewcode-back" href="../../../api/tensortrade.exchanges.asset_exchange.html#tensortrade.exchanges.asset_exchange.AssetExchange.net_worth">[docs]</a>    <span class="k">def</span> <span class="nf">net_worth</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_symbol</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Calculate the net worth of the current account in this exchange</span>
+
+<span class="sd">            # Arguments</span>
+<span class="sd">            output_symbol: the notional value, that should be used to display the account value</span>
+
+<span class="sd">            # Returns</span>
+<span class="sd">            the total portfolio value of this account</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">net_worth</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">balance</span><span class="p">(</span><span class="n">symbol</span><span class="o">=</span><span class="n">output_symbol</span><span class="p">)</span>
+
+        <span class="n">portfolio</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">portfolio</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">portfolio</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">net_worth</span>
+
+        <span class="k">for</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">amount</span> <span class="ow">in</span> <span class="n">portfolio</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">current_price</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_price</span><span class="p">(</span>
+                <span class="n">symbol</span><span class="o">=</span><span class="n">symbol</span><span class="p">,</span> <span class="n">output_symbol</span><span class="o">=</span><span class="n">output_symbol</span><span class="p">)</span>
+            <span class="n">net_worth</span> <span class="o">+=</span> <span class="n">current_price</span> <span class="o">*</span> <span class="n">amount</span>
+
+        <span class="k">return</span> <span class="n">net_worth</span></div>
+
+<div class="viewcode-block" id="AssetExchange.profit_loss_percent"><a class="viewcode-back" href="../../../api/tensortrade.exchanges.asset_exchange.html#tensortrade.exchanges.asset_exchange.AssetExchange.profit_loss_percent">[docs]</a>    <span class="k">def</span> <span class="nf">profit_loss_percent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_symbol</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Calculate the percentage change since the initial balance in the output_symbol notional value&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">net_worth</span><span class="p">(</span><span class="n">output_symbol</span><span class="o">=</span><span class="n">output_symbol</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_balance</span><span class="p">(</span><span class="n">symbol</span><span class="o">=</span><span class="n">output_symbol</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="AssetExchange.initial_balance"><a class="viewcode-back" href="../../../api/tensortrade.exchanges.asset_exchange.html#tensortrade.exchanges.asset_exchange.AssetExchange.initial_balance">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">initial_balance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbol</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+<div class="viewcode-block" id="AssetExchange.balance"><a class="viewcode-back" href="../../../api/tensortrade.exchanges.asset_exchange.html#tensortrade.exchanges.asset_exchange.AssetExchange.balance">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">balance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbol</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+<div class="viewcode-block" id="AssetExchange.portfolio"><a class="viewcode-back" href="../../../api/tensortrade.exchanges.asset_exchange.html#tensortrade.exchanges.asset_exchange.AssetExchange.portfolio">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">portfolio</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+<div class="viewcode-block" id="AssetExchange.trades"><a class="viewcode-back" href="../../../api/tensortrade.exchanges.asset_exchange.html#tensortrade.exchanges.asset_exchange.AssetExchange.trades">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">trades</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+<div class="viewcode-block" id="AssetExchange.performance"><a class="viewcode-back" href="../../../api/tensortrade.exchanges.asset_exchange.html#tensortrade.exchanges.asset_exchange.AssetExchange.performance">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">performance</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+<div class="viewcode-block" id="AssetExchange.observation_space"><a class="viewcode-back" href="../../../api/tensortrade.exchanges.asset_exchange.html#tensortrade.exchanges.asset_exchange.AssetExchange.observation_space">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">observation_space</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+<div class="viewcode-block" id="AssetExchange.current_price"><a class="viewcode-back" href="../../../api/tensortrade.exchanges.asset_exchange.html#tensortrade.exchanges.asset_exchange.AssetExchange.current_price">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">current_price</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbol</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">output_symbol</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+<div class="viewcode-block" id="AssetExchange.has_next_observation"><a class="viewcode-back" href="../../../api/tensortrade.exchanges.asset_exchange.html#tensortrade.exchanges.asset_exchange.AssetExchange.has_next_observation">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">has_next_observation</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+<div class="viewcode-block" id="AssetExchange.next_observation"><a class="viewcode-back" href="../../../api/tensortrade.exchanges.asset_exchange.html#tensortrade.exchanges.asset_exchange.AssetExchange.next_observation">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">next_observation</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+<div class="viewcode-block" id="AssetExchange.execute_trade"><a class="viewcode-back" href="../../../api/tensortrade.exchanges.asset_exchange.html#tensortrade.exchanges.asset_exchange.AssetExchange.execute_trade">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">execute_trade</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+<div class="viewcode-block" id="AssetExchange.reset"><a class="viewcode-back" href="../../../api/tensortrade.exchanges.asset_exchange.html#tensortrade.exchanges.asset_exchange.AssetExchange.reset">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Adam King
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
