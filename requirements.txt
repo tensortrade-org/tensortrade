@@ -4,4 +4,5 @@ sklearn
 gym
 stochastic
 ccxt
-timeserio
+hyperopt
+gin-config

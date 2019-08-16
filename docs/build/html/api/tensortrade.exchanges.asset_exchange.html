@@ -1,0 +1,411 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>tensortrade.exchanges.asset_exchange module &mdash; TensorTrade 0.0.1 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/theme_overrides.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="tensortrade.features package" href="tensortrade.features.html" />
+    <link rel="prev" title="tensortrade.exchanges.simulated.static_exchange module" href="tensortrade.exchanges.simulated.static_exchange.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html">
+          
+
+          
+            
+            <img src="../_static/logo.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Home</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Overview</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../overview/getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../overview/getting_started.html#installation">Installation</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../examples/Train_and_Evaluate.html">Train and Evaluate</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">API reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="tensortrade.html">tensortrade package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="tensortrade.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="tensortrade.agents.html">tensortrade.agents package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tensortrade.environments.html">tensortrade.environments package</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="tensortrade.exchanges.html">tensortrade.exchanges package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tensortrade.features.html">tensortrade.features package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="tensortrade.html#submodules">Submodules</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">TensorTrade</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="modules.html">tensortrade</a> &raquo;</li>
+        
+          <li><a href="tensortrade.html">tensortrade package</a> &raquo;</li>
+        
+          <li><a href="tensortrade.exchanges.html">tensortrade.exchanges package</a> &raquo;</li>
+        
+      <li>tensortrade.exchanges.asset_exchange module</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/api/tensortrade.exchanges.asset_exchange.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="module-tensortrade.exchanges.asset_exchange">
+<span id="tensortrade-exchanges-asset-exchange-module"></span><h1>tensortrade.exchanges.asset_exchange module<a class="headerlink" href="#module-tensortrade.exchanges.asset_exchange" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="tensortrade.exchanges.asset_exchange.AssetExchange">
+<em class="property">class </em><code class="sig-prename descclassname">tensortrade.exchanges.asset_exchange.</code><code class="sig-name descname">AssetExchange</code><a class="reference internal" href="../_modules/tensortrade/exchanges/asset_exchange.html#AssetExchange"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tensortrade.exchanges.asset_exchange.AssetExchange" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Abstract base class for asset exchanges</p>
+<dl class="method">
+<dt id="tensortrade.exchanges.asset_exchange.AssetExchange.balance">
+<em class="property">abstract </em><code class="sig-name descname">balance</code><span class="sig-paren">(</span><em class="sig-param">symbol</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tensortrade/exchanges/asset_exchange.html#AssetExchange.balance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tensortrade.exchanges.asset_exchange.AssetExchange.balance" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="tensortrade.exchanges.asset_exchange.AssetExchange.current_price">
+<em class="property">abstract </em><code class="sig-name descname">current_price</code><span class="sig-paren">(</span><em class="sig-param">symbol</em>, <em class="sig-param">output_symbol</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tensortrade/exchanges/asset_exchange.html#AssetExchange.current_price"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tensortrade.exchanges.asset_exchange.AssetExchange.current_price" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="tensortrade.exchanges.asset_exchange.AssetExchange.execute_trade">
+<em class="property">abstract </em><code class="sig-name descname">execute_trade</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tensortrade/exchanges/asset_exchange.html#AssetExchange.execute_trade"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tensortrade.exchanges.asset_exchange.AssetExchange.execute_trade" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tensortrade.exchanges.asset_exchange.AssetExchange.has_next_observation">
+<em class="property">abstract </em><code class="sig-name descname">has_next_observation</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tensortrade/exchanges/asset_exchange.html#AssetExchange.has_next_observation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tensortrade.exchanges.asset_exchange.AssetExchange.has_next_observation" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="tensortrade.exchanges.asset_exchange.AssetExchange.initial_balance">
+<em class="property">abstract </em><code class="sig-name descname">initial_balance</code><span class="sig-paren">(</span><em class="sig-param">symbol</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tensortrade/exchanges/asset_exchange.html#AssetExchange.initial_balance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tensortrade.exchanges.asset_exchange.AssetExchange.initial_balance" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="tensortrade.exchanges.asset_exchange.AssetExchange.net_worth">
+<code class="sig-name descname">net_worth</code><span class="sig-paren">(</span><em class="sig-param">output_symbol</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tensortrade/exchanges/asset_exchange.html#AssetExchange.net_worth"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tensortrade.exchanges.asset_exchange.AssetExchange.net_worth" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the net worth of the current account in this exchange</p>
+<p># Arguments
+output_symbol: the notional value, that should be used to display the account value</p>
+<p># Returns
+the total portfolio value of this account</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="tensortrade.exchanges.asset_exchange.AssetExchange.next_observation">
+<em class="property">abstract </em><code class="sig-name descname">next_observation</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tensortrade/exchanges/asset_exchange.html#AssetExchange.next_observation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tensortrade.exchanges.asset_exchange.AssetExchange.next_observation" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pandas.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="tensortrade.exchanges.asset_exchange.AssetExchange.observation_space">
+<em class="property">abstract </em><code class="sig-name descname">observation_space</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tensortrade/exchanges/asset_exchange.html#AssetExchange.observation_space"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tensortrade.exchanges.asset_exchange.AssetExchange.observation_space" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pandas.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="tensortrade.exchanges.asset_exchange.AssetExchange.performance">
+<em class="property">abstract </em><code class="sig-name descname">performance</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tensortrade/exchanges/asset_exchange.html#AssetExchange.performance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tensortrade.exchanges.asset_exchange.AssetExchange.performance" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pandas.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="tensortrade.exchanges.asset_exchange.AssetExchange.portfolio">
+<em class="property">abstract </em><code class="sig-name descname">portfolio</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tensortrade/exchanges/asset_exchange.html#AssetExchange.portfolio"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tensortrade.exchanges.asset_exchange.AssetExchange.portfolio" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="tensortrade.exchanges.asset_exchange.AssetExchange.profit_loss_percent">
+<code class="sig-name descname">profit_loss_percent</code><span class="sig-paren">(</span><em class="sig-param">output_symbol</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tensortrade/exchanges/asset_exchange.html#AssetExchange.profit_loss_percent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tensortrade.exchanges.asset_exchange.AssetExchange.profit_loss_percent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the percentage change since the initial balance in the output_symbol notional value</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="tensortrade.exchanges.asset_exchange.AssetExchange.reset">
+<em class="property">abstract </em><code class="sig-name descname">reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tensortrade/exchanges/asset_exchange.html#AssetExchange.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tensortrade.exchanges.asset_exchange.AssetExchange.reset" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tensortrade.exchanges.asset_exchange.AssetExchange.set_dtype">
+<code class="sig-name descname">set_dtype</code><span class="sig-paren">(</span><em class="sig-param">dtype</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tensortrade/exchanges/asset_exchange.html#AssetExchange.set_dtype"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tensortrade.exchanges.asset_exchange.AssetExchange.set_dtype" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tensortrade.exchanges.asset_exchange.AssetExchange.set_max_allowed_slippage_percent">
+<code class="sig-name descname">set_max_allowed_slippage_percent</code><span class="sig-paren">(</span><em class="sig-param">max_allowed_slippage_percent</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tensortrade/exchanges/asset_exchange.html#AssetExchange.set_max_allowed_slippage_percent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tensortrade.exchanges.asset_exchange.AssetExchange.set_max_allowed_slippage_percent" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tensortrade.exchanges.asset_exchange.AssetExchange.trades">
+<em class="property">abstract </em><code class="sig-name descname">trades</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tensortrade/exchanges/asset_exchange.html#AssetExchange.trades"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tensortrade.exchanges.asset_exchange.AssetExchange.trades" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pandas.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="tensortrade.features.html" class="btn btn-neutral float-right" title="tensortrade.features package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="tensortrade.exchanges.simulated.static_exchange.html" class="btn btn-neutral float-left" title="tensortrade.exchanges.simulated.static_exchange module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Adam King
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

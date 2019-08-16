@@ -1,9 +1,9 @@
 from setuptools import setup
 from setuptools import find_packages
 
-long_description = '''
+long_description = """
 A reinforcement learning library for training, evaluating, and deploying robust trading agents with TF2.
-'''
+"""
 
 setup(name='TensorTrade',
       version='2.2.4',

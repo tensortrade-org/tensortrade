@@ -1,0 +1,1316 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Train and Evaluate &mdash; TensorTrade 0.0.1 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/theme_overrides.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="tensortrade" href="../api/modules.html" />
+    <link rel="prev" title="Getting Started" href="../overview/getting_started.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html">
+          
+
+          
+            
+            <img src="../_static/logo.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Home</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Overview</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../overview/getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../overview/getting_started.html#installation">Installation</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Examples</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Train and Evaluate</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api/modules.html">API reference</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">TensorTrade</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>Train and Evaluate</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/examples/Train_and_Evaluate.ipynb.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput,
+div.nbinput div.prompt,
+div.nbinput div.input_area,
+div.nbinput div[class*=highlight],
+div.nbinput div[class*=highlight] pre,
+div.nboutput,
+div.nbinput div.prompt,
+div.nbinput div.output_area,
+div.nboutput div[class*=highlight],
+div.nboutput div[class*=highlight] pre {
+    background: none;
+    border: none;
+    padding: 0 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+/* avoid gaps between output lines */
+div.nboutput div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput,
+div.nboutput {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput,
+    div.nboutput {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput div.prompt pre {
+    color: #307FC1;
+}
+
+/* output prompt */
+div.nboutput div.prompt pre {
+    color: #BF5B3D;
+}
+
+/* all prompts */
+div.nbinput div.prompt,
+div.nboutput div.prompt {
+    min-width: 5ex;
+    padding-top: 0.4em;
+    padding-right: 0.4em;
+    text-align: right;
+    flex: 0;
+}
+@media (max-width: 540px) {
+    div.nbinput div.prompt,
+    div.nboutput div.prompt {
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput div.prompt.empty {
+        padding: 0;
+    }
+}
+
+/* disable scrollbars on prompts */
+div.nbinput div.prompt pre,
+div.nboutput div.prompt pre {
+    overflow: hidden;
+}
+
+/* input/output area */
+div.nbinput div.input_area,
+div.nboutput div.output_area {
+    padding: 0.4em;
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput div.input_area,
+    div.nboutput div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput div.input_area {
+    border: 1px solid #e0e0e0;
+    border-radius: 2px;
+    background: #f5f5f5;
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.imgmath center alignment in output cells */
+div.nboutput div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-default-inverse-fg { color: #FFFFFF; }
+.ansi-default-inverse-bg { background-color: #000000; }
+
+.ansi-bold { font-weight: bold; }
+.ansi-underline { text-decoration: underline; }
+
+/* Some additional styling taken form the Jupyter notebook CSS */
+div.rendered_html table {
+  border: none;
+  border-collapse: collapse;
+  border-spacing: 0;
+  color: black;
+  font-size: 12px;
+  table-layout: fixed;
+}
+div.rendered_html thead {
+  border-bottom: 1px solid black;
+  vertical-align: bottom;
+}
+div.rendered_html tr,
+div.rendered_html th,
+div.rendered_html td {
+  text-align: right;
+  vertical-align: middle;
+  padding: 0.5em 0.5em;
+  line-height: normal;
+  white-space: normal;
+  max-width: none;
+  border: none;
+}
+div.rendered_html th {
+  font-weight: bold;
+}
+div.rendered_html tbody tr:nth-child(odd) {
+  background: #f5f5f5;
+}
+div.rendered_html tbody tr:hover {
+  background: rgba(66, 165, 245, 0.2);
+}
+
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="admonition note">
+<p>This page was generated from <a class="reference external" href="https://github.com/notadamking/tensortrade/blob/5139b0b3acfaf918956a46d147704a7437a00491/docs/source/examples/Train_and_Evaluate.ipynb">docs/source/examples/Train_and_Evaluate.ipynb</a>.</p>
+</div>
+<div class="section" id="Train-and-Evaluate">
+<h1>Train and Evaluate<a class="headerlink" href="#Train-and-Evaluate" title="Permalink to this headline">¶</a></h1>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">stable_baselines.common.policies</span> <span class="k">import</span> <span class="n">MlpLnLstmPolicy</span>
+<span class="kn">from</span> <span class="nn">stable_baselines.common.vec_env</span> <span class="k">import</span> <span class="n">DummyVecEnv</span>
+<span class="kn">from</span> <span class="nn">stable_baselines</span> <span class="k">import</span> <span class="n">PPO2</span>
+
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="s1">&#39;../..&#39;</span><span class="p">)))</span>
+
+<span class="kn">from</span> <span class="nn">tensortrade.environments</span> <span class="k">import</span> <span class="n">TradingEnvironment</span>
+<span class="kn">from</span> <span class="nn">tensortrade.environments.actions.discrete</span> <span class="k">import</span> <span class="n">SimpleDiscreteStrategy</span>
+<span class="kn">from</span> <span class="nn">tensortrade.environments.rewards.simple</span> <span class="k">import</span> <span class="n">IncrementalProfitStrategy</span>
+<span class="kn">from</span> <span class="nn">tensortrade.exchanges.simulated</span> <span class="k">import</span> <span class="n">FBMExchange</span>
+
+<span class="n">env</span> <span class="o">=</span> <span class="n">DummyVecEnv</span><span class="p">([</span><span class="k">lambda</span><span class="p">:</span> <span class="n">TradingEnvironment</span><span class="p">(</span><span class="n">action_strategy</span><span class="o">=</span><span class="n">SimpleDiscreteStrategy</span><span class="p">(),</span>
+                                              <span class="n">reward_strategy</span><span class="o">=</span><span class="n">IncrementalProfitStrategy</span><span class="p">(),</span>
+                                              <span class="n">exchange</span><span class="o">=</span><span class="n">FBMExchange</span><span class="p">())])</span>
+
+<span class="n">agent</span> <span class="o">=</span> <span class="n">PPO2</span><span class="p">(</span><span class="n">MlpLnLstmPolicy</span><span class="p">,</span> <span class="n">env</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">nminibatches</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="n">agent</span><span class="o">.</span><span class="n">learn</span><span class="p">(</span><span class="mi">7500</span><span class="p">)</span>
+
+<span class="n">obs</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+
+
+<span class="n">state</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">exchange</span> <span class="o">=</span> <span class="kc">None</span>
+
+<span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2500</span><span class="p">):</span>
+    <span class="n">action</span><span class="p">,</span> <span class="n">state</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">)</span>
+    <span class="n">obs</span><span class="p">,</span> <span class="n">reward</span> <span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+
+    <span class="n">exchange</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;exchange&#39;</span><span class="p">]</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Trades: &#39;</span><span class="p">,</span> <span class="n">exchange</span><span class="o">.</span><span class="n">trades</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Balance: &#39;</span><span class="p">,</span> <span class="n">exchange</span><span class="o">.</span><span class="n">balance</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Portfolio: &#39;</span><span class="p">,</span> <span class="n">exchange</span><span class="o">.</span><span class="n">portfolio</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;P/L: &#39;</span><span class="p">,</span> <span class="n">exchange</span><span class="o">.</span><span class="n">profit_loss_percent</span><span class="p">())</span>
+
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/Users/adam/anaconda3/envs/tensortrade/lib/python3.6/site-packages/tensorflow/python/framework/dtypes.py:516: FutureWarning: Passing (type, 1) or &#39;1type&#39; as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / &#39;(1,)type&#39;.
+  _np_qint8 = np.dtype([(&#34;qint8&#34;, np.int8, 1)])
+/Users/adam/anaconda3/envs/tensortrade/lib/python3.6/site-packages/tensorflow/python/framework/dtypes.py:517: FutureWarning: Passing (type, 1) or &#39;1type&#39; as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / &#39;(1,)type&#39;.
+  _np_quint8 = np.dtype([(&#34;quint8&#34;, np.uint8, 1)])
+/Users/adam/anaconda3/envs/tensortrade/lib/python3.6/site-packages/tensorflow/python/framework/dtypes.py:518: FutureWarning: Passing (type, 1) or &#39;1type&#39; as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / &#39;(1,)type&#39;.
+  _np_qint16 = np.dtype([(&#34;qint16&#34;, np.int16, 1)])
+/Users/adam/anaconda3/envs/tensortrade/lib/python3.6/site-packages/tensorflow/python/framework/dtypes.py:519: FutureWarning: Passing (type, 1) or &#39;1type&#39; as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / &#39;(1,)type&#39;.
+  _np_quint16 = np.dtype([(&#34;quint16&#34;, np.uint16, 1)])
+/Users/adam/anaconda3/envs/tensortrade/lib/python3.6/site-packages/tensorflow/python/framework/dtypes.py:520: FutureWarning: Passing (type, 1) or &#39;1type&#39; as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / &#39;(1,)type&#39;.
+  _np_qint32 = np.dtype([(&#34;qint32&#34;, np.int32, 1)])
+/Users/adam/anaconda3/envs/tensortrade/lib/python3.6/site-packages/tensorflow/python/framework/dtypes.py:525: FutureWarning: Passing (type, 1) or &#39;1type&#39; as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / &#39;(1,)type&#39;.
+  np_resource = np.dtype([(&#34;resource&#34;, np.ubyte, 1)])
+/Users/adam/anaconda3/envs/tensortrade/lib/python3.6/site-packages/tensorboard/compat/tensorflow_stub/dtypes.py:541: FutureWarning: Passing (type, 1) or &#39;1type&#39; as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / &#39;(1,)type&#39;.
+  _np_qint8 = np.dtype([(&#34;qint8&#34;, np.int8, 1)])
+/Users/adam/anaconda3/envs/tensortrade/lib/python3.6/site-packages/tensorboard/compat/tensorflow_stub/dtypes.py:542: FutureWarning: Passing (type, 1) or &#39;1type&#39; as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / &#39;(1,)type&#39;.
+  _np_quint8 = np.dtype([(&#34;quint8&#34;, np.uint8, 1)])
+/Users/adam/anaconda3/envs/tensortrade/lib/python3.6/site-packages/tensorboard/compat/tensorflow_stub/dtypes.py:543: FutureWarning: Passing (type, 1) or &#39;1type&#39; as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / &#39;(1,)type&#39;.
+  _np_qint16 = np.dtype([(&#34;qint16&#34;, np.int16, 1)])
+/Users/adam/anaconda3/envs/tensortrade/lib/python3.6/site-packages/tensorboard/compat/tensorflow_stub/dtypes.py:544: FutureWarning: Passing (type, 1) or &#39;1type&#39; as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / &#39;(1,)type&#39;.
+  _np_quint16 = np.dtype([(&#34;quint16&#34;, np.uint16, 1)])
+/Users/adam/anaconda3/envs/tensortrade/lib/python3.6/site-packages/tensorboard/compat/tensorflow_stub/dtypes.py:545: FutureWarning: Passing (type, 1) or &#39;1type&#39; as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / &#39;(1,)type&#39;.
+  _np_qint32 = np.dtype([(&#34;qint32&#34;, np.int32, 1)])
+/Users/adam/anaconda3/envs/tensortrade/lib/python3.6/site-packages/tensorboard/compat/tensorflow_stub/dtypes.py:550: FutureWarning: Passing (type, 1) or &#39;1type&#39; as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / &#39;(1,)type&#39;.
+  np_resource = np.dtype([(&#34;resource&#34;, np.ubyte, 1)])
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+-------------------------------------
+| approxkl           | 0.015686866  |
+| clipfrac           | 0.19921875   |
+| explained_variance | -11.1        |
+| fps                | 7            |
+| n_updates          | 1            |
+| policy_entropy     | 3.134857     |
+| policy_loss        | -0.029379755 |
+| serial_timesteps   | 128          |
+| time_elapsed       | 2.15e-06     |
+| total_timesteps    | 128          |
+| value_loss         | 0.020201866  |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.004347246  |
+| clipfrac           | 0.056640625  |
+| explained_variance | -31.4        |
+| fps                | 67           |
+| n_updates          | 2            |
+| policy_entropy     | 3.1364708    |
+| policy_loss        | -0.034043223 |
+| serial_timesteps   | 256          |
+| time_elapsed       | 17.8         |
+| total_timesteps    | 256          |
+| value_loss         | 0.016545191  |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.0041049235 |
+| clipfrac           | 0.056640625  |
+| explained_variance | -26.2        |
+| fps                | 71           |
+| n_updates          | 3            |
+| policy_entropy     | 3.1393285    |
+| policy_loss        | -0.032377902 |
+| serial_timesteps   | 384          |
+| time_elapsed       | 19.7         |
+| total_timesteps    | 384          |
+| value_loss         | 0.012273217  |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.006468634  |
+| clipfrac           | 0.09375      |
+| explained_variance | -2.42        |
+| fps                | 69           |
+| n_updates          | 4            |
+| policy_entropy     | 3.1348906    |
+| policy_loss        | -0.03826902  |
+| serial_timesteps   | 512          |
+| time_elapsed       | 21.5         |
+| total_timesteps    | 512          |
+| value_loss         | 0.0066311737 |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.007191459  |
+| clipfrac           | 0.1015625    |
+| explained_variance | -16          |
+| fps                | 69           |
+| n_updates          | 5            |
+| policy_entropy     | 3.1227515    |
+| policy_loss        | -0.038608577 |
+| serial_timesteps   | 640          |
+| time_elapsed       | 23.3         |
+| total_timesteps    | 640          |
+| value_loss         | 0.012630895  |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.0045953994 |
+| clipfrac           | 0.060546875  |
+| explained_variance | -3.16        |
+| fps                | 68           |
+| n_updates          | 6            |
+| policy_entropy     | 3.1100907    |
+| policy_loss        | -0.035558037 |
+| serial_timesteps   | 768          |
+| time_elapsed       | 25.2         |
+| total_timesteps    | 768          |
+| value_loss         | 0.009172132  |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.009143541  |
+| clipfrac           | 0.103515625  |
+| explained_variance | -19.3        |
+| fps                | 71           |
+| n_updates          | 7            |
+| policy_entropy     | 3.1050773    |
+| policy_loss        | -0.035926923 |
+| serial_timesteps   | 896          |
+| time_elapsed       | 27           |
+| total_timesteps    | 896          |
+| value_loss         | 0.0067858095 |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.003506794  |
+| clipfrac           | 0.037109375  |
+| explained_variance | -11.9        |
+| fps                | 70           |
+| n_updates          | 8            |
+| policy_entropy     | 3.1087527    |
+| policy_loss        | -0.03510943  |
+| serial_timesteps   | 1024         |
+| time_elapsed       | 28.8         |
+| total_timesteps    | 1024         |
+| value_loss         | 0.0060115107 |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.0057391115 |
+| clipfrac           | 0.076171875  |
+| explained_variance | -21.9        |
+| fps                | 68           |
+| n_updates          | 9            |
+| policy_entropy     | 3.0899982    |
+| policy_loss        | -0.04027173  |
+| serial_timesteps   | 1152         |
+| time_elapsed       | 30.7         |
+| total_timesteps    | 1152         |
+| value_loss         | 0.008043544  |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.007443852  |
+| clipfrac           | 0.10546875   |
+| explained_variance | -6.41        |
+| fps                | 71           |
+| n_updates          | 10           |
+| policy_entropy     | 3.0799294    |
+| policy_loss        | -0.030166402 |
+| serial_timesteps   | 1280         |
+| time_elapsed       | 32.5         |
+| total_timesteps    | 1280         |
+| value_loss         | 0.007881636  |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.0044689896 |
+| clipfrac           | 0.060546875  |
+| explained_variance | -3           |
+| fps                | 69           |
+| n_updates          | 11           |
+| policy_entropy     | 3.077082     |
+| policy_loss        | -0.02097323  |
+| serial_timesteps   | 1408         |
+| time_elapsed       | 34.3         |
+| total_timesteps    | 1408         |
+| value_loss         | 0.005172204  |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.0050849114 |
+| clipfrac           | 0.06640625   |
+| explained_variance | -2.86        |
+| fps                | 71           |
+| n_updates          | 12           |
+| policy_entropy     | 3.0792596    |
+| policy_loss        | -0.031660907 |
+| serial_timesteps   | 1536         |
+| time_elapsed       | 36.2         |
+| total_timesteps    | 1536         |
+| value_loss         | 0.0035120992 |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.005501705  |
+| clipfrac           | 0.072265625  |
+| explained_variance | -6.78        |
+| fps                | 69           |
+| n_updates          | 13           |
+| policy_entropy     | 3.0667455    |
+| policy_loss        | -0.0353304   |
+| serial_timesteps   | 1664         |
+| time_elapsed       | 38           |
+| total_timesteps    | 1664         |
+| value_loss         | 0.0035197046 |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.0034935924 |
+| clipfrac           | 0.03515625   |
+| explained_variance | -1.97        |
+| fps                | 70           |
+| n_updates          | 14           |
+| policy_entropy     | 3.0474973    |
+| policy_loss        | -0.02214749  |
+| serial_timesteps   | 1792         |
+| time_elapsed       | 39.8         |
+| total_timesteps    | 1792         |
+| value_loss         | 0.008100608  |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.0050987806 |
+| clipfrac           | 0.07421875   |
+| explained_variance | -7.62        |
+| fps                | 69           |
+| n_updates          | 15           |
+| policy_entropy     | 3.013968     |
+| policy_loss        | -0.035785682 |
+| serial_timesteps   | 1920         |
+| time_elapsed       | 41.6         |
+| total_timesteps    | 1920         |
+| value_loss         | 0.005753589  |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.0042615556 |
+| clipfrac           | 0.048828125  |
+| explained_variance | -3.22        |
+| fps                | 69           |
+| n_updates          | 16           |
+| policy_entropy     | 3.054264     |
+| policy_loss        | -0.025227852 |
+| serial_timesteps   | 2048         |
+| time_elapsed       | 43.5         |
+| total_timesteps    | 2048         |
+| value_loss         | 0.0059471955 |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.0046438547 |
+| clipfrac           | 0.06640625   |
+| explained_variance | -11.8        |
+| fps                | 69           |
+| n_updates          | 17           |
+| policy_entropy     | 3.0322256    |
+| policy_loss        | -0.035015304 |
+| serial_timesteps   | 2176         |
+| time_elapsed       | 45.3         |
+| total_timesteps    | 2176         |
+| value_loss         | 0.0070840833 |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.003370538  |
+| clipfrac           | 0.029296875  |
+| explained_variance | -13.7        |
+| fps                | 70           |
+| n_updates          | 18           |
+| policy_entropy     | 3.0704434    |
+| policy_loss        | -0.023219515 |
+| serial_timesteps   | 2304         |
+| time_elapsed       | 47.2         |
+| total_timesteps    | 2304         |
+| value_loss         | 0.0028484792 |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.006409786  |
+| clipfrac           | 0.091796875  |
+| explained_variance | -9.48        |
+| fps                | 70           |
+| n_updates          | 19           |
+| policy_entropy     | 2.987904     |
+| policy_loss        | -0.035213843 |
+| serial_timesteps   | 2432         |
+| time_elapsed       | 49           |
+| total_timesteps    | 2432         |
+| value_loss         | 0.0047854204 |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.006497549  |
+| clipfrac           | 0.09375      |
+| explained_variance | -11.7        |
+| fps                | 68           |
+| n_updates          | 20           |
+| policy_entropy     | 2.9115448    |
+| policy_loss        | -0.030990526 |
+| serial_timesteps   | 2560         |
+| time_elapsed       | 50.8         |
+| total_timesteps    | 2560         |
+| value_loss         | 0.004396537  |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.0057365038 |
+| clipfrac           | 0.076171875  |
+| explained_variance | -3.01        |
+| fps                | 71           |
+| n_updates          | 21           |
+| policy_entropy     | 3.0100975    |
+| policy_loss        | -0.030712336 |
+| serial_timesteps   | 2688         |
+| time_elapsed       | 52.7         |
+| total_timesteps    | 2688         |
+| value_loss         | 0.0028251242 |
+-------------------------------------
+------------------------------------
+| approxkl           | 0.012113415 |
+| clipfrac           | 0.17773438  |
+| explained_variance | -6.15       |
+| fps                | 67          |
+| n_updates          | 22          |
+| policy_entropy     | 2.9067888   |
+| policy_loss        | -0.03025525 |
+| serial_timesteps   | 2816        |
+| time_elapsed       | 54.5        |
+| total_timesteps    | 2816        |
+| value_loss         | 0.00661547  |
+------------------------------------
+-------------------------------------
+| approxkl           | 0.0146746095 |
+| clipfrac           | 0.21484375   |
+| explained_variance | -8.17        |
+| fps                | 69           |
+| n_updates          | 23           |
+| policy_entropy     | 2.944471     |
+| policy_loss        | -0.025846934 |
+| serial_timesteps   | 2944         |
+| time_elapsed       | 56.4         |
+| total_timesteps    | 2944         |
+| value_loss         | 0.007340616  |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.0034283446 |
+| clipfrac           | 0.046875     |
+| explained_variance | -14.4        |
+| fps                | 69           |
+| n_updates          | 24           |
+| policy_entropy     | 2.9670064    |
+| policy_loss        | -0.030686371 |
+| serial_timesteps   | 3072         |
+| time_elapsed       | 58.2         |
+| total_timesteps    | 3072         |
+| value_loss         | 0.003749698  |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.0066144066 |
+| clipfrac           | 0.08203125   |
+| explained_variance | -15          |
+| fps                | 69           |
+| n_updates          | 25           |
+| policy_entropy     | 2.890479     |
+| policy_loss        | -0.03531905  |
+| serial_timesteps   | 3200         |
+| time_elapsed       | 60           |
+| total_timesteps    | 3200         |
+| value_loss         | 0.005126408  |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.003699907  |
+| clipfrac           | 0.046875     |
+| explained_variance | -16.7        |
+| fps                | 68           |
+| n_updates          | 26           |
+| policy_entropy     | 2.92478      |
+| policy_loss        | -0.018177195 |
+| serial_timesteps   | 3328         |
+| time_elapsed       | 61.9         |
+| total_timesteps    | 3328         |
+| value_loss         | 0.0030545066 |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.002150026  |
+| clipfrac           | 0.01953125   |
+| explained_variance | -5.88        |
+| fps                | 70           |
+| n_updates          | 27           |
+| policy_entropy     | 2.8929558    |
+| policy_loss        | -0.021653675 |
+| serial_timesteps   | 3456         |
+| time_elapsed       | 63.7         |
+| total_timesteps    | 3456         |
+| value_loss         | 0.0018296412 |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.0032687292 |
+| clipfrac           | 0.0390625    |
+| explained_variance | -1.25        |
+| fps                | 68           |
+| n_updates          | 28           |
+| policy_entropy     | 2.8655734    |
+| policy_loss        | -0.019367348 |
+| serial_timesteps   | 3584         |
+| time_elapsed       | 65.6         |
+| total_timesteps    | 3584         |
+| value_loss         | 0.0035883968 |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.0031826072 |
+| clipfrac           | 0.03515625   |
+| explained_variance | -13.6        |
+| fps                | 71           |
+| n_updates          | 29           |
+| policy_entropy     | 3.0322828    |
+| policy_loss        | -0.019959493 |
+| serial_timesteps   | 3712         |
+| time_elapsed       | 67.4         |
+| total_timesteps    | 3712         |
+| value_loss         | 0.0012646548 |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.0046773874 |
+| clipfrac           | 0.060546875  |
+| explained_variance | -4.85        |
+| fps                | 69           |
+| n_updates          | 30           |
+| policy_entropy     | 2.8930268    |
+| policy_loss        | -0.023547584 |
+| serial_timesteps   | 3840         |
+| time_elapsed       | 69.2         |
+| total_timesteps    | 3840         |
+| value_loss         | 0.0041705496 |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.0043210257 |
+| clipfrac           | 0.068359375  |
+| explained_variance | -6.2         |
+| fps                | 69           |
+| n_updates          | 31           |
+| policy_entropy     | 2.8908312    |
+| policy_loss        | -0.019220026 |
+| serial_timesteps   | 3968         |
+| time_elapsed       | 71.1         |
+| total_timesteps    | 3968         |
+| value_loss         | 0.0037358692 |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.0040041767 |
+| clipfrac           | 0.04296875   |
+| explained_variance | -6.06        |
+| fps                | 68           |
+| n_updates          | 32           |
+| policy_entropy     | 2.9260547    |
+| policy_loss        | -0.016887084 |
+| serial_timesteps   | 4096         |
+| time_elapsed       | 72.9         |
+| total_timesteps    | 4096         |
+| value_loss         | 0.0020238855 |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.0012021571 |
+| clipfrac           | 0.0078125    |
+| explained_variance | -12.6        |
+| fps                | 69           |
+| n_updates          | 33           |
+| policy_entropy     | 2.93147      |
+| policy_loss        | -0.017369535 |
+| serial_timesteps   | 4224         |
+| time_elapsed       | 74.8         |
+| total_timesteps    | 4224         |
+| value_loss         | 0.0013570841 |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.0019108081 |
+| clipfrac           | 0.017578125  |
+| explained_variance | -15          |
+| fps                | 68           |
+| n_updates          | 34           |
+| policy_entropy     | 2.9702377    |
+| policy_loss        | -0.018420639 |
+| serial_timesteps   | 4352         |
+| time_elapsed       | 76.6         |
+| total_timesteps    | 4352         |
+| value_loss         | 0.0011553135 |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.0025978086 |
+| clipfrac           | 0.0234375    |
+| explained_variance | -8.3         |
+| fps                | 70           |
+| n_updates          | 35           |
+| policy_entropy     | 2.9254403    |
+| policy_loss        | -0.021094114 |
+| serial_timesteps   | 4480         |
+| time_elapsed       | 78.5         |
+| total_timesteps    | 4480         |
+| value_loss         | 0.0015350427 |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.006608707  |
+| clipfrac           | 0.056640625  |
+| explained_variance | -26.4        |
+| fps                | 67           |
+| n_updates          | 36           |
+| policy_entropy     | 2.913075     |
+| policy_loss        | -0.024067963 |
+| serial_timesteps   | 4608         |
+| time_elapsed       | 80.3         |
+| total_timesteps    | 4608         |
+| value_loss         | 0.0035330513 |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.0019106918 |
+| clipfrac           | 0.017578125  |
+| explained_variance | -55          |
+| fps                | 66           |
+| n_updates          | 37           |
+| policy_entropy     | 2.8730893    |
+| policy_loss        | -0.017963056 |
+| serial_timesteps   | 4736         |
+| time_elapsed       | 82.2         |
+| total_timesteps    | 4736         |
+| value_loss         | 0.0036009694 |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.0031097014 |
+| clipfrac           | 0.044921875  |
+| explained_variance | -9.51        |
+| fps                | 70           |
+| n_updates          | 38           |
+| policy_entropy     | 2.959231     |
+| policy_loss        | -0.01630649  |
+| serial_timesteps   | 4864         |
+| time_elapsed       | 84.2         |
+| total_timesteps    | 4864         |
+| value_loss         | 0.002043393  |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.0055523003 |
+| clipfrac           | 0.078125     |
+| explained_variance | -6.08        |
+| fps                | 69           |
+| n_updates          | 39           |
+| policy_entropy     | 2.9998493    |
+| policy_loss        | -0.015639752 |
+| serial_timesteps   | 4992         |
+| time_elapsed       | 86           |
+| total_timesteps    | 4992         |
+| value_loss         | 0.0021584725 |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.0026856214 |
+| clipfrac           | 0.037109375  |
+| explained_variance | -1.6         |
+| fps                | 69           |
+| n_updates          | 40           |
+| policy_entropy     | 2.9725153    |
+| policy_loss        | -0.02278446  |
+| serial_timesteps   | 5120         |
+| time_elapsed       | 87.8         |
+| total_timesteps    | 5120         |
+| value_loss         | 0.0015180153 |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.0050681173 |
+| clipfrac           | 0.072265625  |
+| explained_variance | -1.07        |
+| fps                | 68           |
+| n_updates          | 41           |
+| policy_entropy     | 2.9678023    |
+| policy_loss        | -0.023771033 |
+| serial_timesteps   | 5248         |
+| time_elapsed       | 89.7         |
+| total_timesteps    | 5248         |
+| value_loss         | 0.0019685589 |
+-------------------------------------
+------------------------------------
+| approxkl           | 0.002366711 |
+| clipfrac           | 0.017578125 |
+| explained_variance | -2.27       |
+| fps                | 68          |
+| n_updates          | 42          |
+| policy_entropy     | 2.8985653   |
+| policy_loss        | -0.01842171 |
+| serial_timesteps   | 5376        |
+| time_elapsed       | 91.5        |
+| total_timesteps    | 5376        |
+| value_loss         | 0.002921396 |
+------------------------------------
+-------------------------------------
+| approxkl           | 0.0028212247 |
+| clipfrac           | 0.01953125   |
+| explained_variance | -16          |
+| fps                | 67           |
+| n_updates          | 43           |
+| policy_entropy     | 2.727889     |
+| policy_loss        | -0.016308056 |
+| serial_timesteps   | 5504         |
+| time_elapsed       | 93.4         |
+| total_timesteps    | 5504         |
+| value_loss         | 0.0025135535 |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.0029022442 |
+| clipfrac           | 0.033203125  |
+| explained_variance | -14.2        |
+| fps                | 70           |
+| n_updates          | 44           |
+| policy_entropy     | 2.7630188    |
+| policy_loss        | -0.014299568 |
+| serial_timesteps   | 5632         |
+| time_elapsed       | 95.3         |
+| total_timesteps    | 5632         |
+| value_loss         | 0.0023147538 |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.0023487343 |
+| clipfrac           | 0.021484375  |
+| explained_variance | -1.6         |
+| fps                | 70           |
+| n_updates          | 45           |
+| policy_entropy     | 2.8351898    |
+| policy_loss        | -0.023787765 |
+| serial_timesteps   | 5760         |
+| time_elapsed       | 97.1         |
+| total_timesteps    | 5760         |
+| value_loss         | 0.0015088979 |
+-------------------------------------
+--------------------------------------
+| approxkl           | 0.003383174   |
+| clipfrac           | 0.02734375    |
+| explained_variance | -6.14         |
+| fps                | 68            |
+| n_updates          | 46            |
+| policy_entropy     | 2.767811      |
+| policy_loss        | -0.0118945595 |
+| serial_timesteps   | 5888          |
+| time_elapsed       | 98.9          |
+| total_timesteps    | 5888          |
+| value_loss         | 0.0018752434  |
+--------------------------------------
+-------------------------------------
+| approxkl           | 0.0054951496 |
+| clipfrac           | 0.087890625  |
+| explained_variance | -3.93        |
+| fps                | 71           |
+| n_updates          | 47           |
+| policy_entropy     | 2.7721267    |
+| policy_loss        | -0.018674687 |
+| serial_timesteps   | 6016         |
+| time_elapsed       | 101          |
+| total_timesteps    | 6016         |
+| value_loss         | 0.0030725007 |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.005166732  |
+| clipfrac           | 0.072265625  |
+| explained_variance | -6.76        |
+| fps                | 70           |
+| n_updates          | 48           |
+| policy_entropy     | 2.7568529    |
+| policy_loss        | -0.020239295 |
+| serial_timesteps   | 6144         |
+| time_elapsed       | 103          |
+| total_timesteps    | 6144         |
+| value_loss         | 0.001575322  |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.0023357992 |
+| clipfrac           | 0.015625     |
+| explained_variance | -22.2        |
+| fps                | 70           |
+| n_updates          | 49           |
+| policy_entropy     | 2.8430831    |
+| policy_loss        | -0.022799034 |
+| serial_timesteps   | 6272         |
+| time_elapsed       | 104          |
+| total_timesteps    | 6272         |
+| value_loss         | 0.0009444702 |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.0031195018 |
+| clipfrac           | 0.041015625  |
+| explained_variance | -12.9        |
+| fps                | 72           |
+| n_updates          | 50           |
+| policy_entropy     | 2.7206206    |
+| policy_loss        | -0.01435154  |
+| serial_timesteps   | 6400         |
+| time_elapsed       | 106          |
+| total_timesteps    | 6400         |
+| value_loss         | 0.0013185022 |
+-------------------------------------
+--------------------------------------
+| approxkl           | 0.00095344835 |
+| clipfrac           | 0.0078125     |
+| explained_variance | -17.3         |
+| fps                | 70            |
+| n_updates          | 51            |
+| policy_entropy     | 2.7875803     |
+| policy_loss        | -0.01313178   |
+| serial_timesteps   | 6528          |
+| time_elapsed       | 108           |
+| total_timesteps    | 6528          |
+| value_loss         | 0.0011184063  |
+--------------------------------------
+--------------------------------------
+| approxkl           | 0.00098653    |
+| clipfrac           | 0.001953125   |
+| explained_variance | -4.97         |
+| fps                | 70            |
+| n_updates          | 52            |
+| policy_entropy     | 2.8630807     |
+| policy_loss        | -0.013609     |
+| serial_timesteps   | 6656          |
+| time_elapsed       | 110           |
+| total_timesteps    | 6656          |
+| value_loss         | 0.00043460756 |
+--------------------------------------
+--------------------------------------
+| approxkl           | 0.0021617394  |
+| clipfrac           | 0.01953125    |
+| explained_variance | -5.83         |
+| fps                | 72            |
+| n_updates          | 53            |
+| policy_entropy     | 2.7797117     |
+| policy_loss        | -0.011913329  |
+| serial_timesteps   | 6784          |
+| time_elapsed       | 112           |
+| total_timesteps    | 6784          |
+| value_loss         | 0.00082066684 |
+--------------------------------------
+-------------------------------------
+| approxkl           | 0.0008222591 |
+| clipfrac           | 0.00390625   |
+| explained_variance | -7.08        |
+| fps                | 71           |
+| n_updates          | 54           |
+| policy_entropy     | 2.833537     |
+| policy_loss        | -0.015941361 |
+| serial_timesteps   | 6912         |
+| time_elapsed       | 113          |
+| total_timesteps    | 6912         |
+| value_loss         | 0.0007032367 |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.0014184254 |
+| clipfrac           | 0.017578125  |
+| explained_variance | -28.3        |
+| fps                | 72           |
+| n_updates          | 55           |
+| policy_entropy     | 2.7140934    |
+| policy_loss        | -0.014024768 |
+| serial_timesteps   | 7040         |
+| time_elapsed       | 115          |
+| total_timesteps    | 7040         |
+| value_loss         | 0.0008782122 |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.0015884313 |
+| clipfrac           | 0.013671875  |
+| explained_variance | -3.52        |
+| fps                | 72           |
+| n_updates          | 56           |
+| policy_entropy     | 2.763313     |
+| policy_loss        | -0.01653451  |
+| serial_timesteps   | 7168         |
+| time_elapsed       | 117          |
+| total_timesteps    | 7168         |
+| value_loss         | 0.0007462099 |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.0026966752 |
+| clipfrac           | 0.029296875  |
+| explained_variance | -14.4        |
+| fps                | 69           |
+| n_updates          | 57           |
+| policy_entropy     | 2.7797394    |
+| policy_loss        | -0.015155458 |
+| serial_timesteps   | 7296         |
+| time_elapsed       | 119          |
+| total_timesteps    | 7296         |
+| value_loss         | 0.0014343347 |
+-------------------------------------
+-------------------------------------
+| approxkl           | 0.0009096245 |
+| clipfrac           | 0.01171875   |
+| explained_variance | -3.86        |
+| fps                | 67           |
+| n_updates          | 58           |
+| policy_entropy     | 2.9111753    |
+| policy_loss        | -0.015380679 |
+| serial_timesteps   | 7424         |
+| time_elapsed       | 121          |
+| total_timesteps    | 7424         |
+| value_loss         | 0.0008800622 |
+-------------------------------------
+Trades:     step symbol            type    amount    price
+0     2    BTC   TradeType.BUY  2.279120  1994.39
+1     3    BTC  TradeType.SELL  1.139560 -1319.70
+2     4    BTC  TradeType.SELL  0.081397  1366.03
+3     6    BTC  TradeType.SELL  0.046007  1812.45
+4     7    BTC  TradeType.SELL  0.044007  1470.17
+5    11    BTC   TradeType.BUY  7.004290  1034.64
+6    14    BTC  TradeType.SELL  0.468967  1376.94
+7    15    BTC  TradeType.SELL  3.751736 -2605.11
+8    19    BTC  TradeType.SELL  1.875868  4946.33
+9    21    BTC  TradeType.SELL  0.081559 -2374.77
+10   23    BTC  TradeType.SELL  0.128165   127.56
+11   24    BTC  TradeType.SELL  0.083307  -191.49
+12   25    BTC  TradeType.SELL  0.316567  -807.35
+13   27    BTC  TradeType.SELL  0.063313 -2485.67
+14   29    BTC  TradeType.SELL  0.085925  1897.57
+15   30    BTC  TradeType.SELL  0.139629 -1794.40
+16   31    BTC  TradeType.SELL  0.195480   612.75
+17   33    BTC   TradeType.BUY  1.750050  4944.99
+18   38    BTC  TradeType.SELL  0.110086 -5482.71
+19   39    BTC  TradeType.SELL  0.484377   -49.09
+20   41    BTC  TradeType.SELL  0.968754 -1990.78
+21   44    BTC  TradeType.SELL  0.056986  2792.90
+22   45    BTC  TradeType.SELL  0.053633 -1100.48
+Balance:  75430.0071737541
+Portfolio:  {&#39;BTC&#39;: 0.8581350600000001}
+P/L:  0.7376095855332863
+</pre></div></div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../api/modules.html" class="btn btn-neutral float-right" title="tensortrade" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="../overview/getting_started.html" class="btn btn-neutral float-left" title="Getting Started" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Adam King
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

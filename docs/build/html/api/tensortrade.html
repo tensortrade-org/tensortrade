@@ -1,0 +1,403 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>tensortrade package &mdash; TensorTrade 0.0.1 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/theme_overrides.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="tensortrade.agents package" href="tensortrade.agents.html" />
+    <link rel="prev" title="tensortrade" href="modules.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html">
+          
+
+          
+            
+            <img src="../_static/logo.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Home</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Overview</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../overview/getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../overview/getting_started.html#installation">Installation</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../examples/Train_and_Evaluate.html">Train and Evaluate</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">API reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">tensortrade package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#subpackages">Subpackages</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="tensortrade.agents.html">tensortrade.agents package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tensortrade.environments.html">tensortrade.environments package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tensortrade.exchanges.html">tensortrade.exchanges package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tensortrade.features.html">tensortrade.features package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="tensortrade.version.html">tensortrade.version module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">TensorTrade</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="modules.html">tensortrade</a> &raquo;</li>
+        
+      <li>tensortrade package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/api/tensortrade.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="module-tensortrade">
+<span id="tensortrade-package"></span><h1>tensortrade package<a class="headerlink" href="#module-tensortrade" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="tensortrade.agents.html">tensortrade.agents package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tensortrade.agents.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tensortrade.agents.rl.html">tensortrade.agents.rl package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="tensortrade.agents.rl.html#submodules">Submodules</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="tensortrade.agents.rl.tensorflow_agent.html">tensortrade.agents.rl.tensorflow_agent module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tensortrade.agents.html#submodules">Submodules</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tensortrade.agents.trading_agent.html">tensortrade.agents.trading_agent module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tensortrade.environments.html">tensortrade.environments package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tensortrade.environments.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tensortrade.environments.actions.html">tensortrade.environments.actions package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="tensortrade.environments.actions.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="tensortrade.environments.actions.continuous.html">tensortrade.environments.actions.continuous package</a><ul>
+<li class="toctree-l6"><a class="reference internal" href="tensortrade.environments.actions.continuous.html#submodules">Submodules</a><ul>
+<li class="toctree-l7"><a class="reference internal" href="tensortrade.environments.actions.continuous.simple_continuous_strategy.html">tensortrade.environments.actions.continuous.simple_continuous_strategy module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l5"><a class="reference internal" href="tensortrade.environments.actions.discrete.html">tensortrade.environments.actions.discrete package</a><ul>
+<li class="toctree-l6"><a class="reference internal" href="tensortrade.environments.actions.discrete.html#submodules">Submodules</a><ul>
+<li class="toctree-l7"><a class="reference internal" href="tensortrade.environments.actions.discrete.simple_discrete_strategy.html">tensortrade.environments.actions.discrete.simple_discrete_strategy module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="tensortrade.environments.actions.html#submodules">Submodules</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="tensortrade.environments.actions.action_strategy.html">tensortrade.environments.actions.action_strategy module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="tensortrade.environments.actions.trade_type.html">tensortrade.environments.actions.trade_type module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="tensortrade.environments.rewards.html">tensortrade.environments.rewards package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="tensortrade.environments.rewards.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="tensortrade.environments.rewards.simple.html">tensortrade.environments.rewards.simple package</a><ul>
+<li class="toctree-l6"><a class="reference internal" href="tensortrade.environments.rewards.simple.html#submodules">Submodules</a><ul>
+<li class="toctree-l7"><a class="reference internal" href="tensortrade.environments.rewards.simple.incremental_profit_strategy.html">tensortrade.environments.rewards.simple.incremental_profit_strategy module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="tensortrade.environments.rewards.html#submodules">Submodules</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="tensortrade.environments.rewards.reward_strategy.html">tensortrade.environments.rewards.reward_strategy module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tensortrade.environments.html#submodules">Submodules</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tensortrade.environments.trading_environment.html">tensortrade.environments.trading_environment module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tensortrade.exchanges.html">tensortrade.exchanges package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tensortrade.exchanges.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tensortrade.exchanges.live.html">tensortrade.exchanges.live package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="tensortrade.exchanges.live.html#submodules">Submodules</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="tensortrade.exchanges.live.ccxt_exchange.html">tensortrade.exchanges.live.ccxt_exchange module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="tensortrade.exchanges.simulated.html">tensortrade.exchanges.simulated package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="tensortrade.exchanges.simulated.html#submodules">Submodules</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="tensortrade.exchanges.simulated.fbm_exchange.html">tensortrade.exchanges.simulated.fbm_exchange module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="tensortrade.exchanges.simulated.gan_exchange.html">tensortrade.exchanges.simulated.gan_exchange module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="tensortrade.exchanges.simulated.generated_exchange.html">tensortrade.exchanges.simulated.generated_exchange module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="tensortrade.exchanges.simulated.static_exchange.html">tensortrade.exchanges.simulated.static_exchange module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tensortrade.exchanges.html#submodules">Submodules</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tensortrade.exchanges.asset_exchange.html">tensortrade.exchanges.asset_exchange module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tensortrade.features.html">tensortrade.features package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tensortrade.features.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tensortrade.features.scalers.html">tensortrade.features.scalers package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="tensortrade.features.scalers.html#submodules">Submodules</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="tensortrade.features.scalers.min_max_normalizer.html">tensortrade.features.scalers.min_max_normalizer module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="tensortrade.features.selectors.html">tensortrade.features.selectors package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="tensortrade.features.selectors.html#submodules">Submodules</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="tensortrade.features.selectors.column_selector.html">tensortrade.features.selectors.column_selector module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tensortrade.features.html#submodules">Submodules</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tensortrade.features.feature_pipeline.html">tensortrade.features.feature_pipeline module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tensortrade.features.transformer.html">tensortrade.features.transformer module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="tensortrade.version.html">tensortrade.version module</a></li>
+</ul>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="tensortrade.agents.html" class="btn btn-neutral float-right" title="tensortrade.agents package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="modules.html" class="btn btn-neutral float-left" title="tensortrade" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Adam King
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

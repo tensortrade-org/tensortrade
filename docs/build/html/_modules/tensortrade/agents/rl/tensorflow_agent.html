@@ -1,0 +1,364 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>tensortrade.agents.rl.tensorflow_agent &mdash; TensorTrade 0.0.1 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../../../../_static/favicon.ico"/>
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/theme_overrides.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../../index.html">
+          
+
+          
+            
+            <img src="../../../../_static/logo.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../index.html">Home</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Overview</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../overview/getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../overview/getting_started.html#installation">Installation</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../examples/Train_and_Evaluate.html">Train and Evaluate</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/modules.html">API reference</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">TensorTrade</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+        
+      <li>tensortrade.agents.rl.tensorflow_agent</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for tensortrade.agents.rl.tensorflow_agent</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">List</span>
+
+<span class="kn">from</span> <span class="nn">tensortrade.environments.trading_environment</span> <span class="k">import</span> <span class="n">TradingEnvironment</span>
+<span class="kn">from</span> <span class="nn">tensortrade.features.feature_pipeline</span> <span class="k">import</span> <span class="n">FeaturePipeline</span>
+<span class="kn">from</span> <span class="nn">tensortrade.agents</span> <span class="k">import</span> <span class="n">TradingAgent</span>
+
+
+<span class="sd">&quot;&quot;&quot; [WIP] &quot;&quot;&quot;</span>
+
+
+<div class="viewcode-block" id="TensorflowAgent"><a class="viewcode-back" href="../../../../api/tensortrade.agents.rl.tensorflow_agent.html#tensortrade.agents.rl.tensorflow_agent.TensorflowAgent">[docs]</a><span class="k">class</span> <span class="nc">TensorflowAgent</span><span class="p">(</span><span class="n">TradingAgent</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A trading agent capable of self tuning, training, and evaluating with the TensorFlow 2 `agents` API.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="TensorflowAgent.__init__"><a class="viewcode-back" href="../../../../api/tensortrade.agents.rl.tensorflow_agent.html#tensortrade.agents.rl.tensorflow_agent.TensorflowAgent.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env</span><span class="p">:</span> <span class="n">TradingEnvironment</span><span class="p">,</span> <span class="n">feature_pipeline</span><span class="p">:</span> <span class="n">FeaturePipeline</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            env: A `TradingEnvironment` instance for the agent to trade within.</span>
+<span class="sd">            feature_pipeline: A `FeaturePipeline` instance of feature transformations.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">env</span><span class="o">=</span><span class="n">env</span><span class="p">,</span> <span class="n">feature_pipeline</span><span class="o">=</span><span class="n">feature_pipeline</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TensorflowAgent.tune"><a class="viewcode-back" href="../../../../api/tensortrade.agents.rl.tensorflow_agent.html#tensortrade.agents.rl.tensorflow_agent.TensorflowAgent.tune">[docs]</a>    <span class="k">def</span> <span class="nf">tune</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">steps_per_train</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">steps_per_test</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">step_cb</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">],</span> <span class="nb">bool</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="TensorflowAgent.train"><a class="viewcode-back" href="../../../../api/tensortrade.agents.rl.tensorflow_agent.html#tensortrade.agents.rl.tensorflow_agent.TensorflowAgent.train">[docs]</a>    <span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">steps</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">callback</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">],</span> <span class="nb">bool</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+        <span class="c1"># train_summary_writer = tf.compat.v2.summary.create_file_writer(</span>
+        <span class="c1">#     train_dir, flush_millis=summaries_flush_secs * 1000)</span>
+        <span class="c1"># train_summary_writer.set_as_default()</span>
+
+        <span class="c1"># eval_summary_writer = tf.compat.v2.summary.create_file_writer(</span>
+        <span class="c1">#     eval_dir, flush_millis=summaries_flush_secs * 1000)</span>
+        <span class="c1"># eval_metrics = [</span>
+        <span class="c1">#     tf_metrics.AverageReturnMetric(buffer_size=num_eval_episodes),</span>
+        <span class="c1">#     tf_metrics.AverageEpisodeLengthMetric(buffer_size=num_eval_episodes)</span>
+        <span class="c1"># ]</span>
+
+        <span class="c1"># global_step = tf.compat.v1.train.get_or_create_global_step()</span>
+
+        <span class="c1"># with tf.compat.v2.summary.record_if(</span>
+        <span class="c1">#         lambda: tf.math.equal(global_step % summary_interval, 0)):</span>
+        <span class="c1">#     tf.compat.v1.set_random_seed(random_seed)</span>
+        <span class="c1">#     eval_tf_env = tf_py_environment.TFPyEnvironment(env_load_fn(env_name))</span>
+        <span class="c1">#     tf_env = tf_py_environment.TFPyEnvironment(</span>
+        <span class="c1">#         parallel_py_environment.ParallelPyEnvironment(</span>
+        <span class="c1">#             [lambda: env_load_fn(env_name)] * num_parallel_environments))</span>
+        <span class="c1">#     optimizer = tf.compat.v1.train.AdamOptimizer(learning_rate=learning_rate)</span>
+
+        <span class="c1"># if use_rnns:</span>
+        <span class="c1">#     actor_net = actor_distribution_rnn_network.ActorDistributionRnnNetwork(</span>
+        <span class="c1">#         tf_env.observation_spec(),</span>
+        <span class="c1">#         tf_env.action_spec(),</span>
+        <span class="c1">#         input_fc_layer_params=actor_fc_layers,</span>
+        <span class="c1">#         output_fc_layer_params=None)</span>
+        <span class="c1">#     value_net = value_rnn_network.ValueRnnNetwork(</span>
+        <span class="c1">#         tf_env.observation_spec(),</span>
+        <span class="c1">#         input_fc_layer_params=value_fc_layers,</span>
+        <span class="c1">#         output_fc_layer_params=None)</span>
+
+        <span class="c1"># tf_agent = ppo_agent.PPOAgent(</span>
+        <span class="c1">#     tf_env.time_step_spec(),</span>
+        <span class="c1">#     tf_env.action_spec(),</span>
+        <span class="c1">#     optimizer,</span>
+        <span class="c1">#     actor_net=actor_net,</span>
+        <span class="c1">#     value_net=value_net,</span>
+        <span class="c1">#     num_epochs=num_epochs,</span>
+        <span class="c1">#     debug_summaries=debug_summaries,</span>
+        <span class="c1">#     summarize_grads_and_vars=summarize_grads_and_vars,</span>
+        <span class="c1">#     train_step_counter=global_step)</span>
+        <span class="c1"># tf_agent.initialize()</span>
+
+        <span class="c1"># environment_steps_metric = tf_metrics.EnvironmentSteps()</span>
+        <span class="c1"># step_metrics = [</span>
+        <span class="c1">#     tf_metrics.NumberOfEpisodes(),</span>
+        <span class="c1">#     environment_steps_metric,</span>
+        <span class="c1"># ]</span>
+
+        <span class="c1"># train_metrics = step_metrics + [</span>
+        <span class="c1">#     tf_metrics.AverageReturnMetric(</span>
+        <span class="c1">#         batch_size=num_parallel_environments),</span>
+        <span class="c1">#     tf_metrics.AverageEpisodeLengthMetric(</span>
+        <span class="c1">#         batch_size=num_parallel_environments),</span>
+        <span class="c1"># ]</span>
+
+        <span class="c1"># eval_policy = tf_agent.policy</span>
+        <span class="c1"># collect_policy = tf_agent.collect_policy</span>
+
+        <span class="c1"># replay_buffer = tf_uniform_replay_buffer.TFUniformReplayBuffer(</span>
+        <span class="c1">#     tf_agent.collect_data_spec,</span>
+        <span class="c1">#     batch_size=num_parallel_environments,</span>
+        <span class="c1">#     max_length=replay_buffer_capacity)</span>
+
+        <span class="c1"># collect_driver = dynamic_episode_driver.DynamicEpisodeDriver(</span>
+        <span class="c1">#     tf_env,</span>
+        <span class="c1">#     collect_policy,</span>
+        <span class="c1">#     observers=[replay_buffer.add_batch] + train_metrics,</span>
+        <span class="c1">#     num_episodes=collect_episodes_per_iteration)</span>
+
+        <span class="c1"># def train_step():</span>
+        <span class="c1">#     trajectories = replay_buffer.gather_all()</span>
+        <span class="c1">#     return tf_agent.train(experience=trajectories)</span>
+
+        <span class="c1"># collect_time = 0</span>
+        <span class="c1"># train_time = 0</span>
+        <span class="c1"># timed_at_step = global_step.numpy()</span>
+
+        <span class="c1"># while environment_steps_metric.result() &lt; num_environment_steps:</span>
+        <span class="c1">#     global_step_val = global_step.numpy()</span>
+
+        <span class="c1"># start_time = time.time()</span>
+        <span class="c1"># collect_driver.run()</span>
+        <span class="c1"># collect_time += time.time() - start_time</span>
+
+        <span class="c1"># start_time = time.time()</span>
+        <span class="c1"># total_loss, _ = train_step()</span>
+        <span class="c1"># replay_buffer.clear()</span>
+        <span class="c1"># train_time += time.time() - start_time</span>
+
+        <span class="c1"># for train_metric in train_metrics:</span>
+        <span class="c1">#     train_metric.tf_summaries(train_step=global_step, step_metrics=step_metrics)</span>
+
+        <span class="c1"># if global_step_val % log_interval == 0:</span>
+        <span class="c1">#     logging.info(&#39;step = %d, loss = %f&#39;, global_step_val, total_loss)</span>
+        <span class="c1">#     steps_per_sec = (</span>
+        <span class="c1">#         (global_step_val - timed_at_step) / (collect_time + train_time))</span>
+        <span class="c1">#     logging.info(&#39;%.3f steps/sec&#39;, steps_per_sec)</span>
+        <span class="c1">#     logging.info(&#39;collect_time = {}, train_time = {}&#39;.format(</span>
+        <span class="c1">#         collect_time, train_time))</span>
+
+        <span class="c1">#     with tf.compat.v2.summary.record_if(True):</span>
+        <span class="c1">#         tf.compat.v2.summary.scalar(</span>
+        <span class="c1">#             name=&#39;global_steps_per_sec&#39;, data=steps_per_sec, step=global_step)</span>
+
+        <span class="c1">#     timed_at_step = global_step_val</span>
+        <span class="c1">#     collect_time = 0</span>
+        <span class="c1">#     train_time = 0</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="TensorflowAgent.evaluate"><a class="viewcode-back" href="../../../../api/tensortrade.agents.rl.tensorflow_agent.html#tensortrade.agents.rl.tensorflow_agent.TensorflowAgent.evaluate">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">steps</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">callback</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">],</span> <span class="nb">bool</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+        <span class="c1"># metric_utils.eager_compute(</span>
+        <span class="c1">#     eval_metrics,</span>
+        <span class="c1">#     eval_tf_env,</span>
+        <span class="c1">#     eval_policy,</span>
+        <span class="c1">#     num_episodes=num_eval_episodes,</span>
+        <span class="c1">#     train_step=global_step,</span>
+        <span class="c1">#     summary_writer=eval_summary_writer,</span>
+        <span class="c1">#     summary_prefix=&#39;Metrics&#39;,</span>
+        <span class="c1"># )</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="TensorflowAgent.get_action"><a class="viewcode-back" href="../../../../api/tensortrade.agents.rl.tensorflow_agent.html#tensortrade.agents.rl.tensorflow_agent.TensorflowAgent.get_action">[docs]</a>    <span class="k">def</span> <span class="nf">get_action</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">observation</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]]:</span>
+        <span class="k">pass</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Adam King
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

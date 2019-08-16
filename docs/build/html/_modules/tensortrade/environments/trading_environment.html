@@ -1,0 +1,358 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>tensortrade.environments.trading_environment &mdash; TensorTrade 0.0.1 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/theme_overrides.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html">
+          
+
+          
+            
+            <img src="../../../_static/logo.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../index.html">Home</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Overview</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../overview/getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../overview/getting_started.html#installation">Installation</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/Train_and_Evaluate.html">Train and Evaluate</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/modules.html">API reference</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">TensorTrade</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>tensortrade.environments.trading_environment</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for tensortrade.environments.trading_environment</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">gym</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">gym</span> <span class="k">import</span> <span class="n">spaces</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Tuple</span>
+
+<span class="kn">from</span> <span class="nn">tensortrade.environments.actions</span> <span class="k">import</span> <span class="n">ActionStrategy</span><span class="p">,</span> <span class="n">TradeType</span>
+<span class="kn">from</span> <span class="nn">tensortrade.environments.rewards</span> <span class="k">import</span> <span class="n">RewardStrategy</span>
+<span class="kn">from</span> <span class="nn">tensortrade.exchanges</span> <span class="k">import</span> <span class="n">AssetExchange</span>
+
+
+<div class="viewcode-block" id="TradingEnvironment"><a class="viewcode-back" href="../../../api/tensortrade.environments.trading_environment.html#tensortrade.environments.trading_environment.TradingEnvironment">[docs]</a><span class="k">class</span> <span class="nc">TradingEnvironment</span><span class="p">(</span><span class="n">gym</span><span class="o">.</span><span class="n">Env</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A trading environment made for use with Gym-compatible reinforcement learning algorithms.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="TradingEnvironment.__init__"><a class="viewcode-back" href="../../../api/tensortrade.environments.trading_environment.html#tensortrade.environments.trading_environment.TradingEnvironment.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">action_strategy</span><span class="p">:</span> <span class="n">ActionStrategy</span><span class="p">,</span>
+                 <span class="n">reward_strategy</span><span class="p">:</span> <span class="n">RewardStrategy</span><span class="p">,</span>
+                 <span class="n">exchange</span><span class="p">:</span> <span class="n">AssetExchange</span><span class="p">,</span>
+                 <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            action_strategy:  The strategy for transforming an action into a `TradeDefinition` at each timestep.</span>
+<span class="sd">            reward_strategy: The strategy for determining the reward at each timestep.</span>
+<span class="sd">            exchange: The `AssetExchange` that will be used to feed data from and execute trades within.</span>
+<span class="sd">            kwargs (optional): Additional arguments for tuning the environment, logging, etc.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">action_strategy</span> <span class="o">=</span> <span class="n">action_strategy</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reward_strategy</span> <span class="o">=</span> <span class="n">reward_strategy</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exchange</span> <span class="o">=</span> <span class="n">exchange</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">action_space_dtype</span><span class="p">:</span> <span class="nb">type</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;action_space_dtype&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float16</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">observation_space_dtype</span><span class="p">:</span> <span class="nb">type</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;observation_space_dtype&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float16</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">action_strategy</span><span class="o">.</span><span class="n">set_dtype</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">action_space_dtype</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">set_dtype</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">observation_space_dtype</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">action_space</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">action_strategy</span><span class="o">.</span><span class="n">action_space</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">observation_space</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">observation_space</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger_name</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;logger_name&#39;</span><span class="p">,</span> <span class="vm">__name__</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_level</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;log_level&#39;</span><span class="p">,</span> <span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">disable_tensorflow_logs</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;disable_tensorflow_logger&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logger_name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_level</span><span class="p">)</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;tensorflow&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">disabled</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">disable_tensorflow_logs</span></div>
+
+    <span class="k">def</span> <span class="nf">_take_action</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]):</span>
+        <span class="sd">&quot;&quot;&quot;Determines a specific trade to be taken and executes it within the exchange.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            action: The trade action provided by the agent for this timestep.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">symbol</span><span class="p">,</span> <span class="n">trade_type</span><span class="p">,</span> <span class="n">amount</span><span class="p">,</span> <span class="n">price</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">action_strategy</span><span class="o">.</span><span class="n">get_trade</span><span class="p">(</span>
+            <span class="n">action</span><span class="o">=</span><span class="n">action</span><span class="p">,</span> <span class="n">exchange</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">exchange</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">execute_trade</span><span class="p">(</span><span class="n">symbol</span><span class="o">=</span><span class="n">symbol</span><span class="p">,</span> <span class="n">trade_type</span><span class="o">=</span><span class="n">trade_type</span><span class="p">,</span>
+                                    <span class="n">amount</span><span class="o">=</span><span class="n">amount</span><span class="p">,</span> <span class="n">price</span><span class="o">=</span><span class="n">price</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_next_observation</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Returns the next observation from the exchange.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            observation: Provided by the environment&#39;s exchange, often OHLCV or tick trade history data points.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_step</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="n">observation</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">next_observation</span><span class="p">()</span>
+        <span class="n">observation</span> <span class="o">=</span> <span class="n">observation</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">observation</span>
+
+    <span class="k">def</span> <span class="nf">_get_reward</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Returns the reward for the current timestep.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            done: If `True`, the environment is complete and should be restarted.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">reward</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reward_strategy</span><span class="o">.</span><span class="n">get_reward</span><span class="p">(</span>
+            <span class="n">current_step</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">current_step</span><span class="p">,</span> <span class="n">exchange</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">exchange</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">reward</span> <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">reward</span><span class="p">)</span> <span class="k">else</span> <span class="mi">0</span>
+
+    <span class="k">def</span> <span class="nf">_done</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Returns whether or not the environment is done this timestep.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            done: If `True`, the environment is complete and should be restarted.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">lost_90_percent_net_worth</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">profit_loss_percent</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mf">0.1</span>
+        <span class="n">has_next_obs</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">has_next_observation</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">lost_90_percent_net_worth</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">has_next_obs</span>
+
+    <span class="k">def</span> <span class="nf">_info</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Returns any auxiliary, diagnostic, or debugging information for the current timestep.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            info: A dictionary containing the exchange used and the current timestep.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;current_step&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_step</span><span class="p">,</span> <span class="s1">&#39;exchange&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">exchange</span><span class="p">}</span>
+
+<div class="viewcode-block" id="TradingEnvironment.step"><a class="viewcode-back" href="../../../api/tensortrade.environments.trading_environment.html#tensortrade.environments.trading_environment.TradingEnvironment.step">[docs]</a>    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">bool</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Run one timestep within the environment based on the specified action.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            action: The trade action provided by the agent for this timestep.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            observation (pandas.DataFrame): Provided by the environment&#39;s exchange, often OHLCV or tick trade history data points.</span>
+<span class="sd">            reward (float): An amount corresponding to the advantage gained by the agent in this timestep.</span>
+<span class="sd">            done (bool): If `True`, the environment is complete and should be restarted.</span>
+<span class="sd">            info (dict): Any auxiliary, diagnostic, or debugging information to output.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_take_action</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+
+        <span class="n">observation</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_next_observation</span><span class="p">()</span>
+        <span class="n">reward</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_reward</span><span class="p">()</span>
+        <span class="n">done</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_done</span><span class="p">()</span>
+        <span class="n">info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_info</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">observation</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">done</span><span class="p">,</span> <span class="n">info</span></div>
+
+<div class="viewcode-block" id="TradingEnvironment.reset"><a class="viewcode-back" href="../../../api/tensortrade.environments.trading_environment.html#tensortrade.environments.trading_environment.TradingEnvironment.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Resets the state of the environment and returns an initial observation.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            observation: the initial observation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">action_strategy</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reward_strategy</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_step</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_next_observation</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="TradingEnvironment.render"><a class="viewcode-back" href="../../../api/tensortrade.environments.trading_environment.html#tensortrade.environments.trading_environment.TradingEnvironment.render">[docs]</a>    <span class="k">def</span> <span class="nf">render</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Renders the environment.&quot;&quot;&quot;</span>
+        <span class="k">pass</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Adam King
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
