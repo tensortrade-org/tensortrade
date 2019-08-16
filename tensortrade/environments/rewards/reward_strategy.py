@@ -16,5 +16,5 @@ class RewardStrategy(object, metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def reward(self, current_step: int, exchange: AssetExchange) -> float:
+    def get_reward(self, current_step: int, exchange: AssetExchange) -> float:
         raise NotImplementedError()

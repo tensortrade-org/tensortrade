@@ -32,5 +32,5 @@ class ActionStrategy(object):
         pass
 
     @abstractmethod
-    def suggest_trade(self, action: Union[int, tuple], exchange: AssetExchange):
+    def get_trade(self, action: Union[int, tuple], exchange: AssetExchange):
         raise NotImplementedError

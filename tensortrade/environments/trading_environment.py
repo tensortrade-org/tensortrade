@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 
 from gym import spaces
-from typing import Union
+from typing import Union, Tuple
 
 from tensortrade.environments.actions import ActionStrategy, TradeType
 from tensortrade.environments.rewards import RewardStrategy
@@ -12,25 +12,20 @@ from tensortrade.exchanges import AssetExchange
 
 
 class TradingEnvironment(gym.Env):
-    '''A trading environment made for use with Gym-compatible reinforcement learning algorithms
-
-        The methods that are accessed publicly are "step", "reset" and "render"
-    '''
+    """A trading environment made for use with Gym-compatible reinforcement learning algorithms."""
 
     def __init__(self,
                  action_strategy: ActionStrategy,
                  reward_strategy: RewardStrategy,
                  exchange: AssetExchange,
                  **kwargs):
-        '''Create the trading environment
-
-            # Arguments
-                action_strategy:  the action strategy
-                reward_strategy: the reward strategy
-                exchange: the AssetExchange object, that should be used
-                kwargs: additional arguments, to define log levels, floating point precision,
-
-        '''
+        """
+        Args:
+            action_strategy:  The strategy for transforming an action into a `TradeDefinition` at each timestep.
+            reward_strategy: The strategy for determining the reward at each timestep.
+            exchange: The `AssetExchange` that will be used to feed data from and execute trades within.
+            kwargs (optional): Additional arguments for tuning the environment, logging, etc.
+        """
 
         super().__init__()
 
@@ -38,81 +33,107 @@ class TradingEnvironment(gym.Env):
         self.reward_strategy = reward_strategy
         self.exchange = exchange
 
-        self.space_dtype: type = kwargs.get('space_dtype', np.float16)
-        self.logger_name: int = kwargs.get('logger_name', __name__)
-        self.log_level: int = kwargs.get('log_level', logging.DEBUG)
+        self.action_space_dtype: type = kwargs.get('action_space_dtype', np.float16)
+        self.observation_space_dtype: type = kwargs.get('observation_space_dtype', np.float16)
 
-        self.action_strategy.set_dtype(self.space_dtype)
-        self.reward_strategy.set_dtype(self.space_dtype)
-        self.exchange.set_dtype(self.space_dtype)
-
-        self.logger = logging.getLogger(self.logger_name)
-        self.logger.setLevel(self.log_level)
+        self.action_strategy.set_dtype(self.action_space_dtype)
+        self.exchange.set_dtype(self.observation_space_dtype)
 
         self.action_space = self.action_strategy.action_space()
         self.observation_space = self.exchange.observation_space()
 
-        logging.getLogger('tensorflow').disabled = kwargs.get('disable_tensorflow_logger', True)
+        self.logger_name: int = kwargs.get('logger_name', __name__)
+        self.log_level: int = kwargs.get('log_level', logging.DEBUG)
+        self.disable_tensorflow_logs: bool = kwargs.get('disable_tensorflow_logger', True)
+
+        self.logger = logging.getLogger(self.logger_name)
+        self.logger.setLevel(self.log_level)
+
+        logging.getLogger('tensorflow').disabled = self.disable_tensorflow_logs
 
     def _take_action(self, action: Union[int, float]):
-        symbol, trade_type, amount, price = self.action_strategy.suggest_trade(action=action, exchange=self.exchange)
+        """Determines a specific trade to be taken and executes it within the exchange.
 
-        self.exchange.execute_trade(symbol=symbol, trade_type=trade_type, amount=amount, price=price)
+        Args:
+            action: The trade action provided by the agent for this timestep.
+        """
+        symbol, trade_type, amount, price = self.action_strategy.get_trade(
+            action=action, exchange=self.exchange)
 
-    def _next_observation(self):
+        self.exchange.execute_trade(symbol=symbol, trade_type=trade_type,
+                                    amount=amount, price=price)
+
+    def _next_observation(self) -> pd.DataFrame:
+        """Returns the next observation from the exchange.
+
+        Returns:
+            observation: Provided by the environment's exchange, often OHLCV or tick trade history data points.
+        """
         self.current_step += 1
 
-        obs = self.exchange.next_observation()
-        obs[np.bitwise_not(np.isfinite(obs))] = 0
+        observation = self.exchange.next_observation()
+        observation = observation.fillna(0, axis=1)
 
-        return obs
+        return observation
 
-    def _reward(self):
-        reward: float = self.reward_strategy.reward(current_step=self.current_step, exchange=self.exchange)
+    def _get_reward(self) -> float:
+        """Returns the reward for the current timestep.
+
+        Returns:
+            done: If `True`, the environment is complete and should be restarted.
+        """
+        reward: float = self.reward_strategy.get_reward(
+            current_step=self.current_step, exchange=self.exchange)
 
         return reward if np.isfinite(reward) else 0
 
-    def _done(self):
+    def _done(self) -> bool:
+        """Returns whether or not the environment is done this timestep.
+
+        Returns:
+            done: If `True`, the environment is complete and should be restarted.
+        """
         lost_90_percent_net_worth = self.exchange.profit_loss_percent() < 0.1
         has_next_obs: bool = self.exchange.has_next_observation()
 
         return lost_90_percent_net_worth or not has_next_obs
 
-    def _info(self):
+    def _info(self) -> dict:
+        """Returns any auxiliary, diagnostic, or debugging information for the current timestep.
+
+        Returns:
+            info: A dictionary containing the exchange used and the current timestep.
+        """
         return {'current_step': self.current_step, 'exchange': self.exchange}
 
-    def step(self, action):
-        '''Run one timestep of the environment's dynamics. When end of
-            episode is reached, you are responsible for calling `reset()`
-            to reset this environment's state.
+    def step(self, action) -> Tuple[pd.DataFrame, float, bool, dict]:
+        """Run one timestep within the environment based on the specified action.
 
-            Accepts an action and returns a tuple (observation, reward, done, info).
+        Args:
+            action: The trade action provided by the agent for this timestep.
 
-            # Arguments:
-                action (object): an action provided by the agent
-
-            # Returns:
-                observation (Dataframe): provided by the exchange, usually normalized ohlc and volume information
-                reward (float) : amount of reward returned after previous action
-                done (bool): whether the episode has ended, in which case further step() calls will return undefined results
-                info (dict): contains auxiliary diagnostic information (helpful for debugging, and sometimes learning)
-        '''
+        Returns:
+            observation (pandas.DataFrame): Provided by the environment's exchange, often OHLCV or tick trade history data points.
+            reward (float): An amount corresponding to the advantage gained by the agent in this timestep.
+            done (bool): If `True`, the environment is complete and should be restarted.
+            info (dict): Any auxiliary, diagnostic, or debugging information to output.
+        """
 
         self._take_action(action)
 
-        obs = self._next_observation()
-        reward = self._reward()
+        observation = self._next_observation()
+        reward = self._get_reward()
         done = self._done()
         info = self._info()
 
-        return obs, reward, done, info
+        return observation, reward, done, info
 
-    def reset(self):
-        '''Resets the state of the environment and returns an initial observation.
+    def reset(self) -> pd.DataFrame:
+        """Resets the state of the environment and returns an initial observation.
 
-            # Returns:
-                observation: the initial observation.
-        '''
+        Returns:
+            observation: the initial observation.
+        """
 
         self.action_strategy.reset()
         self.reward_strategy.reset()
@@ -123,6 +144,5 @@ class TradingEnvironment(gym.Env):
         return self._next_observation()
 
     def render(self, mode='none'):
-        '''Renders the environment.'''
-
+        """Renders the environment."""
         pass

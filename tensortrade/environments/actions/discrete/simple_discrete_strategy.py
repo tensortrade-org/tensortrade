@@ -5,22 +5,22 @@ from tensortrade.exchanges import AssetExchange
 
 
 class SimpleDiscreteStrategy(ActionStrategy):
-    '''Simple discrete strategy, which uses fixed intervals to calculate the trade amount.'''
+    """Simple discrete strategy, which uses fixed intervals to calculate the trade amount."""
 
     def __init__(self, n_bins: int = 24, base_symbol: str = 'USD', asset_symbol: str = 'BTC'):
-        '''
+        """
             # Arguments
                 n_bins: optional number of timesteps used to calculate the trade amount
                 base_symbol: optional the symbol that defines the notional value
                 asset_symbol: optional the asset symbol
-        '''
+        """
         super().__init__(action_space_shape=n_bins, continuous_action_space=False)
         self.n_bins = n_bins
         self.base_symbol = base_symbol
         self.asset_symbol = asset_symbol
 
-    def suggest_trade(self, action: Union[int, tuple], exchange: AssetExchange):
-        '''Suggest a trade to the trading environment
+    def get_trade(self, action: Union[int, tuple], exchange: AssetExchange):
+        """Suggest a trade to the trading environment
 
             # Arguments
                 action: optional number of timesteps used to calculate the trade amount
@@ -29,7 +29,7 @@ class SimpleDiscreteStrategy(ActionStrategy):
             # Returns
                 the asset symbol, the type of trade, amount and price
 
-        '''
+        """
         trade_type = TradeType(action % len(TradeType))
         trade_amount = float(1 / (action % self.n_bins + 1))
 
@@ -37,7 +37,6 @@ class SimpleDiscreteStrategy(ActionStrategy):
             symbol=self.asset_symbol, output_symbol=self.base_symbol)
         commission_percent = exchange.commission_percent
         base_precision = exchange.base_precision
-        asset_precision = exchange.asset_precision
 
         amount_to_trade = 0
         price = current_price

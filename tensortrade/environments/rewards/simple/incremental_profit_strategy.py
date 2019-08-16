@@ -5,7 +5,7 @@ from tensortrade.exchanges import AssetExchange
 
 
 class IncrementalProfitStrategy(RewardStrategy):
-    '''Calculate the agents rewards based on the incremental profits made by its actions'''
+    """Calculate the agents rewards based on the incremental profits made by its actions"""
 
     def __init__(self, base_symbol: str = 'USD', asset_symbol: str = 'BTC'):
         self.last_bought = 0
@@ -14,7 +14,7 @@ class IncrementalProfitStrategy(RewardStrategy):
         self.base_symbol = base_symbol
         self.asset_symbol = asset_symbol
 
-    def reward(self, current_step: int, exchange: AssetExchange) -> float:
+    def get_reward(self, current_step: int, exchange: AssetExchange) -> float:
         reward = 0
 
         current_price = exchange.current_price(

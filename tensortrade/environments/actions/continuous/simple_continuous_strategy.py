@@ -5,22 +5,22 @@ from tensortrade.exchanges import AssetExchange
 
 
 class SimpleContinuousStrategy(ActionStrategy):
-    '''Simple continuous strategy, that executes trades on a continuous basis.'''
+    """Simple continuous strategy, that executes trades on a continuous basis."""
 
     def __init__(self, base_symbol: str = 'USD', asset_symbol: str = 'BTC'):
-        '''
+        """
             # Arguments
                 base_symbol: optional the symbol that defines the notional value
                 asset_symbol: optional the asset symbol
-        '''
+        """
 
         super().__init__(action_space_shape=(1, 1), continuous_action_space=True)
 
         self.base_symbol = base_symbol
         self.asset_symbol = asset_symbol
 
-    def suggest_trade(self, action: Union[int, tuple], exchange: AssetExchange):
-        '''Suggest a trade to the trading environment
+    def get_trade(self, action: Union[int, tuple], exchange: AssetExchange):
+        """Suggest a trade to the trading environment
 
             # Arguments
                 action: optional number of timesteps used to calculate the trade amount
@@ -29,7 +29,7 @@ class SimpleContinuousStrategy(ActionStrategy):
             # Returns
                 the asset symbol, the type of trade, amount and price
 
-        '''
+        """
         action_type, trade_amount = action
         trade_type = TradeType(int(action_type * 3))
 
