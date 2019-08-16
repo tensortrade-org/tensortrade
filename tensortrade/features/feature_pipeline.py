@@ -6,13 +6,14 @@ from sklearn import Pipeline
 from sklearn.utils import check_array
 
 
-class FeaturePipeline(object, metaclass=ABCMeta):
-    """An abstract base class for feature transformation pipelines."""
+class FeaturePipeline(object):
+    """An pipeline for transforming observation data frames into features for learning."""
 
     def __init__(self, pipeline: Pipeline, dtype: type = np.float16):
         """
         Args:
             pipeline: An `sklearn.Pipeline` instance of feature transformations.
+            dtype: The `dtype` elements in the pipeline should be cast to.
         """
         self._pipeline = pipeline
         self._dtype = dtype
@@ -25,6 +26,15 @@ class FeaturePipeline(object, metaclass=ABCMeta):
     @pipeline.setter
     def pipeline(self, pipeline: Pipeline):
         self.pipeline = pipeline
+
+    @property
+    def dtype(self):
+        """The `dtype` elements in the pipeline should be cast to"""
+        return self._dtype
+
+    @dtype.setter
+    def dtype(self, dtype: Pipeline):
+        self._dtype = dtype
 
     def fit_transform(self, observation: pd.DataFrame) -> np.ndarray:
         """Fit and apply the pipeline of feature transformations to an observation frame.

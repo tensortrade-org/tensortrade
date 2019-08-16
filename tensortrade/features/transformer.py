@@ -16,18 +16,19 @@ class Transformer(BaseEstimator, TransformerMixin, metaclass=ABCMeta):
 
     @abstractmethod
     def fit(self, X: TransformableList, y: TransformableList = None):
-        """
+        """Fit the model to the data set, if necessary, else return self.
+
         Args:
-            X: The set of data to train the transformer on.
+            X: The set of data to train the model on.
             y (optional): The target output to train with.
         """
         raise NotImplementedError
 
     @abstractmethod
-    def transform(self, X: TransformableList, y: TransformableList = None):
-        """
+    def transform(self, X: TransformableList):
+        """Transform the data set with the fit model.
+
         Args:
             X: The set of data to transform.
-            y (optional): The target output to evaluate with.
         """
         raise NotImplementedError
