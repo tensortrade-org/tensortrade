@@ -1,3 +1,17 @@
+# Copyright 2019 The TensorTrade Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import gym
 import logging
 import pandas as pd
@@ -56,18 +70,23 @@ class TradingEnvironment(gym.Env):
 
         Args:
             action: The trade action provided by the agent for this timestep.
+
+        Returns:
+            A tuple containing the (fill_amount, fill_price) of the executed trade.
         """
         symbol, trade_type, amount, price = self.action_strategy.get_trade(
             action=action, exchange=self.exchange)
 
-        self.exchange.execute_trade(symbol=symbol, trade_type=trade_type,
-                                    amount=amount, price=price)
+        fill_amount, fill_price = self.exchange.execute_trade(symbol=symbol, trade_type=trade_type,
+                                                              amount=amount, price=price)
+
+        return fill_amount, fill_price
 
     def _next_observation(self) -> pd.DataFrame:
         """Returns the next observation from the exchange.
 
         Returns:
-            observation: Provided by the environment's exchange, often OHLCV or tick trade history data points.
+            The observation provided by the environment's exchange, often OHLCV or tick trade history data points.
         """
         self.current_step += 1
 
@@ -80,7 +99,7 @@ class TradingEnvironment(gym.Env):
         """Returns the reward for the current timestep.
 
         Returns:
-            done: If `True`, the environment is complete and should be restarted.
+            A float signaling the benefit this action has given the agent.
         """
         reward: float = self.reward_strategy.get_reward(
             current_step=self.current_step, exchange=self.exchange)
@@ -88,10 +107,10 @@ class TradingEnvironment(gym.Env):
         return reward if np.isfinite(reward) else 0
 
     def _done(self) -> bool:
-        """Returns whether or not the environment is done this timestep.
+        """Returns whether or not the environment is done and should be restarted.
 
         Returns:
-            done: If `True`, the environment is complete and should be restarted.
+            A boolean signaling whether the environment is done and should be restarted.
         """
         lost_90_percent_net_worth = self.exchange.profit_loss_percent() < 0.1
         has_next_obs: bool = self.exchange.has_next_observation()
@@ -119,7 +138,7 @@ class TradingEnvironment(gym.Env):
             info (dict): Any auxiliary, diagnostic, or debugging information to output.
         """
 
-        self._take_action(action)
+        fill_amount, fill_price = self._take_action(action)
 
         observation = self._next_observation()
         reward = self._get_reward()

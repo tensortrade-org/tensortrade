@@ -2,7 +2,7 @@ numpy
 pandas
 sklearn
 gym
+gin-config
 stochastic
 ccxt
 hyperopt
-gin-config

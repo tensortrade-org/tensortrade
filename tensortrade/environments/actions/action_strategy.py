@@ -6,7 +6,7 @@ from tensortrade.exchanges import AssetExchange
 
 
 class ActionStrategy(object):
-    def __init__(self, action_space_shape: Union[int, tuple],
+    def __init__(self, action_space_shape: Union[int, float, tuple],
                  continuous_action_space: bool = False):
         self.action_space_shape = action_space_shape
         self.continuous_action_space = continuous_action_space
