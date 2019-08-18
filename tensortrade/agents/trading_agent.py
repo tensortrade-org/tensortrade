@@ -21,12 +21,14 @@ from typing import Union, Callable, List
 
 from tensortrade.environments.trading_environment import TradingEnvironment
 from tensortrade.features.feature_pipeline import FeaturePipeline
+from tensortrade.actions import TradeActionUnion
 
 
 @gin.configurable
 class TradingAgent(object, metaclass=ABCMeta):
-    """An abstract base class for trading agents capable of self tuning, training, and evaluating."""
+    """An abstract trading agent capable of self tuning, training, and evaluating."""
 
+    @abstractmethod
     def __init__(self, env: TradingEnvironment, feature_pipeline: FeaturePipeline):
         """
         Args:
@@ -47,7 +49,7 @@ class TradingAgent(object, metaclass=ABCMeta):
 
     @property
     def feature_pipeline(self):
-        """A `FeaturePipeline` instance of feature transformations."""
+        """A pipeline of feature transformations to be applied to observations from the environment."""
         return self._feature_pipeline
 
     @feature_pipeline.setter
@@ -104,7 +106,7 @@ class TradingAgent(object, metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def get_action(self, observation: pd.DataFrame) -> Union[float, List[float]]:
+    def get_action(self, observation: pd.DataFrame) -> TradeActionUnion:
         """Determine an action based on a specific observation.
 
         Args:
