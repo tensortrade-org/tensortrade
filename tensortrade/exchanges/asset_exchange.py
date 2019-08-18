@@ -45,7 +45,6 @@ class AssetExchange(object, metaclass=ABCMeta):
         self._dtype = dtype
 
     @property
-    @abstractmethod
     def base_precision(self):
         """The floating point precision of the base asset."""
         return self._base_precision
@@ -55,7 +54,6 @@ class AssetExchange(object, metaclass=ABCMeta):
         self._base_precision = base_precision
 
     @property
-    @abstractmethod
     def asset_precision(self):
         """The floating point precision of the asset to be traded."""
         return self._asset_precision
@@ -128,18 +126,7 @@ class AssetExchange(object, metaclass=ABCMeta):
         """
         return float(self.net_worth / self.initial_balance) * 100
 
-    @abstractmethod
-    def current_price(self, symbol: str) -> float:
-        """The current price of an asset on the exchange, denoted in the base symbol.
-
-        Args:
-            symbol: The exchange symbol of the asset to get the price for.
-
-        Returns:
-            The current price of the specified asset, denoted in the base symbol.
-        """
-        raise NotImplementedError
-
+    @property
     @abstractmethod
     def has_next_observation(self) -> bool:
         """If `False`, the exchange's data source has run out of observations.
@@ -157,6 +144,18 @@ class AssetExchange(object, metaclass=ABCMeta):
 
         Returns:
             The next data frame of observations.
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def current_price(self, symbol: str) -> float:
+        """The current price of an asset on the exchange, denoted in the base symbol.
+
+        Args:
+            symbol: The exchange symbol of the asset to get the price for.
+
+        Returns:
+            The current price of the specified asset, denoted in the base symbol.
         """
         raise NotImplementedError
 

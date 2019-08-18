@@ -104,6 +104,30 @@ class CCXTExchange(AssetExchange):
 
         return Box(low=low, high=high, shape=obs_shape, dtype=dtypes)
 
+    @property
+    def has_next_observation(self):
+        if self._observation_type == 'ohlcv':
+            return self._exchange.has['fetchOHLCV']
+
+        return self._exchange.has['fetchTrades']
+
+    def next_observation(self):
+        if self._observation_type == 'ohlcv':
+            trades = self._exchange.fetch_trades(self._observation_symbol)
+
+            obs = [[0 if t['side'] == 'buy' else 1, t['price'], t['amount'], t['cost']]
+                   for t in trades]
+        elif self._observation_type == 'trades':
+            ohlcv = self._exchange.fetch_ohlcv(
+                self._observation_symbol, self._observation_timeframe)
+
+            obs = [l[1:] for l in ohlcv]
+
+        if len(obs) < self._observation_window_size:
+            return np.pad(obs, (self._observation_window_size - len(obs), len(obs[0])))
+
+        return obs
+
     def current_price(self, symbol: str):
         return self._exchange.fetch_ticker(symbol)['close']
 
@@ -134,30 +158,6 @@ class CCXTExchange(AssetExchange):
         }, ignore_index=True)
 
         return Trade(symbol=trade.symbol, trade_type=trade.trade_type, amount=order['filled'], price=order['price'])
-
-    @property
-    def has_next_observation(self):
-        if self._observation_type == 'ohlcv':
-            return self._exchange.has['fetchOHLCV']
-
-        return self._exchange.has['fetchTrades']
-
-    def next_observation(self):
-        if self._observation_type == 'ohlcv':
-            trades = self._exchange.fetch_trades(self._observation_symbol)
-
-            obs = [[0 if t['side'] == 'buy' else 1, t['price'], t['amount'], t['cost']]
-                   for t in trades]
-        elif self._observation_type == 'trades':
-            ohlcv = self._exchange.fetch_ohlcv(
-                self._observation_symbol, self._observation_timeframe)
-
-            obs = [l[1:] for l in ohlcv]
-
-        if len(obs) < self._observation_window_size:
-            return np.pad(obs, (self._observation_window_size - len(obs), len(obs[0])))
-
-        return obs
 
     def reset(self):
         self._markets = self._exchange.load_markets()

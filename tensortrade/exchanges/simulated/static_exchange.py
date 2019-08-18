@@ -40,14 +40,6 @@ class StaticExchange(AssetExchange):
         self.reset()
 
     @property
-    def base_precision(self):
-        return self._base_precision
-
-    @property
-    def asset_precision(self):
-        return self._asset_precision
-
-    @property
     def initial_balance(self) -> float:
         return self._initial_balance
 
@@ -91,7 +83,7 @@ class StaticExchange(AssetExchange):
 
         return self._data_frame[self._current_step].values.astype(self._dtype)
 
-    def is_valid_trade(self, trade: Trade) -> bool:
+    def _is_valid_trade(self, trade: Trade) -> bool:
         if trade.trade_type is TradeType.MARKET_BUY or trade.trade_type is TradeType.LIMIT_BUY:
             return trade.amount >= self._min_order_amount and self._balance >= trade.amount * trade.price
         elif trade.trade_type is TradeType.MARKET_SELL or trade.trade_type is TradeType.LIMIT_SELL:
@@ -126,7 +118,7 @@ class StaticExchange(AssetExchange):
 
         commission = self._commission_percent / 100
 
-        is_trade_valid = self.is_valid_trade(trade)
+        is_trade_valid = self._is_valid_trade(trade)
 
         if trade.is_buy and is_trade_valid:
             price_adjustment = price_adjustment = (1 + commission)
