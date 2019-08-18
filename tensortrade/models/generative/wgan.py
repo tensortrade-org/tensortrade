@@ -12,8 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License
 #
-# Source: https://github.com/timsainb/tensorflow2-generative-models/blob/master/3.0-WGAN-GP-fashion-mnist.ipynb
-# Reference: https://github.com/LynnHo/DCGAN-LSGAN-WGAN-GP-DRAGAN-Tensorflow-2/
+# Modified source: https://github.com/timsainb/tensorflow2-generative-models/blob/master/3.0-WGAN-GP-fashion-mnist.ipynb
+# Source reference: https://github.com/LynnHo/DCGAN-LSGAN-WGAN-GP-DRAGAN-Tensorflow-2/
+# Original paper: https://arxiv.org/abs/1701.07875
 
 import tensorflow as tf
 
