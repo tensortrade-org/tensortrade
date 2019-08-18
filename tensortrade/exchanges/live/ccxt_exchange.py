@@ -16,120 +16,150 @@ import time
 import numpy as np
 import pandas as pd
 
-from gym import spaces
-from typing import Dict
+from typing import Dict, List
+from gym.spaces import Box
 from ccxt import Exchange
-from sklearn.preprocessing import MinMaxScaler
 
-from tensortrade.environments.actions import TradeType
+from tensortrade.trades import Trade, TradeType
 from tensortrade.exchanges.asset_exchange import AssetExchange
 
 
 class CCXTExchange(AssetExchange):
-    def __init__(self, exchange: Exchange, **kwargs):
-        self.exchange = exchange
+    def __init__(self, exchange: Exchange, base_asset: str = 'BTC', **kwargs):
+        self._exchange = exchange
+        self._base_asset = base_asset
 
-        self._markets = self.exchange.load_markets()
+        self._exchange.enableRateLimit = kwargs.get('enable_rate_limit', True)
 
-        self._initial_balance = self.exchange.fetch_free_balance()
+        self._observation_type = kwargs.get('observation_type', 'trades')
+        self._observation_symbol = kwargs.get('observation_symbol', 'ETH/BTC')
+        self._observation_timeframe = kwargs.get('observation_timeframe', '10m')
+        self._observation_window_size = kwargs.get('observation_window_size', 10)
 
-        self.observation_type = kwargs.get('observation_type', 'trades')
-        self.observation_symbol = kwargs.get('observation_symbol', 'ETH/BTC')
-        self.observation_timeframe = kwargs.get('observation_timeframe', '10m')
-        self.observation_window_size = kwargs.get('observation_window_size', 10)
+        self._async_timeout_in_ms = kwargs.get('async_timeout_in_ms', 15)
+        self._max_trade_wait_in_sec = kwargs.get('max_trade_wait_in_sec', 60)
 
-        self.async_timeout_in_ms = kwargs.get('async_timeout_in_ms', 15)
-        self.max_trade_wait_in_sec = kwargs.get('max_trade_wait_in_sec', 60)
+        self.reset()
 
-        self._performance = pd.DataFrame([], columns=['balance', 'net_worth'])
+    @property
+    def base_precision(self):
+        return self._markets[self._observation_symbol]['precision']['base']
 
-    def net_worth(self, output_symbol: str = 'BTC') -> float:
-        return super().net_worth(output_symbol=output_symbol)
+    @base_precision.setter
+    def base_precision(self, base_precision: float):
+        raise ValueError('Cannot set the precision of `ccxt` exchanges.')
 
-    def profit_loss_percent(self, output_symbol: str = 'BTC') -> float:
-        return super().profit_loss_percent(output_symbol=output_symbol)
+    @property
+    def asset_precision(self):
+        return self._markets[self._observation_symbol]['precision']['quote']
 
-    def initial_balance(self, symbol: str = 'BTC') -> float:
+    @asset_precision.setter
+    def asset_precision(self, asset_precision: float):
+        raise ValueError('Cannot set the precision of `ccxt` exchanges.')
+
+    @property
+    def initial_balance(self) -> float:
         return self._initial_balance
 
-    def balance(self, symbol: str = 'BTC') -> float:
-        return self.exchange.fetch_free_balance()[symbol]
+    @property
+    def balance(self) -> float:
+        return self._exchange.fetch_free_balance()[self._base_asset]
 
+    @property
     def portfolio(self) -> Dict[str, float]:
-        portfolio = self.exchange.fetch_free_balance()
+        portfolio = self._exchange.fetch_free_balance()
 
         return {k: v for k, v in portfolio.items() if v > 0}
 
-    def trades(self) -> pd.DataFrame:
+    @property
+    def trades(self) -> List[Trade]:
         trades = {}
 
         for key in self._markets.keys():
-            trades[key] = self.exchange.fetch_my_trades()[key]
+            trades[key] = self._exchange.fetch_my_trades()[key]
 
         return trades
 
+    @property
     def performance(self) -> pd.DataFrame:
         return self._performance
 
+    @property
     def observation_space(self):
-        if self.observation_type == 'ohlcv':
-            return spaces.Box(low=0, high=1, shape=(self.observation_window_size, 5), dtype=self.dtype)
+        low_price = self._markets[self._observation_symbol]['limits']['price']['min']
+        high_price = self._markets[self._observation_symbol]['limits']['price']['max']
+        low_volume = self._markets[self._observation_symbol]['limits']['amount']['min']
+        high_volume = self._markets[self._observation_symbol]['limits']['amount']['max']
 
-        return spaces.Box(low=0, high=1, shape=(self.observation_window_size, 4), dtype=self.dtype)
+        if self._observation_type == 'ohlcv':
+            low = (low_price, low_price, low_price, low_price, low_volume)
+            high = (high_price, high_price, high_price, high_price, high_volume)
+            dtypes = (self._dtype, self._dtype, self._dtype, self._dtype, np.int64)
+            obs_shape = (self._observation_window_size, 5)
+        else:
+            low = (0, low_price, low_price, low_price, low_volume)
+            high = (1, high_price, high_volume, high_price * high_volume)
+            dtypes = (np.int8, self._dtype, self._dtype, self._dtype)
+            obs_shape = (self._observation_window_size, 4)
 
-    def current_price(self, symbol: str, output_symbol: str = 'BTC'):
-        return self.exchange.fetch_ticker(symbol)['close']
+        return Box(low=low, high=high, shape=obs_shape, dtype=dtypes)
 
-    def execute_trade(self, symbol: str, trade_type: TradeType, amount: float, price: float):
-        if trade_type == TradeType.BUY:
-            order = self.exchange.create_order(symbol=symbol, type="limit",
-                                               side="buy", amount=amount, price=price)
-        elif trade_type == TradeType.BUY:
-            order = self.exchange.create_order(symbol=symbol, type="limit",
-                                               side="sell", amount=amount, price=price)
+    def current_price(self, symbol: str):
+        return self._exchange.fetch_ticker(symbol)['close']
 
-        max_wait_time = time.time() + self.max_trade_wait_in_sec
+    def execute_trade(self, trade: Trade) -> Trade:
+        if trade.trade_type == TradeType.LIMIT_BUY:
+            order = self._exchange.create_limit_buy_order(
+                symbol=trade.symbol, amount=trade.amount, price=trade.price)
+        elif trade.trade_type == TradeType.MARKET_BUY:
+            order = self._exchange.create_market_buy_order(symbol=trade.symbol, amount=trade.amount)
+        elif trade.trade_type == TradeType.LIMIT_SELL:
+            order = self._exchange.create_limit_sell_order(
+                symbol=trade.symbol, amount=trade.amount, price=trade.price)
+        elif trade.trade_type == TradeType.MARKET_SELL:
+            order = self._exchange.create_market_sell_order(
+                symbol=trade.symbol, amount=trade.amount)
+
+        max_wait_time = time.time() + self._max_trade_wait_in_sec
 
         while order['status'] is 'open' and time.time() < max_wait_time:
-            time.sleep(self.exchange.rateLimit / 1000)
-
-            order = self.exchange.fetch_order(order.id)
+            order = self._exchange.fetch_order(order.id)
 
         if order['status'] is 'open':
-            self.exchange.cancel_order(order.id)
+            self._exchange.cancel_order(order.id)
 
-        if order['filled'] > 0:
-            self._performance.append({
-                'balance': self.balance(),
-                'net_worth': self.net_worth(),
-            }, ignore_index=True)
+        self._performance.append({
+            'balance': self.balance,
+            'net_worth': self.net_worth,
+        }, ignore_index=True)
 
+        return Trade(symbol=trade.symbol, trade_type=trade.trade_type, amount=order['filled'], price=order['price'])
+
+    @property
     def has_next_observation(self):
-        if self.observation_type == 'ohlcv':
-            return self.exchange.has['fetchOHLCV']
+        if self._observation_type == 'ohlcv':
+            return self._exchange.has['fetchOHLCV']
 
-        return self.exchange.has['fetchTrades']
+        return self._exchange.has['fetchTrades']
 
     def next_observation(self):
-        time.sleep(self.exchange.rateLimit / 1000)
-
-        if self.observation_type == 'ohlcv':
-            ohlcv = self.exchange.fetch_ohlcv(self.observation_symbol, self.observation_timeframe)
-
-            obs = [l[1:] for l in ohlcv]
-
-            if len(obs) < self.observation_window_size:
-                return np.pad(obs, (self.observation_window_size - len(obs), 5))
-        elif self.observation_type == 'trades':
-            trades = self.exchange.fetch_trades(self.observation_symbol)
+        if self._observation_type == 'ohlcv':
+            trades = self._exchange.fetch_trades(self._observation_symbol)
 
             obs = [[0 if t['side'] == 'buy' else 1, t['price'], t['amount'], t['cost']]
                    for t in trades]
+        elif self._observation_type == 'trades':
+            ohlcv = self._exchange.fetch_ohlcv(
+                self._observation_symbol, self._observation_timeframe)
 
-            if len(obs) < self.observation_window_size:
-                return np.pad(obs, (self.observation_window_size - len(obs), 4))
+            obs = [l[1:] for l in ohlcv]
 
-        scaler = MinMaxScaler()
-        obs = scaler.fit_transform(obs)
+        if len(obs) < self._observation_window_size:
+            return np.pad(obs, (self._observation_window_size - len(obs), len(obs[0])))
 
         return obs
+
+    def reset(self):
+        self._markets = self._exchange.load_markets()
+        self._initial_balance = self._exchange.fetch_free_balance()[self._base_asset]
+        self._performance = pd.DataFrame([], columns=['balance', 'net_worth'])

@@ -15,125 +15,139 @@
 import numpy as np
 import pandas as pd
 
-from gym import spaces
+from gym.spaces import Box
 from typing import Dict
-from sklearn.preprocessing import MinMaxScaler
 
-from tensortrade.environments.actions import TradeType
+from tensortrade.trades import Trade, TradeType
 from tensortrade.exchanges.asset_exchange import AssetExchange
+from tensortrade.slippage import RandomSlippageModel
 
 
 class StaticExchange(AssetExchange):
     def __init__(self, data_frame: pd.DataFrame,  **kwargs):
-        self.data_frame = data_frame
+        self._data_frame = data_frame
 
-        self.commission_percent = kwargs.get('commission_percent', 0.3)
-        self.base_precision = kwargs.get('base_precision', 2)
-        self.asset_precision = kwargs.get('asset_precision', 8)
+        self._commission_percent = kwargs.get('commission_percent', 0.3)
+        self._base_precision = kwargs.get('base_precision', 2)
+        self._asset_precision = kwargs.get('asset_precision', 8)
         self._initial_balance = kwargs.get('initial_balance', 1E5)
-        self.max_allowed_slippage_percent = kwargs.get(
-            'max_allowed_slippage_percent', 3.0)
-        self.min_order_amount = kwargs.get('min_order_amount', 1E-5)
+        self._max_allowed_slippage_percent = kwargs.get('max_allowed_slippage_percent', 3.0)
+        self._min_order_amount = kwargs.get('min_order_amount', 1E-3)
+
+        self._slippage_model = RandomSlippageModel(exchange=self,
+                                                   max_price_slippage_percent=self._max_allowed_slippage_percent)
 
         self.reset()
+
+    @property
+    def base_precision(self):
+        return self._base_precision
+
+    @property
+    def asset_precision(self):
+        return self._asset_precision
+
+    @property
+    def initial_balance(self) -> float:
+        return self._initial_balance
+
+    @property
+    def balance(self) -> float:
+        return self._balance
+
+    @property
+    def portfolio(self) -> Dict[str, float]:
+        return self._portfolio
+
+    @property
+    def trades(self) -> pd.DataFrame:
+        return self._trades
+
+    @property
+    def performance(self) -> pd.DataFrame:
+        return self._performance
+
+    @property
+    def observation_space(self):
+        low_price, high_price, low_volume, high_volume = 1E-6, 1E6, 1E-3, 1E6
+
+        low = (low_price, low_price, low_price, low_price, low_volume)
+        high = (high_price, high_price, high_price, high_price, high_volume)
+        dtypes = (self._dtype, self._dtype, self._dtype, self._dtype, np.int64)
+
+        return Box(low=low, high=high, shape=(1, 5), dtype=dtypes)
+
+    def current_price(self, symbol: str):
+        if len(self._data_frame) is 0:
+            self.next_observation()
+
+        return float(self._data_frame['close'].values[self._current_step])
+
+    def has_next_observation(self):
+        return self._current_step < len(self._data_frame)
+
+    def next_observation(self):
+        self._current_step += 1
+
+        return self._data_frame[self._current_step].values.astype(self._dtype)
+
+    def is_valid_trade(self, trade: Trade) -> bool:
+        if trade.trade_type is TradeType.MARKET_BUY or trade.trade_type is TradeType.LIMIT_BUY:
+            return trade.amount >= self._min_order_amount and self._balance >= trade.amount * trade.price
+        elif trade.trade_type is TradeType.MARKET_SELL or trade.trade_type is TradeType.LIMIT_SELL:
+            return trade.amount >= self._min_order_amount and self._portfolio.get(trade.symbol, 0) >= trade.amount
+
+        return True
+
+    def _update_account(self, trade: Trade):
+        if trade.amount > 0:
+            self._trades = self._trades.append({
+                'step': self._current_step,
+                'symbol': trade.symbol,
+                'type': trade.trade_type,
+                'amount': trade.amount,
+                'price': trade.price
+            }, ignore_index=True)
+
+        if trade.is_buy:
+            self._balance -= trade.amount * trade.price
+            self._portfolio[trade.symbol] = self._portfolio.get(trade.symbol, 0) + trade.amount
+        elif trade.is_sell:
+            self._balance += trade.amount * trade.price
+            self._portfolio[trade.symbol] -= trade.amount
+
+        self._performance.append({
+            'balance': self.balance,
+            'net_worth': self.net_worth,
+        }, ignore_index=True)
+
+    def execute_trade(self, trade: Trade) -> Trade:
+        current_price = self.current_price(symbol=trade.symbol)
+
+        commission = self._commission_percent / 100
+
+        is_trade_valid = self.is_valid_trade(trade)
+
+        if trade.is_buy and is_trade_valid:
+            price_adjustment = price_adjustment = (1 + commission)
+            trade.price = round(current_price * price_adjustment, self._base_precision)
+            trade.amount = round((trade.price * trade.amount) / trade.price, self._asset_precision)
+        elif trade.is_sell and is_trade_valid:
+            price_adjustment = (1 - commission)
+            trade.price = round(current_price * price_adjustment, self._base_precision)
+            trade.amount = round(trade.amount, self._asset_precision)
+
+        filled_trade = self._slippage_model.fill_order(trade)
+
+        self._update_account(filled_trade)
+
+        return filled_trade
 
     def reset(self):
         self._balance = self._initial_balance
 
         self._portfolio = {}
-        self._trades = pd.DataFrame(
-            [], columns=['step', 'symbol', 'type', 'amount', 'price'])
+        self._trades = pd.DataFrame([], columns=['step', 'symbol', 'type', 'amount', 'price'])
         self._performance = pd.DataFrame([], columns=['balance', 'net_worth'])
 
-        self.current_step = 0
-
-    def net_worth(self, output_symbol: str = 'USD') -> float:
-        return super().net_worth(output_symbol=output_symbol)
-
-    def profit_loss_percent(self, output_symbol: str = 'USD') -> float:
-        return super().profit_loss_percent(output_symbol=output_symbol)
-
-    def initial_balance(self, symbol: str = 'USD') -> float:
-        return self._initial_balance
-
-    def balance(self, symbol: str = 'USD') -> float:
-        return self._balance
-
-    def portfolio(self) -> Dict[str, float]:
-        return self._portfolio
-
-    def trades(self) -> pd.DataFrame:
-        return self._trades
-
-    def performance(self) -> pd.DataFrame:
-        return self._performance
-
-    def observation_space(self):
-        return spaces.Box(low=0, high=1, shape=(1, 5), dtype=self.dtype)
-
-    def current_price(self, symbol: str, output_symbol: str = 'USD'):
-        if len(self.data_frame) is 0:
-            self.next_observation()
-
-        return float(self.data_frame['close'].values[self.current_step])
-
-    def _update_account(self, symbol: str, trade_type: TradeType, fill_amount: float, fill_price: float):
-        self._trades = self._trades.append({
-            'step': self.current_step,
-            'symbol': symbol,
-            'type': trade_type,
-            'amount': fill_amount,
-            'price': fill_price
-        }, ignore_index=True)
-
-        if trade_type is TradeType.BUY:
-            self._balance -= fill_amount * fill_price
-            self._portfolio[symbol] = self._portfolio.get(
-                symbol, 0) + fill_amount
-        elif trade_type is TradeType.SELL:
-            self._balance += fill_amount * fill_price
-            self._portfolio[symbol] -= fill_amount
-
-        self._performance.append({
-            'balance': self._balance,
-            'net_worth': self.net_worth(),
-        }, ignore_index=True)
-
-    def execute_trade(self, symbol: str, trade_type: TradeType, amount: float, price: float):
-        current_price = self.current_price(symbol=symbol)
-
-        commission = self.commission_percent / 100
-        slippage = np.random.uniform(
-            0, self.max_allowed_slippage_percent) / 100
-
-        fill_amount = 0
-
-        if trade_type == TradeType.BUY and amount >= self.min_order_amount and self._balance >= amount * price:
-            price_adjustment = price_adjustment = (
-                1 + commission) * (1 + slippage)
-            fill_price = round(
-                current_price * price_adjustment, self.base_precision)
-            fill_amount = round((price * amount) /
-                                fill_price, self.asset_precision)
-        elif trade_type == TradeType.SELL and amount >= self.min_order_amount and self._portfolio.get(symbol, 0) >= amount:
-            price_adjustment = (1 - commission) * (1 - slippage)
-            fill_price = round(
-                current_price * price_adjustment, self.base_precision)
-            fill_amount = round(amount, self.asset_precision)
-
-        if fill_amount > 0:
-            self._update_account(symbol=symbol,
-                                 trade_type=trade_type,
-                                 fill_amount=fill_amount,
-                                 fill_price=fill_price)
-
-    def has_next_observation(self):
-        return self.current_step < len(self.data_frame)
-
-    def next_observation(self):
-        scaler = MinMaxScaler()
-        scaled_frame = scaler.fit_transform(self.data_frame.values)
-
-        self.current_step += 1
-
-        return scaled_frame.astype(self.dtype)
+        self._current_step = 0
