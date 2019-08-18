@@ -69,10 +69,7 @@ apidoc_separate_modules = True
 apidoc_extra_args = ['-d 6']
 
 # mock imports
-autodoc_mock_imports = [
-    'numpy', 'pandas',
-    'sklearn', 'tensorflow', 'keras', 'ccxt'
-]
+autodoc_mock_imports = ['tensorflow', 'keras', 'sklearn']
 
 # Napoleon settings
 napoleon_google_docstring = True

@@ -221,12 +221,12 @@
 <span id="tensortrade-exchanges-asset-exchange-module"></span><h1>tensortrade.exchanges.asset_exchange module<a class="headerlink" href="#module-tensortrade.exchanges.asset_exchange" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="tensortrade.exchanges.asset_exchange.AssetExchange">
-<em class="property">class </em><code class="sig-prename descclassname">tensortrade.exchanges.asset_exchange.</code><code class="sig-name descname">AssetExchange</code><span class="sig-paren">(</span><em class="sig-param">dtype=numpy.float16</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tensortrade/exchanges/asset_exchange.html#AssetExchange"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tensortrade.exchanges.asset_exchange.AssetExchange" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">tensortrade.exchanges.asset_exchange.</code><code class="sig-name descname">AssetExchange</code><span class="sig-paren">(</span><em class="sig-param">dtype=&lt;class 'numpy.float16'&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tensortrade/exchanges/asset_exchange.html#AssetExchange"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tensortrade.exchanges.asset_exchange.AssetExchange" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>An abstract asset exchange for use within a trading environment.</p>
 <dl class="method">
 <dt id="tensortrade.exchanges.asset_exchange.AssetExchange.__init__">
-<em class="property">abstract </em><code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">dtype=numpy.float16</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tensortrade/exchanges/asset_exchange.html#AssetExchange.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tensortrade.exchanges.asset_exchange.AssetExchange.__init__" title="Permalink to this definition">¶</a></dt>
+<em class="property">abstract </em><code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">dtype=&lt;class 'numpy.float16'&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tensortrade/exchanges/asset_exchange.html#AssetExchange.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tensortrade.exchanges.asset_exchange.AssetExchange.__init__" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>dtype</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">type</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]) – A type or str corresponding to the dtype of the <cite>observation_space</cite>.</p>
@@ -344,7 +344,7 @@
 <dd><p>Generate the next observation from the exchange.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>pandas.DataFrame</p>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>The next data frame of observations.</p>
@@ -369,7 +369,7 @@
 <dd><p>The performance of the active account on the exchange since the last reset.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>pandas.DataFrame</p>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></p>
 </dd>
 </dl>
 </dd></dl>
