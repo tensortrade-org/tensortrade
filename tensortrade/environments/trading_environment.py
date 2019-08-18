@@ -20,41 +20,39 @@ import numpy as np
 from gym import spaces
 from typing import Union, Tuple
 
-from tensortrade.environments.actions import ActionStrategy, TradeType
-from tensortrade.environments.rewards import RewardStrategy
+from tensortrade.actions import ActionStrategy, TradeActionUnion
+from tensortrade.rewards import RewardStrategy
 from tensortrade.exchanges import AssetExchange
+from tensortrade.trades import Trade
 
 
 class TradingEnvironment(gym.Env):
     """A trading environment made for use with Gym-compatible reinforcement learning algorithms."""
 
     def __init__(self,
+                 exchange: AssetExchange,
                  action_strategy: ActionStrategy,
                  reward_strategy: RewardStrategy,
-                 exchange: AssetExchange,
                  **kwargs):
         """
         Args:
-            action_strategy:  The strategy for transforming an action into a `TradeDefinition` at each timestep.
-            reward_strategy: The strategy for determining the reward at each timestep.
             exchange: The `AssetExchange` that will be used to feed data from and execute trades within.
+            action_strategy:  The strategy for transforming an action into a `Trade` at each timestep.
+            reward_strategy: The strategy for determining the reward at each timestep.
             kwargs (optional): Additional arguments for tuning the environment, logging, etc.
         """
 
         super().__init__()
 
+        self.exchange = exchange
         self.action_strategy = action_strategy
         self.reward_strategy = reward_strategy
-        self.exchange = exchange
 
-        self.action_space_dtype: type = kwargs.get('action_space_dtype', np.float16)
-        self.observation_space_dtype: type = kwargs.get('observation_space_dtype', np.float16)
+        self.action_strategy.set_exchange(self.exchange)
+        self.reward_strategy.set_exchange(self.exchange)
 
-        self.action_strategy.set_dtype(self.action_space_dtype)
-        self.exchange.set_dtype(self.observation_space_dtype)
-
-        self.action_space = self.action_strategy.action_space()
-        self.observation_space = self.exchange.observation_space()
+        self.observation_space = self.exchange.observation_space
+        self.action_space = self.action_strategy.action_space
 
         self.logger_name: int = kwargs.get('logger_name', __name__)
         self.log_level: int = kwargs.get('log_level', logging.DEBUG)
@@ -65,7 +63,7 @@ class TradingEnvironment(gym.Env):
 
         logging.getLogger('tensorflow').disabled = self.disable_tensorflow_logs
 
-    def _take_action(self, action: Union[int, float]):
+    def _take_action(self, action: TradeActionUnion) -> Trade:
         """Determines a specific trade to be taken and executes it within the exchange.
 
         Args:
@@ -74,15 +72,13 @@ class TradingEnvironment(gym.Env):
         Returns:
             A tuple containing the (fill_amount, fill_price) of the executed trade.
         """
-        symbol, trade_type, amount, price = self.action_strategy.get_trade(
-            action=action, exchange=self.exchange)
+        trade = self.action_strategy.get_trade(action=action, exchange=self.exchange)
 
-        fill_amount, fill_price = self.exchange.execute_trade(symbol=symbol, trade_type=trade_type,
-                                                              amount=amount, price=price)
+        filled_trade = self.exchange.execute_trade(trade)
 
-        return fill_amount, fill_price
+        return filled_trade
 
-    def _next_observation(self) -> pd.DataFrame:
+    def _next_observation(self, trade: Trade) -> pd.DataFrame:
         """Returns the next observation from the exchange.
 
         Returns:
@@ -93,16 +89,18 @@ class TradingEnvironment(gym.Env):
         observation = self.exchange.next_observation()
         observation = observation.fillna(0, axis=1)
 
+        observation['fill_amount'] = [trade.amount]
+        observation['fill_price'] = [trade.price]
+
         return observation
 
-    def _get_reward(self) -> float:
+    def _get_reward(self, trade: Trade) -> float:
         """Returns the reward for the current timestep.
 
         Returns:
-            A float signaling the benefit this action has given the agent.
+            A float corresponding to the benefit earned by the action taken this step.
         """
-        reward: float = self.reward_strategy.get_reward(
-            current_step=self.current_step, exchange=self.exchange)
+        reward: float = self.reward_strategy.get_reward(current_step=self.current_step, trade=trade)
 
         return reward if np.isfinite(reward) else 0
 
@@ -112,7 +110,7 @@ class TradingEnvironment(gym.Env):
         Returns:
             A boolean signaling whether the environment is done and should be restarted.
         """
-        lost_90_percent_net_worth = self.exchange.profit_loss_percent() < 0.1
+        lost_90_percent_net_worth = self.exchange.profit_loss_percent < 0.1
         has_next_obs: bool = self.exchange.has_next_observation()
 
         return lost_90_percent_net_worth or not has_next_obs
@@ -133,15 +131,15 @@ class TradingEnvironment(gym.Env):
 
         Returns:
             observation (pandas.DataFrame): Provided by the environment's exchange, often OHLCV or tick trade history data points.
-            reward (float): An amount corresponding to the advantage gained by the agent in this timestep.
+            reward (float): An amount corresponding to the benefit earned by the action taken this timestep.
             done (bool): If `True`, the environment is complete and should be restarted.
             info (dict): Any auxiliary, diagnostic, or debugging information to output.
         """
 
-        fill_amount, fill_price = self._take_action(action)
+        filled_trade = self._take_action(action)
 
-        observation = self._next_observation()
-        reward = self._get_reward()
+        observation = self._next_observation(filled_trade)
+        reward = self._get_reward(filled_trade)
         done = self._done()
         info = self._info()
 
@@ -160,8 +158,14 @@ class TradingEnvironment(gym.Env):
 
         self.current_step = 0
 
-        return self._next_observation()
+        return self._next_observation(Trade('N/A', 'hold', 0, 0))
 
     def render(self, mode='none'):
         """Renders the environment."""
         pass
+
+
+gym.register(
+    id='TradingEnvironment-v0',
+    entry_point='tensortrade.environments.trading_environment:TradingEnvironment',
+)
