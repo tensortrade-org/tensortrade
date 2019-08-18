@@ -3,8 +3,8 @@
 *.pyc
 *.swp
 *__pycache__
-dist/*
-build/*
+dist
+build
 tags
 
 # test-related
