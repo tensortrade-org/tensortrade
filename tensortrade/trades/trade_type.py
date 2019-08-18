@@ -25,7 +25,15 @@ class TradeType(Enum):
     MARKET_SELL = "market_sell"
 
     def is_buy(self) -> bool:
+        """
+        Returns:
+            Whether or not the trade type is a buy offer.
+        """
         return self == TradeType.MARKET_BUY or self == TradeType.LIMIT_BUY
 
     def is_sell(self) -> bool:
+        """
+        Returns:
+            Whether or not the trade type is a sell offer.
+        """
         return self == TradeType.MARKET_SELL or self == TradeType.LIMIT_SELL

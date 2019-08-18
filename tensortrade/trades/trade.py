@@ -67,8 +67,16 @@ class Trade(object):
 
     @property
     def is_buy(self) -> bool:
+        """
+        Returns:
+            Whether or not the trade type is a buy offer.
+        """
         return "buy" in self._trade_type
 
     @property
     def is_sell(self) -> bool:
+        """
+        Returns:
+            Whether or not the trade type is a sell offer.
+        """
         return "sell" in self._trade_type
