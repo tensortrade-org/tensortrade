@@ -111,9 +111,8 @@ class TradingEnvironment(gym.Env):
             A boolean signaling whether the environment is done and should be restarted.
         """
         lost_90_percent_net_worth = self.exchange.profit_loss_percent < 0.1
-        has_next_obs: bool = self.exchange.has_next_observation()
 
-        return lost_90_percent_net_worth or not has_next_obs
+        return lost_90_percent_net_worth or not self.exchange.has_next_observation
 
     def _info(self) -> dict:
         """Returns any auxiliary, diagnostic, or debugging information for the current timestep.
