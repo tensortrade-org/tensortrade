@@ -22,7 +22,7 @@ from tensortrade.features.transformer import TransformableList
 
 
 class PDFeatureUnion(FeatureUnion):
-    """A utility class for unioning pipelines while maintaining underlying Pandas.DataFrame data structure."""
+    """A utility class for unioning pipelines while maintaining underlying pandas.DataFrame data structure."""
 
     def transform(self, X: TransformableList):
         """Transform the data set with the fit model.

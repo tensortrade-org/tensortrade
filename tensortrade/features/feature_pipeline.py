@@ -15,7 +15,6 @@
 import pandas as pd
 import numpy as np
 
-from abc import ABCMeta, abstractmethod
 from sklearn import Pipeline
 from sklearn.utils import check_array
 
@@ -43,7 +42,7 @@ class FeaturePipeline(object):
 
     @property
     def dtype(self):
-        """The `dtype` elements in the pipeline should be cast to"""
+        """The `dtype` elements in the pipeline should be input and output as."""
         return self._dtype
 
     @dtype.setter
