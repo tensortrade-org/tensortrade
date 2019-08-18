@@ -129,9 +129,9 @@ class TradingEnvironment(gym.Env):
             action: The trade action provided by the agent for this timestep.
 
         Returns:
-            observation (pandas.DataFrame): Provided by the environment's exchange, often OHLCV or tick trade history data points.
-            reward (float): An amount corresponding to the benefit earned by the action taken this timestep.
-            done (bool): If `True`, the environment is complete and should be restarted.
+            observation (pandas.DataFrame): Provided by the environment's exchange, often OHLCV or tick trade history data points.\n
+            reward (float): An amount corresponding to the benefit earned by the action taken this timestep.\n
+            done (bool): If `True`, the environment is complete and should be restarted.\n
             info (dict): Any auxiliary, diagnostic, or debugging information to output.
         """
 
