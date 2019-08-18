@@ -7,5 +7,3 @@ sphinxcontrib.apidoc
 nbsphinx
 nbsphinx_link
 m2r
-tensorflow==1.14.0
-stable-baselines
