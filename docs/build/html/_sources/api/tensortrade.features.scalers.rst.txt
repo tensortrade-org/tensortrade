@@ -12,3 +12,4 @@ Submodules
 .. toctree::
 
    tensortrade.features.scalers.min_max_normalizer
+   tensortrade.features.scalers.standard_normalizer

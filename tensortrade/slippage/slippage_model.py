@@ -14,7 +14,6 @@
 
 from abc import ABCMeta, abstractmethod
 
-from tensortrade.exchanges import AssetExchange
 from tensortrade.trades import Trade
 
 

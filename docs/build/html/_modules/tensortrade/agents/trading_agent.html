@@ -166,7 +166,20 @@
            <div itemprop="articleBody">
             
   <h1>Source code for tensortrade.agents.trading_agent</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">gin</span>
+<span></span><span class="c1"># Copyright 2019 The TensorTrade Authors.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
@@ -175,12 +188,13 @@
 
 <span class="kn">from</span> <span class="nn">tensortrade.environments.trading_environment</span> <span class="k">import</span> <span class="n">TradingEnvironment</span>
 <span class="kn">from</span> <span class="nn">tensortrade.features.feature_pipeline</span> <span class="k">import</span> <span class="n">FeaturePipeline</span>
+<span class="kn">from</span> <span class="nn">tensortrade.actions</span> <span class="k">import</span> <span class="n">TradeActionUnion</span>
 
 
-<div class="viewcode-block" id="TradingAgent"><a class="viewcode-back" href="../../../api/tensortrade.agents.trading_agent.html#tensortrade.agents.trading_agent.TradingAgent">[docs]</a><span class="nd">@gin</span><span class="o">.</span><span class="n">configurable</span>
-<span class="k">class</span> <span class="nc">TradingAgent</span><span class="p">(</span><span class="nb">object</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;An abstract base class for trading agents capable of self tuning, training, and evaluating.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="TradingAgent"><a class="viewcode-back" href="../../../api/tensortrade.agents.trading_agent.html#tensortrade.agents.trading_agent.TradingAgent">[docs]</a><span class="k">class</span> <span class="nc">TradingAgent</span><span class="p">(</span><span class="nb">object</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;An abstract trading agent capable of self tuning, training, and evaluating.&quot;&quot;&quot;</span>
 
+<div class="viewcode-block" id="TradingAgent.__init__"><a class="viewcode-back" href="../../../api/tensortrade.agents.trading_agent.html#tensortrade.agents.trading_agent.TradingAgent.__init__">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env</span><span class="p">:</span> <span class="n">TradingEnvironment</span><span class="p">,</span> <span class="n">feature_pipeline</span><span class="p">:</span> <span class="n">FeaturePipeline</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Args:</span>
@@ -188,7 +202,7 @@
 <span class="sd">            feature_pipeline: A `FeaturePipeline` instance of feature transformations.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_env</span> <span class="o">=</span> <span class="n">env</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_feature_pipeline</span> <span class="o">=</span> <span class="n">feature_pipeline</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_feature_pipeline</span> <span class="o">=</span> <span class="n">feature_pipeline</span></div>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">env</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -201,15 +215,14 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">feature_pipeline</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;A `FeaturePipeline` instance of feature transformations.&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;A pipeline of feature transformations to be applied to observations from the environment.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_feature_pipeline</span>
 
     <span class="nd">@feature_pipeline</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">feature_pipeline</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feature_pipeline</span><span class="p">:</span> <span class="n">FeaturePipeline</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">feature_pipeline</span> <span class="o">=</span> <span class="n">feature_pipeline</span>
 
-<div class="viewcode-block" id="TradingAgent.tune"><a class="viewcode-back" href="../../../api/tensortrade.agents.trading_agent.html#tensortrade.agents.trading_agent.TradingAgent.tune">[docs]</a>    <span class="nd">@gin</span><span class="o">.</span><span class="n">configurable</span>
-    <span class="nd">@abstractmethod</span>
+<div class="viewcode-block" id="TradingAgent.tune"><a class="viewcode-back" href="../../../api/tensortrade.agents.trading_agent.html#tensortrade.agents.trading_agent.TradingAgent.tune">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">tune</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">steps_per_train</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">steps_per_test</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">step_cb</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">],</span> <span class="nb">bool</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Tune the agent&#39;s hyper-parameters and feature set for the environment.</span>
 
@@ -225,8 +238,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
-<div class="viewcode-block" id="TradingAgent.train"><a class="viewcode-back" href="../../../api/tensortrade.agents.trading_agent.html#tensortrade.agents.trading_agent.TradingAgent.train">[docs]</a>    <span class="nd">@gin</span><span class="o">.</span><span class="n">configurable</span>
-    <span class="nd">@abstractmethod</span>
+<div class="viewcode-block" id="TradingAgent.train"><a class="viewcode-back" href="../../../api/tensortrade.agents.trading_agent.html#tensortrade.agents.trading_agent.TradingAgent.train">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">steps</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">callback</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">],</span> <span class="nb">bool</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Train the agent&#39;s underlying model on the environment.</span>
 
@@ -241,8 +253,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
-<div class="viewcode-block" id="TradingAgent.evaluate"><a class="viewcode-back" href="../../../api/tensortrade.agents.trading_agent.html#tensortrade.agents.trading_agent.TradingAgent.evaluate">[docs]</a>    <span class="nd">@gin</span><span class="o">.</span><span class="n">configurable</span>
-    <span class="nd">@abstractmethod</span>
+<div class="viewcode-block" id="TradingAgent.evaluate"><a class="viewcode-back" href="../../../api/tensortrade.agents.trading_agent.html#tensortrade.agents.trading_agent.TradingAgent.evaluate">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">steps</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">callback</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">],</span> <span class="nb">bool</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Evaluate the agent&#39;s performance within the environment.</span>
 
@@ -258,7 +269,7 @@
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
 <div class="viewcode-block" id="TradingAgent.get_action"><a class="viewcode-back" href="../../../api/tensortrade.agents.trading_agent.html#tensortrade.agents.trading_agent.TradingAgent.get_action">[docs]</a>    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">get_action</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">observation</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]]:</span>
+    <span class="k">def</span> <span class="nf">get_action</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">observation</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TradeActionUnion</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Determine an action based on a specific observation.</span>
 
 <span class="sd">        Args:</span>

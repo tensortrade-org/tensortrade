@@ -166,93 +166,182 @@
            <div itemprop="articleBody">
             
   <h1>Source code for tensortrade.exchanges.asset_exchange</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span></span><span class="c1"># Copyright 2019 The TensorTrade Authors.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
 <span class="kn">from</span> <span class="nn">abc</span> <span class="k">import</span> <span class="n">ABCMeta</span><span class="p">,</span> <span class="n">abstractmethod</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Dict</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">List</span>
+<span class="kn">from</span> <span class="nn">gym.spaces</span> <span class="k">import</span> <span class="n">Space</span>
+
+<span class="kn">from</span> <span class="nn">tensortrade.trades</span> <span class="k">import</span> <span class="n">Trade</span>
+
+<span class="n">TypeString</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="nb">type</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span>
 
 
 <div class="viewcode-block" id="AssetExchange"><a class="viewcode-back" href="../../../api/tensortrade.exchanges.asset_exchange.html#tensortrade.exchanges.asset_exchange.AssetExchange">[docs]</a><span class="k">class</span> <span class="nc">AssetExchange</span><span class="p">(</span><span class="nb">object</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Abstract base class for asset exchanges&quot;&quot;&quot;</span>
-    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">pass</span>
+    <span class="sd">&quot;&quot;&quot;An abstract asset exchange for use within a trading environment.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="AssetExchange.set_dtype"><a class="viewcode-back" href="../../../api/tensortrade.exchanges.asset_exchange.html#tensortrade.exchanges.asset_exchange.AssetExchange.set_dtype">[docs]</a>    <span class="k">def</span> <span class="nf">set_dtype</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dtype</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">dtype</span></div>
-
-<div class="viewcode-block" id="AssetExchange.set_max_allowed_slippage_percent"><a class="viewcode-back" href="../../../api/tensortrade.exchanges.asset_exchange.html#tensortrade.exchanges.asset_exchange.AssetExchange.set_max_allowed_slippage_percent">[docs]</a>    <span class="k">def</span> <span class="nf">set_max_allowed_slippage_percent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">max_allowed_slippage_percent</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">max_allowed_slippage_percent</span> <span class="o">=</span> <span class="n">max_allowed_slippage_percent</span></div>
-
-<div class="viewcode-block" id="AssetExchange.net_worth"><a class="viewcode-back" href="../../../api/tensortrade.exchanges.asset_exchange.html#tensortrade.exchanges.asset_exchange.AssetExchange.net_worth">[docs]</a>    <span class="k">def</span> <span class="nf">net_worth</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_symbol</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Calculate the net worth of the current account in this exchange</span>
-
-<span class="sd">            # Arguments</span>
-<span class="sd">            output_symbol: the notional value, that should be used to display the account value</span>
-
-<span class="sd">            # Returns</span>
-<span class="sd">            the total portfolio value of this account</span>
+<div class="viewcode-block" id="AssetExchange.__init__"><a class="viewcode-back" href="../../../api/tensortrade.exchanges.asset_exchange.html#tensortrade.exchanges.asset_exchange.AssetExchange.__init__">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dtype</span><span class="p">:</span> <span class="n">TypeString</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float16</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            dtype: A type or str corresponding to the dtype of the `observation_space`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">net_worth</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">balance</span><span class="p">(</span><span class="n">symbol</span><span class="o">=</span><span class="n">output_symbol</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span> <span class="o">=</span> <span class="n">dtype</span></div>
 
-        <span class="n">portfolio</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">portfolio</span><span class="p">()</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">dtype</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;A type or str corresponding to the dtype of the `observation_space`.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span>
+
+    <span class="nd">@dtype</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">dtype</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dtype</span><span class="p">:</span> <span class="n">TypeString</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span> <span class="o">=</span> <span class="n">dtype</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">base_precision</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;The floating point precision of the base asset.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_base_precision</span>
+
+    <span class="nd">@base_precision</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">base_precision</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base_precision</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_base_precision</span> <span class="o">=</span> <span class="n">base_precision</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">asset_precision</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;The floating point precision of the asset to be traded.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_asset_precision</span>
+
+    <span class="nd">@asset_precision</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">asset_precision</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">asset_precision</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_asset_precision</span> <span class="o">=</span> <span class="n">asset_precision</span>
+
+    <span class="nd">@property</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">initial_balance</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;The initial balance of the base symbol on the exchange.&quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="nd">@property</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">balance</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;The current balance of the base symbol on the exchange.&quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="nd">@property</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">portfolio</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;The current balance of each symbol on the exchange (non-positive balances excluded).&quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="nd">@property</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">trades</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Trade</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;A list of trades made on the exchange since the last reset.&quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="nd">@property</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">performance</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;The performance of the active account on the exchange since the last reset.&quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="nd">@property</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">observation_space</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Space</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;The shape of the observations generated by the exchange.&quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">net_worth</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Calculate the net worth of the active account on the exchange.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">            The total portfolio value of the active account on the exchange.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">net_worth</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">balance</span>
+        <span class="n">portfolio</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">portfolio</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">portfolio</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">net_worth</span>
 
         <span class="k">for</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">amount</span> <span class="ow">in</span> <span class="n">portfolio</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="n">current_price</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_price</span><span class="p">(</span>
-                <span class="n">symbol</span><span class="o">=</span><span class="n">symbol</span><span class="p">,</span> <span class="n">output_symbol</span><span class="o">=</span><span class="n">output_symbol</span><span class="p">)</span>
+            <span class="n">current_price</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_price</span><span class="p">(</span><span class="n">symbol</span><span class="o">=</span><span class="n">symbol</span><span class="p">)</span>
             <span class="n">net_worth</span> <span class="o">+=</span> <span class="n">current_price</span> <span class="o">*</span> <span class="n">amount</span>
 
-        <span class="k">return</span> <span class="n">net_worth</span></div>
+        <span class="k">return</span> <span class="n">net_worth</span>
 
-<div class="viewcode-block" id="AssetExchange.profit_loss_percent"><a class="viewcode-back" href="../../../api/tensortrade.exchanges.asset_exchange.html#tensortrade.exchanges.asset_exchange.AssetExchange.profit_loss_percent">[docs]</a>    <span class="k">def</span> <span class="nf">profit_loss_percent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_symbol</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Calculate the percentage change since the initial balance in the output_symbol notional value&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">net_worth</span><span class="p">(</span><span class="n">output_symbol</span><span class="o">=</span><span class="n">output_symbol</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_balance</span><span class="p">(</span><span class="n">symbol</span><span class="o">=</span><span class="n">output_symbol</span><span class="p">))</span></div>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">profit_loss_percent</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Calculate the percentage change in net worth since the last reset.</span>
 
-<div class="viewcode-block" id="AssetExchange.initial_balance"><a class="viewcode-back" href="../../../api/tensortrade.exchanges.asset_exchange.html#tensortrade.exchanges.asset_exchange.AssetExchange.initial_balance">[docs]</a>    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">initial_balance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbol</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+<span class="sd">        Returns:</span>
+<span class="sd">            The percentage change in net worth since the last reset.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">net_worth</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_balance</span><span class="p">)</span> <span class="o">*</span> <span class="mi">100</span>
 
-<div class="viewcode-block" id="AssetExchange.balance"><a class="viewcode-back" href="../../../api/tensortrade.exchanges.asset_exchange.html#tensortrade.exchanges.asset_exchange.AssetExchange.balance">[docs]</a>    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">balance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbol</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
-
-<div class="viewcode-block" id="AssetExchange.portfolio"><a class="viewcode-back" href="../../../api/tensortrade.exchanges.asset_exchange.html#tensortrade.exchanges.asset_exchange.AssetExchange.portfolio">[docs]</a>    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">portfolio</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
-
-<div class="viewcode-block" id="AssetExchange.trades"><a class="viewcode-back" href="../../../api/tensortrade.exchanges.asset_exchange.html#tensortrade.exchanges.asset_exchange.AssetExchange.trades">[docs]</a>    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">trades</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
-
-<div class="viewcode-block" id="AssetExchange.performance"><a class="viewcode-back" href="../../../api/tensortrade.exchanges.asset_exchange.html#tensortrade.exchanges.asset_exchange.AssetExchange.performance">[docs]</a>    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">performance</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
-
-<div class="viewcode-block" id="AssetExchange.observation_space"><a class="viewcode-back" href="../../../api/tensortrade.exchanges.asset_exchange.html#tensortrade.exchanges.asset_exchange.AssetExchange.observation_space">[docs]</a>    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">observation_space</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
-
-<div class="viewcode-block" id="AssetExchange.current_price"><a class="viewcode-back" href="../../../api/tensortrade.exchanges.asset_exchange.html#tensortrade.exchanges.asset_exchange.AssetExchange.current_price">[docs]</a>    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">current_price</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbol</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">output_symbol</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
-
-<div class="viewcode-block" id="AssetExchange.has_next_observation"><a class="viewcode-back" href="../../../api/tensortrade.exchanges.asset_exchange.html#tensortrade.exchanges.asset_exchange.AssetExchange.has_next_observation">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="nd">@property</span>
+    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">has_next_observation</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+        <span class="sd">&quot;&quot;&quot;If `False`, the exchange&#39;s data source has run out of observations.</span>
+
+<span class="sd">        Resetting the exchange may be necessary to continue generating observations.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Whether or not the specified asset has a next observation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 
 <div class="viewcode-block" id="AssetExchange.next_observation"><a class="viewcode-back" href="../../../api/tensortrade.exchanges.asset_exchange.html#tensortrade.exchanges.asset_exchange.AssetExchange.next_observation">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">next_observation</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Generate the next observation from the exchange.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The next data frame of observations.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+<div class="viewcode-block" id="AssetExchange.current_price"><a class="viewcode-back" href="../../../api/tensortrade.exchanges.asset_exchange.html#tensortrade.exchanges.asset_exchange.AssetExchange.current_price">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">current_price</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbol</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;The current price of an asset on the exchange, denoted in the base symbol.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            symbol: The exchange symbol of the asset to get the price for.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The current price of the specified asset, denoted in the base symbol.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
 <div class="viewcode-block" id="AssetExchange.execute_trade"><a class="viewcode-back" href="../../../api/tensortrade.exchanges.asset_exchange.html#tensortrade.exchanges.asset_exchange.AssetExchange.execute_trade">[docs]</a>    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">execute_trade</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">execute_trade</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trade</span><span class="p">:</span> <span class="n">Trade</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Trade</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Execute a trade on the exchange, accounting for slippage.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            trade: The trade to execute.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The filled trade.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
 <div class="viewcode-block" id="AssetExchange.reset"><a class="viewcode-back" href="../../../api/tensortrade.exchanges.asset_exchange.html#tensortrade.exchanges.asset_exchange.AssetExchange.reset">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Reset the initial balance, trades, performance, and any other temporary stateful data.&quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div></div>
 </pre></div>
 

@@ -16,13 +16,13 @@ import numpy as np
 import pandas as pd
 
 from typing import Union
-from abc import ABCMeta, abstractmethod
-from sklearn.base import BaseEstimator, TransformerMixin
+from abc import abstractmethod
+from sklearn.base import TransformerMixin
 
 TransformableList = Union[np.ndarray, pd.DataFrame]
 
 
-class Transformer(BaseEstimator, TransformerMixin, metaclass=ABCMeta):
+class Transformer(TransformerMixin):
     """An abstract transformer for use within feature pipelines."""
 
     @abstractmethod

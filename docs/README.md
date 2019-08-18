@@ -2,14 +2,6 @@
 
 Read [the documentation](https://tensortrade.readthedocs.io).
 
----
-
-<div align="center">
-  <img src="https://github.com/notadamking/tensortrade/blob/master/docs/source/_static/sequence_diagram.png">
-</div>
-
----
-
 This directory contains the sources (`.md` and `.rst` files) for the
 documentation. The main index page is defined in `source/index.rst`.
 The Sphinx options and plugins are found in the `source/conf.py` file.
@@ -24,7 +16,7 @@ Run `make docs-build` from project root, or `make html` from the `docs/` subfold
 
 Note this can take some time as some of the notebooks may be executed
 during the build process. The resulting documentation is located in the
-`_build` directory with `_build/html/index.html` marking the homepage.
+`build` directory with `build/html/index.html` marking the homepage.
 
 ## Sphinx extensions and plugins
 

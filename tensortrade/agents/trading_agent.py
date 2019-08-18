@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import gin
 import pandas as pd
 import numpy as np
 
@@ -24,7 +23,6 @@ from tensortrade.features.feature_pipeline import FeaturePipeline
 from tensortrade.actions import TradeActionUnion
 
 
-@gin.configurable
 class TradingAgent(object, metaclass=ABCMeta):
     """An abstract trading agent capable of self tuning, training, and evaluating."""
 
@@ -56,7 +54,6 @@ class TradingAgent(object, metaclass=ABCMeta):
     def feature_pipeline(self, feature_pipeline: FeaturePipeline):
         self.feature_pipeline = feature_pipeline
 
-    @gin.configurable
     @abstractmethod
     def tune(self, steps_per_train: int, steps_per_test: int, step_cb: Callable[[pd.DataFrame], bool]) -> pd.DataFrame:
         """Tune the agent's hyper-parameters and feature set for the environment.
@@ -73,7 +70,6 @@ class TradingAgent(object, metaclass=ABCMeta):
         """
         raise NotImplementedError
 
-    @gin.configurable
     @abstractmethod
     def train(self, steps: int, callback: Callable[[pd.DataFrame], bool]) -> pd.DataFrame:
         """Train the agent's underlying model on the environment.
@@ -89,7 +85,6 @@ class TradingAgent(object, metaclass=ABCMeta):
         """
         raise NotImplementedError
 
-    @gin.configurable
     @abstractmethod
     def evaluate(self, steps: int, callback: Callable[[pd.DataFrame], bool]) -> pd.DataFrame:
         """Evaluate the agent's performance within the environment.

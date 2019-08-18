@@ -19,7 +19,7 @@ from gym.spaces import Box
 from typing import Dict
 
 from tensortrade.trades import Trade, TradeType
-from tensortrade.exchanges.asset_exchange import AssetExchange
+from tensortrade.exchanges import AssetExchange
 from tensortrade.slippage import RandomSlippageModel
 
 
@@ -34,8 +34,7 @@ class StaticExchange(AssetExchange):
         self._max_allowed_slippage_percent = kwargs.get('max_allowed_slippage_percent', 3.0)
         self._min_order_amount = kwargs.get('min_order_amount', 1E-3)
 
-        self._slippage_model = RandomSlippageModel(exchange=self,
-                                                   max_price_slippage_percent=self._max_allowed_slippage_percent)
+        self._slippage_model = RandomSlippageModel(self._max_allowed_slippage_percent)
 
         self.reset()
 

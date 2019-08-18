@@ -15,7 +15,6 @@
 import pandas as pd
 import numpy as np
 
-from tensortrade.exchanges import AssetExchange
 from tensortrade.rewards import RewardStrategy
 from tensortrade.trades import TradeType, Trade
 

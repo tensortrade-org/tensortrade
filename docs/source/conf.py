@@ -71,7 +71,7 @@ apidoc_extra_args = ['-d 6']
 # mock imports
 autodoc_mock_imports = [
     'numpy', 'pandas',
-    'sklearn', 'tensorflow', 'keras'
+    'sklearn', 'tensorflow', 'keras', 'ccxt'
 ]
 
 # Napoleon settings

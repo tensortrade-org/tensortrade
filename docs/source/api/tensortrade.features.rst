@@ -12,7 +12,7 @@ Subpackages
 .. toctree::
 
    tensortrade.features.scalers
-   tensortrade.features.selectors
+   tensortrade.features.utils
 
 Submodules
 ----------

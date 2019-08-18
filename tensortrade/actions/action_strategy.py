@@ -18,7 +18,6 @@ from typing import Union
 from abc import ABCMeta, abstractmethod
 from gym.spaces import Space
 
-from tensortrade.exchanges import AssetExchange
 from tensortrade.trades import Trade
 
 DTypeString = Union[type, str]
@@ -35,6 +34,7 @@ class ActionStrategy(object, metaclass=ABCMeta):
             action_space: The shape of the actions produced by the strategy.
             dtype: A type or str corresponding to the dtype of the `action_space`. Defaults to `np.float16`.
         """
+
         self._action_space = action_space
         self._dtype = dtype
 
@@ -65,7 +65,7 @@ class ActionStrategy(object, metaclass=ABCMeta):
         return self._exchange
 
     @exchange.setter
-    def exchange(self, exchange: AssetExchange):
+    def exchange(self, exchange: 'AssetExchange'):
         self._exchange = exchange
         self.reset()
 

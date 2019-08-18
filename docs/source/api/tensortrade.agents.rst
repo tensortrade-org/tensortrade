@@ -6,16 +6,10 @@ tensortrade.agents package
    :undoc-members:
    :show-inheritance:
 
-Subpackages
------------
-
-.. toctree::
-
-   tensortrade.agents.rl
-
 Submodules
 ----------
 
 .. toctree::
 
+   tensortrade.agents.tensorflow_agent
    tensortrade.agents.trading_agent

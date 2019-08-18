@@ -6,14 +6,6 @@ tensortrade.environments package
    :undoc-members:
    :show-inheritance:
 
-Subpackages
------------
-
-.. toctree::
-
-   tensortrade.environments.actions
-   tensortrade.environments.rewards
-
 Submodules
 ----------
 

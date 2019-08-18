@@ -392,7 +392,7 @@ div.rendered_html tbody tr:hover {
 }
 </style>
 <div class="admonition note">
-<p>This page was generated from <a class="reference external" href="https://github.com/notadamking/tensortrade/blob/5139b0b3acfaf918956a46d147704a7437a00491/docs/source/examples/Train_and_Evaluate.ipynb">docs/source/examples/Train_and_Evaluate.ipynb</a>.</p>
+<p>This page was generated from <a class="reference external" href="https://github.com/notadamking/tensortrade/blob/965347b954d3dfcbacb05ee06b19d52a55cfd39b/docs/source/examples/Train_and_Evaluate.ipynb">docs/source/examples/Train_and_Evaluate.ipynb</a>.</p>
 </div>
 <div class="section" id="Train-and-Evaluate">
 <h1>Train and Evaluate<a class="headerlink" href="#Train-and-Evaluate" title="Permalink to this headline">¶</a></h1>
@@ -401,44 +401,7 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">stable_baselines.common.policies</span> <span class="k">import</span> <span class="n">MlpLnLstmPolicy</span>
-<span class="kn">from</span> <span class="nn">stable_baselines.common.vec_env</span> <span class="k">import</span> <span class="n">DummyVecEnv</span>
-<span class="kn">from</span> <span class="nn">stable_baselines</span> <span class="k">import</span> <span class="n">PPO2</span>
-
-<span class="kn">import</span> <span class="nn">sys</span>
-<span class="kn">import</span> <span class="nn">os</span>
-
-<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="s1">&#39;../..&#39;</span><span class="p">)))</span>
-
-<span class="kn">from</span> <span class="nn">tensortrade.environments</span> <span class="k">import</span> <span class="n">TradingEnvironment</span>
-<span class="kn">from</span> <span class="nn">tensortrade.environments.actions.discrete</span> <span class="k">import</span> <span class="n">SimpleDiscreteStrategy</span>
-<span class="kn">from</span> <span class="nn">tensortrade.environments.rewards.simple</span> <span class="k">import</span> <span class="n">IncrementalProfitStrategy</span>
-<span class="kn">from</span> <span class="nn">tensortrade.exchanges.simulated</span> <span class="k">import</span> <span class="n">FBMExchange</span>
-
-<span class="n">env</span> <span class="o">=</span> <span class="n">DummyVecEnv</span><span class="p">([</span><span class="k">lambda</span><span class="p">:</span> <span class="n">TradingEnvironment</span><span class="p">(</span><span class="n">action_strategy</span><span class="o">=</span><span class="n">SimpleDiscreteStrategy</span><span class="p">(),</span>
-                                              <span class="n">reward_strategy</span><span class="o">=</span><span class="n">IncrementalProfitStrategy</span><span class="p">(),</span>
-                                              <span class="n">exchange</span><span class="o">=</span><span class="n">FBMExchange</span><span class="p">())])</span>
-
-<span class="n">agent</span> <span class="o">=</span> <span class="n">PPO2</span><span class="p">(</span><span class="n">MlpLnLstmPolicy</span><span class="p">,</span> <span class="n">env</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">nminibatches</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-
-<span class="n">agent</span><span class="o">.</span><span class="n">learn</span><span class="p">(</span><span class="mi">7500</span><span class="p">)</span>
-
-<span class="n">obs</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
-
-
-<span class="n">state</span> <span class="o">=</span> <span class="kc">None</span>
-<span class="n">exchange</span> <span class="o">=</span> <span class="kc">None</span>
-
-<span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2500</span><span class="p">):</span>
-    <span class="n">action</span><span class="p">,</span> <span class="n">state</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">)</span>
-    <span class="n">obs</span><span class="p">,</span> <span class="n">reward</span> <span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
-
-    <span class="n">exchange</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;exchange&#39;</span><span class="p">]</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Trades: &#39;</span><span class="p">,</span> <span class="n">exchange</span><span class="o">.</span><span class="n">trades</span><span class="p">())</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Balance: &#39;</span><span class="p">,</span> <span class="n">exchange</span><span class="o">.</span><span class="n">balance</span><span class="p">())</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Portfolio: &#39;</span><span class="p">,</span> <span class="n">exchange</span><span class="o">.</span><span class="n">portfolio</span><span class="p">())</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;P/L: &#39;</span><span class="p">,</span> <span class="n">exchange</span><span class="o">.</span><span class="n">profit_loss_percent</span><span class="p">())</span>
+<span></span><span class="c1"># Temporarily disabled</span>
 
 </pre></div>
 </div>

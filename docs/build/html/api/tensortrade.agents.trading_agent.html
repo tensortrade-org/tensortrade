@@ -39,7 +39,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="tensortrade.environments package" href="tensortrade.environments.html" />
-    <link rel="prev" title="tensortrade.agents.rl.tensorflow_agent module" href="tensortrade.agents.rl.tensorflow_agent.html" /> 
+    <link rel="prev" title="tensortrade.agents.tensorflow_agent module" href="tensortrade.agents.tensorflow_agent.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -107,10 +107,15 @@
 <li class="toctree-l1 current"><a class="reference internal" href="modules.html">API reference</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="tensortrade.html">tensortrade package</a><ul class="current">
 <li class="toctree-l3 current"><a class="reference internal" href="tensortrade.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="tensortrade.actions.html">tensortrade.actions package</a></li>
 <li class="toctree-l4 current"><a class="reference internal" href="tensortrade.agents.html">tensortrade.agents package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="tensortrade.environments.html">tensortrade.environments package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="tensortrade.exchanges.html">tensortrade.exchanges package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="tensortrade.features.html">tensortrade.features package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tensortrade.models.html">tensortrade.models package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tensortrade.rewards.html">tensortrade.rewards package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tensortrade.slippage.html">tensortrade.slippage package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tensortrade.trades.html">tensortrade.trades package</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="tensortrade.html#submodules">Submodules</a></li>
@@ -218,7 +223,20 @@
 <dt id="tensortrade.agents.trading_agent.TradingAgent">
 <em class="property">class </em><code class="sig-prename descclassname">tensortrade.agents.trading_agent.</code><code class="sig-name descname">TradingAgent</code><span class="sig-paren">(</span><em class="sig-param">env</em>, <em class="sig-param">feature_pipeline</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tensortrade/agents/trading_agent.html#TradingAgent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tensortrade.agents.trading_agent.TradingAgent" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<p>An abstract base class for trading agents capable of self tuning, training, and evaluating.</p>
+<p>An abstract trading agent capable of self tuning, training, and evaluating.</p>
+<dl class="method">
+<dt id="tensortrade.agents.trading_agent.TradingAgent.__init__">
+<em class="property">abstract </em><code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">env</em>, <em class="sig-param">feature_pipeline</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tensortrade/agents/trading_agent.html#TradingAgent.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tensortrade.agents.trading_agent.TradingAgent.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>env</strong> (<a class="reference internal" href="tensortrade.environments.trading_environment.html#tensortrade.environments.trading_environment.TradingEnvironment" title="tensortrade.environments.trading_environment.TradingEnvironment"><code class="xref py py-class docutils literal notranslate"><span class="pre">TradingEnvironment</span></code></a>) – A <cite>TradingEnvironment</cite> instance for the agent to trade within.</p></li>
+<li><p><strong>feature_pipeline</strong> (<a class="reference internal" href="tensortrade.features.feature_pipeline.html#tensortrade.features.feature_pipeline.FeaturePipeline" title="tensortrade.features.feature_pipeline.FeaturePipeline"><code class="xref py py-class docutils literal notranslate"><span class="pre">FeaturePipeline</span></code></a>) – A <cite>FeaturePipeline</cite> instance of feature transformations.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="method">
 <dt id="tensortrade.agents.trading_agent.TradingAgent.env">
 <em class="property">property </em><code class="sig-name descname">env</code><a class="headerlink" href="#tensortrade.agents.trading_agent.TradingAgent.env" title="Permalink to this definition">¶</a></dt>
@@ -250,7 +268,7 @@ If the callback returns <cite>True</cite>, the training process will stop early.
 <dl class="method">
 <dt id="tensortrade.agents.trading_agent.TradingAgent.feature_pipeline">
 <em class="property">property </em><code class="sig-name descname">feature_pipeline</code><a class="headerlink" href="#tensortrade.agents.trading_agent.TradingAgent.feature_pipeline" title="Permalink to this definition">¶</a></dt>
-<dd><p>A <cite>FeaturePipeline</cite> instance of feature transformations.</p>
+<dd><p>A pipeline of feature transformations to be applied to observations from the environment.</p>
 </dd></dl>
 
 <dl class="method">
@@ -262,7 +280,7 @@ If the callback returns <cite>True</cite>, the training process will stop early.
 <dd class="field-odd"><p><strong>observation</strong> (<em>pandas.DataFrame</em>) – A <cite>pandas.DataFrame</cite> corresponding to an observation within the environment.</p>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]]</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a>]</p>
 </dd>
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>An action whose type depends on the action space of the environment.</p>
@@ -330,7 +348,7 @@ If the callback returns <cite>True</cite>, the training process will stop early.
         <a href="tensortrade.environments.html" class="btn btn-neutral float-right" title="tensortrade.environments package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="tensortrade.agents.rl.tensorflow_agent.html" class="btn btn-neutral float-left" title="tensortrade.agents.rl.tensorflow_agent module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="tensortrade.agents.tensorflow_agent.html" class="btn btn-neutral float-left" title="tensortrade.agents.tensorflow_agent module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

@@ -10,7 +10,7 @@
   :maxdepth: 1
   :caption: Overview
 
-  overview/getting_started
+  overview/getting_started.md
 
 .. toctree::
    :maxdepth: 1
@@ -23,11 +23,3 @@
    :caption: API reference
 
    API reference <api/modules>
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`

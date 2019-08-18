@@ -14,7 +14,6 @@
 
 import pandas as pd
 
-from typing import Union, List
 from sklearn.pipeline import Pipeline, FeatureUnion
 from sklearn.externals.joblib import Parallel, delayed
 

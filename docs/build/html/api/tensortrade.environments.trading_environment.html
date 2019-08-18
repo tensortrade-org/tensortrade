@@ -39,7 +39,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="tensortrade.exchanges package" href="tensortrade.exchanges.html" />
-    <link rel="prev" title="tensortrade.environments.rewards.reward_strategy module" href="tensortrade.environments.rewards.reward_strategy.html" /> 
+    <link rel="prev" title="tensortrade.environments package" href="tensortrade.environments.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -107,10 +107,15 @@
 <li class="toctree-l1 current"><a class="reference internal" href="modules.html">API reference</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="tensortrade.html">tensortrade package</a><ul class="current">
 <li class="toctree-l3 current"><a class="reference internal" href="tensortrade.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="tensortrade.actions.html">tensortrade.actions package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="tensortrade.agents.html">tensortrade.agents package</a></li>
 <li class="toctree-l4 current"><a class="reference internal" href="tensortrade.environments.html">tensortrade.environments package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="tensortrade.exchanges.html">tensortrade.exchanges package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="tensortrade.features.html">tensortrade.features package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tensortrade.models.html">tensortrade.models package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tensortrade.rewards.html">tensortrade.rewards package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tensortrade.slippage.html">tensortrade.slippage package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tensortrade.trades.html">tensortrade.trades package</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="tensortrade.html#submodules">Submodules</a></li>
@@ -216,18 +221,18 @@
 <span id="tensortrade-environments-trading-environment-module"></span><h1>tensortrade.environments.trading_environment module<a class="headerlink" href="#module-tensortrade.environments.trading_environment" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="tensortrade.environments.trading_environment.TradingEnvironment">
-<em class="property">class </em><code class="sig-prename descclassname">tensortrade.environments.trading_environment.</code><code class="sig-name descname">TradingEnvironment</code><span class="sig-paren">(</span><em class="sig-param">action_strategy</em>, <em class="sig-param">reward_strategy</em>, <em class="sig-param">exchange</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tensortrade/environments/trading_environment.html#TradingEnvironment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tensortrade.environments.trading_environment.TradingEnvironment" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">tensortrade.environments.trading_environment.</code><code class="sig-name descname">TradingEnvironment</code><span class="sig-paren">(</span><em class="sig-param">exchange</em>, <em class="sig-param">action_strategy</em>, <em class="sig-param">reward_strategy</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tensortrade/environments/trading_environment.html#TradingEnvironment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tensortrade.environments.trading_environment.TradingEnvironment" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">gym.core.Env</span></code></p>
 <p>A trading environment made for use with Gym-compatible reinforcement learning algorithms.</p>
 <dl class="method">
 <dt id="tensortrade.environments.trading_environment.TradingEnvironment.__init__">
-<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">action_strategy</em>, <em class="sig-param">reward_strategy</em>, <em class="sig-param">exchange</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tensortrade/environments/trading_environment.html#TradingEnvironment.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tensortrade.environments.trading_environment.TradingEnvironment.__init__" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">exchange</em>, <em class="sig-param">action_strategy</em>, <em class="sig-param">reward_strategy</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tensortrade/environments/trading_environment.html#TradingEnvironment.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tensortrade.environments.trading_environment.TradingEnvironment.__init__" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>action_strategy</strong> (<a class="reference internal" href="tensortrade.environments.actions.action_strategy.html#tensortrade.environments.actions.action_strategy.ActionStrategy" title="tensortrade.environments.actions.action_strategy.ActionStrategy"><code class="xref py py-class docutils literal notranslate"><span class="pre">ActionStrategy</span></code></a>) – The strategy for transforming an action into a <cite>TradeDefinition</cite> at each timestep.</p></li>
-<li><p><strong>reward_strategy</strong> (<a class="reference internal" href="tensortrade.environments.rewards.reward_strategy.html#tensortrade.environments.rewards.reward_strategy.RewardStrategy" title="tensortrade.environments.rewards.reward_strategy.RewardStrategy"><code class="xref py py-class docutils literal notranslate"><span class="pre">RewardStrategy</span></code></a>) – The strategy for determining the reward at each timestep.</p></li>
 <li><p><strong>exchange</strong> (<a class="reference internal" href="tensortrade.exchanges.asset_exchange.html#tensortrade.exchanges.asset_exchange.AssetExchange" title="tensortrade.exchanges.asset_exchange.AssetExchange"><code class="xref py py-class docutils literal notranslate"><span class="pre">AssetExchange</span></code></a>) – The <cite>AssetExchange</cite> that will be used to feed data from and execute trades within.</p></li>
+<li><p><strong>action_strategy</strong> (<a class="reference internal" href="tensortrade.actions.action_strategy.html#tensortrade.actions.action_strategy.ActionStrategy" title="tensortrade.actions.action_strategy.ActionStrategy"><code class="xref py py-class docutils literal notranslate"><span class="pre">ActionStrategy</span></code></a>) – The strategy for transforming an action into a <cite>Trade</cite> at each timestep.</p></li>
+<li><p><strong>reward_strategy</strong> (<a class="reference internal" href="tensortrade.rewards.reward_strategy.html#tensortrade.rewards.reward_strategy.RewardStrategy" title="tensortrade.rewards.reward_strategy.RewardStrategy"><code class="xref py py-class docutils literal notranslate"><span class="pre">RewardStrategy</span></code></a>) – The strategy for determining the reward at each timestep.</p></li>
 <li><p><strong>kwargs</strong> (<em>optional</em>) – Additional arguments for tuning the environment, logging, etc.</p></li>
 </ul>
 </dd>
@@ -267,7 +272,7 @@
 </dd>
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p><em>observation (pandas.DataFrame)</em> – Provided by the environment’s exchange, often OHLCV or tick trade history data points.
-reward (float): An amount corresponding to the advantage gained by the agent in this timestep.
+reward (float): An amount corresponding to the benefit earned by the action taken this timestep.
 done (bool): If <cite>True</cite>, the environment is complete and should be restarted.
 info (dict): Any auxiliary, diagnostic, or debugging information to output.</p>
 </dd>
@@ -289,7 +294,7 @@ info (dict): Any auxiliary, diagnostic, or debugging information to output.</p>
         <a href="tensortrade.exchanges.html" class="btn btn-neutral float-right" title="tensortrade.exchanges package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="tensortrade.environments.rewards.reward_strategy.html" class="btn btn-neutral float-left" title="tensortrade.environments.rewards.reward_strategy module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="tensortrade.environments.html" class="btn btn-neutral float-left" title="tensortrade.environments package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

@@ -38,7 +38,7 @@
   <link rel="stylesheet" href="../_static/theme_overrides.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="tensortrade.version module" href="tensortrade.version.html" />
+    <link rel="next" title="tensortrade.models package" href="tensortrade.models.html" />
     <link rel="prev" title="tensortrade.features.feature_pipeline module" href="tensortrade.features.feature_pipeline.html" /> 
 </head>
 
@@ -107,10 +107,15 @@
 <li class="toctree-l1 current"><a class="reference internal" href="modules.html">API reference</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="tensortrade.html">tensortrade package</a><ul class="current">
 <li class="toctree-l3 current"><a class="reference internal" href="tensortrade.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="tensortrade.actions.html">tensortrade.actions package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="tensortrade.agents.html">tensortrade.agents package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="tensortrade.environments.html">tensortrade.environments package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="tensortrade.exchanges.html">tensortrade.exchanges package</a></li>
 <li class="toctree-l4 current"><a class="reference internal" href="tensortrade.features.html">tensortrade.features package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tensortrade.models.html">tensortrade.models package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tensortrade.rewards.html">tensortrade.rewards package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tensortrade.slippage.html">tensortrade.slippage package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tensortrade.trades.html">tensortrade.trades package</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="tensortrade.html#submodules">Submodules</a></li>
@@ -212,8 +217,40 @@
     text-align: unset;
 }
 </style>
-<div class="section" id="tensortrade-features-transformer-module">
-<h1>tensortrade.features.transformer module<a class="headerlink" href="#tensortrade-features-transformer-module" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-tensortrade.features.transformer">
+<span id="tensortrade-features-transformer-module"></span><h1>tensortrade.features.transformer module<a class="headerlink" href="#module-tensortrade.features.transformer" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="tensortrade.features.transformer.Transformer">
+<em class="property">class </em><code class="sig-prename descclassname">tensortrade.features.transformer.</code><code class="sig-name descname">Transformer</code><span class="sig-paren">(</span><em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tensortrade/features/transformer.html#Transformer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tensortrade.features.transformer.Transformer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sklearn.base.TransformerMixin</span></code></p>
+<p>An abstract transformer for use within feature pipelines.</p>
+<dl class="method">
+<dt id="tensortrade.features.transformer.Transformer.fit">
+<em class="property">abstract </em><code class="sig-name descname">fit</code><span class="sig-paren">(</span><em class="sig-param">X</em>, <em class="sig-param">y=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tensortrade/features/transformer.html#Transformer.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tensortrade.features.transformer.Transformer.fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fit the model to the data set, if necessary, else return self.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>X</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[numpy.ndarray, pandas.DataFrame]) – The set of data to train the model on.</p></li>
+<li><p><strong>y</strong> (<em>optional</em>) – The target output to train on.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="tensortrade.features.transformer.Transformer.transform">
+<em class="property">abstract </em><code class="sig-name descname">transform</code><span class="sig-paren">(</span><em class="sig-param">X</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tensortrade/features/transformer.html#Transformer.transform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tensortrade.features.transformer.Transformer.transform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transform the data set with the pre-fit model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>X</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.7)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[numpy.ndarray, pandas.DataFrame]) – The set of data to transform.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 
 
@@ -224,7 +261,7 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="tensortrade.version.html" class="btn btn-neutral float-right" title="tensortrade.version module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="tensortrade.models.html" class="btn btn-neutral float-right" title="tensortrade.models package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="tensortrade.features.feature_pipeline.html" class="btn btn-neutral float-left" title="tensortrade.features.feature_pipeline module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>

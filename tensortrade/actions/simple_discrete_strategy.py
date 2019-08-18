@@ -18,7 +18,6 @@ from gym.spaces import Discrete
 
 from tensortrade.actions import ActionStrategy, TradeActionUnion, DTypeString
 from tensortrade.trades import Trade, TradeType
-from tensortrade.exchanges import AssetExchange
 
 
 class SimpleDiscreteStrategy(ActionStrategy):

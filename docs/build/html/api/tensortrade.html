@@ -38,7 +38,7 @@
   <link rel="stylesheet" href="../_static/theme_overrides.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="tensortrade.agents package" href="tensortrade.agents.html" />
+    <link rel="next" title="tensortrade.actions package" href="tensortrade.actions.html" />
     <link rel="prev" title="tensortrade" href="modules.html" /> 
 </head>
 
@@ -107,10 +107,15 @@
 <li class="toctree-l1 current"><a class="reference internal" href="modules.html">API reference</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="#">tensortrade package</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#subpackages">Subpackages</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="tensortrade.actions.html">tensortrade.actions package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="tensortrade.agents.html">tensortrade.agents package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="tensortrade.environments.html">tensortrade.environments package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="tensortrade.exchanges.html">tensortrade.exchanges package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="tensortrade.features.html">tensortrade.features package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tensortrade.models.html">tensortrade.models package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tensortrade.rewards.html">tensortrade.rewards package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tensortrade.slippage.html">tensortrade.slippage package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tensortrade.trades.html">tensortrade.trades package</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a><ul>
@@ -217,69 +222,24 @@
 <h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="tensortrade.actions.html">tensortrade.actions package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tensortrade.actions.html#submodules">Submodules</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tensortrade.actions.action_strategy.html">tensortrade.actions.action_strategy module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tensortrade.actions.simple_continuous_strategy.html">tensortrade.actions.simple_continuous_strategy module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tensortrade.actions.simple_discrete_strategy.html">tensortrade.actions.simple_discrete_strategy module</a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="tensortrade.agents.html">tensortrade.agents package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="tensortrade.agents.html#subpackages">Subpackages</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="tensortrade.agents.rl.html">tensortrade.agents.rl package</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="tensortrade.agents.rl.html#submodules">Submodules</a><ul>
-<li class="toctree-l5"><a class="reference internal" href="tensortrade.agents.rl.tensorflow_agent.html">tensortrade.agents.rl.tensorflow_agent module</a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
 <li class="toctree-l2"><a class="reference internal" href="tensortrade.agents.html#submodules">Submodules</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tensortrade.agents.tensorflow_agent.html">tensortrade.agents.tensorflow_agent module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tensortrade.agents.trading_agent.html">tensortrade.agents.trading_agent module</a></li>
 </ul>
 </li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="tensortrade.environments.html">tensortrade.environments package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="tensortrade.environments.html#subpackages">Subpackages</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="tensortrade.environments.actions.html">tensortrade.environments.actions package</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="tensortrade.environments.actions.html#subpackages">Subpackages</a><ul>
-<li class="toctree-l5"><a class="reference internal" href="tensortrade.environments.actions.continuous.html">tensortrade.environments.actions.continuous package</a><ul>
-<li class="toctree-l6"><a class="reference internal" href="tensortrade.environments.actions.continuous.html#submodules">Submodules</a><ul>
-<li class="toctree-l7"><a class="reference internal" href="tensortrade.environments.actions.continuous.simple_continuous_strategy.html">tensortrade.environments.actions.continuous.simple_continuous_strategy module</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l5"><a class="reference internal" href="tensortrade.environments.actions.discrete.html">tensortrade.environments.actions.discrete package</a><ul>
-<li class="toctree-l6"><a class="reference internal" href="tensortrade.environments.actions.discrete.html#submodules">Submodules</a><ul>
-<li class="toctree-l7"><a class="reference internal" href="tensortrade.environments.actions.discrete.simple_discrete_strategy.html">tensortrade.environments.actions.discrete.simple_discrete_strategy module</a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l4"><a class="reference internal" href="tensortrade.environments.actions.html#submodules">Submodules</a><ul>
-<li class="toctree-l5"><a class="reference internal" href="tensortrade.environments.actions.action_strategy.html">tensortrade.environments.actions.action_strategy module</a></li>
-<li class="toctree-l5"><a class="reference internal" href="tensortrade.environments.actions.trade_type.html">tensortrade.environments.actions.trade_type module</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="tensortrade.environments.rewards.html">tensortrade.environments.rewards package</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="tensortrade.environments.rewards.html#subpackages">Subpackages</a><ul>
-<li class="toctree-l5"><a class="reference internal" href="tensortrade.environments.rewards.simple.html">tensortrade.environments.rewards.simple package</a><ul>
-<li class="toctree-l6"><a class="reference internal" href="tensortrade.environments.rewards.simple.html#submodules">Submodules</a><ul>
-<li class="toctree-l7"><a class="reference internal" href="tensortrade.environments.rewards.simple.incremental_profit_strategy.html">tensortrade.environments.rewards.simple.incremental_profit_strategy module</a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l4"><a class="reference internal" href="tensortrade.environments.rewards.html#submodules">Submodules</a><ul>
-<li class="toctree-l5"><a class="reference internal" href="tensortrade.environments.rewards.reward_strategy.html">tensortrade.environments.rewards.reward_strategy module</a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
 <li class="toctree-l2"><a class="reference internal" href="tensortrade.environments.html#submodules">Submodules</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="tensortrade.environments.trading_environment.html">tensortrade.environments.trading_environment module</a></li>
 </ul>
@@ -299,7 +259,6 @@
 <li class="toctree-l4"><a class="reference internal" href="tensortrade.exchanges.simulated.html#submodules">Submodules</a><ul>
 <li class="toctree-l5"><a class="reference internal" href="tensortrade.exchanges.simulated.fbm_exchange.html">tensortrade.exchanges.simulated.fbm_exchange module</a></li>
 <li class="toctree-l5"><a class="reference internal" href="tensortrade.exchanges.simulated.gan_exchange.html">tensortrade.exchanges.simulated.gan_exchange module</a></li>
-<li class="toctree-l5"><a class="reference internal" href="tensortrade.exchanges.simulated.generated_exchange.html">tensortrade.exchanges.simulated.generated_exchange module</a></li>
 <li class="toctree-l5"><a class="reference internal" href="tensortrade.exchanges.simulated.static_exchange.html">tensortrade.exchanges.simulated.static_exchange module</a></li>
 </ul>
 </li>
@@ -318,13 +277,15 @@
 <li class="toctree-l3"><a class="reference internal" href="tensortrade.features.scalers.html">tensortrade.features.scalers package</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="tensortrade.features.scalers.html#submodules">Submodules</a><ul>
 <li class="toctree-l5"><a class="reference internal" href="tensortrade.features.scalers.min_max_normalizer.html">tensortrade.features.scalers.min_max_normalizer module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="tensortrade.features.scalers.standard_normalizer.html">tensortrade.features.scalers.standard_normalizer module</a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="tensortrade.features.selectors.html">tensortrade.features.selectors package</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="tensortrade.features.selectors.html#submodules">Submodules</a><ul>
-<li class="toctree-l5"><a class="reference internal" href="tensortrade.features.selectors.column_selector.html">tensortrade.features.selectors.column_selector module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tensortrade.features.utils.html">tensortrade.features.utils package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="tensortrade.features.utils.html#submodules">Submodules</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="tensortrade.features.utils.column_selector.html">tensortrade.features.utils.column_selector module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="tensortrade.features.utils.pd_feature_union.html">tensortrade.features.utils.pd_feature_union module</a></li>
 </ul>
 </li>
 </ul>
@@ -334,6 +295,52 @@
 <li class="toctree-l2"><a class="reference internal" href="tensortrade.features.html#submodules">Submodules</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="tensortrade.features.feature_pipeline.html">tensortrade.features.feature_pipeline module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tensortrade.features.transformer.html">tensortrade.features.transformer module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tensortrade.models.html">tensortrade.models package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tensortrade.models.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tensortrade.models.generative.html">tensortrade.models.generative package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="tensortrade.models.generative.html#submodules">Submodules</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="tensortrade.models.generative.wgan.html">tensortrade.models.generative.wgan module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="tensortrade.models.rl.html">tensortrade.models.rl package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="tensortrade.models.rl.html#submodules">Submodules</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="tensortrade.models.rl.acer.html">tensortrade.models.rl.acer module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="tensortrade.models.rl.dqn.html">tensortrade.models.rl.dqn module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="tensortrade.models.rl.ppo.html">tensortrade.models.rl.ppo module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tensortrade.rewards.html">tensortrade.rewards package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tensortrade.rewards.html#submodules">Submodules</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tensortrade.rewards.reward_strategy.html">tensortrade.rewards.reward_strategy module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tensortrade.rewards.simple_profit_strategy.html">tensortrade.rewards.simple_profit_strategy module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tensortrade.slippage.html">tensortrade.slippage package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tensortrade.slippage.html#submodules">Submodules</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tensortrade.slippage.random_slippage_model.html">tensortrade.slippage.random_slippage_model module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tensortrade.slippage.slippage_model.html">tensortrade.slippage.slippage_model module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tensortrade.trades.html">tensortrade.trades package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tensortrade.trades.html#submodules">Submodules</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tensortrade.trades.trade.html">tensortrade.trades.trade module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tensortrade.trades.trade_type.html">tensortrade.trades.trade_type module</a></li>
 </ul>
 </li>
 </ul>
@@ -359,7 +366,7 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="tensortrade.agents.html" class="btn btn-neutral float-right" title="tensortrade.agents package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="tensortrade.actions.html" class="btn btn-neutral float-right" title="tensortrade.actions package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="modules.html" class="btn btn-neutral float-left" title="tensortrade" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>

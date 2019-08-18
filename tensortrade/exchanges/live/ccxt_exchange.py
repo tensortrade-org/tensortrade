@@ -21,7 +21,7 @@ from gym.spaces import Box
 from ccxt import Exchange
 
 from tensortrade.trades import Trade, TradeType
-from tensortrade.exchanges.asset_exchange import AssetExchange
+from tensortrade.exchanges import AssetExchange
 
 
 class CCXTExchange(AssetExchange):
@@ -113,15 +113,15 @@ class CCXTExchange(AssetExchange):
 
     def next_observation(self):
         if self._observation_type == 'ohlcv':
+            ohlcv = self._exchange.fetch_ohlcv(
+                self._observation_symbol, timeframe=self._observation_timeframe)
+
+            obs = [l[1:] for l in ohlcv]
+        elif self._observation_type == 'trades':
             trades = self._exchange.fetch_trades(self._observation_symbol)
 
             obs = [[0 if t['side'] == 'buy' else 1, t['price'], t['amount'], t['cost']]
                    for t in trades]
-        elif self._observation_type == 'trades':
-            ohlcv = self._exchange.fetch_ohlcv(
-                self._observation_symbol, self._observation_timeframe)
-
-            obs = [l[1:] for l in ohlcv]
 
         if len(obs) < self._observation_window_size:
             return np.pad(obs, (self._observation_window_size - len(obs), len(obs[0])))

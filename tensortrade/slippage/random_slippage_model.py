@@ -14,7 +14,6 @@
 
 import numpy as np
 
-from tensortrade.exchanges import AssetExchange
 from tensortrade.slippage import SlippageModel
 from tensortrade.trades import Trade, TradeType
 
@@ -22,14 +21,12 @@ from tensortrade.trades import Trade, TradeType
 class RandomSlippageModel(SlippageModel):
     "A uniform random slippage model."
 
-    def __init__(self, exchange: AssetExchange, max_price_slippage_percent: float = 3.0, max_amount_slippage_percent: float = 0.0):
+    def __init__(self, max_price_slippage_percent: float = 3.0, max_amount_slippage_percent: float = 0.0):
         """
         Args:
-            exchange: The exchange the trades will be executed on.
             max_price_slippage_percent: The maximum random slippage to be applied to the fill price. Defaults to 3.0 (i.e. 3%).
             max_amount_slippage_percent: The maximum random slippage to be applied to the fill amount. Defaults to 0.
         """
-        self.exchange = exchange
         self.max_price_slippage_percent = max_price_slippage_percent
         self.max_amount_slippage_percent = max_amount_slippage_percent
 

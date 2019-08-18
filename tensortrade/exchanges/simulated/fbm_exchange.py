@@ -17,11 +17,10 @@ import pandas as pd
 
 from gym import spaces
 from typing import Dict
-from stochastic.continuous import FractionalBrownianMotion
 
 from tensortrade.trades import TradeType, Trade
 from tensortrade.slippage import RandomSlippageModel
-from tensortrade.exchanges.asset_exchange import AssetExchange
+from tensortrade.exchanges import AssetExchange
 
 
 class FBMExchange(AssetExchange):
@@ -38,9 +37,8 @@ class FBMExchange(AssetExchange):
         self._base_volume = kwargs.get('base_volume', 1000)
         self._hurst = kwargs.get('hurst', 0.58)
 
-        self._fbm = FractionalBrownianMotion(t=1, hurst=self._hurst)
-        self._slippage_model = RandomSlippageModel(exchange=self,
-                                                   max_price_slippage_percent=self._max_allowed_slippage_percent)
+        # self._fbm = FractionalBrownianMotion(t=1, hurst=self._hurst)
+        self._slippage_model = RandomSlippageModel(self._max_allowed_slippage_percent)
 
         self.reset()
 
@@ -74,8 +72,8 @@ class FBMExchange(AssetExchange):
 
     def next_observation(self):
         dates = np.linspace(0, 1, 2)
-        prices = self._fbm.sample(1)
-        volumes = self._fbm.sample(1)
+        prices = []  # self._fbm.sample(1)
+        volumes = []  # self._fbm.sample(1)
 
         price_frame = pd.DataFrame([], columns=['date', 'price'], dtype=float)
         volume_frame = pd.DataFrame(

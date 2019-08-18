@@ -16,7 +16,6 @@ import pandas as pd
 
 from abc import ABCMeta, abstractmethod
 
-from tensortrade.exchanges import AssetExchange
 from tensortrade.trades import Trade
 
 
@@ -31,7 +30,7 @@ class RewardStrategy(object, metaclass=ABCMeta):
         return self._exchange
 
     @exchange.setter
-    def exchange(self, exchange: AssetExchange):
+    def exchange(self, exchange: 'AssetExchange'):
         self._exchange = exchange
         self.reset()
 

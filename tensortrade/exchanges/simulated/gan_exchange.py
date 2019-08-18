@@ -22,7 +22,7 @@ from typing import Dict
 from tensortrade.trades import Trade, TradeType
 from tensortrade.models.generative import WGAN
 from tensortrade.slippage import RandomSlippageModel
-from tensortrade.exchanges.asset_exchange import AssetExchange
+from tensortrade.exchanges import AssetExchange
 
 
 class GANExchange(AssetExchange):
@@ -41,8 +41,7 @@ class GANExchange(AssetExchange):
         self._output_shape = kwargs.get('output_shape', (self._prices_per_gen, 5, 1))
 
         self._gan = self._initialize_gan()
-        self._slippage_model = RandomSlippageModel(exchange=self,
-                                                   max_price_slippage_percent=self._max_allowed_slippage_percent)
+        self._slippage_model = RandomSlippageModel(self._max_allowed_slippage_percent)
 
         self.reset()
 
