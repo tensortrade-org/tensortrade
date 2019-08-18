@@ -1,7 +1,7 @@
 ﻿# TensorTrade: Trade Efficiently with Reinforcement Learning
 
 [![Build Status](https://travis-ci.org/notadamking/tensortrade.svg?branch=master)](https://travis-ci.org/notadamking/tensortrade)
-[![Documentation Status](https://readthedocs.org/projects/tensortrade/badge/?version=latest)
+[![Documentation Status](https://readthedocs.org/projects/tensortrade/badge/?version=latest)](https://tensortrade.org)
 [![Apache License](https://img.shields.io/github/license/notadamking/tensortrade.svg?color=brightgreen)](http://www.apache.org/licenses/LICENSE-2.0)
 [![Discord](https://img.shields.io/discord/592446624882491402.svg?color=brightgreen)](https://discord.gg/ZZ7BGWh)
 [![Python 3.6](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/downloads/release/python-360/)
