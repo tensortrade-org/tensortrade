@@ -5,4 +5,3 @@ gym
 gin-config
 stochastic
 ccxt
-hyperopt
