@@ -27,7 +27,7 @@ class SlippageModel(object, metaclass=ABCMeta):
     def fill_order(self, trade: Trade) -> Trade:
         """Simulate slippage on a trade ordered on a specific exchange.
 
-        Args:
+        Arguments:
             trade: The trade executed on the exchange.
 
         Returns:

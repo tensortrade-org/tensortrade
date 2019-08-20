@@ -29,7 +29,7 @@ class TradingAgent(object, metaclass=ABCMeta):
     @abstractmethod
     def __init__(self, env: TradingEnvironment, feature_pipeline: FeaturePipeline):
         """
-        Args:
+        Arguments:
             env: A `TradingEnvironment` instance for the agent to trade within.
             feature_pipeline: A `FeaturePipeline` instance of feature transformations.
         """
@@ -55,10 +55,10 @@ class TradingAgent(object, metaclass=ABCMeta):
         self.feature_pipeline = feature_pipeline
 
     @abstractmethod
-    def tune(self, steps_per_train: int, steps_per_test: int, step_cb: Callable[[pd.DataFrame], bool]) -> pd.DataFrame:
+    def tune(self, steps_per_train: int, steps_per_test: int, step_cb: Callable[[pd.DataFrame], bool] = None) -> pd.DataFrame:
         """Tune the agent's hyper-parameters and feature set for the environment.
 
-        Args:
+        Arguments:
             steps_per_train: The number of steps per training of each hyper-parameter set.
             steps_per_test: The number of steps per evaluation of each hyper-parameter set.
             step_cb (optional): A callback function for monitoring progress of the tuning process.
@@ -71,10 +71,10 @@ class TradingAgent(object, metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def train(self, steps: int, callback: Callable[[pd.DataFrame], bool]) -> pd.DataFrame:
+    def train(self, steps: int, callback: Callable[[pd.DataFrame], bool] = None) -> pd.DataFrame:
         """Train the agent's underlying model on the environment.
 
-        Args:
+        Arguments:
             steps: The number of steps to train the model within the environment.
             step_cb (optional): A callback function for monitoring progress of the training process.
                 step_cb(pd.DataFrame) -> bool: A history of the agent's trading performance is passed on each iteration.
@@ -86,10 +86,10 @@ class TradingAgent(object, metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def evaluate(self, steps: int, callback: Callable[[pd.DataFrame], bool]) -> pd.DataFrame:
+    def evaluate(self, steps: int, callback: Callable[[pd.DataFrame], bool] = None) -> pd.DataFrame:
         """Evaluate the agent's performance within the environment.
 
-        Args:
+        Arguments:
             steps: The number of steps to train the model within the environment.
             step_cb (optional): A callback function for monitoring progress of the evaluation process.
                 step_cb(pd.DataFrame) -> bool: A history of the agent's trading performance is passed on each iteration.
@@ -104,7 +104,7 @@ class TradingAgent(object, metaclass=ABCMeta):
     def get_action(self, observation: pd.DataFrame) -> TradeActionUnion:
         """Determine an action based on a specific observation.
 
-        Args:
+        Arguments:
             observation: A `pandas.DataFrame` corresponding to an observation within the environment.
 
         Returns:

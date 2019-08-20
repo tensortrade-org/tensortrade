@@ -25,7 +25,7 @@ class ColumnSelector(Transformer):
 
     def __init__(self, columns: Union[List[str], str]):
         """
-        Args:
+        Arguments:
             columns: A list of column keys to be selected from the pipeline.
         """
         self._columns = columns

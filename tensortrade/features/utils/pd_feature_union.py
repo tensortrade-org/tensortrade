@@ -26,7 +26,7 @@ class PDFeatureUnion(FeatureUnion):
     def transform(self, X: TransformableList):
         """Transform the data set with the fit model.
 
-        Args:
+        Arguments:
             X: The set of data to transform.
 
         Returns:
@@ -45,7 +45,7 @@ class PDFeatureUnion(FeatureUnion):
     def fit_transform(self, X: TransformableList, y: TransformableList = None):
         """Fit the model to the data set, then transform the data set with the fit model.
 
-        Args:
+        Arguments:
             X: The set of data to train the model on and transform.
             y (optional): The target output to train with.
 

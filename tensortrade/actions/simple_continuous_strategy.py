@@ -26,7 +26,7 @@ class SimpleContinuousStrategy(ActionStrategy):
 
     def __init__(self, asset_symbol: str = 'BTC', max_allowed_slippage_percent: float = 3.0, dtype: DTypeString = np.float16):
         """
-        Args:
+        Arguments:
             asset_symbol: The exchange symbol of the asset being traded. Defaults to 'BTC'.
             max_allowed_slippage: The maximum amount above the current price the strategy will pay for an asset. Defaults to 3.0 (i.e. 3%).
             dtype: A type or str corresponding to the dtype of the `action_space`. Defaults to `np.float16`.

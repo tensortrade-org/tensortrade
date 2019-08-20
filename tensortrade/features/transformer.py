@@ -33,7 +33,7 @@ class Transformer(TransformerMixin):
     def fit(self, X: TransformableList, y: TransformableList = None):
         """Fit the model to the data set, if necessary, else return self.
 
-        Args:
+        Arguments:
             X: The set of data to train the model on.
             y (optional): The target output to train on.
         """
@@ -43,7 +43,7 @@ class Transformer(TransformerMixin):
     def transform(self, X: TransformableList):
         """Transform the data set with the pre-fit model.
 
-        Args:
+        Arguments:
             X: The set of data to transform.
         """
         raise NotImplementedError

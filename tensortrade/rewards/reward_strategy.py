@@ -41,7 +41,7 @@ class RewardStrategy(object, metaclass=ABCMeta):
     @abstractmethod
     def get_reward(self, current_step: int, trade: Trade) -> float:
         """
-        Args:
+        Arguments:
             current_step: The environment's current timestep.
             trade: The trade executed and filled this timestep.
 

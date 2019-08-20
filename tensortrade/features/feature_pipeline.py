@@ -24,7 +24,7 @@ class FeaturePipeline(object):
 
     def __init__(self, pipeline: Pipeline, dtype: type = np.float16):
         """
-        Args:
+        Arguments:
             pipeline: An `sklearn.Pipeline` instance of feature transformations.
             dtype: The `dtype` elements in the pipeline should be cast to.
         """
@@ -52,7 +52,7 @@ class FeaturePipeline(object):
     def fit_transform(self, observation: pd.DataFrame) -> np.ndarray:
         """Fit and apply the pipeline of feature transformations to an observation frame.
 
-        Args:
+        Arguments:
             observation: A `pandas.DataFrame` corresponding to an observation within a `TradingEnvironment`.
 
         Returns:

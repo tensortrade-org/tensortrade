@@ -27,7 +27,7 @@ class MinMaxNormalizer(Transformer):
 
     def __init__(self, feature_range: Tuple[int, int] = (0, 1), columns: Union[List[str], str] = None):
         """
-        Args:
+        Arguments:
             feature_range (optional): A tuple containing the new `(minimum, maximum)` values to scale to.
             columns (optional): A list of column names to normalize.
         """

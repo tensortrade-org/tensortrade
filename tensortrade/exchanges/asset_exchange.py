@@ -30,7 +30,7 @@ class AssetExchange(object, metaclass=ABCMeta):
     @abstractmethod
     def __init__(self, dtype: TypeString = np.float16):
         """
-        Args:
+        Arguments:
             dtype: A type or str corresponding to the dtype of the `observation_space`.
         """
         self._dtype = dtype
@@ -151,7 +151,7 @@ class AssetExchange(object, metaclass=ABCMeta):
     def current_price(self, symbol: str) -> float:
         """The current price of an asset on the exchange, denoted in the base symbol.
 
-        Args:
+        Arguments:
             symbol: The exchange symbol of the asset to get the price for.
 
         Returns:
@@ -163,7 +163,7 @@ class AssetExchange(object, metaclass=ABCMeta):
     def execute_trade(self, trade: Trade) -> Trade:
         """Execute a trade on the exchange, accounting for slippage.
 
-        Args:
+        Arguments:
             trade: The trade to execute.
 
         Returns:

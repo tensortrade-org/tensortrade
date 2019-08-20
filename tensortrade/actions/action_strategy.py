@@ -30,7 +30,7 @@ class ActionStrategy(object, metaclass=ABCMeta):
     @abstractmethod
     def __init__(self, action_space: Space, dtype: DTypeString = np.float16):
         """
-        Args:
+        Arguments:
             action_space: The shape of the actions produced by the strategy.
             dtype: A type or str corresponding to the dtype of the `action_space`. Defaults to `np.float16`.
         """
@@ -77,7 +77,7 @@ class ActionStrategy(object, metaclass=ABCMeta):
     def get_trade(self, action: TradeActionUnion) -> Trade:
         """Get the trade to be executed on the exchange based on the action provided.
 
-        Args:
+        Arguments:
             action: The action to be converted into a trade.
 
         Returns:

@@ -23,7 +23,7 @@ class RandomSlippageModel(SlippageModel):
 
     def __init__(self, max_price_slippage_percent: float = 3.0, max_amount_slippage_percent: float = 0.0):
         """
-        Args:
+        Arguments:
             max_price_slippage_percent: The maximum random slippage to be applied to the fill price. Defaults to 3.0 (i.e. 3%).
             max_amount_slippage_percent: The maximum random slippage to be applied to the fill amount. Defaults to 0.
         """

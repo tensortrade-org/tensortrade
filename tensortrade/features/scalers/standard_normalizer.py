@@ -27,7 +27,7 @@ class StandardNormalizer(Transformer):
 
     def __init__(self, columns: Union[List[str], str] = None):
         """
-        Args:
+        Arguments:
             columns (optional): A list of column names to normalize.
         """
         self._columns = columns

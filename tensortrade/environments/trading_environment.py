@@ -35,7 +35,7 @@ class TradingEnvironment(gym.Env):
                  reward_strategy: RewardStrategy,
                  **kwargs):
         """
-        Args:
+        Arguments:
             exchange: The `AssetExchange` that will be used to feed data from and execute trades within.
             action_strategy:  The strategy for transforming an action into a `Trade` at each timestep.
             reward_strategy: The strategy for determining the reward at each timestep.
@@ -66,7 +66,7 @@ class TradingEnvironment(gym.Env):
     def _take_action(self, action: TradeActionUnion) -> Trade:
         """Determines a specific trade to be taken and executes it within the exchange.
 
-        Args:
+        Arguments:
             action: The trade action provided by the agent for this timestep.
 
         Returns:
@@ -125,7 +125,7 @@ class TradingEnvironment(gym.Env):
     def step(self, action) -> Tuple[pd.DataFrame, float, bool, dict]:
         """Run one timestep within the environment based on the specified action.
 
-        Args:
+        Arguments:
             action: The trade action provided by the agent for this timestep.
 
         Returns:

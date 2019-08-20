@@ -18,7 +18,7 @@ class Trade(object):
 
     def __init__(self, symbol: str, trade_type: str, amount: float, price: float):
         """
-        Args:
+        Arguments:
             symbol: The exchange symbol of the asset in the trade (AAPL, ETH/USD, NQ1!, etc).
             trade_type: The type of trade ("limit-buy", "market-sell", "hold", etc).
             amount: The amount of the asset in the trade (shares, satoshis, contracts, etc).
