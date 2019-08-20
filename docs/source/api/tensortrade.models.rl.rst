@@ -11,6 +11,4 @@ Submodules
 
 .. toctree::
 
-   tensortrade.models.rl.acer
-   tensortrade.models.rl.dqn
-   tensortrade.models.rl.ppo
+   tensortrade.models.rl.tensorflow_model

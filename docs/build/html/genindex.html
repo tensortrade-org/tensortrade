@@ -188,6 +188,7 @@
  | <a href="#R"><strong>R</strong></a>
  | <a href="#S"><strong>S</strong></a>
  | <a href="#T"><strong>T</strong></a>
+ | <a href="#V"><strong>V</strong></a>
  | <a href="#W"><strong>W</strong></a>
  
 </div>
@@ -217,6 +218,8 @@
 </li>
         <li><a href="api/tensortrade.features.utils.column_selector.html#tensortrade.features.utils.column_selector.ColumnSelector.__init__">(tensortrade.features.utils.column_selector.ColumnSelector method)</a>
 </li>
+        <li><a href="api/tensortrade.models.rl.tensorflow_model.html#tensortrade.models.rl.tensorflow_model.TensorflowModel.__init__">(tensortrade.models.rl.tensorflow_model.TensorflowModel method)</a>
+</li>
         <li><a href="api/tensortrade.slippage.random_slippage_model.html#tensortrade.slippage.random_slippage_model.RandomSlippageModel.__init__">(tensortrade.slippage.random_slippage_model.RandomSlippageModel method)</a>
 </li>
         <li><a href="api/tensortrade.trades.trade.html#tensortrade.trades.trade.Trade.__init__">(tensortrade.trades.trade.Trade method)</a>
@@ -228,8 +231,6 @@
 <h2 id="A">A</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/tensortrade.models.rl.acer.html#tensortrade.models.rl.acer.ACER">ACER (class in tensortrade.models.rl.acer)</a>
-</li>
       <li><a href="api/tensortrade.actions.action_strategy.html#tensortrade.actions.action_strategy.ActionStrategy.action_space">action_space() (tensortrade.actions.action_strategy.ActionStrategy property)</a>
 </li>
       <li><a href="api/tensortrade.actions.action_strategy.html#tensortrade.actions.action_strategy.ActionStrategy">ActionStrategy (class in tensortrade.actions.action_strategy)</a>
@@ -310,8 +311,6 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/tensortrade.models.generative.wgan.html#tensortrade.models.generative.wgan.WGAN.discriminate">discriminate() (tensortrade.models.generative.wgan.WGAN method)</a>
 </li>
-      <li><a href="api/tensortrade.models.rl.dqn.html#tensortrade.models.rl.dqn.DQN">DQN (class in tensortrade.models.rl.dqn)</a>
-</li>
       <li><a href="api/tensortrade.actions.action_strategy.html#tensortrade.actions.action_strategy.ActionStrategy.dtype">dtype() (tensortrade.actions.action_strategy.ActionStrategy property)</a>
 
       <ul>
@@ -374,8 +373,6 @@
         <li><a href="api/tensortrade.slippage.slippage_model.html#tensortrade.slippage.slippage_model.SlippageModel.fill_order">(tensortrade.slippage.slippage_model.SlippageModel method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/tensortrade.features.scalers.min_max_normalizer.html#tensortrade.features.scalers.min_max_normalizer.MinMaxNormalizer.fit">fit() (tensortrade.features.scalers.min_max_normalizer.MinMaxNormalizer method)</a>
 
       <ul>
@@ -386,12 +383,16 @@
         <li><a href="api/tensortrade.features.utils.column_selector.html#tensortrade.features.utils.column_selector.ColumnSelector.fit">(tensortrade.features.utils.column_selector.ColumnSelector method)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/tensortrade.features.feature_pipeline.html#tensortrade.features.feature_pipeline.FeaturePipeline.fit_transform">fit_transform() (tensortrade.features.feature_pipeline.FeaturePipeline method)</a>
 
       <ul>
         <li><a href="api/tensortrade.features.utils.pd_feature_union.html#tensortrade.features.utils.pd_feature_union.PDFeatureUnion.fit_transform">(tensortrade.features.utils.pd_feature_union.PDFeatureUnion method)</a>
 </li>
       </ul></li>
+      <li><a href="api/tensortrade.models.rl.tensorflow_model.html#tensortrade.models.rl.tensorflow_model.TensorflowModel.forward">forward() (tensortrade.models.rl.tensorflow_model.TensorflowModel method)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -582,8 +583,6 @@
         <li><a href="api/tensortrade.exchanges.simulated.static_exchange.html#tensortrade.exchanges.simulated.static_exchange.StaticExchange.portfolio">(tensortrade.exchanges.simulated.static_exchange.StaticExchange property)</a>
 </li>
       </ul></li>
-      <li><a href="api/tensortrade.models.rl.ppo.html#tensortrade.models.rl.ppo.PPO">PPO (class in tensortrade.models.rl.ppo)</a>
-</li>
       <li><a href="api/tensortrade.trades.trade.html#tensortrade.trades.trade.Trade.price">price() (tensortrade.trades.trade.Trade property)</a>
 </li>
       <li><a href="api/tensortrade.exchanges.asset_exchange.html#tensortrade.exchanges.asset_exchange.AssetExchange.profit_loss_percent">profit_loss_percent() (tensortrade.exchanges.asset_exchange.AssetExchange property)</a>
@@ -654,6 +653,8 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/tensortrade.agents.tensorflow_agent.html#tensortrade.agents.tensorflow_agent.TensorflowAgent">TensorflowAgent (class in tensortrade.agents.tensorflow_agent)</a>
 </li>
+      <li><a href="api/tensortrade.models.rl.tensorflow_model.html#tensortrade.models.rl.tensorflow_model.TensorflowModel">TensorflowModel (class in tensortrade.models.rl.tensorflow_model)</a>
+</li>
       <li><a href="api/tensortrade.html#module-tensortrade">tensortrade (module)</a>
 </li>
       <li><a href="api/tensortrade.actions.html#module-tensortrade.actions">tensortrade.actions (module)</a>
@@ -714,15 +715,11 @@
 </li>
       <li><a href="api/tensortrade.models.generative.wgan.html#module-tensortrade.models.generative.wgan">tensortrade.models.generative.wgan (module)</a>
 </li>
-      <li><a href="api/tensortrade.models.rl.html#module-tensortrade.models.rl">tensortrade.models.rl (module)</a>
-</li>
-      <li><a href="api/tensortrade.models.rl.acer.html#module-tensortrade.models.rl.acer">tensortrade.models.rl.acer (module)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/tensortrade.models.rl.dqn.html#module-tensortrade.models.rl.dqn">tensortrade.models.rl.dqn (module)</a>
+      <li><a href="api/tensortrade.models.rl.html#module-tensortrade.models.rl">tensortrade.models.rl (module)</a>
 </li>
-      <li><a href="api/tensortrade.models.rl.ppo.html#module-tensortrade.models.rl.ppo">tensortrade.models.rl.ppo (module)</a>
+      <li><a href="api/tensortrade.models.rl.tensorflow_model.html#module-tensortrade.models.rl.tensorflow_model">tensortrade.models.rl.tensorflow_model (module)</a>
 </li>
       <li><a href="api/tensortrade.rewards.html#module-tensortrade.rewards">tensortrade.rewards (module)</a>
 </li>
@@ -794,6 +791,14 @@
         <li><a href="api/tensortrade.agents.trading_agent.html#tensortrade.agents.trading_agent.TradingAgent.tune">(tensortrade.agents.trading_agent.TradingAgent method)</a>
 </li>
       </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="V">V</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/tensortrade.models.rl.tensorflow_model.html#tensortrade.models.rl.tensorflow_model.TensorflowModel.value_function">value_function() (tensortrade.models.rl.tensorflow_model.TensorflowModel method)</a>
+</li>
   </ul></td>
 </tr></table>
 

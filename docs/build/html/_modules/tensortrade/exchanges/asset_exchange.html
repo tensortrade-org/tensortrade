@@ -198,7 +198,7 @@
 <div class="viewcode-block" id="AssetExchange.__init__"><a class="viewcode-back" href="../../../api/tensortrade.exchanges.asset_exchange.html#tensortrade.exchanges.asset_exchange.AssetExchange.__init__">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dtype</span><span class="p">:</span> <span class="n">TypeString</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float16</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Args:</span>
+<span class="sd">        Arguments:</span>
 <span class="sd">            dtype: A type or str corresponding to the dtype of the `observation_space`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span> <span class="o">=</span> <span class="n">dtype</span></div>
@@ -319,7 +319,7 @@
     <span class="k">def</span> <span class="nf">current_price</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbol</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;The current price of an asset on the exchange, denoted in the base symbol.</span>
 
-<span class="sd">        Args:</span>
+<span class="sd">        Arguments:</span>
 <span class="sd">            symbol: The exchange symbol of the asset to get the price for.</span>
 
 <span class="sd">        Returns:</span>
@@ -331,7 +331,7 @@
     <span class="k">def</span> <span class="nf">execute_trade</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trade</span><span class="p">:</span> <span class="n">Trade</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Trade</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Execute a trade on the exchange, accounting for slippage.</span>
 
-<span class="sd">        Args:</span>
+<span class="sd">        Arguments:</span>
 <span class="sd">            trade: The trade to execute.</span>
 
 <span class="sd">        Returns:</span>

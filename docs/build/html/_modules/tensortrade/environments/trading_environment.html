@@ -203,7 +203,7 @@
                  <span class="n">reward_strategy</span><span class="p">:</span> <span class="n">RewardStrategy</span><span class="p">,</span>
                  <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Args:</span>
+<span class="sd">        Arguments:</span>
 <span class="sd">            exchange: The `AssetExchange` that will be used to feed data from and execute trades within.</span>
 <span class="sd">            action_strategy:  The strategy for transforming an action into a `Trade` at each timestep.</span>
 <span class="sd">            reward_strategy: The strategy for determining the reward at each timestep.</span>
@@ -234,7 +234,7 @@
     <span class="k">def</span> <span class="nf">_take_action</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">TradeActionUnion</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Trade</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Determines a specific trade to be taken and executes it within the exchange.</span>
 
-<span class="sd">        Args:</span>
+<span class="sd">        Arguments:</span>
 <span class="sd">            action: The trade action provided by the agent for this timestep.</span>
 
 <span class="sd">        Returns:</span>
@@ -293,13 +293,13 @@
 <div class="viewcode-block" id="TradingEnvironment.step"><a class="viewcode-back" href="../../../api/tensortrade.environments.trading_environment.html#tensortrade.environments.trading_environment.TradingEnvironment.step">[docs]</a>    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">bool</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]:</span>
         <span class="sd">&quot;&quot;&quot;Run one timestep within the environment based on the specified action.</span>
 
-<span class="sd">        Args:</span>
+<span class="sd">        Arguments:</span>
 <span class="sd">            action: The trade action provided by the agent for this timestep.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            observation (pandas.DataFrame): Provided by the environment&#39;s exchange, often OHLCV or tick trade history data points.</span>
-<span class="sd">            reward (float): An amount corresponding to the benefit earned by the action taken this timestep.</span>
-<span class="sd">            done (bool): If `True`, the environment is complete and should be restarted.</span>
+<span class="sd">            observation (pandas.DataFrame): Provided by the environment&#39;s exchange, often OHLCV or tick trade history data points.\n</span>
+<span class="sd">            reward (float): An amount corresponding to the benefit earned by the action taken this timestep.\n</span>
+<span class="sd">            done (bool): If `True`, the environment is complete and should be restarted.\n</span>
 <span class="sd">            info (dict): Any auxiliary, diagnostic, or debugging information to output.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 

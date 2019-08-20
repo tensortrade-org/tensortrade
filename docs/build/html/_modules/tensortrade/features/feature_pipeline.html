@@ -192,7 +192,7 @@
 
 <div class="viewcode-block" id="FeaturePipeline.__init__"><a class="viewcode-back" href="../../../api/tensortrade.features.feature_pipeline.html#tensortrade.features.feature_pipeline.FeaturePipeline.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pipeline</span><span class="p">:</span> <span class="n">Pipeline</span><span class="p">,</span> <span class="n">dtype</span><span class="p">:</span> <span class="nb">type</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float16</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Args:</span>
+<span class="sd">        Arguments:</span>
 <span class="sd">            pipeline: An `sklearn.Pipeline` instance of feature transformations.</span>
 <span class="sd">            dtype: The `dtype` elements in the pipeline should be cast to.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -220,7 +220,7 @@
 <div class="viewcode-block" id="FeaturePipeline.fit_transform"><a class="viewcode-back" href="../../../api/tensortrade.features.feature_pipeline.html#tensortrade.features.feature_pipeline.FeaturePipeline.fit_transform">[docs]</a>    <span class="k">def</span> <span class="nf">fit_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">observation</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Fit and apply the pipeline of feature transformations to an observation frame.</span>
 
-<span class="sd">        Args:</span>
+<span class="sd">        Arguments:</span>
 <span class="sd">            observation: A `pandas.DataFrame` corresponding to an observation within a `TradingEnvironment`.</span>
 
 <span class="sd">        Returns:</span>

@@ -245,7 +245,7 @@
 
 <dl class="method">
 <dt id="tensortrade.agents.trading_agent.TradingAgent.evaluate">
-<em class="property">abstract </em><code class="sig-name descname">evaluate</code><span class="sig-paren">(</span><em class="sig-param">steps</em>, <em class="sig-param">callback</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tensortrade/agents/trading_agent.html#TradingAgent.evaluate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tensortrade.agents.trading_agent.TradingAgent.evaluate" title="Permalink to this definition">¶</a></dt>
+<em class="property">abstract </em><code class="sig-name descname">evaluate</code><span class="sig-paren">(</span><em class="sig-param">steps</em>, <em class="sig-param">callback=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tensortrade/agents/trading_agent.html#TradingAgent.evaluate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tensortrade.agents.trading_agent.TradingAgent.evaluate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Evaluate the agent’s performance within the environment.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -290,7 +290,7 @@ If the callback returns <cite>True</cite>, the training process will stop early.
 
 <dl class="method">
 <dt id="tensortrade.agents.trading_agent.TradingAgent.train">
-<em class="property">abstract </em><code class="sig-name descname">train</code><span class="sig-paren">(</span><em class="sig-param">steps</em>, <em class="sig-param">callback</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tensortrade/agents/trading_agent.html#TradingAgent.train"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tensortrade.agents.trading_agent.TradingAgent.train" title="Permalink to this definition">¶</a></dt>
+<em class="property">abstract </em><code class="sig-name descname">train</code><span class="sig-paren">(</span><em class="sig-param">steps</em>, <em class="sig-param">callback=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tensortrade/agents/trading_agent.html#TradingAgent.train"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tensortrade.agents.trading_agent.TradingAgent.train" title="Permalink to this definition">¶</a></dt>
 <dd><p>Train the agent’s underlying model on the environment.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -312,7 +312,7 @@ If the callback returns <cite>True</cite>, the training process will stop early.
 
 <dl class="method">
 <dt id="tensortrade.agents.trading_agent.TradingAgent.tune">
-<em class="property">abstract </em><code class="sig-name descname">tune</code><span class="sig-paren">(</span><em class="sig-param">steps_per_train</em>, <em class="sig-param">steps_per_test</em>, <em class="sig-param">step_cb</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tensortrade/agents/trading_agent.html#TradingAgent.tune"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tensortrade.agents.trading_agent.TradingAgent.tune" title="Permalink to this definition">¶</a></dt>
+<em class="property">abstract </em><code class="sig-name descname">tune</code><span class="sig-paren">(</span><em class="sig-param">steps_per_train</em>, <em class="sig-param">steps_per_test</em>, <em class="sig-param">step_cb=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tensortrade/agents/trading_agent.html#TradingAgent.tune"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tensortrade.agents.trading_agent.TradingAgent.tune" title="Permalink to this definition">¶</a></dt>
 <dd><p>Tune the agent’s hyper-parameters and feature set for the environment.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
