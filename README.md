@@ -59,7 +59,7 @@ You can ask questions and join the development discussion:
 
 You can also post **bug reports and feature requests** in [GitHub issues](https://github.com/notadamking/tensortrade/issues). Make sure to read [our guidelines](https://github.com/notadamking/tensortrade/blob/master/CONTRIBUTING.md) first.
 
-If you would like to support this project financially, there are a few ways you can contribute.
+If you would like to support this project financially, there are a few ways you can contribute. Your contributions are greatly appreciated and help to keep TensorTrade maintained and always improving.
 
 Patreon: https://www.patreon.com/notadamking
 
@@ -69,4 +69,9 @@ ETH Address: `0x9907A0cF64Ec9Fbf6Ed8FD4971090DE88222a9aC`
 
 ## Contributors
 
+Contributions are encouraged and welcomed. This project is meant to grow as the community around it grows. Let me know on Discord in the #suggestions channel if there is anything that you would like to see in the future, or if there is anything you feel is missing.
+
+**Working on your first Pull Request?** You can learn how from this _free_ series [How to Contribute to an Open Source Project on GitHub](https://egghead.io/series/how-to-contribute-to-an-open-source-project-on-github)
+
 ![https://github.com/notadamking/tensortrade/graphs/contributors](https://contributors-img.firebaseapp.com/image?repo=notadamking/tensortrade)
+
