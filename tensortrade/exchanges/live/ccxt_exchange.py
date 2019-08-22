@@ -17,7 +17,7 @@ import numpy as np
 import pandas as pd
 
 from typing import Dict, List
-from gym.spaces import Box
+from gym.spaces import Space, Box
 from ccxt import Exchange
 
 from tensortrade.trades import Trade, TradeType
@@ -25,7 +25,11 @@ from tensortrade.exchanges import AssetExchange
 
 
 class CCXTExchange(AssetExchange):
+    """An asset exchange for trading on CCXT-supported cryptocurrency exchanges."""
+
     def __init__(self, exchange: Exchange, base_asset: str = 'BTC', **kwargs):
+        super().__init__(dtype=kwargs.get('dtype', np.float16))
+
         self._exchange = exchange
         self._base_asset = base_asset
 
@@ -39,10 +43,8 @@ class CCXTExchange(AssetExchange):
         self._async_timeout_in_ms = kwargs.get('async_timeout_in_ms', 15)
         self._max_trade_wait_in_sec = kwargs.get('max_trade_wait_in_sec', 60)
 
-        self.reset()
-
     @property
-    def base_precision(self):
+    def base_precision(self) -> float:
         return self._markets[self._observation_symbol]['precision']['base']
 
     @base_precision.setter
@@ -50,7 +52,7 @@ class CCXTExchange(AssetExchange):
         raise ValueError('Cannot set the precision of `ccxt` exchanges.')
 
     @property
-    def asset_precision(self):
+    def asset_precision(self) -> float:
         return self._markets[self._observation_symbol]['precision']['quote']
 
     @asset_precision.setter
@@ -85,7 +87,7 @@ class CCXTExchange(AssetExchange):
         return self._performance
 
     @property
-    def observation_space(self):
+    def observation_space(self) -> Space:
         low_price = self._markets[self._observation_symbol]['limits']['price']['min']
         high_price = self._markets[self._observation_symbol]['limits']['price']['max']
         low_volume = self._markets[self._observation_symbol]['limits']['amount']['min']
@@ -105,13 +107,13 @@ class CCXTExchange(AssetExchange):
         return Box(low=low, high=high, shape=obs_shape, dtype=dtypes)
 
     @property
-    def has_next_observation(self):
+    def has_next_observation(self) -> bool:
         if self._observation_type == 'ohlcv':
             return self._exchange.has['fetchOHLCV']
 
         return self._exchange.has['fetchTrades']
 
-    def next_observation(self):
+    def next_observation(self) -> pd.DataFrame:
         if self._observation_type == 'ohlcv':
             ohlcv = self._exchange.fetch_ohlcv(
                 self._observation_symbol, timeframe=self._observation_timeframe)
@@ -128,7 +130,7 @@ class CCXTExchange(AssetExchange):
 
         return obs
 
-    def current_price(self, symbol: str):
+    def current_price(self, symbol: str) -> float:
         return self._exchange.fetch_ticker(symbol)['close']
 
     def execute_trade(self, trade: Trade) -> Trade:

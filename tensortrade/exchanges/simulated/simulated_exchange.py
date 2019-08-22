@@ -15,7 +15,8 @@
 import numpy as np
 import pandas as pd
 
-from gym.spaces import Box
+from abc import abstractmethod
+from gym.spaces import Space, Box
 from typing import Dict
 
 from tensortrade.trades import Trade, TradeType
@@ -23,20 +24,44 @@ from tensortrade.exchanges import AssetExchange
 from tensortrade.slippage import RandomSlippageModel
 
 
-class StaticExchange(AssetExchange):
-    def __init__(self, data_frame: pd.DataFrame,  **kwargs):
-        self._data_frame = data_frame
+class SimulatedExchange(AssetExchange):
+    """An asset exchange, in which the price history is based off the supplied data frame and
+    trade execution is largely decided by the designated slippage model.
+
+    If the `data_frame` parameter is not supplied upon initialization, it must be set before
+    the exchange can be used within a trading environment.
+    """
+
+    def __init__(self, data_frame: pd.DataFrame = None, **kwargs):
+        super().__init__(dtype=kwargs.get('dtype', np.float16))
+
+        if data_frame is not None:
+            self._data_frame = data_frame.astype(self._dtype)
 
         self._commission_percent = kwargs.get('commission_percent', 0.3)
         self._base_precision = kwargs.get('base_precision', 2)
         self._asset_precision = kwargs.get('asset_precision', 8)
         self._initial_balance = kwargs.get('initial_balance', 1E5)
-        self._max_allowed_slippage_percent = kwargs.get('max_allowed_slippage_percent', 3.0)
         self._min_order_amount = kwargs.get('min_order_amount', 1E-3)
 
-        self._slippage_model = RandomSlippageModel(self._max_allowed_slippage_percent)
+        self._min_trade_price = kwargs.get('min_trade_price', 1E-6)
+        self._max_trade_price = kwargs.get('max_trade_price', 1E6)
+        self._min_trade_amount = kwargs.get('min_trade_amount', 1E-3)
+        self._max_trade_amount = kwargs.get('max_trade_amount', 1E6)
 
-        self.reset()
+        max_allowed_slippage_percent = kwargs.get('max_allowed_slippage_percent', 3.0)
+
+        SlippageModelClass = kwargs.get('slippage_model', RandomSlippageModel)
+        self._slippage_model = SlippageModelClass(max_allowed_slippage_percent)
+
+    @property
+    def data_frame(self) -> pd.DataFrame:
+        """The underlying data model backing the price and volume simulation."""
+        return self._data_frame
+
+    @data_frame.setter
+    def data_frame(self, data_frame: pd.DataFrame):
+        self._data_frame = data_frame
 
     @property
     def initial_balance(self) -> float:
@@ -59,28 +84,30 @@ class StaticExchange(AssetExchange):
         return self._performance
 
     @property
-    def observation_space(self):
-        low_price, high_price, low_volume, high_volume = 1E-6, 1E6, 1E-3, 1E6
+    def observation_space(self) -> Space:
+        df_len = len(self._data_frame.ix[0])
+        low = sum((self._min_trade_price,) * 4, (self._min_trade_amount, ))
+        high = sum((self._max_trade_price,) * 4, (self._max_trade_amount, ))
+        dtypes = (self._dtype, ) * df_len
 
-        low = (low_price, low_price, low_price, low_price, low_volume)
-        high = (high_price, high_price, high_price, high_price, high_volume)
-        dtypes = (self._dtype, self._dtype, self._dtype, self._dtype, np.int64)
+        return Box(low=low, high=high, shape=(1, df_len), dtype=dtypes)
 
-        return Box(low=low, high=high, shape=(1, 5), dtype=dtypes)
+    @property
+    def has_next_observation(self) -> bool:
+        return self._current_step < len(self._data_frame)
 
-    def current_price(self, symbol: str):
+    def next_observation(self) -> pd.DataFrame:
+        obs = self._data_frame.ix[self._current_step]
+
+        self._current_step += 1
+
+        return obs
+
+    def current_price(self, symbol: str) -> float:
         if len(self._data_frame) is 0:
             self.next_observation()
 
         return float(self._data_frame['close'].values[self._current_step])
-
-    def has_next_observation(self):
-        return self._current_step < len(self._data_frame)
-
-    def next_observation(self):
-        self._current_step += 1
-
-        return self._data_frame[self._current_step].values.astype(self._dtype)
 
     def _is_valid_trade(self, trade: Trade) -> bool:
         if trade.trade_type is TradeType.MARKET_BUY or trade.trade_type is TradeType.LIMIT_BUY:

@@ -5,3 +5,7 @@ gym
 gin-config
 stochastic
 ccxt
+tensorflow==2.0.0b1
+ray
+opencv-python
+lz4
