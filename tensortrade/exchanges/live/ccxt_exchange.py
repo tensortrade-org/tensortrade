@@ -27,18 +27,17 @@ from tensortrade.exchanges import AssetExchange
 class CCXTExchange(AssetExchange):
     """An asset exchange for trading on CCXT-supported cryptocurrency exchanges."""
 
-    def __init__(self, exchange: Exchange, base_asset: str = 'BTC', **kwargs):
-        super().__init__(dtype=kwargs.get('dtype', np.float16))
+    def __init__(self, exchange: Exchange,  **kwargs):
+        super().__init__(base_asset=kwargs.get('base_asset', 'USD'), dtype=kwargs.get('dtype', np.float16))
 
         self._exchange = exchange
-        self._base_asset = base_asset
 
         self._exchange.enableRateLimit = kwargs.get('enable_rate_limit', True)
 
         self._observation_type = kwargs.get('observation_type', 'trades')
         self._observation_symbol = kwargs.get('observation_symbol', 'ETH/BTC')
-        self._observation_timeframe = kwargs.get('observation_timeframe', '10m')
-        self._observation_window_size = kwargs.get('observation_window_size', 10)
+        self._timeframe = kwargs.get('timeframe', '10m')
+        self._window_size = kwargs.get('window_size', 1)
 
         self._async_timeout_in_ms = kwargs.get('async_timeout_in_ms', 15)
         self._max_trade_wait_in_sec = kwargs.get('max_trade_wait_in_sec', 60)
@@ -97,12 +96,12 @@ class CCXTExchange(AssetExchange):
             low = (low_price, low_price, low_price, low_price, low_volume)
             high = (high_price, high_price, high_price, high_price, high_volume)
             dtypes = (self._dtype, self._dtype, self._dtype, self._dtype, np.int64)
-            obs_shape = (self._observation_window_size, 5)
+            obs_shape = (self._window_size, 5)
         else:
             low = (0, low_price, low_price, low_price, low_volume)
             high = (1, high_price, high_volume, high_price * high_volume)
             dtypes = (np.int8, self._dtype, self._dtype, self._dtype)
-            obs_shape = (self._observation_window_size, 4)
+            obs_shape = (self._window_size, 4)
 
         return Box(low=low, high=high, shape=obs_shape, dtype=dtypes)
 
@@ -116,7 +115,7 @@ class CCXTExchange(AssetExchange):
     def next_observation(self) -> pd.DataFrame:
         if self._observation_type == 'ohlcv':
             ohlcv = self._exchange.fetch_ohlcv(
-                self._observation_symbol, timeframe=self._observation_timeframe)
+                self._observation_symbol, timeframe=self._timeframe)
 
             obs = [l[1:] for l in ohlcv]
         elif self._observation_type == 'trades':
@@ -125,8 +124,8 @@ class CCXTExchange(AssetExchange):
             obs = [[0 if t['side'] == 'buy' else 1, t['price'], t['amount'], t['cost']]
                    for t in trades]
 
-        if len(obs) < self._observation_window_size:
-            return np.pad(obs, (self._observation_window_size - len(obs), len(obs[0])))
+        if len(obs) < self._window_size:
+            return np.pad(obs, (self._window_size - len(obs), len(obs[0])))
 
         return obs
 

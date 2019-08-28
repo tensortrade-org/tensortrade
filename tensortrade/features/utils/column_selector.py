@@ -30,8 +30,5 @@ class ColumnSelector(Transformer):
         """
         self._columns = columns
 
-    def fit(self, X: TransformableList, y: TransformableList = None):
-        return self
-
-    def transform(self, X: TransformableList):
+    def transform(self, X: TransformableList, y: TransformableList = None):
         return X[self._columns]

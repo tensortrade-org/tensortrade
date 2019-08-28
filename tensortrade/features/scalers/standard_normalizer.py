@@ -17,7 +17,6 @@ import numpy as np
 
 from typing import Union, List, Tuple
 from sklearn.preprocessing import StandardScaler
-from sklearn import Pipeline
 
 from tensortrade.features.transformer import Transformer, TransformableList
 
@@ -33,14 +32,8 @@ class StandardNormalizer(Transformer):
         self._columns = columns
         self._scaler = StandardScaler()
 
-    def fit(self, X: TransformableList, y: TransformableList = None):
+    def transform(self, X: TransformableList, y: TransformableList = None):
         if self._columns is None:
-            return self._scaler.fit(X, y)
+            return self._scaler.fit_transform(X, y)
 
-        return self._scaler.fit(X[self._columns], y)
-
-    def transform(self, X: TransformableList):
-        if self._columns is None:
-            return self._scaler.transform(X)
-
-        return self._scaler.transform(X[self._columns])
+        return self._scaler.fit_transform(X[self._columns], y)

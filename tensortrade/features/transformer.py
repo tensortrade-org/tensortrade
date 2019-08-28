@@ -30,20 +30,11 @@ class Transformer(TransformerMixin):
         pass
 
     @abstractmethod
-    def fit(self, X: TransformableList, y: TransformableList = None):
-        """Fit the model to the data set, if necessary, else return self.
-
-        Arguments:
-            X: The set of data to train the model on.
-            y (optional): The target output to train on.
-        """
-        raise NotImplementedError
-
-    @abstractmethod
-    def transform(self, X: TransformableList):
+    def transform(self, X: TransformableList, y: TransformableList = None):
         """Transform the data set with the pre-fit model.
 
         Arguments:
             X: The set of data to transform.
+            y (optional): The target output to train on.
         """
         raise NotImplementedError

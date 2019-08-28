@@ -31,21 +31,23 @@ class SimpleProfitStrategy(RewardStrategy):
         self._is_holding_asset = False
 
     def get_reward(self, current_step: int, trade: Trade) -> float:
-        """Reward -1 for not holding a position, 1 for holding a position, 2 for opening a position, and 1 + 5^(log(profit)) for closing a position.
+        """Reward -1 for not holding a position, 1 for holding a position, 2 for opening a position, and 1 + 5^(log_10(profit)) for closing a position.
 
-        The 5^(log(profit)) function simply slows the growth of the reward as trades get large.
+        The 5^(log_10(profit)) function simply slows the growth of the reward as trades get large.
         """
-        if trade['type'] == TradeType.HOLD and self._is_holding_asset:
+        if trade.is_hold and self._is_holding_asset:
             return 1
-        elif trade['type'] == TradeType.MARKET_BUY or trade['type'] == TradeType.LIMIT_BUY:
-            self._purchase_price = trade['price']
+        elif trade.is_buy and trade.amount > 0:
+            self._purchase_price = trade.price
             self._is_holding_asset = True
 
             return 2
-        elif trade['type'] == TradeType.MARKET_SELL or trade['type'] == TradeType.LIMIT_SELL:
+        elif trade.is_sell and trade.amount > 0:
             self._is_holding_asset = False
-            profit_per_asset = trade['price'] - self._purchase_price
+            profit_per_asset = trade.price - self._purchase_price
+            profit = trade.amount * profit_per_asset
+            profit_sign = np.sign(profit)
 
-            return 1 + (5 ** np.log(trade['amount'] * profit_per_asset))
+            return profit_sign * (1 + (5 ** np.log10(abs(profit))))
 
         return -1

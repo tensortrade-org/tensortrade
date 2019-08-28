@@ -16,11 +16,11 @@
 class Trade(object):
     """A trade object for use within trading environments."""
 
-    def __init__(self, symbol: str, trade_type: str, amount: float, price: float):
+    def __init__(self, symbol: str, trade_type: 'TradeType', amount: float, price: float):
         """
         Arguments:
             symbol: The exchange symbol of the asset in the trade (AAPL, ETH/USD, NQ1!, etc).
-            trade_type: The type of trade ("limit-buy", "market-sell", "hold", etc).
+            trade_type: The type of trade executed (0 = HOLD, 1=LIMIT_BUY, 2=MARKET_BUY, 3=LIMIT_SELL, 4=MARKET_SELL).
             amount: The amount of the asset in the trade (shares, satoshis, contracts, etc).
             price: The price paid per asset in terms of the base asset (e.g. 10000 represents $10,000.00 if the `base_asset` is "USD").
         """
@@ -29,54 +29,66 @@ class Trade(object):
         self._amount = amount
         self._price = price
 
+    def copy(self) -> 'Trade':
+        """Return a copy of the current trade object."""
+        return Trade(symbol=self._symbol, trade_type=self._trade_type, amount=self._amount, price=self._price)
+
     @property
-    def symbol(self):
+    def symbol(self) -> str:
         """The exchange symbol of the asset in the trade (AAPL, ETH/USD, NQ1!, etc)."""
         return self._symbol
 
     @symbol.setter
-    def symbol(self, symbol):
+    def symbol(self, symbol: str):
         self._symbol = symbol
 
     @property
-    def trade_type(self):
+    def trade_type(self) -> 'TradeType':
         """The type of trade ("buy", "sell", "hold", etc)."""
         return self._trade_type
 
     @trade_type.setter
-    def trade_type(self, trade_type):
+    def trade_type(self, trade_type: 'TradeType'):
         self._trade_type = trade_type
 
     @property
-    def amount(self):
+    def amount(self) -> float:
         """The amount of the asset in the trade (shares, satoshis, contracts, etc)."""
         return self._amount
 
     @amount.setter
-    def amount(self, amount):
+    def amount(self, amount: float):
         self._amount = amount
 
     @property
-    def price(self):
+    def price(self) -> float:
         """The price paid per asset in terms of the base asset (e.g. 10000 represents $10,000.00 if the `base_asset` is "USD")."""
         return self._price
 
     @price.setter
-    def price(self, price):
+    def price(self, price: float):
         self._price = price
+
+    @property
+    def is_hold(self) -> bool:
+        """
+        Returns:
+            Whether the trade type is non-existent (i.e. hold).
+        """
+        return self._trade_type.is_hold
 
     @property
     def is_buy(self) -> bool:
         """
         Returns:
-            Whether or not the trade type is a buy offer.
+            Whether the trade type is a buy offer.
         """
-        return "buy" in self._trade_type
+        return self._trade_type.is_buy
 
     @property
     def is_sell(self) -> bool:
         """
         Returns:
-            Whether or not the trade type is a sell offer.
+            Whether the trade type is a sell offer.
         """
-        return "sell" in self._trade_type
+        return self._trade_type.is_sell

@@ -27,12 +27,23 @@ TypeString = Union[type, str]
 class AssetExchange(object, metaclass=ABCMeta):
     """An abstract asset exchange for use within a trading environment."""
 
-    def __init__(self, dtype: TypeString = np.float16):
+    def __init__(self, base_asset: str = 'USD', dtype: TypeString = np.float16):
         """
         Arguments:
+            base_asset: The exchange symbol of the asset to store/measure value in.
             dtype: A type or str corresponding to the dtype of the `observation_space`.
         """
+        self._base_asset = base_asset
         self._dtype = dtype
+
+    @property
+    def base_asset(self) -> str:
+        """The exchange symbol of the asset to store/measure value in."""
+        return self._base_asset
+
+    @base_asset.setter
+    def base_asset(self, base_asset: str):
+        self._base_asset = base_asset
 
     @property
     def dtype(self) -> TypeString:
@@ -146,15 +157,31 @@ class AssetExchange(object, metaclass=ABCMeta):
         """
         raise NotImplementedError
 
+    def balance_of_asset(self, symbol: str) -> float:
+        """The current balance of the specified symbol on the exchange, denoted in the base asset.
+
+        Arguments:
+            symbol: The symbol to retrieve the balance of.
+
+        Returns:
+            The balance of the specified exchange symbol, denoted in the base asset.
+        """
+        portfolio = self.portfolio
+
+        if symbol in portfolio.keys():
+            return portfolio[symbol]
+
+        return 0
+
     @abstractmethod
     def current_price(self, symbol: str) -> float:
-        """The current price of an asset on the exchange, denoted in the base symbol.
+        """The current price of an asset on the exchange, denoted in the base asset.
 
         Arguments:
             symbol: The exchange symbol of the asset to get the price for.
 
         Returns:
-            The current price of the specified asset, denoted in the base symbol.
+            The current price of the specified asset, denoted in the base asset.
         """
         raise NotImplementedError
 

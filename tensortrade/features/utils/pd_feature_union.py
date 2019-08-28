@@ -14,7 +14,7 @@
 
 import pandas as pd
 
-from sklearn.pipeline import Pipeline, FeatureUnion
+from sklearn.pipeline import FeatureUnion
 from sklearn.externals.joblib import Parallel, delayed
 
 from tensortrade.features.transformer import TransformableList

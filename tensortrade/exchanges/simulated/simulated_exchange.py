@@ -33,7 +33,7 @@ class SimulatedExchange(AssetExchange):
     """
 
     def __init__(self, data_frame: pd.DataFrame = None, **kwargs):
-        super().__init__(dtype=kwargs.get('dtype', np.float16))
+        super().__init__(base_asset=kwargs.get('base_asset', 'USD'), dtype=kwargs.get('dtype', np.float16))
 
         if data_frame is not None:
             self._data_frame = data_frame.astype(self._dtype)
@@ -41,7 +41,7 @@ class SimulatedExchange(AssetExchange):
         self._commission_percent = kwargs.get('commission_percent', 0.3)
         self._base_precision = kwargs.get('base_precision', 2)
         self._asset_precision = kwargs.get('asset_precision', 8)
-        self._initial_balance = kwargs.get('initial_balance', 1E5)
+        self._initial_balance = kwargs.get('initial_balance', 1E4)
         self._min_order_amount = kwargs.get('min_order_amount', 1E-3)
 
         self._min_trade_price = kwargs.get('min_trade_price', 1E-6)
@@ -49,7 +49,7 @@ class SimulatedExchange(AssetExchange):
         self._min_trade_amount = kwargs.get('min_trade_amount', 1E-3)
         self._max_trade_amount = kwargs.get('max_trade_amount', 1E6)
 
-        max_allowed_slippage_percent = kwargs.get('max_allowed_slippage_percent', 3.0)
+        max_allowed_slippage_percent = kwargs.get('max_allowed_slippage_percent', 1.0)
 
         SlippageModelClass = kwargs.get('slippage_model', RandomSlippageModel)
         self._slippage_model = SlippageModelClass(max_allowed_slippage_percent)
@@ -85,19 +85,17 @@ class SimulatedExchange(AssetExchange):
 
     @property
     def observation_space(self) -> Space:
-        df_len = len(self._data_frame.ix[0])
-        low = sum((self._min_trade_price,) * 4, (self._min_trade_amount, ))
-        high = sum((self._max_trade_price,) * 4, (self._max_trade_amount, ))
-        dtypes = (self._dtype, ) * df_len
+        low = np.array([self._min_trade_price, ] * 4 + [self._min_trade_amount, ])
+        high = np.array([self._max_trade_price, ] * 4 + [self._max_trade_amount, ])
 
-        return Box(low=low, high=high, shape=(1, df_len), dtype=dtypes)
+        return Box(low=low, high=high, dtype=self._dtype)
 
     @property
     def has_next_observation(self) -> bool:
-        return self._current_step < len(self._data_frame)
+        return self._current_step < len(self._data_frame) - 1
 
     def next_observation(self) -> pd.DataFrame:
-        obs = self._data_frame.ix[self._current_step]
+        obs = self._data_frame.iloc[self._current_step]
 
         self._current_step += 1
 
@@ -132,7 +130,9 @@ class SimulatedExchange(AssetExchange):
             self._portfolio[trade.symbol] = self._portfolio.get(trade.symbol, 0) + trade.amount
         elif trade.is_sell:
             self._balance += trade.amount * trade.price
-            self._portfolio[trade.symbol] -= trade.amount
+            self._portfolio[trade.symbol] = self._portfolio.get(trade.symbol, 0) - trade.amount
+
+        self._portfolio[self._base_asset] = self._balance
 
         self._performance.append({
             'balance': self.balance,
@@ -144,18 +144,21 @@ class SimulatedExchange(AssetExchange):
 
         commission = self._commission_percent / 100
 
-        is_trade_valid = self._is_valid_trade(trade)
+        filled_trade = trade.copy()
 
-        if trade.is_buy and is_trade_valid:
+        if filled_trade.is_hold or not self._is_valid_trade(filled_trade):
+            filled_trade.amount = 0
+        elif filled_trade.is_buy:
             price_adjustment = price_adjustment = (1 + commission)
-            trade.price = round(current_price * price_adjustment, self._base_precision)
-            trade.amount = round((trade.price * trade.amount) / trade.price, self._asset_precision)
-        elif trade.is_sell and is_trade_valid:
+            filled_trade.price = round(current_price * price_adjustment, self._base_precision)
+            filled_trade.amount = round(
+                (filled_trade.price * filled_trade.amount) / filled_trade.price, self._asset_precision)
+        elif filled_trade.is_sell:
             price_adjustment = (1 - commission)
-            trade.price = round(current_price * price_adjustment, self._base_precision)
-            trade.amount = round(trade.amount, self._asset_precision)
+            filled_trade.price = round(current_price * price_adjustment, self._base_precision)
+            filled_trade.amount = round(filled_trade.amount, self._asset_precision)
 
-        filled_trade = self._slippage_model.fill_order(trade)
+        filled_trade = self._slippage_model.fill_order(filled_trade, current_price)
 
         self._update_account(filled_trade)
 
@@ -164,7 +167,7 @@ class SimulatedExchange(AssetExchange):
     def reset(self):
         self._balance = self._initial_balance
 
-        self._portfolio = {}
+        self._portfolio = {self._base_asset: self._balance}
         self._trades = pd.DataFrame([], columns=['step', 'symbol', 'type', 'amount', 'price'])
         self._performance = pd.DataFrame([], columns=['balance', 'net_worth'])
 

@@ -1,3 +1,3 @@
 from .action_strategy import ActionStrategy, DTypeString, TradeActionUnion
-from .simple_continuous_strategy import SimpleContinuousStrategy
-from .simple_discrete_strategy import SimpleDiscreteStrategy
+from .continuous_action_strategy import ContinuousActionStrategy
+from .discrete_action_strategy import DiscreteActionStrategy

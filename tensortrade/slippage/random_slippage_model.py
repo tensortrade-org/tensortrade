@@ -30,13 +30,29 @@ class RandomSlippageModel(SlippageModel):
         self.max_price_slippage_percent = max_price_slippage_percent
         self.max_amount_slippage_percent = max_amount_slippage_percent
 
-    def fill_order(self, trade: Trade) -> Trade:
-        fill_amount = trade.amount * (1 - np.random.uniform(0, self.max_amount_slippage_percent))
-        fill_price = trade.price
+    def fill_order(self, trade: Trade, current_price: float) -> Trade:
+        amount_slippage = np.random.uniform(0, self.max_amount_slippage_percent / 100)
+        price_slippage = np.random.uniform(0, self.max_price_slippage_percent / 100)
 
-        if trade.trade_type is TradeType.MARKET_BUY or trade.trade_type is TradeType.LIMIT_BUY:
-            fill_price = trade.price * (1 + np.random.uniform(0, self.max_price_slippage_percent))
-        elif trade.trade_type is TradeType.MARKET_SELL or trade.trade_type is TradeType.LIMIT_SELL:
-            fill_price = trade.price * (1 - np.random.uniform(0, self.max_price_slippage_percent))
+        fill_amount = trade.amount * (1 - amount_slippage)
+        fill_price = current_price
+
+        if trade.trade_type is TradeType.MARKET_BUY:
+            fill_price = current_price * (1 + price_slippage)
+        elif trade.trade_type is TradeType.LIMIT_BUY:
+            fill_price = current_price * (1 + price_slippage)
+
+            if fill_price > trade.price:
+                fill_price = trade.price
+                fill_amount *= trade.price / fill_price
+
+        elif trade.trade_type is TradeType.MARKET_SELL:
+            fill_price = current_price * (1 - price_slippage)
+        elif trade.trade_type is TradeType.LIMIT_SELL:
+            fill_price = current_price * (1 - price_slippage)
+
+            if fill_price < trade.price:
+                fill_price = trade.price
+                fill_amount *= fill_price / trade.price
 
         return Trade(trade.symbol, trade.trade_type, amount=fill_amount, price=fill_price)
