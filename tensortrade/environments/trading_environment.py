@@ -36,9 +36,9 @@ class TradingEnvironment(gym.Env):
 
     def __init__(self,
                  exchange: AssetExchange,
-                 feature_pipeline: FeaturePipeline,
                  action_strategy: ActionStrategy,
                  reward_strategy: RewardStrategy,
+                 feature_pipeline: FeaturePipeline = None,
                  **kwargs):
         """
         Arguments:
@@ -52,9 +52,9 @@ class TradingEnvironment(gym.Env):
         super().__init__()
 
         self._exchange = exchange
-        self._feature_pipeline = feature_pipeline
         self._action_strategy = action_strategy
         self._reward_strategy = reward_strategy
+        self._feature_pipeline = feature_pipeline
 
         self._action_strategy.exchange = self._exchange
         self._reward_strategy.exchange = self._exchange
@@ -154,9 +154,10 @@ class TradingEnvironment(gym.Env):
         observation = self._exchange.next_observation()
         observation = observation.fillna(0, axis=0)
 
-        observation_with_features = self._feature_pipeline.transform(observation)
+        if self._feature_pipeline is not None:
+            observation = self._feature_pipeline.transform(observation)
 
-        return observation_with_features
+        return observation
 
     def _get_reward(self, trade: Trade) -> float:
         """Returns the reward for the current timestep.

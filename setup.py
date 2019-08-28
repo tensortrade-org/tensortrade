@@ -2,12 +2,12 @@ from setuptools import setup
 from setuptools import find_packages
 
 long_description = """
-A reinforcement learning library for training, evaluating, and deploying robust trading agents with TF2.
+A reinforcement learning library for training, evaluating, and deploying robust trading agents.
 """
 
 setup(name='tensortrade',
-      version='0.0.1a1',
-      description='A reinforcement learning library for training, evaluating, and deploying robust trading agents with TF2.',
+      version='0.0.1a3',
+      description='A reinforcement learning library for training, evaluating, and deploying robust trading agents.',
       long_description=long_description,
       author='Adam King',
       author_email='adamjking3@gmail.com',
@@ -22,13 +22,12 @@ setup(name='tensortrade',
           'gin-config',
           'ccxt',
           'stochastic',
-          'hyperopt'
       ],
       extras_require={
           'tests': ['pytest'],
       },
       classifiers=[
-          'Development Status :: 2 - Pre-Alpha',
+          'Development Status :: 3 - Alpha',
           'Natural Language :: English',
           'Intended Audience :: Developers',
           'Intended Audience :: Education',
