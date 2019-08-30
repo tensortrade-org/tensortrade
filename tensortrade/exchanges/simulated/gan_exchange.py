@@ -22,11 +22,11 @@ from typing import Dict
 from tensortrade.trades import Trade, TradeType
 from tensortrade.models.generative import WGAN
 from tensortrade.slippage import RandomSlippageModel
-from tensortrade.exchanges import AssetExchange
+from tensortrade.exchanges import InstrumentExchange
 
 
-class GANExchange(AssetExchange):
-    """A simulated asset exchange, in which the price history is based off a generative adversarial network
+class GANExchange(InstrumentExchange):
+    """A simulated instrument exchange, in which the price history is based off a generative adversarial network
     model with supplied parameters.
     """
 

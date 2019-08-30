@@ -23,7 +23,7 @@ from typing import Union, Tuple, List
 from tensortrade.actions import ActionStrategy, TradeActionUnion
 from tensortrade.features import FeaturePipeline
 from tensortrade.rewards import RewardStrategy
-from tensortrade.exchanges import AssetExchange
+from tensortrade.exchanges import InstrumentExchange
 from tensortrade.trades import Trade
 
 TensorForceStateType = Union[bool, int, float]
@@ -35,14 +35,14 @@ class TradingEnvironment(gym.Env):
     """A trading environment made for use with Gym-compatible reinforcement learning algorithms."""
 
     def __init__(self,
-                 exchange: AssetExchange,
+                 exchange: InstrumentExchange,
                  action_strategy: ActionStrategy,
                  reward_strategy: RewardStrategy,
                  feature_pipeline: FeaturePipeline = None,
                  **kwargs):
         """
         Arguments:
-            exchange: The `AssetExchange` that will be used to feed data from and execute trades within.
+            exchange: The `InstrumentExchange` that will be used to feed data from and execute trades within.
             feature_pipeline: A `FeaturePipeline` instance of feature transformations.
             action_strategy:  The strategy for transforming an action into a `Trade` at each timestep.
             reward_strategy: The strategy for determining the reward at each timestep.
@@ -69,11 +69,11 @@ class TradingEnvironment(gym.Env):
 
     @property
     def exchange(self):
-        """The `AssetExchange` that will be used to feed data from and execute trades within."""
+        """The `InstrumentExchange` that will be used to feed data from and execute trades within."""
         return self._exchange
 
     @exchange.setter
-    def exchange(self, exchange: AssetExchange):
+    def exchange(self, exchange: InstrumentExchange):
         self._exchange = exchange
 
     @property

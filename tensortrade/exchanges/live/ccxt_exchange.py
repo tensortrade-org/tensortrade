@@ -21,14 +21,14 @@ from gym.spaces import Space, Box
 from ccxt import Exchange
 
 from tensortrade.trades import Trade, TradeType
-from tensortrade.exchanges import AssetExchange
+from tensortrade.exchanges import InstrumentExchange
 
 
-class CCXTExchange(AssetExchange):
-    """An asset exchange for trading on CCXT-supported cryptocurrency exchanges."""
+class CCXTExchange(InstrumentExchange):
+    """An instrument exchange for trading on CCXT-supported cryptocurrency exchanges."""
 
     def __init__(self, exchange: Exchange,  **kwargs):
-        super().__init__(base_asset=kwargs.get('base_asset', 'USD'), dtype=kwargs.get('dtype', np.float16))
+        super().__init__(base_instrument=kwargs.get('base_instrument', 'USD'), dtype=kwargs.get('dtype', np.float16))
 
         self._exchange = exchange
 
@@ -51,11 +51,11 @@ class CCXTExchange(AssetExchange):
         raise ValueError('Cannot set the precision of `ccxt` exchanges.')
 
     @property
-    def asset_precision(self) -> float:
+    def instrument_precision(self) -> float:
         return self._markets[self._observation_symbol]['precision']['quote']
 
-    @asset_precision.setter
-    def asset_precision(self, asset_precision: float):
+    @instrument_precision.setter
+    def instrument_precision(self, instrument_precision: float):
         raise ValueError('Cannot set the precision of `ccxt` exchanges.')
 
     @property
@@ -64,7 +64,7 @@ class CCXTExchange(AssetExchange):
 
     @property
     def balance(self) -> float:
-        return self._exchange.fetch_free_balance()[self._base_asset]
+        return self._exchange.fetch_free_balance()[self._base_instrument]
 
     @property
     def portfolio(self) -> Dict[str, float]:
@@ -162,5 +162,5 @@ class CCXTExchange(AssetExchange):
 
     def reset(self):
         self._markets = self._exchange.load_markets()
-        self._initial_balance = self._exchange.fetch_free_balance()[self._base_asset]
+        self._initial_balance = self._exchange.fetch_free_balance()[self._base_instrument]
         self._performance = pd.DataFrame([], columns=['balance', 'net_worth'])

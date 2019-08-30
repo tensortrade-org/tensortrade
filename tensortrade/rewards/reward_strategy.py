@@ -30,7 +30,7 @@ class RewardStrategy(object, metaclass=ABCMeta):
         return self._exchange
 
     @exchange.setter
-    def exchange(self, exchange: 'AssetExchange'):
+    def exchange(self, exchange: 'InstrumentExchange'):
         self._exchange = exchange
         self.reset()
 

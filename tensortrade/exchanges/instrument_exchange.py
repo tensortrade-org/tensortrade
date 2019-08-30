@@ -24,26 +24,26 @@ from tensortrade.trades import Trade
 TypeString = Union[type, str]
 
 
-class AssetExchange(object, metaclass=ABCMeta):
-    """An abstract asset exchange for use within a trading environment."""
+class InstrumentExchange(object, metaclass=ABCMeta):
+    """An abstract instrument exchange for use within a trading environment."""
 
-    def __init__(self, base_asset: str = 'USD', dtype: TypeString = np.float16):
+    def __init__(self, base_instrument: str = 'USD', dtype: TypeString = np.float16):
         """
         Arguments:
-            base_asset: The exchange symbol of the asset to store/measure value in.
+            base_instrument: The exchange symbol of the instrument to store/measure value in.
             dtype: A type or str corresponding to the dtype of the `observation_space`.
         """
-        self._base_asset = base_asset
+        self._base_instrument = base_instrument
         self._dtype = dtype
 
     @property
-    def base_asset(self) -> str:
-        """The exchange symbol of the asset to store/measure value in."""
-        return self._base_asset
+    def base_instrument(self) -> str:
+        """The exchange symbol of the instrument to store/measure value in."""
+        return self._base_instrument
 
-    @base_asset.setter
-    def base_asset(self, base_asset: str):
-        self._base_asset = base_asset
+    @base_instrument.setter
+    def base_instrument(self, base_instrument: str):
+        self._base_instrument = base_instrument
 
     @property
     def dtype(self) -> TypeString:
@@ -56,7 +56,7 @@ class AssetExchange(object, metaclass=ABCMeta):
 
     @property
     def base_precision(self) -> float:
-        """The floating point precision of the base asset."""
+        """The floating point precision of the base instrument."""
         return self._base_precision
 
     @base_precision.setter
@@ -64,13 +64,13 @@ class AssetExchange(object, metaclass=ABCMeta):
         self._base_precision = base_precision
 
     @property
-    def asset_precision(self) -> float:
-        """The floating point precision of the asset to be traded."""
-        return self._asset_precision
+    def instrument_precision(self) -> float:
+        """The floating point precision of the instrument to be traded."""
+        return self._instrument_precision
 
-    @asset_precision.setter
-    def asset_precision(self, asset_precision: float):
-        self._asset_precision = asset_precision
+    @instrument_precision.setter
+    def instrument_precision(self, instrument_precision: float):
+        self._instrument_precision = instrument_precision
 
     @property
     @abstractmethod
@@ -144,7 +144,7 @@ class AssetExchange(object, metaclass=ABCMeta):
         Resetting the exchange may be necessary to continue generating observations.
 
         Returns:
-            Whether or not the specified asset has a next observation.
+            Whether or not the specified instrument has a next observation.
         """
         raise NotImplementedError
 
@@ -157,14 +157,14 @@ class AssetExchange(object, metaclass=ABCMeta):
         """
         raise NotImplementedError
 
-    def balance_of_asset(self, symbol: str) -> float:
-        """The current balance of the specified symbol on the exchange, denoted in the base asset.
+    def balance_of_instrument(self, symbol: str) -> float:
+        """The current balance of the specified symbol on the exchange, denoted in the base instrument.
 
         Arguments:
             symbol: The symbol to retrieve the balance of.
 
         Returns:
-            The balance of the specified exchange symbol, denoted in the base asset.
+            The balance of the specified exchange symbol, denoted in the base instrument.
         """
         portfolio = self.portfolio
 
@@ -175,13 +175,13 @@ class AssetExchange(object, metaclass=ABCMeta):
 
     @abstractmethod
     def current_price(self, symbol: str) -> float:
-        """The current price of an asset on the exchange, denoted in the base asset.
+        """The current price of an instrument on the exchange, denoted in the base instrument.
 
         Arguments:
-            symbol: The exchange symbol of the asset to get the price for.
+            symbol: The exchange symbol of the instrument to get the price for.
 
         Returns:
-            The current price of the specified asset, denoted in the base asset.
+            The current price of the specified instrument, denoted in the base instrument.
         """
         raise NotImplementedError
 

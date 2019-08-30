@@ -23,17 +23,17 @@ from tensortrade.trades import Trade, TradeType
 class DiscreteActionStrategy(ActionStrategy):
     """Simple discrete strategy, which calculates the trade amount as a fraction of the total balance."""
 
-    def __init__(self, n_actions: int = 20, asset_symbol: str = 'BTC', max_allowed_slippage_percent: float = 1.0):
+    def __init__(self, n_actions: int = 20, instrument_symbol: str = 'BTC', max_allowed_slippage_percent: float = 1.0):
         """
         Arguments:
             n_actions: The number of bins to divide the total balance by. Defaults to 20 (i.e. 1/20, 2/20, ..., 20/20).
-            asset_symbol: The exchange symbol of the asset being traded. Defaults to 'BTC'.
-            max_allowed_slippage: The maximum amount above the current price the strategy will pay for an asset. Defaults to 1.0 (i.e. 1%).
+            instrument_symbol: The exchange symbol of the instrument being traded. Defaults to 'BTC'.
+            max_allowed_slippage: The maximum amount above the current price the strategy will pay for an instrument. Defaults to 1.0 (i.e. 1%).
         """
         super().__init__(action_space=Discrete(n_actions), dtype=np.int64)
 
         self.n_actions = n_actions
-        self.asset_symbol = asset_symbol
+        self.instrument_symbol = instrument_symbol
         self.max_allowed_slippage_percent = max_allowed_slippage_percent
 
     @property
@@ -55,22 +55,22 @@ class DiscreteActionStrategy(ActionStrategy):
         trade_type = TradeType(action % len(TradeType))
         trade_amount = int(action / len(TradeType)) * float(1 / n_splits) + (1 / n_splits)
 
-        current_price = self._exchange.current_price(symbol=self.asset_symbol)
+        current_price = self._exchange.current_price(symbol=self.instrument_symbol)
         base_precision = self._exchange.base_precision
-        asset_precision = self._exchange.asset_precision
+        instrument_precision = self._exchange.instrument_precision
 
-        amount = self._exchange.balance_of_asset(self.asset_symbol)
+        amount = self._exchange.balance_of_instrument(self.instrument_symbol)
         price = current_price
 
         if trade_type is TradeType.MARKET_BUY or trade_type is TradeType.LIMIT_BUY:
             price_adjustment = 1 + (self.max_allowed_slippage_percent / 100)
             price = round(current_price * price_adjustment, base_precision)
-            amount = round(self._exchange.balance * 0.99 * trade_amount / price, asset_precision)
+            amount = round(self._exchange.balance * 0.99 * trade_amount / price, instrument_precision)
 
         elif trade_type is TradeType.MARKET_SELL or trade_type is TradeType.LIMIT_SELL:
             price_adjustment = 1 - (self.max_allowed_slippage_percent / 100)
             price = round(current_price * price_adjustment, base_precision)
-            amount_held = self._exchange.portfolio.get(self.asset_symbol, 0)
-            amount = round(amount_held * trade_amount, asset_precision)
+            amount_held = self._exchange.portfolio.get(self.instrument_symbol, 0)
+            amount = round(amount_held * trade_amount, instrument_precision)
 
-        return Trade(self.asset_symbol, trade_type, amount, price)
+        return Trade(self.instrument_symbol, trade_type, amount, price)
