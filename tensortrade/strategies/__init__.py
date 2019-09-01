@@ -1,1 +1,2 @@
 from .trading_strategy import TradingStrategy
+from .tensorforce_strategy import TensorforceStrategy

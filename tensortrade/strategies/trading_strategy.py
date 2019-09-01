@@ -20,7 +20,6 @@ from typing import Union, Callable, List
 
 from tensortrade.environments.trading_environment import TradingEnvironment
 from tensortrade.features.feature_pipeline import FeaturePipeline
-from tensortrade.actions import TradeActionUnion
 
 
 class TradingStrategy(object, metaclass=ABCMeta):
@@ -45,7 +44,7 @@ class TradingStrategy(object, metaclass=ABCMeta):
         raise NotImplementedError
 
     @property
-    def env(self):
+    def env(self) -> TradingEnvironment:
         """A `TradingEnvironment` instance for the agent to trade within."""
         return self._env
 
@@ -96,18 +95,6 @@ class TradingStrategy(object, metaclass=ABCMeta):
 
         Returns:
             A history of the agent's trading performance during evaluation
-        """
-        raise NotImplementedError
-
-    @abstractmethod
-    def get_action(self, observation: pd.DataFrame) -> TradeActionUnion:
-        """Determine an action based on a specific observation.
-
-        Arguments:
-            observation: A `pandas.DataFrame` corresponding to an observation within the environment.
-
-        Returns:
-            An action whose type depends on the action space of the environment.
         """
         raise NotImplementedError
 

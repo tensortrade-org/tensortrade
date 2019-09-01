@@ -25,7 +25,7 @@ class RewardStrategy(object, metaclass=ABCMeta):
         pass
 
     @property
-    def exchange(self):
+    def exchange(self) -> 'InstrumentExchange':
         """The exchange being used by the current trading environment. Setting the exchange causes the strategy to reset."""
         return self._exchange
 

@@ -68,7 +68,7 @@ class TradingEnvironment(gym.Env):
         logging.getLogger('tensorflow').disabled = kwargs.get('disable_tensorflow_logger', True)
 
     @property
-    def exchange(self):
+    def exchange(self) -> InstrumentExchange:
         """The `InstrumentExchange` that will be used to feed data from and execute trades within."""
         return self._exchange
 
@@ -77,7 +77,7 @@ class TradingEnvironment(gym.Env):
         self._exchange = exchange
 
     @property
-    def feature_pipeline(self):
+    def feature_pipeline(self) -> FeaturePipeline:
         """A pipeline of feature transformations to be applied to observations from the environment."""
         return self._feature_pipeline
 
@@ -86,7 +86,7 @@ class TradingEnvironment(gym.Env):
         self._feature_pipeline = feature_pipeline
 
     @property
-    def action_strategy(self):
+    def action_strategy(self) -> ActionStrategy:
         """The strategy for transforming an action into a `Trade` at each timestep."""
         return self._action_strategy
 
@@ -95,7 +95,7 @@ class TradingEnvironment(gym.Env):
         self._action_strategy = action_strategy
 
     @property
-    def reward_strategy(self):
+    def reward_strategy(self) -> RewardStrategy:
         """The strategy for determining the reward at each timestep"""
         return self._reward_strategy
 

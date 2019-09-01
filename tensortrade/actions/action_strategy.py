@@ -39,7 +39,7 @@ class ActionStrategy(object, metaclass=ABCMeta):
         self._dtype = dtype
 
     @property
-    def action_space(self):
+    def action_space(self) -> Space:
         """The shape of the actions produced by the strategy."""
         return self._action_space
 
@@ -48,7 +48,7 @@ class ActionStrategy(object, metaclass=ABCMeta):
         self._action_space = action_space
 
     @property
-    def dtype(self):
+    def dtype(self) -> DTypeString:
         """A type or str corresponding to the dtype of the `action_space`."""
         return self._dtype
 
@@ -57,7 +57,7 @@ class ActionStrategy(object, metaclass=ABCMeta):
         self._dtype = dtype
 
     @property
-    def exchange(self):
+    def exchange(self) -> 'InstrumentExchange':
         """The exchange being used by the current trading environment.
 
         This will be set by the trading environment upon initialization. Setting the exchange causes the strategy to reset.
