@@ -26,31 +26,39 @@ class TradingStrategy(object, metaclass=ABCMeta):
     """An abstract trading strategy capable of self tuning, training, and evaluating."""
 
     @abstractmethod
-    def __init__(self, env: TradingEnvironment):
+    def __init__(self, environment: TradingEnvironment):
         """
         Arguments:
-            env: A `TradingEnvironment` instance for the agent to trade within.
+            environment: A `TradingEnvironment` instance for the agent to trade within.
         """
-        self._env = env
+        self._environment = environment
+
+    @property
+    def environment(self) -> TradingEnvironment:
+        """A `TradingEnvironment` instance for the agent to trade within."""
+        return self._environment
+
+    @environment.setter
+    def environment(self, environment: TradingEnvironment):
+        self._environment = environment
 
     @abstractmethod
-    @staticmethod
-    def restore(self, path: str):
-        """Deserialize the strategy's underlying model from a file.
+    def restore_agent(self, path: str):
+        """Deserialize the strategy's learning agent from a file.
 
         Arguments:
-            path: The `str` path of where to restore the strategy from.
+            path: The `str` path of where the strategy is stored.
         """
         raise NotImplementedError
 
-    @property
-    def env(self) -> TradingEnvironment:
-        """A `TradingEnvironment` instance for the agent to trade within."""
-        return self._env
+    @abstractmethod
+    def save_agent(self, path: str):
+        """Serialize the strategy's learning agent to a file for restoring later.
 
-    @env.setter
-    def env(self, env: TradingEnvironment):
-        self._env = env
+        Arguments:
+            path: The `str` path of where to store the strategy.
+        """
+        raise NotImplementedError
 
     @abstractmethod
     def tune(self, steps_per_train: int, steps_per_test: int, step_cb: Callable[[pd.DataFrame], bool] = None) -> pd.DataFrame:
@@ -69,40 +77,18 @@ class TradingStrategy(object, metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def train(self, steps: int, callback: Callable[[pd.DataFrame], bool] = None) -> pd.DataFrame:
-        """Train the agent's underlying model on the environment.
-
-        Arguments:
-            steps: The number of steps to train the model within the environment.
-            step_cb (optional): A callback function for monitoring progress of the training process.
-                step_cb(pd.DataFrame) -> bool: A history of the agent's trading performance is passed on each iteration.
-                If the callback returns `True`, the training process will stop early.
-
-        Returns:
-            A history of the agent's trading performance during training
-        """
-        raise NotImplementedError
-
-    @abstractmethod
-    def evaluate(self, steps: int, callback: Callable[[pd.DataFrame], bool] = None) -> pd.DataFrame:
+    def run(self, steps: int = None, episodes: int = None, should_train: bool = False, callback: Callable[[pd.DataFrame], bool] = None) -> pd.DataFrame:
         """Evaluate the agent's performance within the environment.
 
         Arguments:
-            steps: The number of steps to train the model within the environment.
-            step_cb (optional): A callback function for monitoring progress of the evaluation process.
+            steps: The number of steps to run the agent within the environment. Required if `episodes` is not passed.
+            episodes: The number of episodes to run the agent within the environment. Required if `steps` is not passed.
+            should_train: Whether or not the agent should be trained on the environment it is running in. Defaults to false.
+            step_cb (optional): A callback function for monitoring the agent's progress within the environment.
                 step_cb(pd.DataFrame) -> bool: A history of the agent's trading performance is passed on each iteration.
                 If the callback returns `True`, the training process will stop early.
 
         Returns:
             A history of the agent's trading performance during evaluation
-        """
-        raise NotImplementedError
-
-    @abstractmethod
-    def save_to_file(self, path: str):
-        """Serialize the strategy's underlying model to a file for restoring later.
-
-        Arguments:
-            path: The `str` path of where to store the strategy serialization.
         """
         raise NotImplementedError
