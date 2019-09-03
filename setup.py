@@ -6,13 +6,13 @@ A reinforcement learning library for training, evaluating, and deploying robust 
 """
 
 setup(name='tensortrade',
-      version='0.0.1a3',
+      version='0.0.1a4',
       description='A reinforcement learning library for training, evaluating, and deploying robust trading agents.',
       long_description=long_description,
       author='Adam King',
       author_email='adamjking3@gmail.com',
       url='https://github.com/notadamking/tensortrade',
-      download_url='https://github.com/notadamking/tensortrade/tarball/0.0.1',
+      download_url='https://github.com/notadamking/tensortrade/tarball/0.0.1a4',
       license='Apache 2.0',
       install_requires=[
           'numpy',
@@ -22,6 +22,8 @@ setup(name='tensortrade',
           'gin-config',
           'ccxt',
           'stochastic',
+          'tensorflow',
+          'ray'
       ],
       extras_require={
           'tests': ['pytest'],
