@@ -76,6 +76,6 @@ class MultiDiscreteActionStrategy(ActionStrategy):
                 amount_held = self._exchange.portfolio.get(instrument_symbol, 0)
                 amount = round(amount_held * trade_amount, instrument_precision)
 
-            yield Trade(self.instrument_symbol, trade_type, amount, price)
+            yield Trade(instrument_symbol, trade_type, amount, price)
 
     
