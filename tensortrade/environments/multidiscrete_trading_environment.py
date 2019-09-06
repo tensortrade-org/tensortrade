@@ -128,7 +128,7 @@ class MultiTradingEnvironment(gym.Env):
         from tensorforce.contrib.openai_gym import OpenAIGym
         return OpenAIGym.action_from_space(self.action_space)
 
-    def _take_action(self, actions: TradeActionUnion) -> Trade:
+    def _take_action(self, action) -> Trade:
         """Determines a specific trade to be taken and executes it within the exchange.
 
         Arguments:
@@ -137,7 +137,7 @@ class MultiTradingEnvironment(gym.Env):
         Returns:
             A tuple containing the (fill_amount, fill_price) of the executed trade.
         """
-        orders = self._action_strategy.get_trades(actions=actions)
+        orders = self._action_strategy.get_trades(actions=action)
 
         filled_orders = list(map(self._exchange.execute_trade, orders))
 
