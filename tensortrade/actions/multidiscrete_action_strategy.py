@@ -52,6 +52,7 @@ class MultiDiscreteActionStrategy(ActionStrategy):
 
         For example, 1 = LIMIT_BUY|0.25, 2 = MARKET_BUY|0.25, 6 = LIMIT_BUY|0.5, 7 = MARKET_BUY|0.5, etc.
         """
+        res = []
         for i, action in enumerate(actions):
             instrument_symbol = self.instrument_symbols[i]
             n_splits = self.n_actions / len(TradeType)
@@ -76,6 +77,7 @@ class MultiDiscreteActionStrategy(ActionStrategy):
                 amount_held = self._exchange.portfolio.get(instrument_symbol, 0)
                 amount = round(amount_held * trade_amount, instrument_precision)
 
-            yield Trade(instrument_symbol, trade_type, amount, price)
+            res.append(Trade(instrument_symbol, trade_type, amount, price))
+        return res
 
     
