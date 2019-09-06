@@ -16,7 +16,7 @@ import numpy as np
 import pandas as pd
 
 from abc import abstractmethod
-from gym.spaces import Space, Box
+from gym.spaces import  Box
 from typing import Dict
 
 from tensortrade.trades import Trade, TradeType
@@ -84,7 +84,7 @@ class SimulatedExchange(InstrumentExchange):
         return self._performance
 
     @property
-    def observation_space(self) -> Space:
+    def observation_space(self):
         low = np.array([self._min_trade_price, ] * 4 + [self._min_trade_amount, ])
         high = np.array([self._max_trade_price, ] * 4 + [self._max_trade_amount, ])
 
