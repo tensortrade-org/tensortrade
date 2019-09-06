@@ -52,16 +52,17 @@ class MultiDiscreteActionStrategy(ActionStrategy):
 
         For example, 1 = LIMIT_BUY|0.25, 2 = MARKET_BUY|0.25, 6 = LIMIT_BUY|0.5, 7 = MARKET_BUY|0.5, etc.
         """
-        for action in actions:
+        for i, action in enumerate(actions):
+            instrument_symbol = self.instrument_symbols[i]
             n_splits = self.n_actions / len(TradeType)
             trade_type = TradeType(action % len(TradeType))
             trade_amount = int(action / len(TradeType)) * float(1 / n_splits) + (1 / n_splits)
 
-            current_price = self._exchange.current_price(symbol=self.instrument_symbol)
+            current_price = self._exchange.current_price(symbol=instrument_symbol)
             base_precision = self._exchange.base_precision
             instrument_precision = self._exchange.instrument_precision
 
-            amount = self._exchange.balance_of_instrument(self.instrument_symbol)
+            amount = self._exchange.balance_of_instrument(instrument_symbol)
             price = current_price
 
             if trade_type is TradeType.MARKET_BUY or trade_type is TradeType.LIMIT_BUY:
@@ -72,37 +73,9 @@ class MultiDiscreteActionStrategy(ActionStrategy):
             elif trade_type is TradeType.MARKET_SELL or trade_type is TradeType.LIMIT_SELL:
                 price_adjustment = 1 - (self.max_allowed_slippage_percent / 100)
                 price = round(current_price * price_adjustment, base_precision)
-                amount_held = self._exchange.portfolio.get(self.instrument_symbol, 0)
+                amount_held = self._exchange.portfolio.get(instrument_symbol, 0)
                 amount = round(amount_held * trade_amount, instrument_precision)
 
             yield Trade(self.instrument_symbol, trade_type, amount, price)
 
-    def get_trades(self, actions=[]) -> Trade:
-        """The trade type is determined by `action % len(TradeType)`, and the trade amount is determined by the multiplicity of the action.
-
-        For example, 1 = LIMIT_BUY|0.25, 2 = MARKET_BUY|0.25, 6 = LIMIT_BUY|0.5, 7 = MARKET_BUY|0.5, etc.
-        """
-        for action in actions:
-            n_splits = self.n_actions / len(TradeType)
-            trade_type = TradeType(action % len(TradeType))
-            trade_amount = int(action / len(TradeType)) * float(1 / n_splits) + (1 / n_splits)
-
-            current_price = self._exchange.current_price(symbol=self.instrument_symbol)
-            base_precision = self._exchange.base_precision
-            instrument_precision = self._exchange.instrument_precision
-
-            amount = self._exchange.balance_of_instrument(self.instrument_symbol)
-            price = current_price
-
-            if trade_type is TradeType.MARKET_BUY or trade_type is TradeType.LIMIT_BUY:
-                price_adjustment = 1 + (self.max_allowed_slippage_percent / 100)
-                price = round(current_price * price_adjustment, base_precision)
-                amount = round(self._exchange.balance * 0.99 * trade_amount / price, instrument_precision)
-
-            elif trade_type is TradeType.MARKET_SELL or trade_type is TradeType.LIMIT_SELL:
-                price_adjustment = 1 - (self.max_allowed_slippage_percent / 100)
-                price = round(current_price * price_adjustment, base_precision)
-                amount_held = self._exchange.portfolio.get(self.instrument_symbol, 0)
-                amount = round(amount_held * trade_amount, instrument_precision)
-
-            yield Trade(self.instrument_symbol, trade_type, amount, price)
+    
