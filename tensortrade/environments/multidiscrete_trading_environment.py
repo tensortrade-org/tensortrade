@@ -137,7 +137,7 @@ class MultiTradingEnvironment(gym.Env):
         Returns:
             A tuple containing the (fill_amount, fill_price) of the executed trade.
         """
-        orders = self._action_strategy.get_trades(action=action)
+        orders = self._action_strategy.get_trades(actions=action)
 
         filled_orders = list(map(self._exchange.execute_trade, orders))
 
