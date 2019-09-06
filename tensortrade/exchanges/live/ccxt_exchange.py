@@ -17,7 +17,7 @@ import numpy as np
 import pandas as pd
 
 from typing import Dict, List
-from gym.spaces import Space, Box
+from gym.spaces import Box
 from ccxt import Exchange
 
 from tensortrade.trades import Trade, TradeType
@@ -86,7 +86,7 @@ class CCXTExchange(InstrumentExchange):
         return self._performance
 
     @property
-    def observation_space(self) -> Space:
+    def observation_space(self):
         low_price = self._markets[self._observation_symbol]['limits']['price']['min']
         high_price = self._markets[self._observation_symbol]['limits']['price']['max']
         low_volume = self._markets[self._observation_symbol]['limits']['amount']['min']
