@@ -1,0 +1,12 @@
+numpy
+pandas
+sklearn
+gym
+gin-config
+ccxt
+stochastic
+tensorflow
+ray
+
+[tests]
+pytest

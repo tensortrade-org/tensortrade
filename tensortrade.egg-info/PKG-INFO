@@ -1,0 +1,32 @@
+Metadata-Version: 2.1
+Name: tensortrade
+Version: 0.0.1a4
+Summary: A reinforcement learning library for training, evaluating, and deploying robust trading agents.
+Home-page: https://github.com/notadamking/tensortrade
+Author: Adam King
+Author-email: adamjking3@gmail.com
+License: Apache 2.0
+Download-URL: https://github.com/notadamking/tensortrade/tarball/0.0.1a4
+Description: 
+        A reinforcement learning library for training, evaluating, and deploying robust trading agents.
+        
+Platform: UNKNOWN
+Classifier: Development Status :: 3 - Alpha
+Classifier: Natural Language :: English
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: Education
+Classifier: Intended Audience :: Science/Research
+Classifier: Intended Audience :: Financial and Insurance Industry
+Classifier: Intended Audience :: Information Technology
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Topic :: Office/Business :: Financial :: Investment
+Classifier: Topic :: Office/Business :: Financial
+Classifier: Topic :: Scientific/Engineering :: Information Analysis
+Classifier: Topic :: System :: Distributed Computing
+Classifier: Topic :: Scientific/Engineering :: Artificial Intelligence
+Classifier: Topic :: Software Development :: Libraries
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Provides-Extra: tests
