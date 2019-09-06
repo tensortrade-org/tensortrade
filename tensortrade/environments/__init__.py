@@ -1,1 +1,2 @@
 from .trading_environment import TradingEnvironment
+from .multidiscrete_trading_environment import MultiTradingEnvironment

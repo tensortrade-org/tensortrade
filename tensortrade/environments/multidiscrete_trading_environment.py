@@ -31,7 +31,7 @@ TensorForceStateShape = Union[int, List[int], Tuple[int, ...]]
 TensorForceMinMaxValue = Union[int, float]
 
 
-class TradingEnvironment(gym.Env):
+class MultiTradingEnvironment(gym.Env):
     """A trading environment made for use with Gym-compatible reinforcement learning algorithms."""
 
     def __init__(self,
@@ -137,13 +137,13 @@ class TradingEnvironment(gym.Env):
         Returns:
             A tuple containing the (fill_amount, fill_price) of the executed trade.
         """
-        executed_trade = self._action_strategy.get_trade(action=action)
+        orders = self._action_strategy.get_trades(action=action)
 
-        filled_trade = self._exchange.execute_trade(executed_trade)
+        filled_orders = list(map(self._exchange.execute_trade, orders))
 
-        return executed_trade, filled_trade
+        return orders, filled_orders
 
-    def _next_observation(self, trade: Trade) -> pd.DataFrame:
+    def _next_observation(self, trade) -> pd.DataFrame:
         """Returns the next observation from the exchange.
 
         Returns:
@@ -207,12 +207,12 @@ class TradingEnvironment(gym.Env):
             info (dict): Any auxiliary, diagnostic, or debugging information to output.
         """
 
-        executed_trade, filled_trade = self._take_action(action)
+        orders, filled_orders = self._take_action(action)
 
-        observation = self._next_observation(filled_trade)
-        reward = self._get_reward(filled_trade)
+        observation = self._next_observation(filled_orders)
+        reward = self._get_reward(filled_orders)
         done = self._done()
-        info = self._info(executed_trade, filled_trade)
+        info = self._info(orders, filled_orders)
 
         return observation, reward, done, info
 
