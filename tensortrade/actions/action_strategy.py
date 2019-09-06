@@ -16,7 +16,7 @@ import numpy as np
 
 from typing import Union
 from abc import ABCMeta, abstractmethod
-from gym.spaces import Space
+# from gym.spaces import Space
 
 from tensortrade.trades import Trade
 
@@ -28,7 +28,7 @@ class ActionStrategy(object, metaclass=ABCMeta):
     """An abstract strategy for determining the action to take at each timestep within a trading environment."""
 
     @abstractmethod
-    def __init__(self, action_space: Space, dtype: DTypeString = np.float16):
+    def __init__(self, action_space, dtype: DTypeString = np.float16):
         """
         Arguments:
             action_space: The shape of the actions produced by the strategy.
@@ -39,12 +39,12 @@ class ActionStrategy(object, metaclass=ABCMeta):
         self._dtype = dtype
 
     @property
-    def action_space(self) -> Space:
+    def action_space(self):
         """The shape of the actions produced by the strategy."""
         return self._action_space
 
     @action_space.setter
-    def action_space(self, action_space: Space):
+    def action_space(self, action_space):
         self._action_space = action_space
 
     @property
