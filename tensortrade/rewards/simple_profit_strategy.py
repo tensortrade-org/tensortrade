@@ -35,19 +35,20 @@ class SimpleProfitStrategy(RewardStrategy):
 
         The 5^(log_10(profit)) function simply slows the growth of the reward as trades get large.
         """
-        if trade.is_hold and self._is_holding_instrument:
-            return 1
-        elif trade.is_buy and trade.amount > 0:
-            self._purchase_price = trade.price
-            self._is_holding_instrument = True
+        for t in trade:
+            if t.is_hold and self._is_holding_instrument:
+                yield 1
+            elif t.is_buy and t.amount > 0:
+                self._purchase_price = t.price
+                self._is_holding_instrument = True
 
-            return 2
-        elif trade.is_sell and trade.amount > 0:
-            self._is_holding_instrument = False
-            profit_per_instrument = trade.price - self._purchase_price
-            profit = trade.amount * profit_per_instrument
-            profit_sign = np.sign(profit)
+                yield 2
+            elif t.is_sell and t.amount > 0:
+                self._is_holding_instrument = False
+                profit_per_instrument = t.price - self._purchase_price
+                profit = t.amount * profit_per_instrument
+                profit_sign = np.sign(profit)
 
-            return profit_sign * (1 + (5 ** np.log10(abs(profit))))
+                yield profit_sign * (1 + (5 ** np.log10(abs(profit))))
 
-        return -1
+            yield -1
