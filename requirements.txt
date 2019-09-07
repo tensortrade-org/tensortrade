@@ -1,5 +1,5 @@
-numpy==1.16.5
-pandas==0.24.2
+numpy==1.17.0
+pandas==0.25.0
 sklearn==0.0
 gym==0.14.0
 gin-config==0.2.1
