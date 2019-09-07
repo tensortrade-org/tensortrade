@@ -165,8 +165,8 @@ class MultiTradingEnvironment(gym.Env):
         Returns:
             A float corresponding to the benefit earned by the action taken this step.
         """
-        reward: float = self._reward_strategy.get_reward(
-            current_step=self._current_step, trade=trade)
+        reward: float = list(self._reward_strategy.get_reward(
+            current_step=self._current_step, trade=trade)).sum()
 
         if not np.isfinite(reward):
             raise ValueError('Reward returned by the reward strategy must by a finite float.')
