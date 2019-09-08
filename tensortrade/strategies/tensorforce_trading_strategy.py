@@ -134,10 +134,10 @@ class TensorforceTradingStrategy(TradingStrategy):
 
         return True
 
-    def tune(self, steps_per_train: int, steps_per_test: int, step_cb: Callable[[pd.DataFrame], bool] = None) -> pd.DataFrame:
+    def tune(self, steps: int = None, episodes: int = None, callback: Callable[[pd.DataFrame], bool] = None) -> pd.DataFrame:
         raise NotImplementedError
 
-    def run(self, steps: int = None, episodes: int = None, should_train: bool = False, callback: Callable[[pd.DataFrame], bool] = None) -> pd.DataFrame:
+    def run(self, steps: int = None, episodes: int = None, should_train: bool = False, episode_callback: Callable[[pd.DataFrame], bool] = None) -> pd.DataFrame:
         testing = not should_train
 
         self._runner.run(testing=testing,
