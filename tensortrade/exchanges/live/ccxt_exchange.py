@@ -95,15 +95,13 @@ class CCXTExchange(InstrumentExchange):
         if self._observation_type == 'ohlcv':
             low = (low_price, low_price, low_price, low_price, low_volume)
             high = (high_price, high_price, high_price, high_price, high_volume)
-            dtypes = (self._dtype, self._dtype, self._dtype, self._dtype, np.int64)
             obs_shape = (self._window_size, 5)
         else:
             low = (0, low_price, low_price, low_price, low_volume)
             high = (1, high_price, high_volume, high_price * high_volume)
-            dtypes = (np.int8, self._dtype, self._dtype, self._dtype)
             obs_shape = (self._window_size, 4)
 
-        return Box(low=low, high=high, shape=obs_shape, dtype=dtypes)
+        return Box(low=low, high=high, shape=obs_shape, dtype=self._dtype)
 
     @property
     def has_next_observation(self) -> bool:
