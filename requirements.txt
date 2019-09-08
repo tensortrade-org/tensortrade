@@ -7,3 +7,4 @@ stochastic==0.4.0
 ccxt==1.18.1123
 tensorflow==1.14.0
 ray==0.7.4
+tensorforce
