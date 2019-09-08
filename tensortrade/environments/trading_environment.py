@@ -155,7 +155,7 @@ class TradingEnvironment(gym.Env):
         observation = observation.fillna(0, axis=0)
 
         if self._feature_pipeline is not None:
-            observation = self._feature_pipeline.transform(observation)
+            observation = self._feature_pipeline.fit_transform(observation)
 
         return observation
 
