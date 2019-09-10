@@ -21,7 +21,7 @@ from typing import Dict
 
 from tensortrade.trades import Trade, TradeType
 from tensortrade.exchanges import InstrumentExchange
-from tensortrade.slippage import RandomSlippageModel
+from tensortrade.slippage import RandomUniformSlippageModel
 
 
 class SimulatedExchange(InstrumentExchange):
