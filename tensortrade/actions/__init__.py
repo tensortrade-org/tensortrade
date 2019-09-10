@@ -4,12 +4,20 @@ from .discrete_action_strategy import DiscreteActionStrategy
 
 
 _registry = {
-    'continuous': ContinuousActionStrategy,
-    'discrete': DiscreteActionStrategy
+    'continuous': ContinuousActionStrategy(),
+    'discrete': DiscreteActionStrategy()
 }
 
 
-def get(identifier):
+def get(identifier: str) -> ActionStrategy:
+    """Gets the `ActionStrategy` that matches with the identifier.
+
+    Arguments:
+        identifier: The identifier for the `ActionStrategy`
+
+    Raises:
+        KeyError: if identifier is not associated with any `ActionStrategy`
+    """
     if identifier not in _registry.keys():
-        raise KeyError('Identifier is not a registered identifier.')
+        raise KeyError(f'Identifier {identifier} is not associated with any `ActionStrategy`.')
     return _registry[identifier]

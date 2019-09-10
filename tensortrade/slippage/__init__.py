@@ -3,11 +3,19 @@ from .random_slippage_model import RandomUniformSlippageModel
 
 
 _registry = {
-    'uniform': RandomUniformSlippageModel
+    'uniform': RandomUniformSlippageModel()
 }
 
 
-def get(identifier):
+def get(identifier: str) -> SlippageModel:
+    """Gets the `SlippageModel` that matches with the identifier.
+
+    Arguments:
+        identifier: The identifier for the `SlippageModel`
+
+    Raises:
+        KeyError: if identifier is not associated with any `SlippageModel`
+    """
     if identifier not in _registry.keys():
-        raise KeyError('Identifier is not a registered identifier.')
+        raise KeyError(f'Identifier {identifier} is not associated with any `SlippageModel`.')
     return _registry[identifier]

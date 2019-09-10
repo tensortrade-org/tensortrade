@@ -1,23 +1,24 @@
 
 
-import tensortrade.actions as actions
-import tensortrade.exchanges as exchanges
-import tensortrade.rewards as rewards
-import tensortrade.slippage as slippage
+from tensortrade.actions import *
+from tensortrade.exchanges.simulated import *
+from tensortrade.exchanges.live import *
+from tensortrade.rewards import *
+from tensortrade.slippage import *
 
 
 def test_getting_components_by_name():
 
     checks_to_perform = [
-        (actions, 'continuous', 'ContinuousActionStrategy'),
-        (actions, 'discrete', 'DiscreteActionStrategy'),
-        (exchanges, 'ccxt', 'CCXTExchange'),
-        (exchanges, 'simulated', 'SimulatedExchange'),
-        (exchanges, 'fbm', 'FBMExchange'),
-        (exchanges, 'gan', 'GANExchange'),
-        (rewards, 'simple', 'SimpleProfitStrategy'),
-        (slippage, 'uniform', 'RandomUniformSlippageModel')
+        ('continuous', ContinuousActionStrategy),
+        ('discrete', DiscreteActionStrategy),
+        ('ccxt', CCXTExchange),
+        ('simulated', SimulatedExchange),
+        ('fbm', FBMExchange),
+        ('gan', GANExchange),
+        ('simple', SimpleProfitStrategy),
+        ('uniform', RandomUniformSlippageModel)
     ]
 
-    for registrar, name, class_name in checks_to_perform:
-        assert registrar.get(name).__name__ == class_name
+    for registrar, name, clazz in checks_to_perform:
+        assert isinstance(registrar.get(name), clazz)

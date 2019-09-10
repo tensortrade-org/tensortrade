@@ -51,7 +51,7 @@ class SimulatedExchange(InstrumentExchange):
 
         max_allowed_slippage_percent = kwargs.get('max_allowed_slippage_percent', 1.0)
 
-        SlippageModelClass = kwargs.get('slippage_model', RandomSlippageModel)
+        SlippageModelClass = kwargs.get('slippage_model', RandomUniformSlippageModel)
         self._slippage_model = SlippageModelClass(max_allowed_slippage_percent)
 
     @property
