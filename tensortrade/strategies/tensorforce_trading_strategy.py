@@ -48,10 +48,13 @@ class TensorforceTradingStrategy(TradingStrategy):
             self._agent_spec = agent_spec
             self._network_spec = network_spec
 
-            self._agent = Agent.from_spec(spec=agent_spec,
-                                          kwargs=dict(network=network_spec,
-                                                      states=environment.states,
-                                                      actions=environment.actions))
+            self._agent =  Agent.create(
+                                agent='ppo',
+                                states=environment.states,
+                                actions=environment.actions,
+                                max_episode_timesteps=100,
+                            )
+            
 
             self._runner = Runner(agent=self._agent, environment=environment)
 
@@ -140,11 +143,10 @@ class TensorforceTradingStrategy(TradingStrategy):
     def run(self, steps: int = None, episodes: int = None, should_train: bool = False, episode_callback: Callable[[pd.DataFrame], bool] = None) -> pd.DataFrame:
         testing = not should_train
 
-        self._runner.run(testing=testing,
-                         num_timesteps=steps,
+        self._runner.run(num_timesteps=steps,
                          num_episodes=episodes,
                          max_episode_timesteps=self._max_episode_timesteps,
-                         episode_finished=self._finished_episode_cb)
+                        )
 
         self._runner.close()
 

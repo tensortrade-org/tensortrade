@@ -111,7 +111,7 @@ class TradingEnvironment(gym.Env):
             - type: Either 'bool', 'int', or 'float'.
             - shape: The shape of the space. An `int` or `list`/`tuple` of `int`s.
         """
-        from tensorforce.contrib.openai_gym import OpenAIGym
+        from .OpenAIGym import OpenAIGym
         return OpenAIGym.state_from_space(self.observation_space)
 
     @property
@@ -125,7 +125,7 @@ class TradingEnvironment(gym.Env):
             - min_value (optional if type == 'float'): An `int` or `float`. Defaults to `None`.
             - max_value (optional if type == 'float'): An `int` or `float`. Defaults to `None`.
         """
-        from tensorforce.contrib.openai_gym import OpenAIGym
+        from .OpenAIGym import OpenAIGym
         return OpenAIGym.action_from_space(self.action_space)
 
     def _take_action(self, action: TradeActionUnion) -> Trade:
