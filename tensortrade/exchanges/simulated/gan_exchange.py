@@ -21,7 +21,7 @@ from typing import Dict
 
 from tensortrade.trades import Trade, TradeType
 from tensortrade.models.generative import WGAN
-from tensortrade.slippage import RandomSlippageModel
+from tensortrade.slippage import RandomUniformSlippageModel
 from tensortrade.exchanges import InstrumentExchange
 
 
