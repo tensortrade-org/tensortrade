@@ -36,7 +36,7 @@ network_spec = [
     dict(type='dense', size=32, activation="tanh")
 ]
 
-
+# print(environment, vars(environment))
 strategy = TensorforceTradingStrategy(environment=environment,
                                       agent_spec=agent_spec,
                                       network_spec=network_spec)

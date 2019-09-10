@@ -25,13 +25,14 @@ from tensortrade.features import FeaturePipeline
 from tensortrade.rewards import RewardStrategy
 from tensortrade.exchanges import InstrumentExchange
 from tensortrade.trades import Trade
+from tensorforce.environments import Environment
 
 TensorForceStateType = Union[bool, int, float]
 TensorForceStateShape = Union[int, List[int], Tuple[int, ...]]
 TensorForceMinMaxValue = Union[int, float]
 
 
-class TradingEnvironment(gym.Env):
+class TradingEnvironment(Environment):
     """A trading environment made for use with Gym-compatible reinforcement learning algorithms."""
 
     def __init__(self,
@@ -157,7 +158,7 @@ class TradingEnvironment(gym.Env):
         if self._feature_pipeline is not None:
             observation = self._feature_pipeline.fit_transform(observation)
 
-        return observation
+        return observation.fillna(0, axis=0)
 
     def _get_reward(self, trade: Trade) -> float:
         """Returns the reward for the current timestep.
