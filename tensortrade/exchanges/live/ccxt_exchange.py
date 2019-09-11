@@ -33,6 +33,7 @@ class CCXTExchange(InstrumentExchange):
         self._exchange = exchange
 
         self._exchange.enableRateLimit = kwargs.get('enable_rate_limit', True)
+        self._markets = self._exchange.load_markets()
 
         self._observation_type = kwargs.get('observation_type', 'trades')
         self._observation_symbol = kwargs.get('observation_symbol', 'ETH/BTC')

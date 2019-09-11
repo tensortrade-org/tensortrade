@@ -5,10 +5,10 @@ from . import live
 from . import simulated
 
 _registry = {
-    'ccxt': live.CCXTExchange(exchange=coinbasepro()),
-    'simulated': simulated.SimulatedExchange(),
-    'fbm': simulated.FBMExchange(),
-    'gan': simulated.GANExchange()
+    'ccxt': live.CCXTExchange,
+    'simulated': simulated.SimulatedExchange,
+    'fbm': simulated.FBMExchange,
+    'gan': simulated.GANExchange
 }
 
 
@@ -27,4 +27,7 @@ def get(identifier: str) -> InstrumentExchange:
     """
     if identifier not in _registry.keys():
         raise KeyError(f'Identifier {identifier} is not associated with any `InstrumentExchange`.')
-    return _registry[identifier]
+
+    if identifier == 'ccxt':
+        return live.CCXTExchange(exchange=coinbasepro())
+    return _registry[identifier]()
