@@ -20,7 +20,6 @@ from gym import spaces
 from typing import Dict
 
 from tensortrade.trades import Trade, TradeType
-from tensortrade.models.generative import WGAN
 from tensortrade.slippage import RandomSlippageModel
 from tensortrade.exchanges import InstrumentExchange
 
@@ -70,10 +69,8 @@ class GANExchange(InstrumentExchange):
             tf.keras.layers.Dense(units=1, activation="sigmoid"),
         ])
 
-        self._gan = WGAN(generator=generator, discriminator=discriminator,
-                         n_samples=self._n_samples)
+        self._gan = {'generator': generator,
+                     'discriminator': discriminator}
 
     def reset(self):
         super().reset()
-
-        self._gan.generate_random()
