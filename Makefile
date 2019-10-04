@@ -30,6 +30,7 @@ build-gpu:
 	docker build -t ${GPU_IMAGE} . --build-arg gpu_tag="-gpu"
 
 package:
+	rm -rf dist
 	python3 setup.py sdist
 	python3 setup.py bdist_wheel
 

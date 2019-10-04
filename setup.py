@@ -14,10 +14,9 @@
 
 
 import sys
-from setuptools import find_packages, setup
 import os
-from setuptools import setup
-from setuptools import find_packages
+
+from setuptools import find_packages, setup
 
 
 if sys.version_info.major != 3:
@@ -41,12 +40,11 @@ setup(
     author_email='adamjking3@gmail.com',
     url='https://github.com/notadamking/tensortrade',
     packages=[
-        package for package in find_packages(exclude=('test',))
+        package for package in find_packages(exclude=('tests', 'docs'))
         if package.startswith('tensortrade')
     ],
-    download_url='https://github.com/notadamking/tensortrade/archive/0.0.2.tar.gz',
     license='Apache 2.0',
-    python_requires='>=3.6',
+    python_requires='>=3.5',
     install_requires=[
         'numpy==1.17.0',
         'pandas==0.25.0',
@@ -79,7 +77,7 @@ setup(
         'License :: OSI Approved :: Apache Software License',
         'Operating System :: OS Independent',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.5',
         'Topic :: Office/Business :: Financial :: Investment',
         'Topic :: Office/Business :: Financial',
         'Topic :: Scientific/Engineering :: Information Analysis',

@@ -4,7 +4,7 @@
 [![Documentation Status](https://readthedocs.org/projects/tensortrade/badge/?version=latest)](https://tensortrade.org)
 [![Apache License](https://img.shields.io/github/license/notadamking/tensortrade.svg?color=brightgreen)](http://www.apache.org/licenses/LICENSE-2.0)
 [![Discord](https://img.shields.io/discord/592446624882491402.svg?color=brightgreen)](https://discord.gg/ZZ7BGWh)
-[![Python 3.6](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/downloads/release/python-360/)
+[![Python 3.5](https://img.shields.io/badge/python-3.5-blue.svg)](https://www.python.org/downloads/release/python-350/)
 
 ---
 
@@ -42,7 +42,7 @@ You can get started testing on Google Colab or your local machine, by viewing ou
 
 ## Installation
 
-TensorTrade requires Python >= 3.6 for all functionality to work as expected.
+TensorTrade requires Python >= 3.5 for all functionality to work as expected.
 
 ```bash
 pip install -r requirements.txt
