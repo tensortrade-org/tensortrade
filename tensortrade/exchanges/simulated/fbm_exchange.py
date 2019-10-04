@@ -70,9 +70,10 @@ class FBMExchange(SimulatedExchange):
         volume_frame.set_index('date')
         volume_frame.index = pd.to_datetime(volume_frame.index, unit='m', origin=start_date)
 
-        self._data_frame = price_frame['price'].resample(self._timeframe).ohlc()
-        self._data_frame['volume'] = volume_frame['volume'].resample(self._timeframe).sum()
-        self._data_frame = self._data_frame.astype(self._dtype)
+        data_frame = price_frame['price'].resample(self._timeframe).ohlc()
+        data_frame['volume'] = volume_frame['volume'].resample(self._timeframe).sum()
+
+        self.data_frame = data_frame.astype(self._dtype)
 
     def reset(self):
         super().reset()
