@@ -135,6 +135,7 @@ class FractionalDifference(FeatureTransformer):
             if self._inplace:
                 X[column] = diffed_series.fillna(method='bfill')
             else:
-                X[f'{column}_diff_{self._difference_order}'] = diffed_series.fillna(method='bfill')
+                column_name = '{}_diff_{}'.format(column, self._difference_order)
+                X[column_name] = diffed_series.fillna(method='bfill')
 
         return X.iloc[-len(X):]

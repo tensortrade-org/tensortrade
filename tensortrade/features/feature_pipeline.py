@@ -96,8 +96,8 @@ class FeaturePipeline(object):
         features = self._transform(observation)
 
         if not isinstance(features, pd.DataFrame):
-            raise ValueError(f"A FeaturePipeline must transform a pandas.DataFrame into another pandas.DataFrame.\n \
-                               Expected return type: {type(pd.DataFrame([]))} `\n \
-                               Actual return type: {type(features)}.")
+            raise ValueError("A FeaturePipeline must transform a pandas.DataFrame into another pandas.DataFrame.\n \
+                               Expected return type: {} `\n \
+                               Actual return type: {}.".format(type(pd.DataFrame([])), type(features)))
 
         return features

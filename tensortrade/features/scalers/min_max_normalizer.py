@@ -79,6 +79,7 @@ class MinMaxNormalizer(FeatureTransformer):
             if self._inplace:
                 X[column] = normalized_column
             else:
-                X[f'{column}_minmax_{self._feature_min}_{self._feature_max}'] = normalized_column
+                column_name = '{}_minmax_{}_{}'.format(column, self._feature_min, self._feature_max)
+                X[column_name] = normalized_column
 
         return X

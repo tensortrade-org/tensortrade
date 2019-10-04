@@ -76,7 +76,7 @@ class TensorforceTradingStrategy(TradingStrategy):
             model_path (optional): The `str` path of the file or directory the agent checkpoint is stored in.
                 If not provided, the `model_path` will default to `{path_without_dot_json}/agents`.
         """
-        path_with_ext = path if path.endswith('.json') else f'{path}.json'
+        path_with_ext = path if path.endswith('.json') else '{}.json'.format(path)
 
         with open(path_with_ext) as json_file:
             spec = json.load(json_file)
@@ -90,7 +90,7 @@ class TensorforceTradingStrategy(TradingStrategy):
                                                   actions=self._environment.actions))
 
         path_without_ext = path_with_ext.replace('.json', '')
-        model_path = model_path or f'{path_without_ext}/agent'
+        model_path = model_path or '{}/agent'.format(path_without_ext)
 
         self._agent.restore_model(file=model_path)
 
@@ -106,7 +106,7 @@ class TensorforceTradingStrategy(TradingStrategy):
             append_timestep: Whether the timestep should be appended to filename to prevent overwriting previous models.
                 Defaults to `False`.
         """
-        path_with_ext = path if path.endswith('.json') else f'{path}.json'
+        path_with_ext = path if path.endswith('.json') else '{}.json'.format(path)
 
         spec = {'agent': self._agent_spec, 'network': self._network_spec}
 
@@ -114,7 +114,7 @@ class TensorforceTradingStrategy(TradingStrategy):
             json.dump(spec, json_file)
 
         path_without_ext = path_with_ext.replace('.json', '')
-        model_path = model_path or f'{path_without_ext}/agent'
+        model_path = model_path or '{}/agent'.format(path_without_ext)
 
         if not os.path.exists(model_path):
             os.makedirs(model_path)
@@ -126,8 +126,8 @@ class TensorforceTradingStrategy(TradingStrategy):
         n_timesteps = runner.episode_timestep
         avg_reward = np.mean(runner.episode_rewards)
 
-        print(f"Finished episode {n_episodes} after {n_timesteps} timesteps.")
-        print(f"Average episode reward: {avg_reward})")
+        print("Finished episode {} after {} timesteps.".format(n_episodes, n_timesteps))
+        print("Average episode reward: {})".format(avg_reward))
 
         return True
 
@@ -146,8 +146,8 @@ class TensorforceTradingStrategy(TradingStrategy):
         avg_reward = np.mean(self._runner.episode_rewards)
 
         print("Finished running strategy.")
-        print(f"Total episodes: {n_episodes} ({n_timesteps} timesteps).")
-        print(f"Average reward: {avg_reward}.")
+        print("Total episodes: {} ({} timesteps).".format(n_episodes, n_timesteps))
+        print("Average reward: {}.".format(avg_reward))
 
         self._runner.close()
 
