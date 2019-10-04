@@ -32,7 +32,7 @@ from tensortrade.strategies import TradingStrategy
 class TensorforceTradingStrategy(TradingStrategy):
     """A trading strategy capable of self tuning, training, and evaluating with Tensorforce."""
 
-    def __init__(self, environment: TradingEnvironment, agent_spec: Dict = None, network_spec: Dict = None, **kwargs):
+    def __init__(self, environment: TradingEnvironment, agent_spec: Dict, network_spec: Dict, **kwargs):
         """
         Arguments:
             environment: A `TradingEnvironment` instance for the agent to trade within.
@@ -44,16 +44,15 @@ class TensorforceTradingStrategy(TradingStrategy):
 
         self._max_episode_timesteps = kwargs.get('max_episode_timesteps', None)
 
-        if agent_spec and network_spec:
-            self._agent_spec = agent_spec
-            self._network_spec = network_spec
+        self._agent_spec = agent_spec
+        self._network_spec = network_spec
 
-            self._agent = Agent.from_spec(spec=agent_spec,
-                                          kwargs=dict(network=network_spec,
-                                                      states=environment.states,
-                                                      actions=environment.actions))
+        self._agent = Agent.from_spec(spec=agent_spec,
+                                      kwargs=dict(network=network_spec,
+                                                  states=environment.states,
+                                                  actions=environment.actions))
 
-            self._runner = Runner(agent=self._agent, environment=environment)
+        self._runner = Runner(agent=self._agent, environment=environment)
 
     @property
     def agent(self) -> Agent:
@@ -71,7 +70,6 @@ class TensorforceTradingStrategy(TradingStrategy):
 
     def restore_agent(self, path: str, model_path: str = None):
         """Deserialize the strategy's learning agent from a file.
-
         Arguments:
             path: The `str` path of the file the agent specification is stored in.
                 The `.json` file extension will be automatically appended if not provided.
@@ -100,7 +98,6 @@ class TensorforceTradingStrategy(TradingStrategy):
 
     def save_agent(self, path: str, model_path: str = None, append_timestep: bool = False):
         """Serialize the learning agent to a file for restoring later.
-
         Arguments:
             path: The `str` path of the file to store the agent specification in.
                 The `.json` file extension will be automatically appended if not provided.
@@ -137,16 +134,12 @@ class TensorforceTradingStrategy(TradingStrategy):
     def tune(self, steps: int = None, episodes: int = None, callback: Callable[[pd.DataFrame], bool] = None) -> pd.DataFrame:
         raise NotImplementedError
 
-    def run(self, steps: int = None, episodes: int = None, should_train: bool = False, episode_callback: Callable[[pd.DataFrame], bool] = None) -> pd.DataFrame:
-        testing = not should_train
-
+    def run(self, steps: int = None, episodes: int = None, testing: bool = True, episode_callback: Callable[[pd.DataFrame], bool] = None) -> pd.DataFrame:
         self._runner.run(testing=testing,
                          num_timesteps=steps,
                          num_episodes=episodes,
                          max_episode_timesteps=self._max_episode_timesteps,
-                         episode_finished=self._finished_episode_cb)
-
-        self._runner.close()
+                         episode_finished=episode_callback)
 
         n_episodes = self._runner.episode
         n_timesteps = self._runner.timestep
@@ -155,3 +148,7 @@ class TensorforceTradingStrategy(TradingStrategy):
         print("Finished running strategy.")
         print(f"Total episodes: {n_episodes} ({n_timesteps} timesteps).")
         print(f"Average reward: {avg_reward}.")
+
+        self._runner.close()
+
+        return self._environment._exchange.performance
