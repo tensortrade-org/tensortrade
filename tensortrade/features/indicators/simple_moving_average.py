@@ -10,31 +10,28 @@
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
-# limitations under the License.
+# limitations under the License
 
-import numpy as np
 import pandas as pd
 
-from typing import Union
-from abc import abstractmethod
-from sklearn.base import TransformerMixin
+from gym import Space
+from typing import Union, List, Tuple
 
-TransformableList = Union[np.ndarray, pd.DataFrame]
+from tensortrade.features.feature_transformer import FeatureTransformer
 
 
-class Transformer(TransformerMixin):
-    """An abstract transformer for use within feature pipelines."""
+class SimpleMovingAverage(FeatureTransformer):
+    """A transformer to get the simple moving average of one or more columns in a data frame."""
 
-    @abstractmethod
-    def __init__(self, *args, **kwargs):
-        pass
-
-    @abstractmethod
-    def transform(self, X: TransformableList, y: TransformableList = None):
-        """Transform the data set with the pre-fit model.
-
-        Arguments:
-            X: The set of data to transform.
-            y (optional): The target output to train on.
+    def __init__(self, columns: Union[List[str], str, None] = None):
         """
+        Arguments:
+            columns (optional): A list of column names to normalize.
+        """
+        self.columns = columns
+
+    def transform_space(self, input_space: Space) -> Space:
+        raise NotImplementedError
+
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         raise NotImplementedError

@@ -15,10 +15,10 @@
 import pandas as pd
 import numpy as np
 
-from typing import Union
-from sklearn.utils import check_array
+from gym import Space
+from typing import List, Union, Callable
 
-from .transformer import TransformableList
+from .feature_transformer import FeatureTransformer
 
 DTypeString = Union[type, str]
 
@@ -26,69 +26,78 @@ DTypeString = Union[type, str]
 class FeaturePipeline(object):
     """An pipeline for transforming observation data frames into features for learning."""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, steps: List[FeatureTransformer], **kwargs):
         """
         Arguments:
-            pipeline (optional): An `sklearn.Pipeline` instance of feature transformations.
             dtype: The `dtype` elements in the pipeline should be cast to.
         """
-        self._pipeline: 'Pipeline' = kwargs.get('pipeline', None)
+        self._steps = steps
+
         self._dtype: DTypeString = kwargs.get('dtype', np.float16)
 
-        if self._pipeline is None:
-            self._pipeline = args
-
-        if self._pipeline is None:
-            raise ValueError(
-                'Feature pipeline requires a list of transformers or `sklearn.Pipeline`.')
-
     @property
-    def pipeline(self) -> 'Pipeline':
-        """An `sklearn.Pipeline` instance of feature transformations."""
-        return self._pipeline
+    def steps(self) -> List[FeatureTransformer]:
+        """A list of feature transformations to apply to observations."""
+        return self._steps
 
-    @pipeline.setter
-    def pipeline(self, pipeline: 'Pipeline'):
-        self.pipeline = pipeline
+    @steps.setter
+    def steps(self, steps: List[FeatureTransformer]):
+        self._steps = steps
 
     @property
     def dtype(self) -> DTypeString:
-        """The `dtype` elements in the pipeline should be input and output as."""
+        """The `dtype` that elements in the pipeline should be input and output as."""
         return self._dtype
 
     @dtype.setter
     def dtype(self, dtype: DTypeString):
         self._dtype = dtype
 
-    def _transform(self, observations: pd.DataFrame) -> TransformableList:
-        for transformer in self._pipeline:
+    def reset(self):
+        """Reset all transformers within the feature pipeline."""
+        for transformer in self._steps:
+            transformer.reset()
+
+    def transform_space(self, input_space: Space) -> Space:
+        """Get the transformed output space for a given input space.
+
+        Args:
+            input_space: A `gym.Space` matching the shape of the pipeline's input.
+
+        Returns:
+            A `gym.Space` matching the shape of the pipeline's output.
+        """
+        output_space = input_space
+
+        for transformer in self._steps:
+            output_space = transformer.transform_space(output_space)
+
+        return output_space
+
+    def _transform(self, observations: pd.DataFrame) -> pd.DataFrame:
+        """Utility method for transforming observations via a list of `FeatureTransformer` objects."""
+        for transformer in self._steps:
             observations = transformer.transform(observations)
 
         return observations
 
-    def fit_transform(self, observation: pd.DataFrame) -> np.ndarray:
+    def transform(self, observation: pd.DataFrame) -> pd.DataFrame:
         """Apply the pipeline of feature transformations to an observation frame.
 
         Arguments:
             observation: A `pandas.DataFrame` corresponding to an observation within a `TradingEnvironment`.
 
         Returns:
-            A `numpy.ndarray` of features.
+            A `pandas.DataFrame` of features corresponding to an input oversvation.
 
         Raises:
             ValueError: In the case that an invalid observation frame has been input.
         """
-        try:
-            features = check_array(observation, dtype=self._dtype)
-        except ValueError as e:
-            raise ValueError(f'Invalid observation frame passed to feature pipeline: {e}')
+        features = self._transform(observation)
 
-        if isinstance(self._pipeline, 'Pipeline'):
-            features = self._pipeline.fit_transform(features)
-        else:
-            features = self._transform(features)
-
-        if isinstance(features, pd.DataFrame):
-            return features.values
+        if not isinstance(features, pd.DataFrame):
+            raise ValueError(f"A FeaturePipeline must transform a pandas.DataFrame into another pandas.DataFrame.\n \
+                               Expected return type: {type(pd.DataFrame([]))} `\n \
+                               Actual return type: {type(features)}.")
 
         return features
