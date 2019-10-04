@@ -13,4 +13,4 @@ Submodules
 
    tensortrade.exchanges.simulated.fbm_exchange
    tensortrade.exchanges.simulated.gan_exchange
-   tensortrade.exchanges.simulated.static_exchange
+   tensortrade.exchanges.simulated.simulated_exchange

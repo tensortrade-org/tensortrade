@@ -3,6 +3,7 @@
 *.pyc
 *.swp
 *__pycache__
+*.egg-info
 dist
 build
 tags

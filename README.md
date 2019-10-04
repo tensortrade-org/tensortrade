@@ -9,12 +9,12 @@
 ---
 
 <div align="center">
-  <img src="https://github.com/notadamking/tensortrade/blob/master/docs/source/_static/logo.png">
+  <img src="https://github.com/notadamking/tensortrade/blob/master/docs/source/_static/logo.jpg">
 </div>
 
 ---
 
-TensorTrade is an open source Python framework for building, training, evaluating, and deploying robust trading algorithms using reinforcement learning. This framework aims to extend the existing ML pipelines created by `pandas`, `gym`, `sklearn`, `keras`, and `tensorflow` in a simple, intuitive way.
+TensorTrade is an open source Python framework for building, training, evaluating, and deploying robust trading algorithms using reinforcement learning. This framework aims to extend the existing ML pipelines created by `numpy`, `pandas`, `gym`, `keras`, and `tensorflow` in a simple, intuitive way.
 
 Allow state-of-the-art learning agents to improve your trading strategies and take you from idea to production, in a repeatable, maintable way.
 
