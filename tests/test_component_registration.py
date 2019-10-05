@@ -61,12 +61,12 @@ def test_simulated_discrete_simple_env():
     assert make_env('simulated', 'discrete', 'simple')
 
 
-@pytest.mark.skip(reason="There is a bug in the observation_space method in `CCXTExchange`")
+@pytest.mark.skip(reason="Authentication Error")
 def test_ccxt_continuous_simple_env():
     assert make_env('ccxt', 'continuous', 'simple')
 
 
-@pytest.mark.skip(reason="There is a bug in the observation_space method in `CCXTExchange`")
+@pytest.mark.skip(reason="Authentication Error")
 def test_ccxt_discrete_simple_env():
     assert make_env('ccxt', 'discrete', 'simple')
 
