@@ -40,7 +40,7 @@ class RandomUniformSlippageModel(SlippageModel):
         if trade.trade_type is TradeType.MARKET_BUY:
             fill_price = current_price * (1 + price_slippage)
         elif trade.trade_type is TradeType.LIMIT_BUY:
-            fill_price = current_price * (1 + price_slippage)
+            fill_price = max(current_price * (1 + price_slippage), 1e-3)
 
             if fill_price > trade.price:
                 fill_price = trade.price
@@ -49,7 +49,7 @@ class RandomUniformSlippageModel(SlippageModel):
         elif trade.trade_type is TradeType.MARKET_SELL:
             fill_price = current_price * (1 - price_slippage)
         elif trade.trade_type is TradeType.LIMIT_SELL:
-            fill_price = current_price * (1 - price_slippage)
+            fill_price = max(current_price * (1 - price_slippage), 1e-3)
 
             if fill_price < trade.price:
                 fill_price = trade.price

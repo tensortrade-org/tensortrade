@@ -12,5 +12,5 @@ Submodules
 .. toctree::
 
    tensortrade.actions.action_strategy
-   tensortrade.actions.simple_continuous_strategy
-   tensortrade.actions.simple_discrete_strategy
+   tensortrade.actions.continuous_action_strategy
+   tensortrade.actions.discrete_action_strategy

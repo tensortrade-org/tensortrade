@@ -45,13 +45,14 @@ class ContinuousActionStrategy(ActionStrategy):
         base_precision = self._exchange.base_precision
         instrument_precision = self._exchange.instrument_precision
 
-        amount = self._exchange.balance_of_instrument(self.instrument_symbol)
+        amount = self._exchange.instrument_balance(self.instrument_symbol)
         price = current_price
 
         if trade_type is TradeType.MARKET_BUY or trade_type is TradeType.LIMIT_BUY:
             price_adjustment = 1 + (self.max_allowed_slippage_percent / 100)
-            price = round(current_price * price_adjustment, base_precision)
-            amount = round(self._exchange.balance * 0.99 * trade_amount / price, instrument_precision)
+            price = max(round(current_price * price_adjustment, base_precision), base_precision)
+            amount = round(self._exchange.balance * 0.99 *
+                           trade_amount / price, instrument_precision)
 
         elif trade_type is TradeType.MARKET_SELL or trade_type is TradeType.LIMIT_SELL:
             price_adjustment = 1 - (self.max_allowed_slippage_percent / 100)

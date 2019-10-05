@@ -15,26 +15,71 @@
 import pandas as pd
 import numpy as np
 
+from gym import Space
+from copy import copy
 from typing import Union, List, Tuple
-from sklearn.preprocessing import MinMaxScaler
 
-from tensortrade.features.transformer import Transformer, TransformableList
+from tensortrade.features.feature_transformer import FeatureTransformer
 
 
-class MinMaxNormalizer(Transformer):
+class MinMaxNormalizer(FeatureTransformer):
     """A transformer for normalizing values within a feature pipeline by the column-wise extrema."""
 
-    def __init__(self, feature_range: Tuple[int, int] = (0, 1), columns: Union[List[str], str] = None):
+    def __init__(self, columns: Union[List[str], str, None] = None, feature_min=0, feature_max=1, inplace=True):
         """
         Arguments:
-            feature_range (optional): A tuple containing the new `(minimum, maximum)` values to scale to.
             columns (optional): A list of column names to normalize.
+            feature_min (optional): The minimum value in the range to scale to.
+            feature_max (optional): The maximum value in the range to scale to.
+            inplace (optional): If `False`, a new column will be added to the output for each input column.
         """
-        self._columns = columns
-        self._scaler = MinMaxScaler(feature_range=feature_range)
+        self._feature_min = feature_min
+        self._feature_max = feature_max
+        self._inplace = inplace
+        self.columns = columns
 
-    def transform(self, X: TransformableList, y: TransformableList = None):
-        if self._columns is None:
-            return self._scaler.fit_transform(X, y)
+        self._history = {}
 
-        return self._scaler.fit_transform(X[self._columns], y)
+    def reset(self):
+        self._history = {}
+
+    def transform_space(self, input_space: Space) -> Space:
+        if self._inplace:
+            return input_space
+
+        output_space = copy(input_space)
+
+        shape_x, *shape_y = input_space.shape
+
+        columns = self.columns or range(len(shape_x))
+
+        output_space.shape = (shape_x + len(columns), *shape_y)
+
+        for _ in columns:
+            output_space.low = np.append(output_space.low, self._feature_min)
+            output_space.high = np.append(output_space.high, self._feature_max)
+
+        return output_space
+
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        if self.columns is None:
+            self.columns = list(X.columns)
+
+        for column in self.columns:
+            prev_extrema = self._history.get(column, {'min': np.inf, 'max': -np.inf})
+
+            curr_min = min(X[column].min(), prev_extrema['min'])
+            curr_max = max(X[column].max(), prev_extrema['max'])
+
+            self._history[column] = {'min': curr_min, 'max': curr_max}
+
+            scale = (self._feature_max - self._feature_min) + self._feature_min
+            normalized_column = (X[column] - curr_min) / (curr_max - curr_min + 1E-9) * scale
+
+            if self._inplace:
+                X[column] = normalized_column
+            else:
+                column_name = '{}_minmax_{}_{}'.format(column, self._feature_min, self._feature_max)
+                X[column_name] = normalized_column
+
+        return X

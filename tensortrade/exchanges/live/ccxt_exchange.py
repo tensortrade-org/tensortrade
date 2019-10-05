@@ -16,7 +16,7 @@ import time
 import numpy as np
 import pandas as pd
 
-from typing import Dict, List
+from typing import Dict, List, Generator
 from gym.spaces import Space, Box
 from ccxt import Exchange
 
@@ -28,7 +28,9 @@ class CCXTExchange(InstrumentExchange):
     """An instrument exchange for trading on CCXT-supported cryptocurrency exchanges."""
 
     def __init__(self, exchange: Exchange,  **kwargs):
-        super().__init__(base_instrument=kwargs.get('base_instrument', 'USD'), dtype=kwargs.get('dtype', np.float16))
+        super().__init__(base_instrument=kwargs.get('base_instrument', 'USD'),
+                         dtype=kwargs.get('dtype', np.float16),
+                         feature_pipeline=kwargs.get('feature_pipeline', None))
 
         self._exchange = exchange
 
@@ -87,22 +89,20 @@ class CCXTExchange(InstrumentExchange):
         return self._performance
 
     @property
-    def observation_space(self) -> Space:
-        low_price = self._markets[self._observation_symbol]['limits']['price']['min']
-        high_price = self._markets[self._observation_symbol]['limits']['price']['max']
-        low_volume = self._markets[self._observation_symbol]['limits']['amount']['min']
-        high_volume = self._markets[self._observation_symbol]['limits']['amount']['max']
+    def generated_space(self) -> Space:
+        low_price = float(self._markets[self._observation_symbol]['limits']['price']['min'])
+        high_price = float(self._markets[self._observation_symbol]['limits']['price']['max'])
+        low_volume = float(self._markets[self._observation_symbol]['limits']['amount']['min'])
+        high_volume = float(self._markets[self._observation_symbol]['limits']['amount']['max'])
 
         if self._observation_type == 'ohlcv':
-            low = (low_price, low_price, low_price, low_price, low_volume)
-            high = (high_price, high_price, high_price, high_price, high_volume)
-            obs_shape = (self._window_size, 5)
+            low = np.array([low_price, low_price, low_price, low_price, low_volume])
+            high = np.array([high_price, high_price, high_price, high_price, high_volume])
         else:
-            low = (0, low_price, low_price, low_price, low_volume)
-            high = (1, high_price, high_volume, high_price * high_volume)
-            obs_shape = (self._window_size, 4)
+            low = np.array([0, low_price, low_price, low_price * low_volume])
+            high = np.array([1, high_price, high_volume, high_price * high_volume])
 
-        return Box(low=low, high=high, shape=obs_shape, dtype=self._dtype)
+        return Box(low=low, high=high, dtype=self._dtype)
 
     @property
     def has_next_observation(self) -> bool:
@@ -111,22 +111,26 @@ class CCXTExchange(InstrumentExchange):
 
         return self._exchange.has['fetchTrades']
 
-    def next_observation(self) -> pd.DataFrame:
-        if self._observation_type == 'ohlcv':
-            ohlcv = self._exchange.fetch_ohlcv(
-                self._observation_symbol, timeframe=self._timeframe)
+    def _create_observation_generator(self) -> Generator[pd.DataFrame, None, None]:
+        while True:
+            if self._observation_type == 'ohlcv':
+                ohlcv = self._exchange.fetch_ohlcv(
+                    self._observation_symbol, timeframe=self._timeframe)
 
-            obs = [l[1:] for l in ohlcv]
-        elif self._observation_type == 'trades':
-            trades = self._exchange.fetch_trades(self._observation_symbol)
+                obs = [l[1:] for l in ohlcv]
+            elif self._observation_type == 'trades':
+                trades = self._exchange.fetch_trades(self._observation_symbol)
 
-            obs = [[0 if t['side'] == 'buy' else 1, t['price'], t['amount'], t['cost']]
-                   for t in trades]
+                obs = [[0 if t['side'] == 'buy' else 1, t['price'], t['amount'], t['cost']]
+                       for t in trades]
 
-        if len(obs) < self._window_size:
-            return np.pad(obs, (self._window_size - len(obs), len(obs[0])))
+            if len(obs) < self._window_size:
+                obs = np.pad(obs, (self._window_size - len(obs), len(obs[0])), mode='constant')
 
-        return obs
+            if self._feature_pipeline is not None:
+                obs = self._feature_pipeline.transform(obs)
+
+            yield obs
 
     def current_price(self, symbol: str) -> float:
         return self._exchange.fetch_ticker(symbol)['close']
@@ -152,7 +156,7 @@ class CCXTExchange(InstrumentExchange):
         if order['status'] is 'open':
             self._exchange.cancel_order(order.id)
 
-        self._performance.append({
+        self._performance = self._performance.append({
             'balance': self.balance,
             'net_worth': self.net_worth,
         }, ignore_index=True)
@@ -160,6 +164,8 @@ class CCXTExchange(InstrumentExchange):
         return Trade(symbol=trade.symbol, trade_type=trade.trade_type, amount=order['filled'], price=order['price'])
 
     def reset(self):
+        super().reset()
+
         self._markets = self._exchange.load_markets()
         self._initial_balance = self._exchange.fetch_free_balance()[self._base_instrument]
         self._performance = pd.DataFrame([], columns=['balance', 'net_worth'])
