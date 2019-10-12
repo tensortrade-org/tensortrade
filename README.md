@@ -1,4 +1,4 @@
-﻿# TensorTrade: Trade Efficiently with Reinforcement Learning
+﻿# [TensorTrade: Trade Efficiently with Reinforcement Learning](https://medium.com/@notadamking/trade-smarter-w-reinforcement-learning-a5e91163f315)
 
 [![Build Status](https://travis-ci.org/notadamking/tensortrade.svg?branch=master)](https://travis-ci.org/notadamking/tensortrade)
 [![Documentation Status](https://readthedocs.org/projects/tensortrade/badge/?version=latest)](https://tensortrade.org)
@@ -20,7 +20,7 @@ Allow state-of-the-art learning agents to improve your trading strategies and ta
 
 _The goal of this framework is to enable fast experimentation, while maintaining production-quality data pipelines._
 
-Read [the documentation](https://tensortrade.org).
+Read [the documentation](https://tensortrade.org) or walk through [the tutorial](https://medium.com/@notadamking/trade-smarter-w-reinforcement-learning-a5e91163f315).
 
 ---
 
