@@ -4,12 +4,5 @@ dependencies:
 - python=3.5
 - numpy
 - pandas
-- pip
 
-# jedi for completion
-- jedi
-# optional only needed if jupyter work is expected
-- jupyter
-- nb_conda
-- nb_conda_kernels
 # add other dependencies below:
