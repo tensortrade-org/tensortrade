@@ -1,6 +1,13 @@
 GPU_IMAGE?="tensortrade:latest-gpu"
 CPU_IMAGE?="tensortrade:latest"
 
+
+docker-build:
+	docker build -t tensortrade .
+
+docker-run:
+	docker run -ti -v examples -p 8888:8888 tensortrade
+
 clean:
 	find . | grep -E '(__pycache__|\.pyc|\.pyo$$)' | xargs rm -rf
 

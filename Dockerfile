@@ -25,4 +25,4 @@ RUN pip3 install -r requirements.txt
 
 #EXPOSE 8080
 #RUN jupyter notebook --ip=0.0.0.0 --port=8080 --allow-root
-CMD jupyter-notebook --ip="*" --allow-root
+CMD jupyter-notebook --ip="*" --allow-root --no-browser
