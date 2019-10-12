@@ -46,6 +46,18 @@ TensorTrade requires Python >= 3.5 for all functionality to work as expected.
 
 ```bash
 pip install -r requirements.txt
+
+### Installing with Docker
+
+**1.)** Install docker depending on your operating system. Unsure on how to install? Check out https://www.docker.com/products/docker-desktop or if you're on ubuntu >= 18.04, try 'snap install docker'.
+
+**2.)** run ```make docker-build```
+
+**3.)** run ```make docker-run```
+
+**4.)** from the output. you should see a link in your terminal linking to 127.0.0.1:8888/?token=.... paste this link into your browser
+
+**5.)** navigate to examples/TensorTrade_Tutorial.ipynb and get familliar with the framework!
 ```
 
 ---
