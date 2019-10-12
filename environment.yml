@@ -4,8 +4,6 @@ dependencies:
 - python=3.5
 - numpy
 - pandas
-- gym
-- tensorforce
 - pip
 
 # jedi for completion
