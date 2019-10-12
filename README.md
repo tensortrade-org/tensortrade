@@ -44,8 +44,9 @@ You can get started testing on Google Colab or your local machine, by viewing ou
 
 TensorTrade requires Python >= 3.5 for all functionality to work as expected.
 
-```bash
+```
 pip install -r requirements.txt
+```
 
 ### Installing with Docker
 
@@ -58,7 +59,6 @@ pip install -r requirements.txt
 **4.)** from the output. you should see a link in your terminal linking to 127.0.0.1:8888/?token=.... paste this link into your browser
 
 **5.)** navigate to examples/TensorTrade_Tutorial.ipynb and get familliar with the framework!
-```
 
 ---
 
