@@ -1,9 +1,8 @@
 FROM continuumio/miniconda3
 
 RUN apt update && \
-    apt install python3 python3-pip git wget -y
-
-RUN git clone https://github.com/robertalanm/tensortrade.git
+    apt install python3 python3-pip git wget -y && \
+    git clone https://github.com/robertalanm/tensortrade.git
 
 
 #RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh && \
@@ -24,4 +23,6 @@ RUN pip3 install -r requirements.txt
 
 #RUN runipy examples/TensorTrade_Tutorial.ipynb
 
-RUN jupyter notebook
+#EXPOSE 8080
+#RUN jupyter notebook --ip=0.0.0.0 --port=8080 --allow-root
+CMD jupyter-notebook --ip="*" --allow-root
