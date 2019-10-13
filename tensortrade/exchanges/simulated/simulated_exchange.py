@@ -17,7 +17,7 @@ import pandas as pd
 
 from abc import abstractmethod
 from gym.spaces import Space, Box
-from typing import Dict, Generator
+from typing import List, Dict, Generator
 
 from tensortrade.trades import Trade, TradeType
 from tensortrade.exchanges import InstrumentExchange
