@@ -1,7 +1,13 @@
 from .trading_environment import TradingEnvironment
 
 
-_registry = {}
+_registry = {
+    'basic': {
+        'exchange': 'simulated',
+        'action_strategy': 'discrete',
+        'reward_strategy': 'simple'
+    }
+}
 
 
 def get(identifier: str) -> TradingEnvironment:
@@ -15,4 +21,4 @@ def get(identifier: str) -> TradingEnvironment:
     """
     if identifier not in _registry.keys():
         raise KeyError(f'Identifier {identifier} is not associated with any `TradingEnvironment`.')
-    return _registry[identifier]
+    return TradingEnvironment(**_registry[identifier])

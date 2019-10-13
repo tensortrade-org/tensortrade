@@ -1,11 +1,15 @@
-from ccxt import coinbasepro
+import ccxt
+import pandas as pd
+
+from datetime import datetime
+
 from .instrument_exchange import InstrumentExchange
 
 from . import live
 from . import simulated
 
+
 _registry = {
-    'ccxt': live.CCXTExchange,
     'simulated': simulated.SimulatedExchange,
     'fbm': simulated.FBMExchange,
     'gan': simulated.GANExchange
@@ -25,9 +29,19 @@ def get(identifier: str) -> InstrumentExchange:
     Raises:
         KeyError: if identifier is not associated with any `InstrumentExchange`
     """
-    if identifier not in _registry.keys():
-        raise KeyError(f'Identifier {identifier} is not associated with any `InstrumentExchange`.')
+    if identifier in _registry.keys():
+        if identifier == 'simulated':
+            data_url = "http://www.cryptodatadownload.com/cdd/Coinbase_BTCUSD_1h.csv"
+            data = pd.read_csv(data_url, skiprows=[0])[::-1]
+            data = data.get(['Open', 'High', 'Low', 'Close', 'Volume BTC'])
+            data = data.rename({'Volume BTC': 'volume'}, axis=1)
+            data = data.rename({name: name.lower() for name in data.columns}, axis=1)
+            return _registry['simulated'](data_frame=data)
 
-    if identifier == 'ccxt':
-        return live.CCXTExchange(exchange=coinbasepro())
-    return _registry[identifier]()
+        return _registry[identifier]()
+
+    if identifier in ccxt.exchanges:
+        ccxt_exchange = getattr(ccxt, identifier)()
+        return live.CCXTExchange(exchange=ccxt_exchange)
+
+    raise KeyError(f'Identifier {identifier} is not associated with any `InstrumentExchange`.')

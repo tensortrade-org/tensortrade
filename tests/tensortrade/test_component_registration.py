@@ -1,10 +1,12 @@
 
 import pytest
 import warnings
+import ccxt
 import tensortrade.actions as actions
 import tensortrade.exchanges as exchanges
 import tensortrade.rewards as rewards
 import tensortrade.slippage as slippage
+import tensortrade.environments as envs
 
 from tensortrade.actions import *
 from tensortrade.exchanges.simulated import *
@@ -28,8 +30,9 @@ def test_simulated_exchange():
     assert isinstance(exchanges.get('simulated'), SimulatedExchange)
 
 
-def test_ccxt_exchange():
-    assert isinstance(exchanges.get('ccxt'), CCXTExchange)
+def test_ccxt_exchanges():
+    for exchange_id in ['coinbasepro', 'coinbase', 'binance', 'bitstamp']:
+        assert isinstance(exchanges.get(exchange_id), CCXTExchange)
 
 
 def test_fbm_exchange():
@@ -49,6 +52,10 @@ def test_random_uniform_slippage_model():
     assert isinstance(slippage.get('uniform'), RandomUniformSlippageModel)
 
 
+def test_basic_environment():
+    assert isinstance(envs.get('basic'), TradingEnvironment)
+
+
 def make_env(exchange: str, action: str, reward: str):
     return TradingEnvironment(exchange=exchange, action_strategy=action, reward_strategy=reward)
 
@@ -63,12 +70,14 @@ def test_simulated_discrete_simple_env():
 
 @pytest.mark.skip(reason="Authentication Error")
 def test_ccxt_continuous_simple_env():
-    assert make_env('ccxt', 'continuous', 'simple')
+    for exchange_id in ['coinbasepro', 'coinbase', 'binance', 'bitstamp']:
+        assert make_env(exchange_id, 'continuous', 'simple')
 
 
 @pytest.mark.skip(reason="Authentication Error")
 def test_ccxt_discrete_simple_env():
-    assert make_env('ccxt', 'discrete', 'simple')
+    for exchange_id in ['coinbasepro', 'coinbase', 'binance', 'bitstamp']:
+        assert make_env(exchange_id, 'continuous', 'simple')
 
 
 def test_fbm_continuous_simple_env():

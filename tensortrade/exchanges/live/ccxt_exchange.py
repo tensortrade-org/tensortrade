@@ -16,7 +16,7 @@ import time
 import numpy as np
 import pandas as pd
 
-from typing import Dict, List, Generator
+from typing import Dict, List, Generator, Union
 from gym.spaces import Space, Box
 from ccxt import Exchange
 
