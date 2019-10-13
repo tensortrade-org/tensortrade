@@ -22,7 +22,7 @@ from stochastic.continuous import FractionalBrownianMotion
 from stochastic.noise import GaussianNoise
 
 from tensortrade.trades import TradeType, Trade
-from tensortrade.slippage import RandomSlippageModel
+from tensortrade.slippage import RandomUniformSlippageModel
 from tensortrade.exchanges.simulated.simulated_exchange import SimulatedExchange
 
 

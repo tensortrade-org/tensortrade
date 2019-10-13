@@ -16,7 +16,7 @@ import time
 import numpy as np
 import pandas as pd
 
-from typing import Dict, List, Generator
+from typing import Dict, List, Generator, Union
 from gym.spaces import Space, Box
 from ccxt import Exchange
 
@@ -35,6 +35,7 @@ class CCXTExchange(InstrumentExchange):
         self._exchange = exchange
 
         self._exchange.enableRateLimit = kwargs.get('enable_rate_limit', True)
+        self._markets = self._exchange.load_markets()
 
         self._observation_type = kwargs.get('observation_type', 'trades')
         self._observation_symbol = kwargs.get('observation_symbol', 'ETH/BTC')
