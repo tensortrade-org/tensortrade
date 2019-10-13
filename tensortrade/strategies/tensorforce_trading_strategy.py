@@ -23,6 +23,7 @@ from typing import Union, Callable, List, Dict
 
 from tensorforce.agents import Agent
 from tensorforce.execution import Runner
+from tensorforce.environments import OpenAIGym
 
 from tensortrade.environments.trading_environment import TradingEnvironment
 from tensortrade.features.feature_pipeline import FeaturePipeline
@@ -32,25 +33,18 @@ from tensortrade.strategies import TradingStrategy
 class TensorforceTradingStrategy(TradingStrategy):
     """A trading strategy capable of self tuning, training, and evaluating with Tensorforce."""
 
-    def __init__(self, environment: TradingEnvironment, agent_spec: Dict, network_spec: Dict, **kwargs):
+    def __init__(self, environment: TradingEnvironment, agent: any, **kwargs):
         """
         Arguments:
             environment: A `TradingEnvironment` instance for the agent to trade within.
-            agent_spec: A specification dictionary for the `Tensorforce` agent.
-            network_sepc: A specification dictionary for the `Tensorforce` agent's model network.
+            agent: A `Tensorforce` agent or agent specification.
             kwargs (optional): Optional keyword arguments to adjust the strategy.
         """
-        self._environment = environment
+        self._environment = OpenAIGym(level=environment)
 
         self._max_episode_timesteps = kwargs.get('max_episode_timesteps', None)
 
-        self._agent_spec = agent_spec
-        self._network_spec = network_spec
-
-        self._agent = Agent.from_spec(spec=agent_spec,
-                                      kwargs=dict(network=network_spec,
-                                                  states=environment.states,
-                                                  actions=environment.actions))
+        self._agent = Agent.create(agent=agent, environment=environment)
 
         self._runner = Runner(agent=self._agent, environment=environment)
 
@@ -68,58 +62,27 @@ class TensorforceTradingStrategy(TradingStrategy):
     def max_episode_timesteps(self, max_episode_timesteps: int):
         self._max_episode_timesteps = max_episode_timesteps
 
-    def restore_agent(self, path: str, model_path: str = None):
+    def restore_agent(self, directory: str, filename: str = None):
         """Deserialize the strategy's learning agent from a file.
         Arguments:
-            path: The `str` path of the file the agent specification is stored in.
+            directory: The `str` path of the directory the agent checkpoint is stored in.
+            filename (optional): The `str` path of the file the agent specification is stored in.
                 The `.json` file extension will be automatically appended if not provided.
-            model_path (optional): The `str` path of the file or directory the agent checkpoint is stored in.
-                If not provided, the `model_path` will default to `{path_without_dot_json}/agents`.
         """
-        path_with_ext = path if path.endswith('.json') else '{}.json'.format(path)
-
-        with open(path_with_ext) as json_file:
-            spec = json.load(json_file)
-
-            self._agent_spec = spec.agent
-            self._network_spec = spec.network
-
-        self._agent = Agent.from_spec(spec=self._agent_spec,
-                                      kwargs=dict(network=self._network_spec,
-                                                  states=self._environment.states,
-                                                  actions=self._environment.actions))
-
-        path_without_ext = path_with_ext.replace('.json', '')
-        model_path = model_path or '{}/agent'.format(path_without_ext)
-
-        self._agent.restore_model(file=model_path)
+        self._agent = Agent.load(directory, filename=filename)
 
         self._runner = Runner(agent=self._agent, environment=self._environment)
 
-    def save_agent(self, path: str, model_path: str = None, append_timestep: bool = False):
+    def save_agent(self, directory: str, filename: str = None, append_timestep: bool = False):
         """Serialize the learning agent to a file for restoring later.
         Arguments:
-            path: The `str` path of the file to store the agent specification in.
+            directory: The `str` path of the directory the agent checkpoint is stored in.
+            filename (optional): The `str` path of the file the agent specification is stored in.
                 The `.json` file extension will be automatically appended if not provided.
-            model_path (optional): The `str` path of the directory to store the agent checkpoints in.
-                If not provided, the `model_path` will default to `{path_without_dot_json}/agents`.
             append_timestep: Whether the timestep should be appended to filename to prevent overwriting previous models.
                 Defaults to `False`.
         """
-        path_with_ext = path if path.endswith('.json') else '{}.json'.format(path)
-
-        spec = {'agent': self._agent_spec, 'network': self._network_spec}
-
-        with open(path_with_ext, 'w') as json_file:
-            json.dump(spec, json_file)
-
-        path_without_ext = path_with_ext.replace('.json', '')
-        model_path = model_path or '{}/agent'.format(path_without_ext)
-
-        if not os.path.exists(model_path):
-            os.makedirs(model_path)
-
-        self._agent.save_model(directory=model_path, append_timestep=True)
+        self._agent.save(directory=directory, filename=filename, append_timestep=append_timestep)
 
     def _finished_episode_cb(self, runner: Runner) -> bool:
         n_episodes = runner.episode
@@ -134,15 +97,15 @@ class TensorforceTradingStrategy(TradingStrategy):
     def tune(self, steps: int = None, episodes: int = None, callback: Callable[[pd.DataFrame], bool] = None) -> pd.DataFrame:
         raise NotImplementedError
 
-    def run(self, steps: int = None, episodes: int = None, testing: bool = True, episode_callback: Callable[[pd.DataFrame], bool] = None) -> pd.DataFrame:
-        self._runner.run(testing=testing,
+    def run(self, steps: int = None, episodes: int = None, evaluation: bool = True, episode_callback: Callable[[pd.DataFrame], bool] = None) -> pd.DataFrame:
+        self._runner.run(evaluation=evaluation,
                          num_timesteps=steps,
                          num_episodes=episodes,
                          max_episode_timesteps=self._max_episode_timesteps,
-                         episode_finished=episode_callback)
+                         callback=episode_callback)
 
-        n_episodes = self._runner.episode
-        n_timesteps = self._runner.timestep
+        n_episodes = self._runner.episodes
+        n_timesteps = self._runner.timesteps
         avg_reward = np.mean(self._runner.episode_rewards)
 
         print("Finished running strategy.")
