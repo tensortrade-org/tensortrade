@@ -49,12 +49,12 @@ class FractionalDifference(FeatureTransformer):
 
         self._history = None
 
-        if not isinstance(self._all_column_names, list):
-            self._all_column_names = list(self._all_column_names)
-
-        if all_column_names is None:
+        if self._all_column_names is None:
             raise ValueError('FractionalDifference requires passing a list of `all_column_names` from the observation data frame.\n \
                               This is necessary to correctly transform the `observation_space`.')
+
+        if not isinstance(self._all_column_names, list):
+            self._all_column_names = list(self._all_column_names)
 
     def reset(self):
         self._history = None
