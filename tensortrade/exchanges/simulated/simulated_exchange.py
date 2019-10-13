@@ -100,6 +100,10 @@ class SimulatedExchange(InstrumentExchange):
         return Box(low=low, high=high, dtype='float')
 
     @property
+    def generated_columns(self) -> List[str]:
+        return list(['open', 'high', 'low', 'close', 'volume'])
+
+    @property
     def has_next_observation(self) -> bool:
         return self._current_step < len(self._data_frame) - 1
 

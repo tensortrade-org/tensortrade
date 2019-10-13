@@ -105,6 +105,13 @@ class CCXTExchange(InstrumentExchange):
         return Box(low=low, high=high, dtype=self._dtype)
 
     @property
+    def generated_columns(self) -> List[str]:
+        if self._observation_type == 'ohlcv':
+            return list(['open', 'high', 'low', 'close', 'volume'])
+
+        return list(['side', 'price', 'amount', 'cost'])
+
+    @property
     def has_next_observation(self) -> bool:
         if self._observation_type == 'ohlcv':
             return self._exchange.has['fetchOHLCV']
