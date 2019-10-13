@@ -25,23 +25,28 @@ from tensortrade.features.feature_transformer import FeatureTransformer
 class MinMaxNormalizer(FeatureTransformer):
     """A transformer for normalizing values within a feature pipeline by the column-wise extrema."""
 
-    def __init__(self, columns: Union[List[str], str, None] = None, feature_min=0, feature_max=1, inplace=True):
+    def __init__(self,
+                 input_min: float,
+                 input_max: float,
+                 columns: Union[List[str], str, None] = None,
+                 feature_min=0,
+                 feature_max=1,
+                 inplace=True):
         """
         Arguments:
+            input_min: The minimum input `float` or `int`.
+            input_max: The maximum input `float` or `int`.
             columns (optional): A list of column names to normalize.
             feature_min (optional): The minimum value in the range to scale to.
             feature_max (optional): The maximum value in the range to scale to.
             inplace (optional): If `False`, a new column will be added to the output for each input column.
         """
+        self._input_min = input_min
+        self._input_max = input_max
         self._feature_min = feature_min
         self._feature_max = feature_max
         self._inplace = inplace
         self.columns = columns
-
-        self._history = {}
-
-    def reset(self):
-        self._history = {}
 
     def transform_space(self, input_space: Space) -> Space:
         if self._inplace:
@@ -66,15 +71,9 @@ class MinMaxNormalizer(FeatureTransformer):
             self.columns = list(X.columns)
 
         for column in self.columns:
-            prev_extrema = self._history.get(column, {'min': np.inf, 'max': -np.inf})
-
-            curr_min = min(X[column].min(), prev_extrema['min'])
-            curr_max = max(X[column].max(), prev_extrema['max'])
-
-            self._history[column] = {'min': curr_min, 'max': curr_max}
-
             scale = (self._feature_max - self._feature_min) + self._feature_min
-            normalized_column = (X[column] - curr_min) / (curr_max - curr_min + 1E-9) * scale
+            normalized_column = (X[column] - self._input_min) / \
+                (self._input_max - self._input_min + 1E-9) * scale
 
             if self._inplace:
                 X[column] = normalized_column
