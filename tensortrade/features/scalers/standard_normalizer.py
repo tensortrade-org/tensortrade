@@ -18,7 +18,6 @@ import numpy as np
 from gym import Space
 from copy import copy
 from typing import Union, List, Tuple
-from sklearn.preprocessing import StandardScaler
 
 from tensortrade.features.feature_transformer import FeatureTransformer
 
