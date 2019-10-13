@@ -53,11 +53,12 @@ class FeatureTransformer(object, metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def transform(self, X: pd.DataFrame, input_space: Space) -> pd.DataFrame:
         """Transform the data set and return a new data frame.
 
         Arguments:
             X: The set of data to transform.
+            input_space: A `gym.Space` matching the shape of the pipeline's input.
 
         Returns:
             A transformed data frame.

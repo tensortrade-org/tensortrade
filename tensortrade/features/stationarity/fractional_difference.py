@@ -117,7 +117,7 @@ class FractionalDifference(FeatureTransformer):
 
         return diff_series
 
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def transform(self, X: pd.DataFrame, input_space: Space) -> pd.DataFrame:
         if self._history is None:
             self._history = X.copy()
         else:

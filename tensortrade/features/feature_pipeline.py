@@ -74,18 +74,19 @@ class FeaturePipeline(object):
 
         return output_space
 
-    def _transform(self, observations: pd.DataFrame) -> pd.DataFrame:
+    def _transform(self, observations: pd.DataFrame, input_space: Space) -> pd.DataFrame:
         """Utility method for transforming observations via a list of `FeatureTransformer` objects."""
         for transformer in self._steps:
-            observations = transformer.transform(observations)
+            observations = transformer.transform(observations, input_space)
 
         return observations
 
-    def transform(self, observation: pd.DataFrame) -> pd.DataFrame:
+    def transform(self, observation: pd.DataFrame, input_space: Space) -> pd.DataFrame:
         """Apply the pipeline of feature transformations to an observation frame.
 
         Arguments:
             observation: A `pandas.DataFrame` corresponding to an observation within a `TradingEnvironment`.
+            input_space: A `gym.Space` matching the shape of the pipeline's input.
 
         Returns:
             A `pandas.DataFrame` of features corresponding to an input oversvation.
@@ -93,7 +94,7 @@ class FeaturePipeline(object):
         Raises:
             ValueError: In the case that an invalid observation frame has been input.
         """
-        features = self._transform(observation)
+        features = self._transform(observation, input_space)
 
         if not isinstance(features, pd.DataFrame):
             raise ValueError("A FeaturePipeline must transform a pandas.DataFrame into another pandas.DataFrame.\n \

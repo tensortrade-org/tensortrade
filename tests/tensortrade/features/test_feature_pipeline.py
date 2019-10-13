@@ -1,11 +1,17 @@
 import pytest
 import numpy as np
 import pandas as pd
+import tensortrade.exchanges as exchanges
 
 from gym.spaces import Box
 
 from tensortrade.features import FeaturePipeline, FeatureTransformer
 from tensortrade.features.stationarity import FractionalDifference
+
+
+@pytest.fixture
+def exchange():
+    return exchanges.get('fbm')
 
 
 @pytest.fixture
@@ -27,13 +33,13 @@ def data_frame():
 
 
 class TestFeaturePipeline():
-    def test_incremental_transform(self, data_frame):
+    def test_incremental_transform(self, data_frame, exchange):
         difference_all = FractionalDifference(
             difference_order=0.5, inplace=True, all_column_names=data_frame.columns)
 
         feature_pipeline = FeaturePipeline(steps=[difference_all])
 
-        transformed_frame = feature_pipeline.transform(data_frame)
+        transformed_frame = feature_pipeline.transform(data_frame, exchange.generated_space)
 
         expected_data_frame = pd.DataFrame([{
             'open': -26.20469322,
@@ -63,7 +69,7 @@ class TestFeaturePipeline():
             'close': 400,
         }])
 
-        transformed_frame = feature_pipeline.transform(next_frame)
+        transformed_frame = feature_pipeline.transform(next_frame, exchange.generated_space)
 
         expected_data_frame = pd.DataFrame([{
             'open': 127.785105,

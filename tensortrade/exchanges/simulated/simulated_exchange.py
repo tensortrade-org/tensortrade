@@ -69,7 +69,8 @@ class SimulatedExchange(InstrumentExchange):
         self._data_frame = data_frame
 
         if self._should_pretransform_obs and self._feature_pipeline is not None:
-            self._data_frame = self._feature_pipeline.transform(self._data_frame)
+            self._data_frame = self._feature_pipeline.transform(
+                self._data_frame, self.generated_space)
 
     @property
     def initial_balance(self) -> float:
@@ -109,7 +110,7 @@ class SimulatedExchange(InstrumentExchange):
             obs = self._data_frame.iloc[step - self._window_size + 1:step + 1]
 
             if not self._should_pretransform_obs and self._feature_pipeline is not None:
-                obs = self._feature_pipeline.transform(obs)
+                obs = self._feature_pipeline.transform(obs, self.generated_space)
 
             yield obs
 

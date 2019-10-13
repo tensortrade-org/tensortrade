@@ -17,7 +17,7 @@ import numpy as np
 
 from gym import Space
 from copy import copy
-from typing import Union, List, Tuple
+from typing import Union, List, Tuple, Dict
 
 from tensortrade.features.feature_transformer import FeatureTransformer
 
@@ -26,32 +26,21 @@ class MinMaxNormalizer(FeatureTransformer):
     """A transformer for normalizing values within a feature pipeline by the column-wise extrema."""
 
     def __init__(self,
-                 input_min: float,
-                 input_max: float,
                  columns: Union[List[str], str, None] = None,
                  feature_min=0,
                  feature_max=1,
                  inplace=True):
         """
         Arguments:
-            input_min: The minimum input `float` or `int`.
-            input_max: The maximum input `float` or `int`.
             columns (optional): A list of column names to normalize.
             feature_min (optional): The minimum value in the range to scale to.
             feature_max (optional): The maximum value in the range to scale to.
             inplace (optional): If `False`, a new column will be added to the output for each input column.
         """
-        self._input_min = input_min
-        self._input_max = input_max
         self._feature_min = feature_min
         self._feature_max = feature_max
         self._inplace = inplace
         self.columns = columns
-
-        self._history = {}
-
-    def reset(self):
-        self._history = {}
 
     def transform_space(self, input_space: Space) -> Space:
         if self._inplace:
@@ -71,24 +60,16 @@ class MinMaxNormalizer(FeatureTransformer):
 
         return output_space
 
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def transform(self, X: pd.DataFrame, input_space: Space) -> pd.DataFrame:
         if self.columns is None:
             self.columns = list(X.columns)
 
-        for column in self.columns:
-            if self._input_max is None or self._input_min is None:
-                prev_extrema = self._history.get(column, {'min': np.inf, 'max': -np.inf})
-
-                curr_min = min(X[column].min(), prev_extrema['min'])
-                curr_max = max(X[column].max(), prev_extrema['max'])
-
-                self._history[column] = {'min': curr_min, 'max': curr_max}
-            else:
-                curr_min = self._input_min
-                curr_max = self._input_max
+        for idx, column in enumerate(self.columns):
+            low = input_space.low[idx]
+            high = input_space.high[idx]
 
             scale = (self._feature_max - self._feature_min) + self._feature_min
-            normalized_column = (X[column] - curr_min) / (curr_max - curr_min + 1E-9) * scale
+            normalized_column = (X[column] - low) / (high - low + 1E-9) * scale
 
             if self._inplace:
                 X[column] = normalized_column

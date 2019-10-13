@@ -61,7 +61,7 @@ class StandardNormalizer(FeatureTransformer):
 
         return output_space
 
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def transform(self, X: pd.DataFrame, input_space: Space) -> pd.DataFrame:
         if self.columns is None:
             self.columns = list(X.columns)
 

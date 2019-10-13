@@ -53,10 +53,14 @@ class TradingEnvironment(Environment, gym.Env):
             kwargs (optional): Additional arguments for tuning the environment, logging, etc.
         """
         super().__init__()
+
         self._exchange = exchanges.get(exchange) if isinstance(exchange, str) else exchange
-        self._action_strategy = actions.get(action_strategy) if isinstance(action_strategy, str) else action_strategy
-        self._reward_strategy = rewards.get(reward_strategy) if isinstance(reward_strategy, str) else reward_strategy
-        self._feature_pipeline = features.get(feature_pipeline) if isinstance(feature_pipeline, str) else feature_pipeline
+        self._action_strategy = actions.get(action_strategy) if isinstance(
+            action_strategy, str) else action_strategy
+        self._reward_strategy = rewards.get(reward_strategy) if isinstance(
+            reward_strategy, str) else reward_strategy
+        self._feature_pipeline = features.get(feature_pipeline) if isinstance(
+            feature_pipeline, str) else feature_pipeline
 
         if feature_pipeline is not None:
             self._exchange.feature_pipeline = feature_pipeline

@@ -128,7 +128,7 @@ class CCXTExchange(InstrumentExchange):
                 obs = np.pad(obs, (self._window_size - len(obs), len(obs[0])), mode='constant')
 
             if self._feature_pipeline is not None:
-                obs = self._feature_pipeline.transform(obs)
+                obs = self._feature_pipeline.transform(obs, self.generated_space)
 
             yield obs
 

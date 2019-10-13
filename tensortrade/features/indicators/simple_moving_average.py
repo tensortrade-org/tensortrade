@@ -33,5 +33,5 @@ class SimpleMovingAverage(FeatureTransformer):
     def transform_space(self, input_space: Space) -> Space:
         raise NotImplementedError
 
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def transform(self, X: pd.DataFrame, input_space: Space) -> pd.DataFrame:
         raise NotImplementedError
