@@ -58,11 +58,12 @@ class FeaturePipeline(object):
         for transformer in self._steps:
             transformer.reset()
 
-    def transform_space(self, input_space: Space) -> Space:
+    def transform_space(self, input_space: Space, column_names: List[str]) -> Space:
         """Get the transformed output space for a given input space.
 
         Args:
             input_space: A `gym.Space` matching the shape of the pipeline's input.
+            column_names: A list of all column names in the input data frame.
 
         Returns:
             A `gym.Space` matching the shape of the pipeline's output.
@@ -70,7 +71,7 @@ class FeaturePipeline(object):
         output_space = input_space
 
         for transformer in self._steps:
-            output_space = transformer.transform_space(output_space)
+            output_space = transformer.transform_space(output_space, column_names)
 
         return output_space
 

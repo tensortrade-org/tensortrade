@@ -35,7 +35,7 @@ def data_frame():
 class TestFeaturePipeline():
     def test_incremental_transform(self, data_frame, exchange):
         difference_all = FractionalDifference(
-            difference_order=0.5, inplace=True, all_column_names=data_frame.columns)
+            difference_order=0.5, inplace=True)
 
         feature_pipeline = FeaturePipeline(steps=[difference_all])
 
@@ -86,9 +86,8 @@ class TestFeaturePipeline():
 
         assert np.allclose(expected_data_frame.values, transformed_frame.values)
 
-    def test_transform_space(self, data_frame):
-        difference_all = FractionalDifference(
-            difference_order=0.5, inplace=False, all_column_names=data_frame.columns)
+    def test_transform_space(self, data_frame, exchange):
+        difference_all = FractionalDifference(difference_order=0.5, inplace=False)
 
         feature_pipeline = FeaturePipeline(steps=[difference_all])
 
@@ -97,6 +96,7 @@ class TestFeaturePipeline():
 
         input_space = Box(low=low, high=high, dtype=np.float16)
 
-        transformed_space = feature_pipeline.transform_space(input_space)
+        transformed_space = feature_pipeline.transform_space(
+            input_space, exchange.generated_columns)
 
         assert transformed_space != input_space

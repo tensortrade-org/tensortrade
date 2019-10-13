@@ -41,11 +41,12 @@ class FeatureTransformer(object, metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def transform_space(self, input_space: Space) -> Space:
+    def transform_space(self, input_space: Space, column_names: List[str]) -> Space:
         """Get the transformed output space for a given input space.
 
         Args:
             input_space: A `gym.Space` matching the shape of the pipeline's input.
+            column_names: A list of all column names in the input data frame.
 
         Returns:
             A `gym.Space` matching the shape of the pipeline's output.

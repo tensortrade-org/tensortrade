@@ -42,7 +42,7 @@ class MinMaxNormalizer(FeatureTransformer):
         self._inplace = inplace
         self.columns = columns
 
-    def transform_space(self, input_space: Space) -> Space:
+    def transform_space(self, input_space: Space, column_names: List[str]) -> Space:
         if self._inplace:
             return input_space
 

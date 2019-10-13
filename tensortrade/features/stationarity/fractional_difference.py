@@ -29,48 +29,39 @@ class FractionalDifference(FeatureTransformer):
     """A transformer for differencing values within a feature pipeline by a fractional order."""
 
     def __init__(self,
-                 all_column_names: List[str] = None,
                  columns: Union[List[str], str, None] = None,
                  difference_order: float = 0.5,
                  difference_threshold: float = 1e-1,
                  inplace: bool = True):
         """
         Arguments:
-            all_column_names: A list of all column names in the data frame.
             columns (optional): A list of column names to difference.
             difference_order (optional): The fractional difference order. Defaults to 0.5.
             inplace (optional): If `False`, a new column will be added to the output for each input column.
         """
-        self._all_column_names = all_column_names
+        self.columns = columns
+
         self._difference_order = difference_order
         self._difference_threshold = difference_threshold
         self._inplace = inplace
-        self.columns = columns
 
-        self._history = None
-
-        if self._all_column_names is None:
-            raise ValueError('FractionalDifference requires passing a list of `all_column_names` from the observation data frame.\n \
-                              This is necessary to correctly transform the `observation_space`.')
-
-        if not isinstance(self._all_column_names, list):
-            self._all_column_names = list(self._all_column_names)
+        self.reset()
 
     def reset(self):
         self._history = None
 
-    def transform_space(self, input_space: Space) -> Space:
+    def transform_space(self, input_space: Space, column_names: List[str]) -> Space:
         if self._inplace:
             return input_space
 
         output_space = copy(input_space)
-        columns = self.columns or self._all_column_names
+        columns = self.columns or column_names
 
         shape_x, *shape_y = input_space.shape
         output_space.shape = (shape_x + len(columns), *shape_y)
 
         for column in columns:
-            column_index = self._all_column_names.index(column)
+            column_index = column_names.index(column)
             low, high = input_space.low[column_index], input_space.high[column_index]
 
             output_space.low = np.append(output_space.low - output_space.high, low)
