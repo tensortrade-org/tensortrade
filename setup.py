@@ -31,7 +31,7 @@ with open(os.path.join(tensortrade_directory, 'tensortrade', 'version.py'), 'r')
             version = line[15:-2]
 
 setup(
-    name='TensorTrade',
+    name='tensortrade',
     version=version,
     description='TensorTrade: a reinforcement learning library for training, evaluating, and deploying robust trading agents.',
     long_description='TensorTrade: a reinforcement learning library for training, evaluating, and deploying robust trading agents.',
