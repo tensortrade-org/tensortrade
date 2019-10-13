@@ -18,8 +18,8 @@ from tensortrade.slippage import SlippageModel
 from tensortrade.trades import Trade, TradeType
 
 
-class RandomSlippageModel(SlippageModel):
-    "A uniform random slippage model."
+class RandomUniformSlippageModel(SlippageModel):
+    """A uniform random slippage model."""
 
     def __init__(self, max_price_slippage_percent: float = 3.0, max_amount_slippage_percent: float = 0.0):
         """
