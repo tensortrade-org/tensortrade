@@ -29,7 +29,6 @@ from tensortrade.trades import Trade
 
 TensorForceStateType = Union[bool, int, float]
 TensorForceStateShape = Union[int, List[int], Tuple[int, ...]]
-TensorForceMinMaxValue = Union[int, float]
 
 
 class TradingEnvironment(Environment, gym.Env):
@@ -120,7 +119,7 @@ class TradingEnvironment(Environment, gym.Env):
         return OpenAIGym.state_from_space(self.observation_space)
 
     @property
-    def actions(self) -> Tuple[TensorForceStateType, TensorForceStateShape, int, TensorForceMinMaxValue, TensorForceMinMaxValue]:
+    def actions(self) -> Tuple[TensorForceStateType, TensorForceStateShape, int, float, float]:
         """The action space specification, required for `tensorforce` agents.
 
         The tuple contains the following attributes:
