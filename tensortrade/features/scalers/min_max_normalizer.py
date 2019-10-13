@@ -48,6 +48,11 @@ class MinMaxNormalizer(FeatureTransformer):
         self._inplace = inplace
         self.columns = columns
 
+        self._history = {}
+
+    def reset(self):
+        self._history = {}
+
     def transform_space(self, input_space: Space) -> Space:
         if self._inplace:
             return input_space
@@ -71,9 +76,19 @@ class MinMaxNormalizer(FeatureTransformer):
             self.columns = list(X.columns)
 
         for column in self.columns:
+            if self._input_max is None or self._input_min is None:
+                prev_extrema = self._history.get(column, {'min': np.inf, 'max': -np.inf})
+
+                curr_min = min(X[column].min(), prev_extrema['min'])
+                curr_max = max(X[column].max(), prev_extrema['max'])
+
+                self._history[column] = {'min': curr_min, 'max': curr_max}
+            else:
+                curr_min = self._input_min
+                curr_max = self._input_max
+
             scale = (self._feature_max - self._feature_min) + self._feature_min
-            normalized_column = (X[column] - self._input_min) / \
-                (self._input_max - self._input_min + 1E-9) * scale
+            normalized_column = (X[column] - curr_min) / (curr_max - curr_min + 1E-9) * scale
 
             if self._inplace:
                 X[column] = normalized_column
