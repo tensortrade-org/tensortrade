@@ -18,7 +18,6 @@ import numpy as np
 from gym import Space
 from copy import copy
 from typing import Union, List, Tuple
-from sklearn.preprocessing import StandardScaler
 
 from tensortrade.features.feature_transformer import FeatureTransformer
 
@@ -44,7 +43,7 @@ class StandardNormalizer(FeatureTransformer):
     def reset(self):
         self._history = {}
 
-    def transform_space(self, input_space: Space) -> Space:
+    def transform_space(self, input_space: Space, column_names: List[str]) -> Space:
         if self._inplace:
             return input_space
 
@@ -62,7 +61,7 @@ class StandardNormalizer(FeatureTransformer):
 
         return output_space
 
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def transform(self, X: pd.DataFrame, input_space: Space) -> pd.DataFrame:
         if self.columns is None:
             self.columns = list(X.columns)
 

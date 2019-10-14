@@ -17,11 +17,11 @@ import pandas as pd
 
 from abc import abstractmethod
 from gym.spaces import Space, Box
-from typing import Dict, Generator
+from typing import List, Dict, Generator
 
 from tensortrade.trades import Trade, TradeType
 from tensortrade.exchanges import InstrumentExchange
-from tensortrade.slippage import RandomSlippageModel
+from tensortrade.slippage import RandomUniformSlippageModel
 
 
 class SimulatedExchange(InstrumentExchange):
@@ -56,7 +56,7 @@ class SimulatedExchange(InstrumentExchange):
 
         max_allowed_slippage_percent = kwargs.get('max_allowed_slippage_percent', 1.0)
 
-        SlippageModelClass = kwargs.get('slippage_model', RandomSlippageModel)
+        SlippageModelClass = kwargs.get('slippage_model', RandomUniformSlippageModel)
         self._slippage_model = SlippageModelClass(max_allowed_slippage_percent)
 
     @property
@@ -69,7 +69,8 @@ class SimulatedExchange(InstrumentExchange):
         self._data_frame = data_frame
 
         if self._should_pretransform_obs and self._feature_pipeline is not None:
-            self._data_frame = self._feature_pipeline.transform(self._data_frame)
+            self._data_frame = self._feature_pipeline.transform(
+                self._data_frame, self.generated_space)
 
     @property
     def initial_balance(self) -> float:
@@ -99,6 +100,10 @@ class SimulatedExchange(InstrumentExchange):
         return Box(low=low, high=high, dtype='float')
 
     @property
+    def generated_columns(self) -> List[str]:
+        return list(['open', 'high', 'low', 'close', 'volume'])
+
+    @property
     def has_next_observation(self) -> bool:
         return self._current_step < len(self._data_frame) - 1
 
@@ -109,7 +114,7 @@ class SimulatedExchange(InstrumentExchange):
             obs = self._data_frame.iloc[step - self._window_size + 1:step + 1]
 
             if not self._should_pretransform_obs and self._feature_pipeline is not None:
-                obs = self._feature_pipeline.transform(obs)
+                obs = self._feature_pipeline.transform(obs, self.generated_space)
 
             yield obs
 

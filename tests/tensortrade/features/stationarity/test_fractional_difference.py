@@ -1,11 +1,17 @@
 import pytest
 import numpy as np
 import pandas as pd
+import tensortrade.exchanges as exchanges
 
 from gym.spaces import Box
 
 from tensortrade.features import FeatureTransformer
 from tensortrade.features.stationarity import FractionalDifference
+
+
+@pytest.fixture
+def exchange():
+    return exchanges.get('fbm')
 
 
 @pytest.fixture
@@ -27,11 +33,11 @@ def data_frame():
 
 
 class TestFractionalDifference():
-    def test_incremental_difference(self, data_frame):
+    def test_incremental_difference(self, data_frame, exchange):
         transformer = FractionalDifference(
-            difference_order=0.5, inplace=True, all_column_names=data_frame.columns)
+            difference_order=0.5, inplace=True)
 
-        transformed_frame = transformer.transform(data_frame)
+        transformed_frame = transformer.transform(data_frame, exchange.generated_space)
 
         expected_data_frame = pd.DataFrame([{
             'open': -26.20469322,
@@ -61,7 +67,7 @@ class TestFractionalDifference():
             'close': 400,
         }])
 
-        transformed_frame = transformer.transform(next_frame)
+        transformed_frame = transformer.transform(next_frame, exchange.generated_space)
 
         expected_data_frame = pd.DataFrame([{
             'open': 127.785105,
@@ -78,11 +84,11 @@ class TestFractionalDifference():
 
         assert np.allclose(expected_data_frame.values, transformed_frame.values)
 
-    def test_difference_inplace(self, data_frame):
+    def test_difference_inplace(self, data_frame, exchange):
         transformer = FractionalDifference(
-            difference_order=0.5, inplace=True, all_column_names=data_frame.columns)
+            difference_order=0.5, inplace=True)
 
-        transformed_frame = transformer.transform(data_frame)
+        transformed_frame = transformer.transform(data_frame, exchange.generated_space)
 
         expected_data_frame = pd.DataFrame([{
             'open': -26.20469322,
@@ -99,11 +105,11 @@ class TestFractionalDifference():
 
         assert np.allclose(expected_data_frame.values, transformed_frame.values)
 
-    def test_difference_not_inplace(self, data_frame):
+    def test_difference_not_inplace(self, data_frame, exchange):
         transformer = FractionalDifference(
-            difference_order=0.5, inplace=False, all_column_names=data_frame.columns)
+            difference_order=0.5, inplace=False)
 
-        transformed_frame = transformer.transform(data_frame)
+        transformed_frame = transformer.transform(data_frame, exchange.generated_space)
 
         expected_data_frame = pd.DataFrame([{
             'open': 100,
@@ -128,11 +134,11 @@ class TestFractionalDifference():
 
         assert np.allclose(expected_data_frame.values, transformed_frame.values)
 
-    def test_select_correct_columns(self, data_frame):
+    def test_select_correct_columns(self, data_frame, exchange):
         transformer = FractionalDifference(
-            columns=['open', 'close'], difference_order=0.5, inplace=True, all_column_names=data_frame.columns)
+            columns=['open', 'close'], difference_order=0.5, inplace=True)
 
-        transformed_frame = transformer.transform(data_frame)
+        transformed_frame = transformer.transform(data_frame, exchange.generated_space)
 
         expected_data_frame = pd.DataFrame([{
             'open': -26.20469322,
@@ -149,15 +155,14 @@ class TestFractionalDifference():
 
         assert np.allclose(expected_data_frame.values, transformed_frame.values)
 
-    def test_transform_space(self, data_frame):
-        transformer = FractionalDifference(
-            difference_order=0.5, inplace=False, all_column_names=data_frame.columns)
+    def test_transform_space(self, data_frame, exchange):
+        transformer = FractionalDifference(difference_order=0.5, inplace=False)
 
         low = np.array([1E-3, ] * 4 + [1E-3, ])
         high = np.array([1E3, ] * 4 + [1E3, ])
 
         input_space = Box(low=low, high=high, dtype=np.float16)
 
-        transformed_space = transformer.transform_space(input_space)
+        transformed_space = transformer.transform_space(input_space, exchange.generated_columns)
 
         assert transformed_space != input_space

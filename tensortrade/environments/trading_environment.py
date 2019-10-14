@@ -16,6 +16,10 @@ import gym
 import logging
 import pandas as pd
 import numpy as np
+import tensortrade.exchanges as exchanges
+import tensortrade.actions as actions
+import tensortrade.rewards as rewards
+import tensortrade.features as features
 
 from gym import spaces
 from typing import Union, Tuple, List
@@ -29,17 +33,16 @@ from tensortrade.trades import Trade
 
 TensorForceStateType = Union[bool, int, float]
 TensorForceStateShape = Union[int, List[int], Tuple[int, ...]]
-TensorForceMinMaxValue = Union[int, float]
 
 
 class TradingEnvironment(Environment, gym.Env):
     """A trading environment made for use with Gym-compatible reinforcement learning algorithms."""
 
     def __init__(self,
-                 exchange: InstrumentExchange,
-                 action_strategy: ActionStrategy,
-                 reward_strategy: RewardStrategy,
-                 feature_pipeline: FeaturePipeline = None,
+                 exchange: Union[InstrumentExchange, str],
+                 action_strategy: Union[ActionStrategy, str],
+                 reward_strategy: Union[RewardStrategy, str],
+                 feature_pipeline: Union[FeaturePipeline, str] = None,
                  **kwargs):
         """
         Arguments:
@@ -49,12 +52,15 @@ class TradingEnvironment(Environment, gym.Env):
             feature_pipeline (optional): The pipeline of features to pass the observations through.
             kwargs (optional): Additional arguments for tuning the environment, logging, etc.
         """
-
         super().__init__()
 
-        self._exchange = exchange
-        self._action_strategy = action_strategy
-        self._reward_strategy = reward_strategy
+        self._exchange = exchanges.get(exchange) if isinstance(exchange, str) else exchange
+        self._action_strategy = actions.get(action_strategy) if isinstance(
+            action_strategy, str) else action_strategy
+        self._reward_strategy = rewards.get(reward_strategy) if isinstance(
+            reward_strategy, str) else reward_strategy
+        self._feature_pipeline = features.get(feature_pipeline) if isinstance(
+            feature_pipeline, str) else feature_pipeline
 
         if feature_pipeline is not None:
             self._exchange.feature_pipeline = feature_pipeline
@@ -120,7 +126,7 @@ class TradingEnvironment(Environment, gym.Env):
         return OpenAIGym.state_from_space(self.observation_space)
 
     @property
-    def actions(self) -> Tuple[TensorForceStateType, TensorForceStateShape, int, TensorForceMinMaxValue, TensorForceMinMaxValue]:
+    def actions(self) -> Tuple[TensorForceStateType, TensorForceStateShape, int, float, float]:
         """The action space specification, required for `tensorforce` agents.
 
         The tuple contains the following attributes:

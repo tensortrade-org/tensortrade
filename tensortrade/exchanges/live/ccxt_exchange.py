@@ -16,7 +16,7 @@ import time
 import numpy as np
 import pandas as pd
 
-from typing import Dict, List, Generator
+from typing import Dict, List, Generator, Union
 from gym.spaces import Space, Box
 from ccxt import Exchange
 
@@ -35,6 +35,7 @@ class CCXTExchange(InstrumentExchange):
         self._exchange = exchange
 
         self._exchange.enableRateLimit = kwargs.get('enable_rate_limit', True)
+        self._markets = self._exchange.load_markets()
 
         self._observation_type = kwargs.get('observation_type', 'trades')
         self._observation_symbol = kwargs.get('observation_symbol', 'ETH/BTC')
@@ -104,6 +105,13 @@ class CCXTExchange(InstrumentExchange):
         return Box(low=low, high=high, dtype=self._dtype)
 
     @property
+    def generated_columns(self) -> List[str]:
+        if self._observation_type == 'ohlcv':
+            return list(['open', 'high', 'low', 'close', 'volume'])
+
+        return list(['side', 'price', 'amount', 'cost'])
+
+    @property
     def has_next_observation(self) -> bool:
         if self._observation_type == 'ohlcv':
             return self._exchange.has['fetchOHLCV']
@@ -127,7 +135,7 @@ class CCXTExchange(InstrumentExchange):
                 obs = np.pad(obs, (self._window_size - len(obs), len(obs[0])), mode='constant')
 
             if self._feature_pipeline is not None:
-                obs = self._feature_pipeline.transform(obs)
+                obs = self._feature_pipeline.transform(obs, self.generated_space)
 
             yield obs
 
