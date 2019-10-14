@@ -1,11 +1,13 @@
 from .action_strategy import ActionStrategy, DTypeString, TradeActionUnion
 from .continuous_action_strategy import ContinuousActionStrategy
 from .discrete_action_strategy import DiscreteActionStrategy
+from .multi_discrete_action_strategy import MultiDiscreteActionStrategy
 
 
 _registry = {
     'continuous': ContinuousActionStrategy(),
-    'discrete': DiscreteActionStrategy()
+    'discrete': DiscreteActionStrategy(),
+    'multi-discrete': MultiDiscreteActionStrategy(instrument_symbols=['BTC', 'ETH']),
 }
 
 
