@@ -1,9 +1,11 @@
 from .reward_strategy import RewardStrategy
 from .simple_profit_strategy import SimpleProfitStrategy
+from .risk_adjusted_return_strategy import RiskAdjustedReturnStrategy
 
 
 _registry = {
-    'simple': SimpleProfitStrategy()
+    'simple': SimpleProfitStrategy(),
+    'risk-adjusted': RiskAdjustedReturnStrategy()
 }
 
 
