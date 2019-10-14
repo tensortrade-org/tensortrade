@@ -1,4 +1,5 @@
 from .trading_strategy import TradingStrategy
+from .stable_baselines_strategy import StableBaselinesTradingStrategy
 from .tensorforce_trading_strategy import TensorforceTradingStrategy
 
 

@@ -24,20 +24,18 @@ from typing import Union, Callable, List, Dict
 from tensorforce.agents import Agent
 from tensorforce.execution import Runner
 
-from tensortrade.environments.trading_environment import TradingEnvironment
-from tensortrade.features.feature_pipeline import FeaturePipeline
 from tensortrade.strategies import TradingStrategy
 
 
 class TensorforceTradingStrategy(TradingStrategy):
     """A trading strategy capable of self tuning, training, and evaluating with Tensorforce."""
 
-    def __init__(self, environment: TradingEnvironment, agent_spec: Dict, network_spec: Dict, **kwargs):
+    def __init__(self, environment: 'TradingEnvironment', agent_spec: Dict, network_spec: Dict, **kwargs):
         """
         Arguments:
             environment: A `TradingEnvironment` instance for the agent to trade within.
             agent_spec: A specification dictionary for the `Tensorforce` agent.
-            network_sepc: A specification dictionary for the `Tensorforce` agent's model network.
+            network_spec: A specification dictionary for the `Tensorforce` agent's model network.
             kwargs (optional): Optional keyword arguments to adjust the strategy.
         """
         self._environment = environment
@@ -70,6 +68,7 @@ class TensorforceTradingStrategy(TradingStrategy):
 
     def restore_agent(self, path: str, model_path: str = None):
         """Deserialize the strategy's learning agent from a file.
+
         Arguments:
             path: The `str` path of the file the agent specification is stored in.
                 The `.json` file extension will be automatically appended if not provided.
@@ -98,6 +97,7 @@ class TensorforceTradingStrategy(TradingStrategy):
 
     def save_agent(self, path: str, model_path: str = None, append_timestep: bool = False):
         """Serialize the learning agent to a file for restoring later.
+
         Arguments:
             path: The `str` path of the file to store the agent specification in.
                 The `.json` file extension will be automatically appended if not provided.
