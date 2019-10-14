@@ -38,7 +38,7 @@ class TAlibIndicator(FeatureTransformer):
     def _str_to_indicator(self, indicator_name: str):
         return getattr(talib, indicator_name.upper())
 
-    def transform_space(self, input_space: Space) -> Space:
+    def transform_space(self, input_space: Space, column_names: List[str]) -> Space:
         output_space = copy(input_space)
         shape_x, *shape_y = input_space.shape
 
@@ -50,7 +50,7 @@ class TAlibIndicator(FeatureTransformer):
 
         return output_space
 
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+    def transform(self, X: pd.DataFrame, input_space: Space) -> pd.DataFrame:
         for i in range(len(self._indicators)):
             indicator_name = self._indicator_names[i]
             indicator = self._indicators[i]
