@@ -54,6 +54,7 @@ setup(
         'tf': ['tensorflow==1.13.1'],
         'tf-gpu': ['tensorflow==1.13.1'],
         'tensorforce': ['tensorforce==0.4.4'],
+        'baselines': ['stable-baselines==2.8.0', 'mpi4py'],
         'fbm': ['stochastic==0.4.0'],
         'ccxt': ['ccxt==1.18.1220'],
         'tests': ['pytest==5.1.1'],
