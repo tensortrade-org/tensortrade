@@ -12,3 +12,5 @@ Submodules
 .. toctree::
 
    tensortrade.exchanges.live.ccxt_exchange
+   tensortrade.exchanges.live.interactive_brokers_exchange
+   tensortrade.exchanges.live.robinhood_exchange

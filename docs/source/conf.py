@@ -24,10 +24,11 @@ project = 'TensorTrade'
 copyright = '2019, Adam King'
 author = 'Adam King'
 
-# Read version
-exec(open('../../tensortrade/version.py').read())
-# short X.Y version
-version = __version__
+with open(os.path.join('../../', 'tensortrade', 'version.py'), 'r') as filehandle:
+    for line in filehandle:
+        if line.startswith('__version__'):
+            __version__ = line[15:-2]
+
 # The full version, including alpha/beta/rc tags
 release = __version__
 
@@ -69,7 +70,8 @@ apidoc_separate_modules = True
 apidoc_extra_args = ['-d 6']
 
 # mock imports
-autodoc_mock_imports = ['tensorflow', 'keras', 'sklearn']
+autodoc_mock_imports = ['tensorflow', 'keras',
+                        'tensorforce', 'ccxt', 'stochastic', 'stable-baselines']
 
 # Napoleon settings
 napoleon_google_docstring = True
@@ -117,7 +119,7 @@ pygments_style = None
 # a list of builtin themes.
 #
 html_theme = 'sphinx_rtd_theme'
-html_logo = '_static/logo.png'
+html_logo = '_static/logo.jpg'
 html_favicon = '_static/favicon.ico'
 
 # Theme options are theme-specific and customize the look and feel of a theme

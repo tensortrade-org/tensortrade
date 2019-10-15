@@ -21,7 +21,9 @@ docs-clean:
 	rm -rf docs/source/api
 
 docs-serve:
-	$(SHELL) -c "cd docs/_build/html; python -m http.server 8000"
+	$(SHELL) -C cd docs/build/html
+	python3 -m webbrowser http://localhost:8000/docs/build/html/index.html
+	python3 -m http.server 8000
 
 build-cpu: 
 	docker build -t ${CPU_IMAGE} .
