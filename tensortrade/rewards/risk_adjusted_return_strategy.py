@@ -16,6 +16,7 @@ import pandas as pd
 import numpy as np
 
 from typing import Callable
+from empyrical import calmar_ratio, omega_ratio
 
 from tensortrade.rewards import RewardStrategy
 from tensortrade.trades import TradeType, Trade
@@ -25,22 +26,26 @@ class RiskAdjustedReturnStrategy(RewardStrategy):
     """A reward strategy that rewards the agent for increasing its net worth, while penalizing more volatile strategies.
     """
 
-    def __init__(self, return_algorithm: str = 'sharpe', risk_free_rate: float = 0., target_returns: float = 0.):
+    def __init__(self, return_algorithm: str = 'sharpe', risk_free_rate: float = 0., target_return: float = 0.):
         """
         Args:
-            return_algorithm (optional): The risk-adjusted return metric to use. Options are 'sharpe' and 'sortino'. Defaults to 'sharpe'.
+            return_algorithm (optional): The risk-adjusted return metric to use. Options are 'sharpe', 'sortino', 'calmar', 'omega'. Defaults to 'sharpe'.
             risk_free_rate (optional): The risk free rate of returns to use for calculating metrics. Defaults to 0.
-            target_returns (optional): The target returns per period for use in calculating the sortino ratio. Default to 0.
+            target_return (optional): The target return per period for use in calculating the sortino and omega ratio. Default to 0.
         """
         self._return_algorithm = self._return_algorithm_from_str(return_algorithm)
         self._risk_free_rate = risk_free_rate
-        self._target_returns = target_returns
+        self._target_return = target_return
 
-    def _return_algorithm_from_str(self, algorithm_str: str) -> Callable[[pd.DataFrame], float]:
+    def _return_algorithm_from_str(self, algorithm_str: str) -> Callable[[pd.Series], float]:
         if algorithm_str is 'sharpe':
             return self._sharpe_ratio
         elif algorithm_str is 'sortino':
             return self._sortino_ratio
+        elif algorithm_str is 'calmar':
+            return self._calmar_ratio
+        elif algorithm_str is 'omega':
+            return self._omega_ratio
 
     def _sharpe_ratio(self, returns: pd.Series) -> float:
         """Return the sharpe ratio for a given series of a returns.
@@ -56,12 +61,26 @@ class RiskAdjustedReturnStrategy(RewardStrategy):
         """
         downside_returns = pd.Series([0])
 
-        returns[returns < self._target_returns] = returns ** 2
+        returns[returns < self._target_return] = returns ** 2
 
         expected_return = returns.mean()
         downside_std = np.sqrt(downside_returns.mean())
 
         return (expected_return - self._risk_free_rate) / (downside_std + 1E-9)
+
+    def _calmar_ratio(self, returns: pd.Series) -> float:
+        """Return the calmar ratio for a given series of a returns.
+
+        https://en.wikipedia.org/wiki/Calmar_ratio
+        """
+        return calmar_ratio(returns)
+
+    def _omega_ratio(self, returns: pd.Series) -> float:
+        """Return the omega ratio for a given series of a returns.
+
+        https://en.wikipedia.org/wiki/Omega_ratio
+        """
+        return omega_ratio(returns, self._risk_free_rate, self._target_return)
 
     def get_reward(self, current_step: int, trade: Trade) -> float:
         """Return the reward corresponding to the selected risk-adjusted return metric."""
