@@ -28,7 +28,7 @@ Read [the documentation](https://tensortrade.org) or walk through [the tutorial]
 
 ## Guiding principles
 
-_Inspired by [Keras' guiding principles](https://github.com/keras-team/keras)_
+_Inspired by [Keras' guiding principles](https://github.com/keras-team/keras)._
 
 - **User friendliness.** TensorTrade is an API designed for human beings, not machines. It puts user experience front and center. TensorTrade follows best practices for reducing cognitive load: it offers consistent & simple APIs, it minimizes the number of user actions required for common use cases, and it provides clear and actionable feedback upon user error.
 

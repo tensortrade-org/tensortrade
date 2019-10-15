@@ -1,5 +1,7 @@
 ## TensorTrade
 
+![Logo](_static/logo.jpg)
+
 [TensorTrade](https://github.com/notadamking/tensortrade) is an open source Python framework for building, training, evaluating, and deploying robust trading algorithms using reinforcement learning. The framework focuses on being highly composable and extensible, to allow the system to scale from simple trading strategies on a single CPU, to complex investment strategies run on a distribution of HPC machines.
 
 Under the hood, the framework uses many of the APIs from existing machine learning libraries to maintain high quality data pipelines and learning models. One of the main goals of TensorTrade is to enable fast experimentation with algorithmic trading strategies, by leveraging the existing tools and pipelines provided by `numpy`, `pandas`, `gym`, `keras`, and `tensorflow`.
@@ -8,7 +10,7 @@ Every piece of the framework is split up into re-usable components, allowing you
 
 ## Guiding principles
 
-\_Inspired by [Keras' guiding principles](https://github.com/keras-team/keras)
+_Inspired by_ [Keras' guiding principles](https://github.com/keras-team/keras).
 
 _User friendliness._ TensorTrade is an API designed for human beings, not machines. It puts user experience front and center. TensorTrade follows best practices for reducing cognitive load: it offers consistent & simple APIs, it minimizes the number of user actions required for common use cases, and it provides clear and actionable feedback upon user error.
 
