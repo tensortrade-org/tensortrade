@@ -31,6 +31,17 @@ build-cpu:
 build-gpu:
 	docker build -t ${GPU_IMAGE} . --build-arg gpu_tag="-gpu"
 
+run-notebook: 
+	docker run -t --rm -p=8888:8888 ${CPU_IMAGE} jupyter notebook --ip='*' --port=8888 --no-browser --allow-root /examples/
+
+run-docs: 
+	docker run -t --name documentation ${CPU_IMAGE} make docs-build
+	docker cp documentation:/docs/. ./docs/
+	docker container rm documentation
+
+run-test: 
+	docker run -it --rm ${CPU_IMAGE} make test
+
 package:
 	rm -rf dist
 	python3 setup.py sdist
