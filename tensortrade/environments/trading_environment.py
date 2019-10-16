@@ -133,7 +133,7 @@ class TradingEnvironment(gym.Env):
         """
         self._current_step += 1
 
-        observation = self._exchange.next_observation()
+        observation = self._exchange.next_observation()[0]
 
         return observation
 

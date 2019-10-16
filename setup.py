@@ -53,7 +53,7 @@ setup(
     extras_require={
         'tf': ['tensorflow==1.13.1'],
         'tf-gpu': ['tensorflow==1.13.1'],
-        'tensorforce': ['tensorforce==0.5.1'],
+        'tensorforce': ['tensorforce==0.5.2'],
         'fbm': ['stochastic==0.4.0'],
         'ccxt': ['ccxt==1.18.1220'],
         'tests': ['pytest==5.1.1'],

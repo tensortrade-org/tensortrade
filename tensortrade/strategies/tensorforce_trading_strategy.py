@@ -33,20 +33,31 @@ from tensortrade.strategies import TradingStrategy
 class TensorforceTradingStrategy(TradingStrategy):
     """A trading strategy capable of self tuning, training, and evaluating with Tensorforce."""
 
-    def __init__(self, environment: TradingEnvironment, agent: any, **kwargs):
+    def __init__(self, environment: TradingEnvironment, agent_spec: any, **kwargs):
         """
         Arguments:
             environment: A `TradingEnvironment` instance for the agent to trade within.
             agent: A `Tensorforce` agent or agent specification.
             kwargs (optional): Optional keyword arguments to adjust the strategy.
         """
-        self._environment = OpenAIGym(level=environment)
+        
+        exchange = environment['exchange']
+        action_strategy = environment['action_strategy']
+        reward_strategy = environment['reward_strategy']
+        feature_pipeline = environment['feature_pipeline']
+        
+        self._environment = OpenAIGym(level="tensortrade-v0", 
+                                      exchange=exchange,
+                                      action_strategy=action_strategy,
+                                      reward_strategy=reward_strategy,
+                                      feature_pipeline=feature_pipeline)
+        self._environment.reset()
 
         self._max_episode_timesteps = kwargs.get('max_episode_timesteps', None)
 
-        self._agent = Agent.create(agent=agent, environment=environment)
+        self._agent = Agent.create(agent=agent_spec, environment=self._environment)
 
-        self._runner = Runner(agent=self._agent, environment=environment)
+        self._runner = Runner(agent=self._agent, environment=self._environment)
 
     @property
     def agent(self) -> Agent:
@@ -114,4 +125,4 @@ class TensorforceTradingStrategy(TradingStrategy):
 
         self._runner.close()
 
-        return self._environment._exchange.performance
+        return self._environment.environment._exchange._performance
