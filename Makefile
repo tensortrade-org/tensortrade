@@ -31,23 +31,33 @@ build-cpu:
 build-cpu-if-not-built: 
 	if [ ! $$(docker images -q ${CPU_IMAGE}) ]; then $(MAKE) build-cpu; fi;
 
+build-gpu-if-not-built: 
+	if [ ! $$(docker images -q ${CPU_IMAGE}) ]; then $(MAKE) build-gpu; fi;
+
 build-gpu:
 	docker build -t ${GPU_IMAGE} . --build-arg gpu_tag="-gpu"
 
-run-notebook:
-	$(MAKE) build-cpu-if-not-built
+run-notebook: build-cpu-if-not-built
 	docker run -it --rm -p=8888:8888 ${CPU_IMAGE} jupyter notebook --ip='*' --port=8888 --no-browser --allow-root /examples/
 
-run-docs: 
-	$(MAKE) build-cpu-if-not-built
+run-docs: build-cpu-if-not-built
 	if [ $$(docker ps -aq --filter name=tensortrade_docs) ]; then docker rm $$(docker ps -aq --filter name=tensortrade_docs); fi;
-	docker run -t --name tensortrade_docs ${CPU_IMAGE} make docs-build
-	docker cp tensortrade_docs:/docs/. ./docs/
-	docker container rm tensortrade_docs
+	docker run -t --name tensortrade_docs ${CPU_IMAGE} make docs-build && make docs-serve
+	python3 -m webbrowser http://localhost:8000/docs/build/html/index.html
 
-run-test: 
-	$(MAKE) build-cpu-if-not-built
+run-tests: build-cpu-if-not-built
 	docker run -it --rm ${CPU_IMAGE} make test
+
+run-notebook-gpu: build-gpu-if-not-built
+	docker run -it --rm -p=8888:8888 ${GPU_IMAGE} jupyter notebook --ip='*' --port=8888 --no-browser --allow-root /examples/
+
+run-docs-gpu: build-gpu-if-not-built
+	if [ $$(docker ps -aq --filter name=tensortrade_docs) ]; then docker rm $$(docker ps -aq --filter name=tensortrade_docs); fi;
+	docker run -t --name tensortrade_docs ${GPU_IMAGE} make docs-build && make docs-serve
+	python3 -m webbrowser http://localhost:8000/docs/build/html/index.html
+
+run-tests-gpu: build-gpu-if-not-built
+	docker run -it --rm ${GPU_IMAGE} make test
 
 package:
 	rm -rf dist
