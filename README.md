@@ -63,7 +63,7 @@ You can also post **bug reports and feature requests** in [GitHub issues](https:
 
 If you would like to support this project financially, there are a few ways you can contribute. Your contributions are greatly appreciated and help to keep TensorTrade maintained and always improving.
 
-Patreon: https://www.patreon.com/notadamking
+Github Sponsors: https://github.com/sponsors/notadamking - **All Github Sponsors donations are matched 1:1 by Github up to $5,000!**
 
 BTC Address: `1Lc47bhYvdyKGk1qN8oBHdYQTkbFLL3PFw`
 
