@@ -134,11 +134,9 @@ class TradingEnvironment(gym.Env):
         self._current_step += 1
 
         observation = self._exchange.next_observation()
-        if len(observation) == 0:
-            observation = np.array([0, 0, 0, 0, 0])
-        observation = np.nan_to_num(observation)
-        print(observation)
-        print(observation.shape)
+        if len(observation) != 0:
+            observation = observation[0]
+            observation = np.nan_to_num(observation)
         return observation
 
     def _get_reward(self, trade: Trade) -> float:

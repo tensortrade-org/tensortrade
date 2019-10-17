@@ -3,7 +3,6 @@ from .simple_profit_strategy import SimpleProfitStrategy
 
 _registry = {
     'simple': SimpleProfitStrategy(),
-    'running': RunningProfitStrategy()
 }
 
 
