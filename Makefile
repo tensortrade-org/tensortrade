@@ -28,18 +28,25 @@ docs-serve:
 build-cpu: 
 	docker build -t ${CPU_IMAGE} .
 
+build-cpu-if-not-built: 
+	if [ ! $$(docker images -q ${CPU_IMAGE}) ]; then $(MAKE) build-cpu; fi;
+
 build-gpu:
 	docker build -t ${GPU_IMAGE} . --build-arg gpu_tag="-gpu"
 
-run-notebook: 
-	docker run -t --rm -p=8888:8888 ${CPU_IMAGE} jupyter notebook --ip='*' --port=8888 --no-browser --allow-root /examples/
+run-notebook:
+	$(MAKE) build-cpu-if-not-built
+	docker run -it --rm -p=8888:8888 ${CPU_IMAGE} jupyter notebook --ip='*' --port=8888 --no-browser --allow-root /examples/
 
 run-docs: 
-	docker run -t --name documentation ${CPU_IMAGE} make docs-build
-	docker cp documentation:/docs/. ./docs/
-	docker container rm documentation
+	$(MAKE) build-cpu-if-not-built
+	if [ $$(docker ps -aq --filter name=tensortrade_docs) ]; then docker rm $$(docker ps -aq --filter name=tensortrade_docs); fi;
+	docker run -t --name tensortrade_docs ${CPU_IMAGE} make docs-build
+	docker cp tensortrade_docs:/docs/. ./docs/
+	docker container rm tensortrade_docs
 
 run-test: 
+	$(MAKE) build-cpu-if-not-built
 	docker run -it --rm ${CPU_IMAGE} make test
 
 package:
