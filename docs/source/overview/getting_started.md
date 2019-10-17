@@ -31,3 +31,33 @@ OR
 ```bash
 pip install git+https://github.com/notadamking/tensortrade.git[tf,tensorforce,baselines,ccxt,fbm]
 ```
+
+
+## Docker
+  
+To run the commands below ensure Docker is installed. Visit https://docs.docker.com/install/ for more information
+
+### Run Jupyter Notebooks
+
+To run a jupyter notebook execute the following
+
+```bash
+make run-notebook
+```
+
+which will generate a link of the form 127.0.0.1:8888/?token=... Paste this link into your browers and select the notebook you'd like to explore
+
+
+### Build Documentation
+
+To build documentation execute the following
+```bash
+make run-docs
+```
+
+### Run Test Suite
+
+To run the test suite execute the following
+```bash
+make run-test
+```

@@ -46,14 +46,14 @@ setup(
     license='Apache 2.0',
     python_requires='>=3.5',
     install_requires=[
-        'numpy==1.17.0',
+        'numpy==1.16.4',
         'pandas==0.25.0',
         'gym==0.14.0',
     ],
     extras_require={
         'tf': ['tensorflow==1.13.1'],
         'tf-gpu': ['tensorflow==1.13.1'],
-        'tensorforce': ['tensorforce==0.4.4'],
+        'tensorforce': ['tensorforce==0.4.3'],
         'baselines': ['stable-baselines==2.8.0', 'mpi4py'],
         'talib': ['TA-Lib==0.4.17'],
         'fbm': ['stochastic==0.4.0'],
