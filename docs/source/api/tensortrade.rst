@@ -15,7 +15,6 @@ Subpackages
    tensortrade.environments
    tensortrade.exchanges
    tensortrade.features
-   tensortrade.models
    tensortrade.rewards
    tensortrade.slippage
    tensortrade.strategies

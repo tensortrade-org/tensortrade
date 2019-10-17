@@ -1,4 +1,4 @@
-﻿# [TensorTrade: Trade Efficiently with Reinforcement Learning](https://medium.com/@notadamking/trade-smarter-w-reinforcement-learning-a5e91163f315)
+﻿# [TensorTrade: Trade Efficiently with Reinforcement Learning](https://towardsdatascience.com/trade-smarter-w-reinforcement-learning-a5e91163f315?source=friends_link&sk=ea3afd0a305141eb9147be4718826dfb)
 
 [![Build Status](https://travis-ci.org/notadamking/tensortrade.svg?branch=master)](https://travis-ci.org/notadamking/tensortrade)
 [![Documentation Status](https://readthedocs.org/projects/tensortrade/badge/?version=latest)](https://tensortrade.org)
@@ -14,19 +14,21 @@
 
 ---
 
-TensorTrade is an open source Python framework for building, training, evaluating, and deploying robust trading algorithms using reinforcement learning. This framework aims to extend the existing ML pipelines created by `numpy`, `pandas`, `gym`, `keras`, and `tensorflow` in a simple, intuitive way.
+TensorTrade is an open source Python framework for building, training, evaluating, and deploying robust trading algorithms using reinforcement learning. The framework focuses on being highly composable and extensible, to allow the system to scale from simple trading strategies on a single CPU, to complex investment strategies run on a distribution of HPC machines.
 
-Allow state-of-the-art learning agents to improve your trading strategies and take you from idea to production, in a repeatable, maintable way.
+Under the hood, the framework uses many of the APIs from existing machine learning libraries to maintain high quality data pipelines and learning models. One of the main goals of TensorTrade is to enable fast experimentation with algorithmic trading strategies, by leveraging the existing tools and pipelines provided by `numpy`, `pandas`, `gym`, `keras`, and `tensorflow`.
+
+Every piece of the framework is split up into re-usable components, allowing you to take advantage of the general use components built by the community, while keeping your proprietary features private. The aim is to simplify the process of testing and deploying robust trading agents using deep reinforcement learning, to allow you and I to focus on creating profitable strategies.
 
 _The goal of this framework is to enable fast experimentation, while maintaining production-quality data pipelines._
 
-Read [the documentation](https://tensortrade.org) or walk through [the tutorial](https://medium.com/@notadamking/trade-smarter-w-reinforcement-learning-a5e91163f315).
+Read [the documentation](http://tensortrade.org) or walk through [the tutorial](https://towardsdatascience.com/trade-smarter-w-reinforcement-learning-a5e91163f315?source=friends_link&sk=ea3afd0a305141eb9147be4718826dfb).
 
 ---
 
 ## Guiding principles
 
-_Inspired by [Keras' guiding principles](https://github.com/keras-team/keras)_
+_Inspired by [Keras' guiding principles](https://github.com/keras-team/keras)._
 
 - **User friendliness.** TensorTrade is an API designed for human beings, not machines. It puts user experience front and center. TensorTrade follows best practices for reducing cognitive load: it offers consistent & simple APIs, it minimizes the number of user actions required for common use cases, and it provides clear and actionable feedback upon user error.
 
@@ -50,6 +52,36 @@ pip install -r requirements.txt
 
 ---
 
+## Docker
+
+To run the commands below, ensure Docker is installed. Visit https://docs.docker.com/install/ for more information.
+
+### Run Jupyter Notebooks
+
+To run a jupyter notebook in your browser, execute the following command and visit the `http://127.0.0.1:8888/?token=...` link printed to the command line.
+
+```bash
+make run-notebook
+```
+
+### Build Documentation
+
+To build the HTML documentation, execute the following command.
+
+```bash
+make run-docs
+```
+
+### Run Test Suite
+
+To run the test suite, execute the following command.
+
+```bash
+make run-tests
+```
+
+---
+
 ## Support
 
 You can ask questions and join the development discussion:
@@ -61,7 +93,7 @@ You can also post **bug reports and feature requests** in [GitHub issues](https:
 
 If you would like to support this project financially, there are a few ways you can contribute. Your contributions are greatly appreciated and help to keep TensorTrade maintained and always improving.
 
-Patreon: https://www.patreon.com/notadamking
+Github Sponsors: https://github.com/sponsors/notadamking - **All Github Sponsors donations are matched 1:1 by Github up to $5,000!**
 
 BTC Address: `1Lc47bhYvdyKGk1qN8oBHdYQTkbFLL3PFw`
 

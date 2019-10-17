@@ -12,3 +12,4 @@ Submodules
 .. toctree::
 
    tensortrade.features.indicators.simple_moving_average
+   tensortrade.features.indicators.talib_indicator

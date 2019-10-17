@@ -25,8 +25,6 @@ from tensorforce.agents import Agent
 from tensorforce.execution import Runner
 from tensorforce.environments import Environment
 
-from tensortrade.environments.trading_environment import TradingEnvironment
-from tensortrade.features.feature_pipeline import FeaturePipeline
 from tensortrade.strategies import TradingStrategy
 
 
@@ -38,6 +36,7 @@ class TensorforceTradingStrategy(TradingStrategy):
         Arguments:
             environment: A `TradingEnvironment` instance for the agent to trade within.
             agent: A `Tensorforce` agent or agent specification.
+            save_best_agent (optional): The runner will automatically save the best agent
             kwargs (optional): Optional keyword arguments to adjust the strategy.
         """
         self._max_episode_timesteps = kwargs.get('max_episode_timesteps', False)
@@ -64,6 +63,7 @@ class TensorforceTradingStrategy(TradingStrategy):
 
     def restore_agent(self, directory: str, filename: str = None):
         """Deserialize the strategy's learning agent from a file.
+
         Arguments:
             directory: The `str` path of the directory the agent checkpoint is stored in.
             filename (optional): The `str` path of the file the agent specification is stored in.
@@ -75,6 +75,7 @@ class TensorforceTradingStrategy(TradingStrategy):
 
     def save_agent(self, directory: str, filename: str = None, append_timestep: bool = False):
         """Serialize the learning agent to a file for restoring later.
+
         Arguments:
             directory: The `str` path of the directory the agent checkpoint is stored in.
             filename (optional): The `str` path of the file the agent specification is stored in.
