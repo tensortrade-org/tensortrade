@@ -1,4 +1,4 @@
-﻿# [TensorTrade: Trade Efficiently with Reinforcement Learning](https://medium.com/@notadamking/trade-smarter-w-reinforcement-learning-a5e91163f315)
+﻿# [TensorTrade: Trade Efficiently with Reinforcement Learning](https://towardsdatascience.com/trade-smarter-w-reinforcement-learning-a5e91163f315?source=friends_link&sk=ea3afd0a305141eb9147be4718826dfb)
 
 [![Build Status](https://travis-ci.org/notadamking/tensortrade.svg?branch=master)](https://travis-ci.org/notadamking/tensortrade)
 [![Documentation Status](https://readthedocs.org/projects/tensortrade/badge/?version=latest)](https://tensortrade.org)
@@ -22,7 +22,7 @@ Every piece of the framework is split up into re-usable components, allowing you
 
 _The goal of this framework is to enable fast experimentation, while maintaining production-quality data pipelines._
 
-Read [the documentation](http://tensortrade.org) or walk through [the tutorial](https://medium.com/@notadamking/trade-smarter-w-reinforcement-learning-a5e91163f315).
+Read [the documentation](http://tensortrade.org) or walk through [the tutorial](https://towardsdatascience.com/trade-smarter-w-reinforcement-learning-a5e91163f315?source=friends_link&sk=ea3afd0a305141eb9147be4718826dfb).
 
 ---
 
@@ -93,7 +93,7 @@ You can also post **bug reports and feature requests** in [GitHub issues](https:
 
 If you would like to support this project financially, there are a few ways you can contribute. Your contributions are greatly appreciated and help to keep TensorTrade maintained and always improving.
 
-Patreon: https://www.patreon.com/notadamking
+Github Sponsors: https://github.com/sponsors/notadamking - **All Github Sponsors donations are matched 1:1 by Github up to $5,000!**
 
 BTC Address: `1Lc47bhYvdyKGk1qN8oBHdYQTkbFLL3PFw`
 
