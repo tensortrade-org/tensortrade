@@ -1,9 +1,10 @@
 from .reward_strategy import RewardStrategy
 from .simple_profit_strategy import SimpleProfitStrategy
-
+from .running_profit_strategy import RunningProfitStrategy
 
 _registry = {
-    'simple': SimpleProfitStrategy()
+    'simple': SimpleProfitStrategy(),
+    'running': RunningProfitStrategy()
 }
 
 

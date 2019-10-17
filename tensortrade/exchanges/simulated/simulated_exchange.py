@@ -110,7 +110,8 @@ class SimulatedExchange(InstrumentExchange):
     def _create_observation_generator(self) -> Generator[pd.DataFrame, None, None]:
         for step in range(self._current_step, len(self._data_frame)):
             self._current_step = step
-
+            
+            step += self._window_size 
             obs = self._data_frame.iloc[step - self._window_size + 1:step + 1]
 
             if not self._should_pretransform_obs and self._feature_pipeline is not None:

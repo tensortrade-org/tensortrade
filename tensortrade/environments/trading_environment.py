@@ -133,8 +133,12 @@ class TradingEnvironment(gym.Env):
         """
         self._current_step += 1
 
-        observation = self._exchange.next_observation()[0]
-
+        observation = self._exchange.next_observation()
+        if len(observation) == 0:
+            observation = np.array([0, 0, 0, 0, 0])
+        observation = np.nan_to_num(observation)
+        print(observation)
+        print(observation.shape)
         return observation
 
     def _get_reward(self, trade: Trade) -> float:
@@ -145,7 +149,7 @@ class TradingEnvironment(gym.Env):
         """
         reward: float = self._reward_strategy.get_reward(
             current_step=self._current_step, trade=trade)
-
+        reward = np.nan_to_num(reward)
         if not np.isfinite(reward):
             raise ValueError('Reward returned by the reward strategy must by a finite float.')
 

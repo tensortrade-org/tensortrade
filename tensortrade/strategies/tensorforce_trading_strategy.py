@@ -23,7 +23,7 @@ from typing import Union, Callable, List, Dict
 
 from tensorforce.agents import Agent
 from tensorforce.execution import Runner
-from tensorforce.environments import OpenAIGym
+from tensorforce.environments import Environment
 
 from tensortrade.environments.trading_environment import TradingEnvironment
 from tensortrade.features.feature_pipeline import FeaturePipeline
@@ -33,31 +33,20 @@ from tensortrade.strategies import TradingStrategy
 class TensorforceTradingStrategy(TradingStrategy):
     """A trading strategy capable of self tuning, training, and evaluating with Tensorforce."""
 
-    def __init__(self, environment: TradingEnvironment, agent_spec: any, **kwargs):
+    def __init__(self, environment: TradingEnvironment, agent_spec: any, save_best_agent: bool = True, **kwargs):
         """
         Arguments:
             environment: A `TradingEnvironment` instance for the agent to trade within.
             agent: A `Tensorforce` agent or agent specification.
             kwargs (optional): Optional keyword arguments to adjust the strategy.
         """
+        self._max_episode_timesteps = kwargs.get('max_episode_timesteps', False)
         
-        exchange = environment['exchange']
-        action_strategy = environment['action_strategy']
-        reward_strategy = environment['reward_strategy']
-        feature_pipeline = environment['feature_pipeline']
+        self._environment = Environment.create(environment='gym', level=environment, max_episode_timesteps=self._max_episode_timesteps)
         
-        self._environment = OpenAIGym(level="tensortrade-v0", 
-                                      exchange=exchange,
-                                      action_strategy=action_strategy,
-                                      reward_strategy=reward_strategy,
-                                      feature_pipeline=feature_pipeline)
-        self._environment.reset()
-
-        self._max_episode_timesteps = kwargs.get('max_episode_timesteps', None)
-
         self._agent = Agent.create(agent=agent_spec, environment=self._environment)
-
-        self._runner = Runner(agent=self._agent, environment=self._environment)
+        
+        self._runner = Runner(agent=self._agent, environment=self._environment, save_best_agent=save_best_agent)
 
     @property
     def agent(self) -> Agent:
@@ -96,8 +85,8 @@ class TensorforceTradingStrategy(TradingStrategy):
         self._agent.save(directory=directory, filename=filename, append_timestep=append_timestep)
 
     def _finished_episode_cb(self, runner: Runner) -> bool:
-        n_episodes = runner.episode
-        n_timesteps = runner.episode_timestep
+        n_episodes = runner.episodes
+        n_timesteps = runner.episode_timesteps
         avg_reward = np.mean(runner.episode_rewards)
 
         print("Finished episode {} after {} timesteps.".format(n_episodes, n_timesteps))
@@ -112,7 +101,6 @@ class TensorforceTradingStrategy(TradingStrategy):
         self._runner.run(evaluation=evaluation,
                          num_timesteps=steps,
                          num_episodes=episodes,
-                         max_episode_timesteps=self._max_episode_timesteps,
                          callback=episode_callback)
 
         n_episodes = self._runner.episodes
