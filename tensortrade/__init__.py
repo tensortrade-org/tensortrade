@@ -4,7 +4,8 @@ from . import exchanges
 from . import features
 from . import rewards
 from . import slippage
-from . import strategies
+# from . import strategies
 from . import trades
+from .base import *
 
 from .version import __version__
