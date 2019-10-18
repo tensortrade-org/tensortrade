@@ -16,5 +16,6 @@ def get(identifier: str) -> TradingStrategy:
         KeyError: if identifier is not associated with any `TradingStrategy`
     """
     if identifier not in _registry.keys():
-        raise KeyError(f'Identifier {identifier} is not associated with any `TradingStrategy`.')
+        raise KeyError(
+            'Identifier {} is not associated with any `TradingStrategy`.'.format(identifier))
     return _registry[identifier]

@@ -14,3 +14,4 @@ Submodules
    tensortrade.actions.action_strategy
    tensortrade.actions.continuous_action_strategy
    tensortrade.actions.discrete_action_strategy
+   tensortrade.actions.multi_discrete_action_strategy

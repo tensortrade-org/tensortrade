@@ -86,7 +86,7 @@ class StableBaselinesTradingStrategy(TradingStrategy):
 
         performance = {}
 
-        while (steps is not None and steps_completed < steps) or (episodes is not None and episodes_completed < episodes):
+        while (steps is not None and (steps == 0 or steps_completed < steps)) or (episodes is not None and episodes_completed < episodes):
             actions, state = self._agent.predict(obs, state=state, mask=dones)
             obs, rewards, dones, info = self._environment.step(actions)
 
@@ -98,10 +98,11 @@ class StableBaselinesTradingStrategy(TradingStrategy):
             performance = exchange_performance if len(exchange_performance) > 0 else performance
 
             if dones[0]:
-                episodes_completed += 1
-
                 if episode_callback is not None and episode_callback(self._environment._exchange.performance):
                     break
+
+                episodes_completed += 1
+                obs = self._environment.reset()
 
         print("Finished running strategy.")
         print("Total episodes: {} ({} timesteps).".format(episodes_completed, steps_completed))
