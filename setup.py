@@ -53,7 +53,7 @@ setup(
     extras_require={
         'tf': ['tensorflow==1.13.1'],
         'tf-gpu': ['tensorflow==1.13.1'],
-        'tensorforce': ['tensorforce==0.4.3'],
+        'tensorforce': ['tensorforce==0.5.2'],
         'baselines': ['stable-baselines==2.8.0', 'mpi4py'],
         'talib': ['TA-Lib==0.4.17'],
         'fbm': ['stochastic==0.4.0'],

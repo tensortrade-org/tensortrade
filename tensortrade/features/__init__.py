@@ -19,5 +19,6 @@ def get(identifier: str) -> FeaturePipeline:
         KeyError: if identifier is not associated with any `FeaturePipeline`
     """
     if identifier not in _registry.keys():
-        raise KeyError(f'Identifier {identifier} is not associated with any `FeaturePipeline`.')
+        raise KeyError(
+            'Identifier {} is not associated with any `FeaturePipeline`.'.format(identifier))
     return _registry[identifier]

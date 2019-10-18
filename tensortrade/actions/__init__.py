@@ -21,5 +21,6 @@ def get(identifier: str) -> ActionStrategy:
         KeyError: if identifier is not associated with any `ActionStrategy`
     """
     if identifier not in _registry.keys():
-        raise KeyError(f'Identifier {identifier} is not associated with any `ActionStrategy`.')
+        raise KeyError(
+            'Identifier {} is not associated with any `ActionStrategy`.'.format(identifier))
     return _registry[identifier]
