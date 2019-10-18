@@ -145,10 +145,10 @@ class TradingEnvironment(gym.Env):
         Returns:
             A float corresponding to the benefit earned by the action taken this step.
         """
-        reward: float = self._reward_strategy.get_reward(
-            current_step=self._current_step, trade=trade)
+        reward = self._reward_strategy.get_reward(current_step=self._current_step, trade=trade)
         reward = np.nan_to_num(reward)
-        if not np.isfinite(reward):
+
+        if np.bitwise_not(np.isfinite(reward)):
             raise ValueError('Reward returned by the reward strategy must by a finite float.')
 
         return reward
