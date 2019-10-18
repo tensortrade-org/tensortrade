@@ -1,8 +1,6 @@
-FROM python:3.5
+FROM python:3.6
 
 WORKDIR /
-
-COPY . ./
 
 RUN wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz &&\
   tar xzvf ta-lib-0.4.0-src.tar.gz && \
@@ -18,6 +16,9 @@ RUN apt-get update -y && \
   apt-get install python-mpi4py -y
 
 RUN pip install --upgrade pip
+
+COPY . ./
+
 RUN pip install -e .[tf,docs,tests,talib,tensorforce,ccxt,fbm]
 RUN pip install -r /requirements.txt
 RUN pip install -r /examples/requirements.txt
