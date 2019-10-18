@@ -20,5 +20,6 @@ def get(identifier: str) -> TradingEnvironment:
         KeyError: if identifier is not associated with any `TradingEnvironment`
     """
     if identifier not in _registry.keys():
-        raise KeyError(f'Identifier {identifier} is not associated with any `TradingEnvironment`.')
+        raise KeyError(
+            'Identifier {} is not associated with any `TradingEnvironment`.'.format(identifier))
     return TradingEnvironment(**_registry[identifier])

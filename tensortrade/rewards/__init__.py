@@ -18,5 +18,6 @@ def get(identifier: str) -> RewardStrategy:
         KeyError: if identifier is not associated with any `RewardStrategy`
     """
     if identifier not in _registry.keys():
-        raise KeyError(f'Identifier {identifier} is not associated with any `RewardStrategy`.')
+        raise KeyError(
+            'Identifier {} is not associated with any `RewardStrategy`.'.format(identifier))
     return _registry[identifier]
