@@ -131,10 +131,20 @@ class SimulatedExchange(InstrumentExchange):
 
     def pretransform(self) -> bool:
         if self._should_pretransform_obs and self._feature_pipeline is not None and self._previously_transformed is not True:
+            self.transform()
+            self._previously_transformed = True # prevents multiple transform calls on data frame assignment
+            return True
+
+        return False
+
+    def transform(self) -> bool:
+        if self._feature_pipeline is not None and self._previously_transformed is not True:
             self._data_frame = self._feature_pipeline.transform(
                 self._data_frame, self.generated_space)
             self._previously_transformed = True # prevents multiple transform calls on data frame assignment
-        return True
+            return True
+            
+        return False
 
     def current_price(self, symbol: str) -> float:
         if len(self._data_frame) is 0:
