@@ -22,6 +22,7 @@ from typing import List, Dict, Generator
 from tensortrade.trades import Trade, TradeType
 from tensortrade.exchanges import InstrumentExchange
 from tensortrade.slippage import RandomUniformSlippageModel
+from tensortrade.features import FeaturePipeline
 
 
 class SimulatedExchange(InstrumentExchange):
@@ -36,7 +37,7 @@ class SimulatedExchange(InstrumentExchange):
         super().__init__(base_instrument=kwargs.get('base_instrument', 'USD'),
                          dtype=kwargs.get('dtype', np.float16),
                          feature_pipeline=kwargs.get('feature_pipeline', None))
-
+        self._previously_transformed = False
         self._should_pretransform_obs = kwargs.get('should_pretransform_obs', False)
 
         if data_frame is not None:
@@ -68,9 +69,17 @@ class SimulatedExchange(InstrumentExchange):
     def data_frame(self, data_frame: pd.DataFrame):
         self._data_frame = data_frame
 
-        if self._should_pretransform_obs and self._feature_pipeline is not None:
-            self._data_frame = self._feature_pipeline.transform(
-                self._data_frame, self.generated_space)
+        self.pretransform()
+
+    @property
+    def feature_pipeline(self) -> FeaturePipeline:
+        return self._feature_pipeline
+
+    @feature_pipeline.setter
+    def feature_pipeline(self, feature_pipeline = FeaturePipeline):
+        self._feature_pipeline = feature_pipeline
+        self.pretransform()
+        return self._feature_pipeline
 
     @property
     def initial_balance(self) -> float:
@@ -110,7 +119,7 @@ class SimulatedExchange(InstrumentExchange):
     def _create_observation_generator(self) -> Generator[pd.DataFrame, None, None]:
         for step in range(self._current_step, len(self._data_frame)):
             self._current_step = step
-            
+
             obs = self._data_frame.iloc[step - self._window_size + 1:step + 1]
 
             if not self._should_pretransform_obs and self._feature_pipeline is not None:
@@ -119,6 +128,13 @@ class SimulatedExchange(InstrumentExchange):
             yield obs
 
         raise StopIteration
+
+    def pretransform(self) -> bool:
+        if self._should_pretransform_obs and self._feature_pipeline is not None and self._previously_transformed is not True:
+            self._data_frame = self._feature_pipeline.transform(
+                self._data_frame, self.generated_space)
+            self._previously_transformed = True # prevents multiple transform calls on data frame assignment
+        return True
 
     def current_price(self, symbol: str) -> float:
         if len(self._data_frame) is 0:
