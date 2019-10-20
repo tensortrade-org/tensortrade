@@ -112,8 +112,3 @@ def test_context_retains_data_outside_with():
         assert tc.data == config
 
     assert tc.data == config
-
-
-def test_no_context_outside_with_statement():
-    with pytest.raises(TypeError, match=r"No base on base stack"):
-        get_context()

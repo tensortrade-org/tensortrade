@@ -61,7 +61,7 @@ class TradingContext(UserDict):
         return self._products
 
     @products.setter
-    def product(self, products: Union[str, List[str]]):
+    def products(self, products: Union[str, List[str]]):
         self._products = products
 
     @property
@@ -86,7 +86,7 @@ class TradingContext(UserDict):
     @classmethod
     def get_contexts(cls):
         if not hasattr(cls.contexts, 'stack'):
-            cls.contexts.stack = []
+            cls.contexts.stack = [TradingContext()]
         return cls.contexts.stack
 
     @classmethod

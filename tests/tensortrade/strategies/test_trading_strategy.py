@@ -1,9 +1,11 @@
 
 import pytest
+import pandas as pd
 
 from tensortrade.actions import DiscreteActionStrategy
 from tensortrade.rewards import SimpleProfitStrategy
 from tensortrade.exchanges.simulated import SimulatedExchange
+from tensortrade import TradingContext
 from tensortrade.environments import TradingEnvironment
 
 from tensortrade.strategies import TradingStrategy
@@ -40,34 +42,31 @@ config = {
 
 def test_injects_trading_strategy_with_context():
 
-    with TradingStrategy(**config) as tc:
+    with TradingContext(**config) as tc:
 
-        strategy = TradingEnvironment(
+        env = TradingEnvironment(
             exchange='simulated',
             action_strategy='discrete',
             reward_strategy='simple'
         )
 
-        assert strategy.reward_strategy.context == tc
-        assert strategy.action_strategy.context == tc
-        assert strategy.exchange.context == tc
-        assert strategy.context == tc
+        strategy = ConcreteTradingStrategy(environment=env)
+
+        assert strategy.environment.shared == tc.shared
 
 
-@pytest.skip(msg="ModuleNotFoundError: No module named \'tensorflow.contrib\'")
 def test_injects_string_initialized_strategy_with_context():
 
-    with TradingStrategy(**config) as tc:
+    exchange = SimulatedExchange()
 
-        strategy = TradingEnvironment(
-            exchange='fbm',
+    with TradingContext(**config) as tc:
+
+        env = TradingEnvironment(
+            exchange=exchange,
             action_strategy='discrete',
             reward_strategy='simple'
         )
 
-        assert strategy.reward_strategy.context == tc
-        assert strategy.action_strategy.context == tc
-        assert strategy.exchange.context == tc
-        assert strategy.context == tc
+        strategy = ConcreteTradingStrategy(environment=env)
 
-
+        assert strategy.environment.shared == tc.shared

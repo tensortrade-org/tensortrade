@@ -54,7 +54,7 @@ def test_meta_injects_no_context_outside_with():
     }
     instance = ConcreteContextual(data)
 
-    assert instance.context is None
+    assert instance.context
 
 
 config = {
@@ -87,7 +87,7 @@ def test_no_injection_subclassed_abc_contextualized_mixin():
 
     instance = ConcreteContextualData(name=name, value=value)
 
-    assert instance.context is None
+    assert instance.context
     assert instance.data == {name: value}
 
 
@@ -98,13 +98,13 @@ def test_injects_subclassed_abc_contextualized_mixin_in_context():
         'weight': 'how dare you ask such a question'
     }
 
-    with td.TradingContext(**config):
+    with td.TradingContext(**config) as tc:
         name = 'Matt'
         value = 'not for sale!'
         instance = ConcreteContextualData(name=name, value=value)
 
-        assert instance.context == config
+        assert instance.context == tc
 
         assert instance.data == {name: value}
 
-    assert instance.context == config
+    assert instance.context == tc
