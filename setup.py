@@ -44,11 +44,12 @@ setup(
         if package.startswith('tensortrade')
     ],
     license='Apache 2.0',
-    python_requires='>=3.5',
+    python_requires='>=3.6',
     install_requires=[
         'numpy==1.16.4',
         'pandas==0.25.0',
         'gym==0.14.0',
+        'typing-extensions==3.7.4'
     ],
     extras_require={
         'tf': ['tensorflow==1.13.1'],
@@ -79,7 +80,7 @@ setup(
         'License :: OSI Approved :: Apache Software License',
         'Operating System :: OS Independent',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
         'Topic :: Office/Business :: Financial :: Investment',
         'Topic :: Office/Business :: Financial',
         'Topic :: Scientific/Engineering :: Information Analysis',
