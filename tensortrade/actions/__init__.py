@@ -5,9 +5,9 @@ from .multi_discrete_action_strategy import MultiDiscreteActionStrategy
 
 
 _registry = {
-    'continuous': ContinuousActionStrategy(),
-    'discrete': DiscreteActionStrategy(),
-    'multi-discrete': MultiDiscreteActionStrategy(instrument_symbols=['BTC', 'ETH']),
+    'continuous': ContinuousActionStrategy,
+    'discrete': DiscreteActionStrategy,
+    'multi-discrete': MultiDiscreteActionStrategy,
 }
 
 
@@ -22,4 +22,4 @@ def get(identifier: str) -> ActionStrategy:
     """
     if identifier not in _registry.keys():
         raise KeyError(f'Identifier {identifier} is not associated with any `ActionStrategy`.')
-    return _registry[identifier]
+    return _registry[identifier]()

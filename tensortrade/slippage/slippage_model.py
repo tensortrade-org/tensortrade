@@ -12,12 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from abc import ABCMeta, abstractmethod
+from abc import abstractmethod
 
+from tensortrade import Component
 from tensortrade.trades import Trade
 
 
-class SlippageModel(object, metaclass=ABCMeta):
+class SlippageModel(Component):
     """A model for simulating slippage on an exchange trade."""
 
     def __init__(self):

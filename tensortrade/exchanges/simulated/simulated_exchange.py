@@ -33,9 +33,10 @@ class SimulatedExchange(InstrumentExchange):
     """
 
     def __init__(self, data_frame: pd.DataFrame = None, **kwargs):
-        super().__init__(base_instrument=kwargs.get('base_instrument', 'USD'),
-                         dtype=kwargs.get('dtype', np.float16),
-                         feature_pipeline=kwargs.get('feature_pipeline', None))
+        super().__init__(
+            dtype=kwargs.get('dtype', np.float16),
+            feature_pipeline=kwargs.get('feature_pipeline', None)
+        )
 
         self._should_pretransform_obs = kwargs.get('should_pretransform_obs', False)
 

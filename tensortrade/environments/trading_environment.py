@@ -89,7 +89,7 @@ class TradingEnvironment(Environment, gym.Env):
 
     @property
     def action_strategy(self) -> ActionStrategy:
-        """The strategy for transforming an action into a `Trade` at each timestep."""
+        """The strategy for transforming an action into a `Trade` at each time step."""
         return self._action_strategy
 
     @action_strategy.setter
@@ -98,7 +98,7 @@ class TradingEnvironment(Environment, gym.Env):
 
     @property
     def reward_strategy(self) -> RewardStrategy:
-        """The strategy for determining the reward at each timestep."""
+        """The strategy for determining the reward at each time step."""
         return self._reward_strategy
 
     @reward_strategy.setter

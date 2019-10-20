@@ -15,16 +15,17 @@
 import numpy as np
 
 from typing import Union
-from abc import ABCMeta, abstractmethod
+from abc import abstractmethod
 from gym.spaces import Space
 
+from tensortrade import Component
 from tensortrade.trades import Trade
 
 DTypeString = Union[type, str]
 TradeActionUnion = Union[int, float, tuple]
 
 
-class ActionStrategy(object, metaclass=ABCMeta):
+class ActionStrategy(Component):
     """An abstract strategy for determining the action to take at each timestep within a trading environment."""
 
     @abstractmethod
@@ -34,7 +35,6 @@ class ActionStrategy(object, metaclass=ABCMeta):
             action_space: The shape of the actions produced by the strategy.
             dtype: A type or str corresponding to the dtype of the `action_space`. Defaults to `np.float16`.
         """
-
         self._action_space = action_space
         self._dtype = dtype
 

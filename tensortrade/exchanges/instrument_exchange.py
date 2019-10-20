@@ -15,27 +15,32 @@
 import pandas as pd
 import numpy as np
 
-from abc import ABCMeta, abstractmethod
+from abc import abstractmethod
 from typing import Dict, Union, List, Generator
 from gym.spaces import Space
 
+from tensortrade import Component
 from tensortrade.trades import Trade
 from tensortrade.features import FeaturePipeline
 
 TypeString = Union[type, str]
 
 
-class InstrumentExchange(object, metaclass=ABCMeta):
-    """An abstract instrument exchange for use within a trading environment."""
+class InstrumentExchange(Component):
+    """An abstract instrument exchange for use within a trading environment.
 
-    def __init__(self, base_instrument: str = 'USD', dtype: TypeString = np.float16, feature_pipeline: FeaturePipeline = None):
-        """
-        Arguments:
-            base_instrument: The exchange symbol of the instrument to store/measure value in.
-            dtype: A type or str corresponding to the dtype of the `observation_space`.
-            feature_pipeline: A pipeline of feature transformations for transforming observations.
-        """
-        self._base_instrument = base_instrument
+    Parameters
+    ----------
+    base_instrument : str
+        The exchange symbol of the instrument to store/measure value in.
+    dtype : `TypeString`
+        A type or str corresponding to the dtype of the `observation_space`.
+    feature_pipeline : `FeaturePipeline`
+        A pipeline of feature transformations for transforming observations.
+    """
+
+    def __init__(self, dtype: TypeString = np.float16, feature_pipeline: FeaturePipeline = None):
+        self._base_instrument = self.context.base_instrument
         self._dtype = dtype
         self._feature_pipeline = feature_pipeline
 

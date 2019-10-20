@@ -28,11 +28,13 @@ class CCXTExchange(InstrumentExchange):
     """An instrument exchange for trading on CCXT-supported cryptocurrency exchanges."""
 
     def __init__(self, exchange: Exchange,  **kwargs):
-        super().__init__(base_instrument=kwargs.get('base_instrument', 'USD'),
-                         dtype=kwargs.get('dtype', np.float16),
-                         feature_pipeline=kwargs.get('feature_pipeline', None))
+        super(CCXTExchange, self).__init__(
+            dtype=kwargs.get('dtype', np.float16),
+            feature_pipeline=kwargs.get('feature_pipeline', None)
+        )
 
         self._exchange = exchange
+        self._credentials = self.context.credentials
 
         self._exchange.enableRateLimit = kwargs.get('enable_rate_limit', True)
         self._markets = self._exchange.load_markets()

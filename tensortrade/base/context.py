@@ -14,6 +14,16 @@ class TradingContext(UserDict):
     This implementation for this class is heavily borrowed from the pymc3
     library and adapted with the design goals of TensorTrade in mind.
 
+    Parameters
+    ----------
+    base_instrument : str
+
+    products : List[str]
+        The exchange symbols of the instruments being traded.
+
+    credentials : dict
+
+
     Reference:
         - https://github.com/pymc-devs/pymc3/blob/master/pymc3/model.py
     """
@@ -31,13 +41,15 @@ class TradingContext(UserDict):
             **config
         )
         self._base_instrument = base_instrument
+        if type(products) == str:
+            products = [products]
         self._products = products
         self._credentials = credentials
 
         self.__dict__ = {**self.__dict__, **self.data}
 
     @property
-    def base_instrument(self):
+    def base_instrument(self) -> str:
         return self._base_instrument
 
     @base_instrument.setter
@@ -45,15 +57,15 @@ class TradingContext(UserDict):
         self._base_instrument = base_instrument
 
     @property
-    def products(self):
+    def products(self) -> List[str]:
         return self._products
 
     @products.setter
-    def products(self, products: Union[str, List[str]]):
+    def product(self, products: Union[str, List[str]]):
         self._products = products
 
     @property
-    def credentials(self):
+    def credentials(self) -> dict:
         return self._credentials
 
     @credentials.setter
@@ -79,11 +91,11 @@ class TradingContext(UserDict):
 
     @classmethod
     def get_context(cls):
-        """Return the deepest base on the stack."""
+        """Gets the deepest context on the stack."""
         try:
             return cls.get_contexts()[-1]
         except IndexError:
-            raise TypeError("No base on base stack")
+            raise TypeError("No context on context stack")
 
 
 class InitContextMeta(abc.ABCMeta):
@@ -103,11 +115,10 @@ class ContextualizedMixin(object):
     """This class is to be mixed in with any class that must function in a
     contextual setting.
     """
-
     @property
-    def context(self):
+    def context(self) -> TradingContext:
         return self._context
 
     @context.setter
-    def context(self, context: dict):
+    def context(self, context: TradingContext):
         self._context = context

@@ -14,12 +14,13 @@
 
 import pandas as pd
 
-from abc import ABCMeta, abstractmethod
+from abc import abstractmethod
 
+from tensortrade import Component
 from tensortrade.trades import Trade
 
 
-class RewardStrategy(object, metaclass=ABCMeta):
+class RewardStrategy(Component):
 
     def __init__(self):
         pass
