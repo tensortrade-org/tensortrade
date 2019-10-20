@@ -16,3 +16,6 @@ tags
 # developer environments
 .idea
 .vscode
+
+# agent storage
+examples/agents
