@@ -1,8 +1,6 @@
-FROM python:6
+FROM python:3.6
 
 WORKDIR /
-
-COPY . ./
 
 RUN apt-get update -y && \ 
   apt-get install pandoc -y && \
@@ -11,4 +9,5 @@ RUN apt-get update -y && \
 RUN pip install --upgrade pip
 RUN pip install -e .[tf,docs,tests,baselines,tensorforce,ccxt,fbm]
 RUN pip install -r /requirements.txt
+RUN pip install -r /examples/requirements.txt
 
