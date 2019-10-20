@@ -3,4 +3,3 @@ pandas==0.25.0
 gym==0.14.0
 jupyterlab==1.1.4
 mpi4py==3.0.2
-typing-extensions==3.7.4
