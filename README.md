@@ -4,7 +4,7 @@
 [![Documentation Status](https://readthedocs.org/projects/tensortrade/badge/?version=latest)](https://tensortrade.org)
 [![Apache License](https://img.shields.io/github/license/notadamking/tensortrade.svg?color=brightgreen)](http://www.apache.org/licenses/LICENSE-2.0)
 [![Discord](https://img.shields.io/discord/592446624882491402.svg?color=brightgreen)](https://discord.gg/ZZ7BGWh)
-[![Python 3.5](https://img.shields.io/badge/python-3.5-blue.svg)](https://www.python.org/downloads/release/python-350/)
+[![Python 3.6](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/downloads/release/python-360/)
 
 ---
 
@@ -44,10 +44,40 @@ You can get started testing on Google Colab or your local machine, by viewing ou
 
 ## Installation
 
-TensorTrade requires Python >= 3.5 for all functionality to work as expected.
+TensorTrade requires Python >= 3.6 for all functionality to work as expected.
 
 ```bash
 pip install -r requirements.txt
+```
+
+---
+
+## Docker
+
+To run the commands below, ensure Docker is installed. Visit https://docs.docker.com/install/ for more information.
+
+### Run Jupyter Notebooks
+
+To run a jupyter notebook in your browser, execute the following command and visit the `http://127.0.0.1:8888/?token=...` link printed to the command line.
+
+```bash
+make run-notebook
+```
+
+### Build Documentation
+
+To build the HTML documentation, execute the following command.
+
+```bash
+make run-docs
+```
+
+### Run Test Suite
+
+To run the test suite, execute the following command.
+
+```bash
+make run-tests
 ```
 
 ---
@@ -63,7 +93,7 @@ You can also post **bug reports and feature requests** in [GitHub issues](https:
 
 If you would like to support this project financially, there are a few ways you can contribute. Your contributions are greatly appreciated and help to keep TensorTrade maintained and always improving.
 
-Patreon: https://www.patreon.com/notadamking
+Github Sponsors: https://github.com/sponsors/notadamking - **All Github Sponsors donations are matched 1:1 by Github up to \$5,000!**
 
 BTC Address: `1Lc47bhYvdyKGk1qN8oBHdYQTkbFLL3PFw`
 

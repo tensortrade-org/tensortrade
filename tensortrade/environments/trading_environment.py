@@ -23,7 +23,6 @@ import tensortrade.features as features
 
 from gym import spaces
 from typing import Union, Tuple, List
-from tensorforce.environments import Environment
 
 from tensortrade.actions import ActionStrategy, TradeActionUnion
 from tensortrade.rewards import RewardStrategy
@@ -31,11 +30,8 @@ from tensortrade.exchanges import InstrumentExchange
 from tensortrade.features import FeaturePipeline
 from tensortrade.trades import Trade
 
-TensorForceStateType = Union[bool, int, float]
-TensorForceStateShape = Union[int, List[int], Tuple[int, ...]]
 
-
-class TradingEnvironment(Environment, gym.Env):
+class TradingEnvironment(gym.Env):
     """A trading environment made for use with Gym-compatible reinforcement learning algorithms."""
 
     def __init__(self,
@@ -114,31 +110,6 @@ class TradingEnvironment(Environment, gym.Env):
     def feature_pipeline(self, feature_pipeline: FeaturePipeline):
         self._exchange.feature_pipeline = feature_pipeline
 
-    @property
-    def states(self) -> Tuple[TensorForceStateType, TensorForceStateShape]:
-        """The state space specification, required for `tensorforce` agents.
-
-        The tuple contains the following attributes:
-            - type: Either 'bool', 'int', or 'float'.
-            - shape: The shape of the space. An `int` or `list`/`tuple` of `int`s.
-        """
-        from tensorforce.contrib.openai_gym import OpenAIGym
-        return OpenAIGym.state_from_space(self.observation_space)
-
-    @property
-    def actions(self) -> Tuple[TensorForceStateType, TensorForceStateShape, int, float, float]:
-        """The action space specification, required for `tensorforce` agents.
-
-        The tuple contains the following attributes:
-            - type: Either 'bool', 'int', or 'float'.
-            - shape: The shape of the space. An `int` or `list`/`tuple` of `int`s.
-            - num_actions (required if type == 'int'): The number of discrete actions.
-            - min_value (optional if type == 'float'): An `int` or `float`. Defaults to `None`.
-            - max_value (optional if type == 'float'): An `int` or `float`. Defaults to `None`.
-        """
-        from tensorforce.contrib.openai_gym import OpenAIGym
-        return OpenAIGym.action_from_space(self.action_space)
-
     def _take_action(self, action: TradeActionUnion) -> Trade:
         """Determines a specific trade to be taken and executes it within the exchange.
 
@@ -163,7 +134,9 @@ class TradingEnvironment(Environment, gym.Env):
         self._current_step += 1
 
         observation = self._exchange.next_observation()
-
+        if len(observation) != 0:
+            observation = observation[0]
+            observation = np.nan_to_num(observation)
         return observation
 
     def _get_reward(self, trade: Trade) -> float:
@@ -172,10 +145,10 @@ class TradingEnvironment(Environment, gym.Env):
         Returns:
             A float corresponding to the benefit earned by the action taken this step.
         """
-        reward: float = self._reward_strategy.get_reward(
-            current_step=self._current_step, trade=trade)
+        reward = self._reward_strategy.get_reward(current_step=self._current_step, trade=trade)
+        reward = np.nan_to_num(reward)
 
-        if not np.isfinite(reward):
+        if np.bitwise_not(np.isfinite(reward)):
             raise ValueError('Reward returned by the reward strategy must by a finite float.')
 
         return reward
@@ -221,20 +194,6 @@ class TradingEnvironment(Environment, gym.Env):
         info = self._info(executed_trade, filled_trade)
 
         return observation, reward, done, info
-
-    def execute(self, action) -> Tuple[pd.DataFrame, float, bool, dict]:
-        """Run one timestep within the environment based on the specified action, required for `tensorforce` agents.
-
-        Arguments:
-            action: The trade action provided by the agent for this timestep.
-
-        Returns:
-            observation (np.ndarray): Provided by the environment's exchange, often OHLCV or tick trade history data points.
-            terminal (bool): If `True`, the environment is complete and should be restarted.
-            reward (float): An amount corresponding to the benefit earned by the action taken this timestep.
-        """
-        observation, done, reward, _ = self.step(action)
-        return observation, reward, done
 
     def reset(self) -> pd.DataFrame:
         """Resets the state of the environment and returns an initial observation.

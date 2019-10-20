@@ -21,8 +21,7 @@ from copy import copy
 from abc import abstractmethod
 from typing import Union, List, Callable
 
-from tensortrade.features import FeatureTransformer
-
+from tensortrade.features.feature_transformer import FeatureTransformer
 
 class TAlibIndicator(FeatureTransformer):
     """Adds one or more TAlib indicators to a data frame, based on existing open, high, low, and close column values."""

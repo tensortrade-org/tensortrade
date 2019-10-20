@@ -43,8 +43,11 @@ class FBMExchange(SimulatedExchange):
         self._timeframe = kwargs.get('timeframe', '1h')
 
     def _generate_price_history(self):
-        price_fbm = FractionalBrownianMotion(t=self._times_to_generate, hurst=self._hurst)
-        volume_gen = GaussianNoise(t=self._times_to_generate)
+        try:
+            price_fbm = FractionalBrownianMotion(t=self._times_to_generate, hurst=self._hurst)
+            volume_gen = GaussianNoise(t=self._times_to_generate)
+        except:
+            self._generate_price_history()
 
         start_date = pd.to_datetime(self._start_date, format=self._start_date_format)
 

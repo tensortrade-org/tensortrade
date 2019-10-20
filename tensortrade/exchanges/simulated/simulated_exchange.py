@@ -22,6 +22,7 @@ from typing import List, Dict, Generator
 from tensortrade.trades import Trade, TradeType
 from tensortrade.exchanges import InstrumentExchange
 from tensortrade.slippage import RandomUniformSlippageModel
+from tensortrade.features import FeaturePipeline
 
 
 class SimulatedExchange(InstrumentExchange):
@@ -37,7 +38,7 @@ class SimulatedExchange(InstrumentExchange):
             dtype=kwargs.get('dtype', np.float16),
             feature_pipeline=kwargs.get('feature_pipeline', None)
         )
-
+        self._previously_transformed = False
         self._should_pretransform_obs = kwargs.get('should_pretransform_obs', False)
 
         if data_frame is not None:
@@ -69,9 +70,21 @@ class SimulatedExchange(InstrumentExchange):
     def data_frame(self, data_frame: pd.DataFrame):
         self._data_frame = data_frame
 
-        if self._should_pretransform_obs and self._feature_pipeline is not None:
-            self._data_frame = self._feature_pipeline.transform(
-                self._data_frame, self.generated_space)
+        if self._should_pretransform_obs:
+            self.transform_data_frame()
+
+    @property
+    def feature_pipeline(self) -> FeaturePipeline:
+        return self._feature_pipeline
+
+    @feature_pipeline.setter
+    def feature_pipeline(self, feature_pipeline=FeaturePipeline):
+        self._feature_pipeline = feature_pipeline
+
+        if self._should_pretransform_obs:
+            self.transform_data_frame()
+
+        return self._feature_pipeline
 
     @property
     def initial_balance(self) -> float:
@@ -120,6 +133,12 @@ class SimulatedExchange(InstrumentExchange):
             yield obs
 
         raise StopIteration
+
+    def transform_data_frame(self) -> bool:
+        if self._feature_pipeline is not None and self._previously_transformed is not True:
+            self._previously_transformed = True
+            self._data_frame = self._feature_pipeline.transform(self._data_frame,
+                                                                self.generated_space)
 
     def current_price(self, symbol: str) -> float:
         if len(self._data_frame) is 0:

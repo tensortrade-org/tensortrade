@@ -17,5 +17,5 @@ def get(identifier: str) -> SlippageModel:
         KeyError: if identifier is not associated with any `SlippageModel`
     """
     if identifier not in _registry.keys():
-        raise KeyError(f'Identifier {identifier} is not associated with any `SlippageModel`.')
+        raise KeyError('Identifier {} is not associated with any `SlippageModel`.'.format(identifier))
     return _registry[identifier]
