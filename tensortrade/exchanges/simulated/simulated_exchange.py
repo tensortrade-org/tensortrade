@@ -40,9 +40,6 @@ class SimulatedExchange(InstrumentExchange):
         self._previously_transformed = False
         self._should_pretransform_obs = kwargs.get('should_pretransform_obs', False)
 
-        if data_frame is not None:
-            self.data_frame = data_frame.astype(self._dtype)
-
         self._commission_percent = kwargs.get('commission_percent', 0.3)
         self._base_precision = kwargs.get('base_precision', 2)
         self._instrument_precision = kwargs.get('instrument_precision', 8)
@@ -58,6 +55,9 @@ class SimulatedExchange(InstrumentExchange):
         max_allowed_slippage_percent = kwargs.get('max_allowed_slippage_percent', 1.0)
 
         SlippageModelClass = kwargs.get('slippage_model', RandomUniformSlippageModel)
+
+        if data_frame is not None:
+            self.data_frame = data_frame.astype(self._dtype)
         self._slippage_model = SlippageModelClass(max_allowed_slippage_percent)
 
     @property
