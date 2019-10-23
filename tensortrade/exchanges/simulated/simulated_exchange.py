@@ -184,13 +184,11 @@ class SimulatedExchange(InstrumentExchange):
         filled_trade = trade.copy()
 
         if filled_trade.is_hold or not self._is_valid_trade(filled_trade):
-            # print(" | trade is not valid or is HOLD")
             filled_trade.amount = 0
             return filled_trade
         elif filled_trade.is_buy:
             price_adjustment = price_adjustment = (1 + commission)
             filled_trade.price = max(round(current_price * price_adjustment, self._base_precision), self.base_precision)
-            # THA FUck is this doing???
             filled_trade.amount = round((filled_trade.price * filled_trade.amount) / filled_trade.price, self._instrument_precision)
         elif filled_trade.is_sell:
             price_adjustment = (1 - commission)
