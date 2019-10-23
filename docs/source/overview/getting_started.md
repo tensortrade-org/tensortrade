@@ -6,7 +6,7 @@ You can get started testing on Google Colab or your local machine, by viewing ou
 
 ## Installation
 
-TensorTrade requires Python >= 3.5 for all functionality to work as expected.
+TensorTrade requires Python >= 3.6 for all functionality to work as expected.
 
 You can install the package from PyPi via pip or from the Github repo.
 
