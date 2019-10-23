@@ -2,3 +2,10 @@
 
 bokeh
 ipywidgets
+tensorflow==1.13.1
+tensorforce==0.5.2
+stable-baselines==2.8.0
+mpi4py
+stochastic==0.4.0
+ccxt==1.18.1220
+jupyterlab==1.1.4
