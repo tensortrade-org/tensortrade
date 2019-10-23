@@ -141,17 +141,10 @@ class SimulatedExchange(InstrumentExchange):
                                                                 self.generated_space)
 
     def current_price(self, symbol: str) -> float:
-<<<<<<< Updated upstream
-        if len(self._unmodified_data_frame) is 0:
-            self.next_observation()
-
-        return float(self._unmodified_data_frame['close'].values[self._current_step])
-=======
         d = self._unmodified_data_frame.loc[self._unmodified_data_frame['symbol']==symbol, ['close']]
         if d.empty is False:
             return d.iloc[self._current_step][0]
         return 0
->>>>>>> Stashed changes
 
     def _is_valid_trade(self, trade: Trade) -> bool:
         if trade.trade_type is TradeType.MARKET_BUY or trade.trade_type is TradeType.LIMIT_BUY:
