@@ -59,5 +59,5 @@ make run-docs
 
 To run the test suite execute the following
 ```bash
-make run-test
+make run-tests
 ```
