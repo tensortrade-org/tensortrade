@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import pandas as pd
-import sys
 import numpy as np
 
 from abc import ABCMeta, abstractmethod
@@ -24,6 +23,7 @@ from tensortrade.trades import Trade
 from tensortrade.features import FeaturePipeline
 
 TypeString = Union[type, str]
+
 
 class InstrumentExchange(object, metaclass=ABCMeta):
     """An abstract instrument exchange for use within a trading environment."""
@@ -192,7 +192,6 @@ class InstrumentExchange(object, metaclass=ABCMeta):
             return observation.values
 
         return observation
-
 
     def instrument_balance(self, symbol: str) -> float:
         """The current balance of the specified symbol on the exchange, denoted in the base instrument.
