@@ -41,6 +41,7 @@ class SimulatedExchange(InstrumentExchange):
         self._should_pretransform_obs = kwargs.get('should_pretransform_obs', False)
 
         if data_frame is not None:
+            self._unmodified_data_frame = data_frame.astype(self._dtype)
             self.data_frame = data_frame.astype(self._dtype)
 
         self._commission_percent = kwargs.get('commission_percent', 0.3)
@@ -140,10 +141,10 @@ class SimulatedExchange(InstrumentExchange):
                                                                 self.generated_space)
 
     def current_price(self, symbol: str) -> float:
-        if len(self._data_frame) is 0:
+        if len(self._unmodified_data_frame) is 0:
             self.next_observation()
 
-        return float(self._data_frame['close'].values[self._current_step])
+        return float(self._unmodified_data_frame['close'].values[self._current_step])
 
     def _is_valid_trade(self, trade: Trade) -> bool:
         if trade.trade_type is TradeType.MARKET_BUY or trade.trade_type is TradeType.LIMIT_BUY:
