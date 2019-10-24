@@ -157,10 +157,10 @@ class CCXTExchange(InstrumentExchange):
 
         max_wait_time = time.time() + self._max_trade_wait_in_sec
 
-        while order['status'] is 'open' and time.time() < max_wait_time:
+        while order['status'] == 'open' and time.time() < max_wait_time:
             order = self._exchange.fetch_order(order.id)
 
-        if order['status'] is 'open':
+        if order['status'] == 'open':
             self._exchange.cancel_order(order.id)
 
         self._performance = self._performance.append({

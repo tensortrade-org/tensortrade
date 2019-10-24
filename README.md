@@ -86,14 +86,17 @@ make run-tests
 
 You can ask questions and join the development discussion:
 
-- On the [TensorTrade Gitter](https://gitter.im/tensortrade-framework/community).
+
 - On the [TensorTrade Discord server](https://discord.gg/ZZ7BGWh).
+- On the [TensorTrade Gitter](https://gitter.im/tensortrade-framework/community).
 
 You can also post **bug reports and feature requests** in [GitHub issues](https://github.com/notadamking/tensortrade/issues). Make sure to read [our guidelines](https://github.com/notadamking/tensortrade/blob/master/CONTRIBUTING.md) first.
 
 If you would like to support this project financially, there are a few ways you can contribute. Your contributions are greatly appreciated and help to keep TensorTrade maintained and always improving.
 
-Github Sponsors: https://github.com/sponsors/notadamking - **All Github Sponsors donations are matched 1:1 by Github up to \$5,000!**
+Github Sponsors: https://github.com/sponsors/notadamking
+
+**All Github Sponsors donations are matched 1:1 by Github up to \$5,000!**
 
 BTC Address: `1Lc47bhYvdyKGk1qN8oBHdYQTkbFLL3PFw`
 

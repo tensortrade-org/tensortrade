@@ -37,9 +37,9 @@ class RiskAdjustedReturnStrategy(RewardStrategy):
         self._target_returns = target_returns
 
     def _return_algorithm_from_str(self, algorithm_str: str) -> Callable[[pd.DataFrame], float]:
-        if algorithm_str is 'sharpe':
+        if algorithm_str == 'sharpe':
             return self._sharpe_ratio
-        elif algorithm_str is 'sortino':
+        elif algorithm_str == 'sortino':
             return self._sortino_ratio
 
     def _sharpe_ratio(self, returns: pd.Series) -> float:
