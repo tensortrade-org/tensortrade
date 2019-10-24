@@ -141,9 +141,12 @@ class SimulatedExchange(InstrumentExchange):
                                                                 self.generated_space)
 
     def current_price(self, symbol: str) -> float:
-        d = self._unmodified_data_frame.loc[self._unmodified_data_frame['symbol']==symbol, ['close']]
-        if d.empty is False:
-            return d.iloc[self._current_step][0]
+        frame = self._unmodified_data_frame.loc[self._unmodified_data_frame['symbol'] == symbol, [
+            'close']]
+
+        if frame.empty is False:
+            return frame.iloc[self._current_step][0]
+
         return 0
 
     def _is_valid_trade(self, trade: Trade) -> bool:
@@ -185,11 +188,15 @@ class SimulatedExchange(InstrumentExchange):
 
         if filled_trade.is_hold or not self._is_valid_trade(filled_trade):
             filled_trade.amount = 0
+
             return filled_trade
-        elif filled_trade.is_buy:
+
+        if filled_trade.is_buy:
             price_adjustment = price_adjustment = (1 + commission)
-            filled_trade.price = max(round(current_price * price_adjustment, self._base_precision), self.base_precision)
-            filled_trade.amount = round((filled_trade.price * filled_trade.amount) / filled_trade.price, self._instrument_precision)
+            filled_trade.price = max(round(current_price * price_adjustment,
+                                           self._base_precision), self.base_precision)
+            filled_trade.amount = round(
+                (filled_trade.price * filled_trade.amount) / filled_trade.price, self._instrument_precision)
         elif filled_trade.is_sell:
             price_adjustment = (1 - commission)
             filled_trade.price = round(current_price * price_adjustment, self._base_precision)
