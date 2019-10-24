@@ -7,98 +7,41 @@ import ta
 
 from gym.spaces import Box
 
-from tensortrade.features.indicators import ta_indicator
-from tensortrade.features.stationarity import FractionalDifference
+from tensortrade.features.indicators.ta_indicator import TAIndicator
+#from tensortrade.features.stationarity import FractionalDifference
 
 
-@pytest.fixture
-def exchange():
-    return exchanges.get('fbm')
-
+# @pytest.fixture
+# def exchange():
+#     return exchanges.get('fbm')
+#
 
 @pytest.fixture
 def data_frame():
-    df = pd.read_csv('./tensortrade/data/input/coinbase-1h-btc-usd.csv')
+    df = pd.read_csv('../../../../data/input/coinbase-1h-btc-usd.csv')
     return df
 
 
 class TestTAIndicator():
+    indicators_to_test = ["AO", "MFI", "RSI"]
+
     def test_ta_indicator(self):
-        df = data_frame()
-        df = ta.add_all_ta_features(df, 'Open', 'High', 'Low', 'Close', 'VolumeFrom')
-
-
+        test_feature = TAIndicator(TestTAIndicator.indicators_to_test)
+        assert len(test_feature._indicator_names) == 3
+        assert ('AO', ta.ao, ['High', 'Close']) in test_feature.indicators
 
     def test_transform_space(self):
-        pass
+        test_feature = TAIndicator(TestTAIndicator.indicators_to_test)
+        with pytest.raises(NotImplementedError):
+            test_feature.transform_space(None, None)
 
-    def test_transform(self):
-        pass
+    def test_transform(self, data_frame):
+        test_feature = TAIndicator(TestTAIndicator.indicators_to_test)
+        df = data_frame
+        test_feature.transform(df, None)
+        assert set(TestTAIndicator.indicators_to_test).issubset(df.columns)
 
-    def test_incremental_transform(self, data_frame, exchange):
-        difference_all = FractionalDifference(
-            difference_order=0.5, inplace=True)
 
-        feature_pipeline = FeaturePipeline(steps=[difference_all])
 
-        transformed_frame = feature_pipeline.transform(data_frame, exchange.generated_space)
 
-        expected_data_frame = pd.DataFrame([{
-            'open': -26.20469322,
-            'low': -46.15180724,
-            'high': 33.63664884,
-            'close': 13.68953482,
-        },
-            {
-            'open': 134.53651465,
-            'low': 118.24976426,
-            'high': 183.39676584,
-            'close': 167.11001545,
-        }])
 
-        assert np.allclose(expected_data_frame.values, transformed_frame.values)
-
-        next_frame = pd.DataFrame([{
-            'open': 200,
-            'low': 150,
-            'high': 350,
-            'close': 300,
-        },
-            {
-            'open': 300,
-            'low': 250,
-            'high': 450,
-            'close': 400,
-        }])
-
-        transformed_frame = feature_pipeline.transform(next_frame, exchange.generated_space)
-
-        expected_data_frame = pd.DataFrame([{
-            'open': 127.785105,
-            'low': 87.031409,
-            'high': 250.046192,
-            'close': 209.292496,
-        },
-            {
-            'open': 185.484853,
-            'low': 166.817514,
-            'high': 241.486873,
-            'close': 222.819533,
-        }])
-
-        assert np.allclose(expected_data_frame.values, transformed_frame.values)
-
-    def test_transform_space(self, data_frame, exchange):
-        difference_all = FractionalDifference(difference_order=0.5, inplace=False)
-
-        feature_pipeline = FeaturePipeline(steps=[difference_all])
-
-        low = np.array([1E-3, ] * 4 + [1E-3, ])
-        high = np.array([1E3, ] * 4 + [1E3, ])
-
-        input_space = Box(low=low, high=high, dtype=np.float16)
-
-        transformed_space = feature_pipeline.transform_space(
-            input_space, exchange.generated_columns)
-
-        assert transformed_space != input_space

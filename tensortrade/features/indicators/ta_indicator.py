@@ -25,11 +25,14 @@ from tensortrade.features.feature_transformer import FeatureTransformer
 
 
 class TAIndicator(FeatureTransformer):
-    """Adds one or more TA indicators to a data frame, based on existing open, high, low, and close column values."""
+    """Adds one or more TA indicators to a data frame, based on existing open, high, low, close, and 'volume from'
+     column values.."""
+
+    # Indicators supported by TA module:
     indicators = [
         # Momentum
         ('AO', ta.ao, ['High', 'Close']),
-        ('KAMA', ta.kama, ['Close']),
+        #('KAMA', ta.kama, ['Close']),
         ('MFI', ta.money_flow_index, ['High', 'Low', 'Close', 'VolumeFrom']),
         ('RSI', ta.rsi, ['Close']),
         ('SO', ta.stoch, ['Close']),
@@ -71,8 +74,8 @@ class TAIndicator(FeatureTransformer):
         ('CCI', ta.cci, ['High', 'Low', 'Close']),
         ('DPO', ta.dpo, ['Close']),
         ('EMA', ta.trend.ema_indicator, ['Close']),
-        ('ICHA', ichimoku_a, ['High', 'Low']),
-        ('ICHB', ichimoku_b, ['High', 'Low']),
+        ('ICHA', ta.ichimoku_a, ['High', 'Low']),
+        ('ICHB', ta.ichimoku_b, ['High', 'Low']),
         ('KST', ta.kst, ['Close']),
         ('KSTS', ta.kst_sig, ['Close']),
         ('MACD', ta.macd, ['Close']),
@@ -89,36 +92,39 @@ class TAIndicator(FeatureTransformer):
 
     ]
 
+    def __init__(self,
+                 indicators: Union[List[str], str, None] = None,
+                 ):
+        """
+        :param columns (optional): A list of indicators to apply as part of the transformation.  Leaving this value
+        blank will apply all that are supported by the library.
+        """
 
-
-    def __init__(self, indicators: List[str], lows: Union[List[float], List[int]] = None, highs: Union[List[float], List[int]] = None):
-        self._indicator_names = indicators
+        self._indicator_names = TAIndicator.indicators if not indicators else indicators
         self._indicators = list(
             map(lambda indicator_name: self._str_to_indicator(indicator_name), indicators))
 
-        self._lows = lows or np.zeros(len(indicators))
-        self._highs = highs or np.ones(len(indicators))
-
     def _str_to_indicator(self, indicator_name: str):
-        return getattr(ta, indicator_name.upper())
+        # Only one result expected
+        return next(i for i in TAIndicator.indicators if i[0] == indicator_name)
 
     def transform_space(self, input_space: Space, column_names: List[str]) -> Space:
-        output_space = copy(input_space)
-        shape_x, *shape_y = input_space.shape
+        raise NotImplementedError()
 
-        output_space.shape = (shape_x + len(self._indicators), *shape_y)
+    def transform(self, df: pd.DataFrame, input_space: Space) -> pd.DataFrame:
+        """
+        Will add TAIndicator.indicator columns to DataFrame. Frame must have columns that match indicator parameters,
+        e.g. ['High', 'Low', 'Close'], &c...
 
+        :param df: Dataframe with columns matching TA indicators function call
+        :param input_space: None is acceptable, doesn't nothing but required by abstract class
+        :return:
+        """
         for i in range(len(self._indicators)):
-            output_space.low = np.append(output_space.low, self._lows[i])
-            output_space.high = np.append(output_space.high, self._highs[i])
-
-        return output_space
-
-    def transform(self, X: pd.DataFrame, input_space: Space) -> pd.DataFrame:
-        for i in range(len(self._indicators)):
-            indicator_name = self._indicator_names[i]
             indicator = self._indicators[i]
+            name, func, args = indicator
+            split = [df[a] for a in args]
+            df[name] = func(*split)
+        return df
 
-            X[indicator_name.upper()] = indicator(X['open'], X['high'], X['low'], X['close'])
 
-        return X
