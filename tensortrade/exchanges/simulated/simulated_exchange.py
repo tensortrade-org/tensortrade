@@ -41,7 +41,7 @@ class SimulatedExchange(InstrumentExchange):
         self._should_pretransform_obs = kwargs.get('should_pretransform_obs', False)
 
         if data_frame is not None:
-            self.data_frame = data_frame.astype(self._dtype)
+            self.data_frame = data_frame
 
         self._commission_percent = kwargs.get('commission_percent', 0.3)
         self._base_precision = kwargs.get('base_precision', 2)
@@ -67,6 +67,7 @@ class SimulatedExchange(InstrumentExchange):
 
     @data_frame.setter
     def data_frame(self, data_frame: pd.DataFrame):
+        self._unmodified_data_frame = data_frame.copy()
         self._data_frame = data_frame
 
         if self._should_pretransform_obs:
@@ -140,10 +141,10 @@ class SimulatedExchange(InstrumentExchange):
                                                                 self.generated_space)
 
     def current_price(self, symbol: str) -> float:
-        if len(self._data_frame) is 0:
-            self.next_observation()
-
-        return float(self._data_frame['close'].values[self._current_step])
+        d = self._unmodified_data_frame.loc[self._unmodified_data_frame['symbol']==symbol, ['close']]
+        if d.empty is False:
+            return d.iloc[self._current_step][0]
+        return 0
 
     def _is_valid_trade(self, trade: Trade) -> bool:
         if trade.trade_type is TradeType.MARKET_BUY or trade.trade_type is TradeType.LIMIT_BUY:
@@ -154,7 +155,7 @@ class SimulatedExchange(InstrumentExchange):
         return True
 
     def _update_account(self, trade: Trade):
-        if trade.amount > 0:
+        if self._is_valid_trade(trade) and not trade.is_hold:
             self._trades = self._trades.append({
                 'step': self._current_step,
                 'symbol': trade.symbol,
@@ -179,19 +180,16 @@ class SimulatedExchange(InstrumentExchange):
 
     def execute_trade(self, trade: Trade) -> Trade:
         current_price = self.current_price(symbol=trade.symbol)
-
         commission = self._commission_percent / 100
-
         filled_trade = trade.copy()
 
         if filled_trade.is_hold or not self._is_valid_trade(filled_trade):
             filled_trade.amount = 0
+            return filled_trade
         elif filled_trade.is_buy:
             price_adjustment = price_adjustment = (1 + commission)
-            filled_trade.price = max(round(current_price * price_adjustment,
-                                           self._base_precision), self.base_precision)
-            filled_trade.amount = round(
-                (filled_trade.price * filled_trade.amount) / filled_trade.price, self._instrument_precision)
+            filled_trade.price = max(round(current_price * price_adjustment, self._base_precision), self.base_precision)
+            filled_trade.amount = round((filled_trade.price * filled_trade.amount) / filled_trade.price, self._instrument_precision)
         elif filled_trade.is_sell:
             price_adjustment = (1 - commission)
             filled_trade.price = round(current_price * price_adjustment, self._base_precision)
@@ -207,7 +205,6 @@ class SimulatedExchange(InstrumentExchange):
         super().reset()
 
         self._balance = self._initial_balance
-
         self._portfolio = {self._base_instrument: self._balance}
         self._trades = pd.DataFrame([], columns=['step', 'symbol', 'type', 'amount', 'price'])
         self._performance = pd.DataFrame([], columns=['balance', 'net_worth'])
