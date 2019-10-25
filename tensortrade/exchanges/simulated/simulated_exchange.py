@@ -39,6 +39,7 @@ class SimulatedExchange(InstrumentExchange):
                          feature_pipeline=kwargs.get('feature_pipeline', None))
         self._previously_transformed = False
         self._should_pretransform_obs = kwargs.get('should_pretransform_obs', False)
+        self._data_frame = self._unmodified_data_frame = None
 
         if data_frame is not None:
             self.data_frame = data_frame
@@ -135,7 +136,7 @@ class SimulatedExchange(InstrumentExchange):
         raise StopIteration
 
     def transform_data_frame(self) -> bool:
-        if self._feature_pipeline is not None and self._previously_transformed is not True:
+        if self._data_frame is not None and self._feature_pipeline is not None and self._previously_transformed is not True:
             self._previously_transformed = True
             self._data_frame = self._feature_pipeline.transform(self._data_frame,
                                                                 self.generated_space)
