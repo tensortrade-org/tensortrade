@@ -125,8 +125,8 @@ class SimulatedExchange(InstrumentExchange):
         for step in range(self._current_step, len(self._data_frame)):
             self._current_step = step
 
-            obs = self._data_frame.iloc[step - self._window_size + 1:step + 1]
-
+            obs = self._data_frame.iloc[step - self._window_size:step]
+            print(obs)
             if not self._should_pretransform_obs and self._feature_pipeline is not None:
                 obs = self._feature_pipeline.transform(obs, self.generated_space)
 
