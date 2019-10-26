@@ -129,6 +129,28 @@ class SimulatedExchange(InstrumentExchange):
     def has_next_observation(self) -> bool:
         return self._current_step < len(self._data_frame) - 1
 
+    @property
+    def net_worth(self) -> float:
+        """Calculate the net worth of the active account on the exchange.
+            We do not need to look up instruments by symbol and we can discard the lookup for the
+            primary instrument
+        Returns
+            The total portfolio value of the active account on the exchange.
+        """
+        net_worth = self.balance
+        portfolio = self.portfolio
+
+        
+
+        if not portfolio:
+            return net_worth
+
+        for symbol, amount in portfolio.items():
+            current_price = self.current_price(symbol=symbol)
+            net_worth += current_price * amount
+
+        return net_worth
+
     def _create_observation_generator(self) -> Generator[pd.DataFrame, None, None]:
         for step in range(self._current_step, len(self._data_frame)):
             # sanity check for step to ensure positivity

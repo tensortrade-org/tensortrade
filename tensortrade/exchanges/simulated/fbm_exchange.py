@@ -36,7 +36,6 @@ class FBMExchange(SimulatedExchange):
 
         self._base_price = kwargs.get('base_price', 10000)
         self._base_volume = kwargs.get('base_volume', 1)
-        self._symbol = kwargs.get('symbol', 'ETH/BTC')
         self._start_date = kwargs.get('start_date', '2010-01-01')
         self._start_date_format = kwargs.get('start_date_format', '%Y-%m-%d')
         self._times_to_generate = kwargs.get('times_to_generate', 100000)
@@ -78,9 +77,8 @@ class FBMExchange(SimulatedExchange):
 
         data_frame = price_frame['price'].resample(self._timeframe).ohlc()
         data_frame['volume'] = volume_frame['volume'].resample(self._timeframe).sum()
-        data_frame.insert(0,"symbol", self._symbol
 
-        self.data_frame = data_frame
+        self.data_frame = data_frame.astype(self._dtype)
 
     def reset(self):
         super().reset()
