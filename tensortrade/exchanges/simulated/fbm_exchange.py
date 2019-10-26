@@ -42,6 +42,7 @@ class FBMExchange(SimulatedExchange):
         self._times_to_generate = kwargs.get('times_to_generate', 100000)
         self._hurst = kwargs.get('hurst', 0.61)
         self._timeframe = kwargs.get('timeframe', '1h')
+
         self._generate_price_history()
 
     def _generate_price_history(self):
@@ -77,8 +78,9 @@ class FBMExchange(SimulatedExchange):
 
         data_frame = price_frame['price'].resample(self._timeframe).ohlc()
         data_frame['volume'] = volume_frame['volume'].resample(self._timeframe).sum()
+        data_frame.insert(0,"symbol", self._symbol
 
-        self.data_frame = data_frame.astype(self._dtype)
+        self.data_frame = data_frame
 
     def reset(self):
         super().reset()

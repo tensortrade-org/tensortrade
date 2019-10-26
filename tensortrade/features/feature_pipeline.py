@@ -79,7 +79,6 @@ class FeaturePipeline(object):
         """Utility method for transforming observations via a list of `FeatureTransformer` objects."""
         for transformer in self._steps:
             observations = transformer.transform(observations, input_space)
-
         return observations
 
     def transform(self, observation: pd.DataFrame, input_space: Space) -> pd.DataFrame:

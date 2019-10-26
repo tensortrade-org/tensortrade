@@ -201,11 +201,11 @@ class TradingEnvironment(gym.Env):
         Returns:
             observation: the initial observation.
         """
+        self._current_step = 0
         self._action_strategy.reset()
         self._reward_strategy.reset()
         self._exchange.reset()
 
-        self._current_step = 0
 
         return self._next_observation(Trade('N/A', 'hold', 0, 0))
 

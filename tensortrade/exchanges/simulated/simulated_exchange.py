@@ -54,6 +54,7 @@ class SimulatedExchange(InstrumentExchange):
         self._max_trade_price = kwargs.get('max_trade_price', 1E6)
         self._min_trade_amount = kwargs.get('min_trade_amount', 1E-3)
         self._max_trade_amount = kwargs.get('max_trade_amount', 1E6)
+        self._window_size = kwargs.get('window_size', 1)
 
         max_allowed_slippage_percent = kwargs.get('max_allowed_slippage_percent', 1.0)
 
@@ -63,13 +64,20 @@ class SimulatedExchange(InstrumentExchange):
     @property
     def data_frame(self) -> pd.DataFrame:
         """The underlying data model backing the price and volume simulation."""
-        return self._data_frame 
+        return self._data_frame
 
     @data_frame.setter
     def data_frame(self, data_frame: pd.DataFrame):
-        self._unmodified_data_frame = data_frame.copy()
-        self._data_frame = data_frame
+        # do not allow df to be set as None
+        assert data_frame is not None
+        self._unmodified_data_frame = data_frame.copy(deep=True)
+        # non-numeric data should be pulled from the main dataframe to avoid issues
+        # with transformation and training.
+        self._data_frame = data_frame.select_dtypes([np.number]).astype(self._dtype)
+        # reset _previously_transformed flag since we could be overwriting transformed data.
+        self._previously_transformed = False
 
+        # once we've set data, we can transform it
         if self._should_pretransform_obs:
             self.transform_data_frame()
 
@@ -123,10 +131,19 @@ class SimulatedExchange(InstrumentExchange):
 
     def _create_observation_generator(self) -> Generator[pd.DataFrame, None, None]:
         for step in range(self._current_step, len(self._data_frame)):
-            self._current_step = step
+            # sanity check for step to ensure positivity
+            self._current_step = max((step, 0))
 
-            obs = self._data_frame.iloc[step - self._window_size:step]
-            print(obs)
+            # sanity for lower bounds to ensure 0 or positive
+            lower_range = max((step - self._window_size, 0))
+
+            # sanity for upper range to ensure we don't look ahead or step out of bounds
+            upper_range = min(step, self._current_step, len(self._data_frame))
+
+            # sanity for upper range to ensure we do not fetch an empty observation df[0:0]
+            upper_range = max((step, 1))
+
+            obs = self._data_frame.iloc[lower_range:upper_range]
             if not self._should_pretransform_obs and self._feature_pipeline is not None:
                 obs = self._feature_pipeline.transform(obs, self.generated_space)
 
@@ -137,6 +154,7 @@ class SimulatedExchange(InstrumentExchange):
     def transform_data_frame(self) -> bool:
         if self.data_frame is not None and self.feature_pipeline is not None and self._previously_transformed is not True:
             self._previously_transformed = True
+            # By assigning to self._data_frame directly we surpas a recprical call to this method from the data_frame setter.
             self._data_frame = self._feature_pipeline.transform(self._data_frame,
                                                                 self.generated_space)
 
