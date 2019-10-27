@@ -138,16 +138,21 @@ class SimulatedExchange(InstrumentExchange):
             The total portfolio value of the active account on the exchange.
         """
         net_worth = self.balance
-        portfolio = self.portfolio
+        # Copy the portfolio and delete the base instrument from the list in order
+        # to get an accurate net_worth
+        portfolio = self.portfolio.copy()
+        del portfolio[self.base_instrument]
 
-        
-
-        if not portfolio:
+        # if we don't have anything in the portfolio yet, return
+        not portfolio:
             return net_worth
 
-        for symbol, amount in portfolio.items():
-            current_price = self.current_price(symbol=symbol)
-            net_worth += current_price * amount
+        # simulated exchanges thus far expect a single instrument, so we should ensure that we only have
+        # one instrument remaining in the portfolio
+        assert len(portfolio) == 1
+
+        # If we do, then we can simply Calculate the value of our holdings.
+        net_worth += self.current_price() * sum(portfolio.values())
 
         return net_worth
 
@@ -180,12 +185,14 @@ class SimulatedExchange(InstrumentExchange):
             self._data_frame = self._feature_pipeline.transform(self._data_frame,
                                                                 self.generated_space)
 
-    def current_price(self, symbol: str) -> float:
-        frame = self._unmodified_data_frame.loc[self._unmodified_data_frame['symbol'] == symbol, [
-            'close']]
+    # NOTE, Symbol is maintained here as a null string to support integration with other
+    # system functions which may pass it. However, for SimulatedExchanges we only deal
+    # with one instrument at a time and thus we ignore it.
+    def current_price(self, symbol= "") -> float:
+        frame = self._unmodified_data_frame.iloc[self._current_step]
 
         if frame.empty is False:
-            return frame.iloc[self._current_step][0]
+            return frame['close']
 
         return 0
 
