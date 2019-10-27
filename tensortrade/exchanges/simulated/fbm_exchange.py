@@ -42,6 +42,8 @@ class FBMExchange(SimulatedExchange):
         self._hurst = kwargs.get('hurst', 0.61)
         self._timeframe = kwargs.get('timeframe', '1h')
 
+        self.reset()
+
     def _generate_price_history(self):
         try:
             price_fbm = FractionalBrownianMotion(t=self._times_to_generate, hurst=self._hurst)

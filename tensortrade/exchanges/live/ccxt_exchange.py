@@ -35,7 +35,6 @@ class CCXTExchange(InstrumentExchange):
         self._exchange = exchange
 
         self._exchange.enableRateLimit = kwargs.get('enable_rate_limit', True)
-        self._markets = self._exchange.load_markets()
 
         self._observation_type = kwargs.get('observation_type', 'trades')
         self._observation_symbol = kwargs.get('observation_symbol', 'ETH/BTC')
@@ -44,6 +43,8 @@ class CCXTExchange(InstrumentExchange):
 
         self._async_timeout_in_ms = kwargs.get('async_timeout_in_ms', 15)
         self._max_trade_wait_in_sec = kwargs.get('max_trade_wait_in_sec', 60)
+
+        self.reset()
 
     @property
     def base_precision(self) -> float:
