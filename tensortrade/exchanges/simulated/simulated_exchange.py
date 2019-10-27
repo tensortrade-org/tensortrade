@@ -37,6 +37,7 @@ class SimulatedExchange(InstrumentExchange):
         super().__init__(base_instrument=kwargs.get('base_instrument', 'USD'),
                          dtype=kwargs.get('dtype', np.float16),
                          feature_pipeline=kwargs.get('feature_pipeline', None))
+
         self._commission_percent = kwargs.get('commission_percent', 0.3)
         self._base_precision = kwargs.get('base_precision', 2)
         self._instrument_precision = kwargs.get('instrument_precision', 8)
@@ -56,8 +57,6 @@ class SimulatedExchange(InstrumentExchange):
 
         SlippageModelClass = kwargs.get('slippage_model', RandomUniformSlippageModel)
         self._slippage_model = SlippageModelClass(max_allowed_slippage_percent)
-
-        self.reset()
 
     @property
     def data_frame(self) -> pd.DataFrame:
@@ -223,8 +222,8 @@ class SimulatedExchange(InstrumentExchange):
     def reset(self):
         super().reset()
 
-        self._balance = self._initial_balance
-        self._portfolio = {self._base_instrument: self._balance}
+        self._balance = self.initial_balance
+        self._portfolio = {self.base_instrument: self.balance}
         self._trades = pd.DataFrame([], columns=['step', 'symbol', 'type', 'amount', 'price'])
         self._performance = pd.DataFrame([], columns=['balance', 'net_worth'])
 

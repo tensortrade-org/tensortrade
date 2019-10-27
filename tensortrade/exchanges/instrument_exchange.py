@@ -39,8 +39,6 @@ class InstrumentExchange(object, metaclass=ABCMeta):
         self._dtype = dtype
         self._feature_pipeline = feature_pipeline
 
-        self.reset()
-
     @property
     def base_instrument(self) -> str:
         """The exchange symbol of the instrument to store/measure value in."""
