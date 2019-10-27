@@ -36,7 +36,11 @@ _Inspired by [Keras' guiding principles](https://github.com/keras-team/keras)._
 
 - **Easy extensibility.** New modules are simple to add (as new classes and functions), and existing modules provide ample examples. To be able to easily create new modules allows for total expressiveness, making TensorTrade suitable for advanced research and production use.
 
----
+## TensorTrade Hall of Fame
+TensorTrade is entirely community funded. We appreciate all of our great sponsors! If you would like to be featured on our Hall of Fame, or sponsor the framework in any other way, visit the [Sponsorship section below](#sponsorship).
+
+![Capfolio](https://user-images.githubusercontent.com/14098106/67627791-fc291d80-f817-11e9-8fc5-0f0a3d72c646.png)
+
 
 ## Getting Started
 
@@ -49,8 +53,6 @@ TensorTrade requires Python >= 3.6 for all functionality to work as expected.
 ```bash
 pip install -r requirements.txt
 ```
-
----
 
 ## Docker
 
@@ -80,8 +82,6 @@ To run the test suite, execute the following command.
 make run-tests
 ```
 
----
-
 ## Support
 
 You can ask questions and join the development discussion:
@@ -92,7 +92,7 @@ You can ask questions and join the development discussion:
 
 You can also post **bug reports and feature requests** in [GitHub issues](https://github.com/notadamking/tensortrade/issues). Make sure to read [our guidelines](https://github.com/notadamking/tensortrade/blob/master/CONTRIBUTING.md) first.
 
-## Sponsors
+## Sponsorship
 
 If you would like to support this project financially, there are a few ways you can contribute. Your contributions are greatly appreciated and help to keep TensorTrade maintained and always improving.
 
