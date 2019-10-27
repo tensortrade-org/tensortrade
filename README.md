@@ -26,8 +26,6 @@ _The goal of this framework is to enable fast experimentation, while maintaining
 
 Read [the documentation](http://tensortrade.org) or walk through [the tutorial](https://towardsdatascience.com/trade-smarter-w-reinforcement-learning-a5e91163f315?source=friends_link&sk=ea3afd0a305141eb9147be4718826dfb).
 
----
-
 ## Guiding principles
 
 _Inspired by [Keras' guiding principles](https://github.com/keras-team/keras)._
@@ -41,8 +39,9 @@ _Inspired by [Keras' guiding principles](https://github.com/keras-team/keras)._
 ## TensorTrade Hall of Fame
 TensorTrade is entirely community funded. We appreciate all of our great sponsors! If you would like to be featured on our Hall of Fame, or sponsor the framework in any other way, visit the [Sponsorship section below](#sponsorship).
 
-![Capfolio](https://user-images.githubusercontent.com/14098106/67627791-fc291d80-f817-11e9-8fc5-0f0a3d72c646.png)
-
+<a href="https://capfol.io">
+  <img alt="Capfolio" src="https://user-images.githubusercontent.com/14098106/67627791-fc291d80-f817-11e9-8fc5-0f0a3d72c646.png" />
+</a>
 
 ## Getting Started
 
