@@ -216,4 +216,4 @@ class SimulatedExchange(InstrumentExchange):
         self._trades = pd.DataFrame([], columns=['step', 'symbol', 'type', 'amount', 'price'])
         self._performance = pd.DataFrame([], columns=['balance', 'net_worth'])
 
-        self._current_step = 0
+        self._current_step = self._window_size - 1
