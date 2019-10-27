@@ -39,6 +39,8 @@ class InstrumentExchange(object, metaclass=ABCMeta):
         self._dtype = dtype
         self._feature_pipeline = feature_pipeline
 
+        self.reset()
+
     @property
     def base_instrument(self) -> str:
         """The exchange symbol of the instrument to store/measure value in."""
@@ -148,6 +150,9 @@ class InstrumentExchange(object, metaclass=ABCMeta):
             return net_worth
 
         for symbol, amount in portfolio.items():
+            if symbol == self._base_instrument:
+                continue
+
             current_price = self.current_price(symbol=symbol)
             net_worth += current_price * amount
 

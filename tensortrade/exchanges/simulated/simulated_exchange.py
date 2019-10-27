@@ -37,37 +37,42 @@ class SimulatedExchange(InstrumentExchange):
         super().__init__(base_instrument=kwargs.get('base_instrument', 'USD'),
                          dtype=kwargs.get('dtype', np.float16),
                          feature_pipeline=kwargs.get('feature_pipeline', None))
-        self._previously_transformed = False
-        self._should_pretransform_obs = kwargs.get('should_pretransform_obs', False)
-
-        if data_frame is not None:
-            self.data_frame = data_frame
-
         self._commission_percent = kwargs.get('commission_percent', 0.3)
         self._base_precision = kwargs.get('base_precision', 2)
         self._instrument_precision = kwargs.get('instrument_precision', 8)
-        self._initial_balance = kwargs.get('initial_balance', 1E4)
-        self._min_order_amount = kwargs.get('min_order_amount', 1E-3)
-        self._window_size = kwargs.get('window_size', 1)
-
         self._min_trade_price = kwargs.get('min_trade_price', 1E-6)
         self._max_trade_price = kwargs.get('max_trade_price', 1E6)
         self._min_trade_amount = kwargs.get('min_trade_amount', 1E-3)
         self._max_trade_amount = kwargs.get('max_trade_amount', 1E6)
+        self._min_order_amount = kwargs.get('min_order_amount', 1E-3)
+
+        self._initial_balance = kwargs.get('initial_balance', 1E4)
+        self._window_size = kwargs.get('window_size', 1)
+        self._should_pretransform_obs = kwargs.get('should_pretransform_obs', False)
+
+        self.data_frame = data_frame
 
         max_allowed_slippage_percent = kwargs.get('max_allowed_slippage_percent', 1.0)
 
         SlippageModelClass = kwargs.get('slippage_model', RandomUniformSlippageModel)
         self._slippage_model = SlippageModelClass(max_allowed_slippage_percent)
 
+        self.reset()
+
     @property
     def data_frame(self) -> pd.DataFrame:
         """The underlying data model backing the price and volume simulation."""
-        return self._data_frame
+        return getattr(self, '_data_frame', None)
 
     @data_frame.setter
     def data_frame(self, data_frame: pd.DataFrame):
-        self._unmodified_data_frame = data_frame.copy()
+        self._previously_transformed = False
+
+        if not isinstance(data_frame, pd.DataFrame):
+            self._data_frame = data_frame
+            return
+
+        self._unmodified_data_frame = data_frame.copy(deep=True)
         self._data_frame = data_frame
 
         if self._should_pretransform_obs:
@@ -81,7 +86,7 @@ class SimulatedExchange(InstrumentExchange):
     def feature_pipeline(self, feature_pipeline=FeaturePipeline):
         self._feature_pipeline = feature_pipeline
 
-        if self._should_pretransform_obs:
+        if isinstance(self.data_frame, pd.DataFrame) and self._should_pretransform_obs:
             self.transform_data_frame()
 
         return self._feature_pipeline
@@ -123,9 +128,16 @@ class SimulatedExchange(InstrumentExchange):
 
     def _create_observation_generator(self) -> Generator[pd.DataFrame, None, None]:
         for step in range(self._current_step, len(self._data_frame)):
-            self._current_step = step
+            self._current_step = max((step, 0))
 
-            obs = self._data_frame.iloc[step - self._window_size + 1:step + 1]
+            lower_range = max((step - self._window_size, 0))
+            upper_range = max(min(step, self._current_step, len(self._data_frame)), 1)
+
+            obs = self._data_frame.iloc[lower_range:upper_range]
+
+            if len(self._data_frame) < self._window_size:
+                padding = np.zeros((len(self.generated_columns), self._window_size - len(obs)))
+                obs = pd.concat([pd.DataFrame(padding), obs], ignore_index=True)
 
             if not self._should_pretransform_obs and self._feature_pipeline is not None:
                 obs = self._feature_pipeline.transform(obs, self.generated_space)
@@ -141,11 +153,11 @@ class SimulatedExchange(InstrumentExchange):
                                                                 self.generated_space)
 
     def current_price(self, symbol: str) -> float:
-        frame = self._unmodified_data_frame.loc[self._unmodified_data_frame['symbol'] == symbol, [
-            'close']]
+        if self.data_frame is not None:
+            frame = self._unmodified_data_frame.iloc[self._current_step]
 
-        if frame.empty is False:
-            return frame.iloc[self._current_step][0]
+            if frame.empty is False:
+                return frame['close']
 
         return 0
 
