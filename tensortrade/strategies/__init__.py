@@ -1,6 +1,9 @@
+import importlib
 from .trading_strategy import TradingStrategy
-from .stable_baselines_strategy import StableBaselinesTradingStrategy
-from .tensorforce_trading_strategy import TensorforceTradingStrategy
+if importlib.util.find_spec("stable_baselines") is not None:
+    from .stable_baselines_strategy import StableBaselinesTradingStrategy
+if importlib.util.find_spec("tensorforce") is not None:
+    from .tensorforce_trading_strategy import TensorforceTradingStrategy
 
 
 _registry = {}
