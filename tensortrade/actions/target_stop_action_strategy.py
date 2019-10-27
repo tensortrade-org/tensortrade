@@ -22,21 +22,26 @@ from tensortrade.trades import Trade, TradeType
 
 class TargetStopActionStrategy(ActionStrategy):
 
-    def __init__(self, position_size: int = 20, instrument_symbol: str = 'BTC', profit_target: float = 1.0, stop_loss: float = 1.0):
+    def __init__(self, position_size: int = 20, instrument_symbol: str = 'BTC', profit_target: float = 1.0,
+                 stop_loss: float = 1.0, trading_history: list = []):
         """
         Arguments:
             position_size: The number of bins to divide the total balance by. Defaults to 20 (i.e 1/20, 2/20 ... 20/20)
             instrument_symbol: The exchange symbol of the instrument being traded. Defaults to 'BTC'.
             profit_target: The amount of profit to be reached before trading the instrument. Defaults to 1.0 (i.e 1%)
             stop_loss: The amount of loss allowed before trading the instrument. Defaults to 1.0 (i.e 1%)
+            trading_history: The history of trades recorded statefully in the program, denoted as
+                             [instrument_symbol, price, amount]. Defaults to empty.
+
         """
 
         super().__init__(action_space=Discrete(position_size), dtype=np.int64)
+
         self.position_size = position_size
         self.instrument_symbol = instrument_symbol
         self.profit_target = profit_target
         self.stop_loss = stop_loss
-        self.trading_history = []
+        self.trading_history = trading_history
 
     @property
     def dtype(self) -> DTypeString:
@@ -48,15 +53,21 @@ class TargetStopActionStrategy(ActionStrategy):
         raise ValueError(
             'Cannot change the dtype of a `SimpleDiscreteStrategy` due to the requirements of `gym.spaces.Discrete` spaces. ')
 
-    def get_trade(self, action: TradeActionUnion) -> Trade:
-        """The trade type is determined by `action % len(TradeType)`, and the trade amount is determined by the multiplicity of the action.
-                For example, 1 = LIMIT_BUY|0.25, 2 = MARKET_BUY|0.25, 6 = LIMIT_BUY|0.5, 7 = MARKET_BUY|0.5, etc.
-                """
+    def get_trade(self, action: TradeActionUnion, test: bool = False, set_price: float = 1) -> Trade:
+        """
+        The trade type is determined by `action % len(TradeType)`,
+        and the trade amount is determined by the multiplicity of the action.
+        For example, 1 = LIMIT_BUY|0.25, 2 = MARKET_BUY|0.25, 6 = LIMIT_BUY|0.5, 7 = MARKET_BUY|0.5, etc.
+
+        """
         n_splits = self.position_size / len(TradeType)
         trade_type = TradeType(action % len(TradeType))
         trade_amount = int(action / len(TradeType)) * float(1 / n_splits) + (1 / n_splits)
 
-        current_price = self._exchange.current_price(symbol=self.instrument_symbol)
+        if test is True:
+            current_price = set_price
+        else:
+            current_price = self._exchange.current_price(symbol=self.instrument_symbol)
         base_precision = self._exchange.base_precision
         instrument_precision = self._exchange.instrument_precision
 
@@ -99,5 +110,3 @@ class TargetStopActionStrategy(ActionStrategy):
 
         self.trading_history.append([self.instrument_symbol, price, amount])
         return Trade(self.instrument_symbol, trade_type, amount, price)
-
-
