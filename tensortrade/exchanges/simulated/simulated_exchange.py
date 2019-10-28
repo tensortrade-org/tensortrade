@@ -72,7 +72,7 @@ class SimulatedExchange(InstrumentExchange):
             return
 
         self._unmodified_data_frame = data_frame.copy(deep=True)
-        self._data_frame = data_frame
+        self._data_frame = data_frame[['open', 'high', 'low', 'close', 'volume']]
 
         if self._should_pretransform_obs:
             self.transform_data_frame()
@@ -134,7 +134,7 @@ class SimulatedExchange(InstrumentExchange):
 
             obs = self._data_frame.iloc[lower_range:upper_range]
 
-            if len(self._data_frame) < self._window_size:
+            if len(obs) < self._window_size:
                 padding = np.zeros((len(self.generated_columns), self._window_size - len(obs)))
                 obs = pd.concat([pd.DataFrame(padding), obs], ignore_index=True)
 
