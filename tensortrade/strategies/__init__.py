@@ -1,5 +1,6 @@
 import importlib
 from .trading_strategy import TradingStrategy
+
 if importlib.util.find_spec("stable_baselines") is not None:
     from .stable_baselines_strategy import StableBaselinesTradingStrategy
 if importlib.util.find_spec("tensorforce") is not None:
