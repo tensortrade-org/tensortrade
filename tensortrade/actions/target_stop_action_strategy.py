@@ -22,26 +22,32 @@ from tensortrade.trades import Trade, TradeType
 
 class TargetStopActionStrategy(ActionStrategy):
 
-    def __init__(self, position_size: int = 20, instrument_symbol: str = 'BTC', profit_target: float = 1.0,
-                 stop_loss: float = 1.0, trading_history: list = []):
+    def __init__(self, instrument_symbol: str = 'BTC', position_size: int = 20, profit_target_range: range = range(0, 101, 5),
+                 stop_loss_range: range = range(0, 101, 5), timeout_steps: int = np.iinfo(np.int32).max):
         """
         Arguments:
-            position_size: The number of bins to divide the total balance by. Defaults to 20 (i.e 1/20, 2/20 ... 20/20)
-            instrument_symbol: The exchange symbol of the instrument being traded. Defaults to 'BTC'.
-            profit_target: The amount of profit to be reached before trading the instrument. Defaults to 1.0 (i.e 1%)
-            stop_loss: The amount of loss allowed before trading the instrument. Defaults to 1.0 (i.e 1%)
-            trading_history: The history of trades recorded statefully in the program, denoted as
-                             [instrument_symbol, price, amount]. Defaults to empty.
-
+            instrument_symbol: The exchange symbol of the instrument being traded.
+                Defaults to 'BTC'.
+            position_size: The number of bins to divide the total balance by for each trade position.
+                Defaults to 20 (i.e 1/20, 2/20 ... 20/20).
+            profit_target_range: The range of percentages for the profit target of each trade position.
+                Defaults to range(0, 100, 5).
+            stop_loss_range: The range of percentages for the stop loss of each trade position.
+                Defaults to range(0, 100, 5).
+            timeout_steps (optional): Number of timesteps allowed per trade before automatically selling at market.
         """
 
         super().__init__(action_space=Discrete(position_size), dtype=np.int64)
 
         self.position_size = position_size
         self.instrument_symbol = instrument_symbol
-        self.profit_target = profit_target
-        self.stop_loss = stop_loss
-        self.trading_history = trading_history
+        self.profit_target_range = profit_target_range
+        self.stop_loss_range = stop_loss_range
+        self.timeout_steps = timeout_steps
+        self.trading_history = []
+        self.current_step = 0
+
+        self.reset()
 
     @property
     def dtype(self) -> DTypeString:
@@ -51,62 +57,88 @@ class TargetStopActionStrategy(ActionStrategy):
     @dtype.setter
     def dtype(self, dtype: DTypeString):
         raise ValueError(
-            'Cannot change the dtype of a `SimpleDiscreteStrategy` due to the requirements of `gym.spaces.Discrete` spaces. ')
+            'Cannot change the dtype of a `TargetStopActionStrategy` due to the requirements of `gym.spaces.Discrete` spaces. ')
 
-    def get_trade(self, action: TradeActionUnion, test: bool = False, set_price: float = 1) -> Trade:
-        """
-        The trade type is determined by `action % len(TradeType)`,
-        and the trade amount is determined by the multiplicity of the action.
-        For example, 1 = LIMIT_BUY|0.25, 2 = MARKET_BUY|0.25, 6 = LIMIT_BUY|0.5, 7 = MARKET_BUY|0.5, etc.
+    def reset(self):
+        self.current_step = 0
+        self.trading_history = list([])
 
+    def get_trade(self, action: TradeActionUnion) -> Trade:
+        """The trade type is determined by `action % len(TradeType)`, and the
+        trade amount is determined by the multiplicity of the action.
+
+        Using: 0 = HOLD, 1 = LIMIT_BUY|0.25, 2 = MARKET_BUY|0.25,
+               5 = HOLD, 6 = LIMIT_BUY|0.5, 7 = MARKET_BUY|0.5, etc.
+
+        For example, using this split of 4 sections, the input 7 (MARKET_BUY|0.5) / 5 (No. of possible actions)
+        would return a remainder of 2, as the length of TradeType is equal to the amount of possible TradeTypes.
+        The TradeType[2] is MARKET_BUY.
+        Subsequently, 1 < (7 / 5) < 2 , therefore the trade amount would be calculated as:
+        ((1) + 1) * ( 1 / 4 (No. of sections)) = 2 * 0.25 = 0.5
+        ---------------------------------------------------------
+        Profit target and stop loss percent are calculated as
+        the inverse percentage of the trade amount of the maximum value in the range.
+
+        For example, if the trade amount is 0.25, the profit target percent is:
+        75% of the maximum value of self.profit_target_range
+        (By default, 75% of 100; the profit target is then 0.75 * the traded price, or 75% above)
+
+        The stop-loss in this case would be:
+        -75% of the maximum value of self.stop_loss_range
+        (By default, -75% of 100; the stop-loss is then -0.75 * the traded price, or 75% below.)
         """
+
         n_splits = self.position_size / len(TradeType)
         trade_type = TradeType(action % len(TradeType))
-        trade_amount = int(action / len(TradeType)) * float(1 / n_splits) + (1 / n_splits)
 
-        if test is True:
-            current_price = set_price
-        else:
-            current_price = self._exchange.current_price(symbol=self.instrument_symbol)
+        current_price = self._exchange.current_price(symbol=self.instrument_symbol)
         base_precision = self._exchange.base_precision
         instrument_precision = self._exchange.instrument_precision
 
         amount = self._exchange.instrument_balance(self.instrument_symbol)
-        price = current_price
-        profit_percent = 1 + (self.profit_target / 100)
-        stop_loss_percent = 1 - (self.stop_loss / 100)
-        forced_trade = False
-        trading_history_increment = 0
+        current_price = round(current_price, base_precision)
+        current_step = self.current_step
 
-        for trade in self.trading_history:
-            if self.instrument_symbol == trade[0] and forced_trade is not True:
-                if price >= (trade[1] * profit_percent) or price <= (trade[1] * stop_loss_percent):
-                    price = round(current_price, base_precision)
-                    amount_held = self._exchange.portfolio.get(self.instrument_symbol, 0)
-                    if amount_held >= trade[2]:
+        for idx, trade in enumerate(self.trading_history):
+            timeout_hit = current_step - trade[0] >= self.timeout_steps
+            self.current_step += 1
+            if trade[5] == TradeType.HOLD:
+                pass
+            elif timeout_hit:
+                break
+            else:
+                profit_target_hit = current_price >= (trade[1] * trade[3])
+                stop_loss_hit = current_price <= (trade[1] * trade[4])
+
+                if profit_target_hit or stop_loss_hit:
+
+                    if amount >= trade[2]:
                         amount = trade[2]
                     else:
-                        amount = round(amount_held * trade_amount, instrument_precision)
-                    forced_trade = True
-                    trade_type = TradeType.MARKET_SELL
-                    del self.trading_history[trading_history_increment]
-                    """
-                    The program attempts to sell the amount that was bought, otherwise it defaults to the 
-                    dynamically set trade amount. The forced_trade variable is set to True, the trade_type 
-                    is set to sell, and the original trade is deleted from the history.
-                    """
-            trading_history_increment += 1
+                        amount = self._exchange.portfolio.get(self.instrument_symbol, 0)
 
-        if forced_trade is not True:
-            if TradeType is TradeType.MARKET_BUY or TradeType is TradeType.LIMIT_BUY:
-                price = round(current_price, base_precision)
-                amount = round(self._exchange.balance * 0.99 *
-                               trade_amount / price, instrument_precision)
+                    del self.trading_history[idx]
+                    self.current_step = 0
+                    return Trade(self.instrument_symbol, TradeType.MARKET_SELL, amount, current_price)
 
-            elif TradeType is TradeType.MARKET_SELL or TradeType is TradeType.LIMIT_SELL:
-                price = round(current_price, base_precision)
-                amount_held = self._exchange.portfolio.get(self.instrument_symbol, 0)
-                amount = round(amount_held * trade_amount, instrument_precision)
+        if action % len(TradeType) == 0:
+            trade_amount = 0
+        else:
+            trade_amount = (int(action / len(TradeType)) + 1) * float(1 / n_splits)
 
-        self.trading_history.append([self.instrument_symbol, price, amount])
-        return Trade(self.instrument_symbol, trade_type, amount, price)
+        profit_target_percent = (max(self.profit_target_range) * (1 - trade_amount)) / 100
+
+        stop_loss_percent = (-(max(self.profit_target_range) * (1 - trade_amount))) / 100
+
+        if TradeType is TradeType.MARKET_BUY or TradeType is TradeType.LIMIT_BUY:
+            amount = round(self._exchange.balance * 0.99 *
+                           trade_amount / current_price, instrument_precision)
+
+        elif TradeType is TradeType.MARKET_SELL or TradeType is TradeType.LIMIT_SELL:
+            amount_held = self._exchange.portfolio.get(self.instrument_symbol, 0)
+            amount = round(amount_held * trade_amount, instrument_precision)
+
+        self.trading_history.append([current_step, current_price, amount,
+                                     profit_target_percent, stop_loss_percent, trade_type])
+        self.current_step = 0
+        return Trade(self.instrument_symbol, trade_type, amount, current_price)
