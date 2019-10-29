@@ -23,7 +23,7 @@ def test_continuous_action_strategy():
 
 
 def test_discrete_action_strategy():
-    assert isinstance(actions.get('continuous'), ContinuousActionStrategy)
+    assert isinstance(actions.get('discrete'), DiscreteActionStrategy)
 
 
 def test_simulated_exchange():
