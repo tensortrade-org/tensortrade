@@ -8,26 +8,17 @@ from tensortrade.trades import Trade, TradeType
 
 class TestTargetStopActionStrategy:
 
-    def test_get_trade_profit(self):
-        actions = [2, 7, 3, 4, 16]
-        for chosen_action in actions:
-            strategy = TargetStopActionStrategy(position_size=20, profit_target=1.0,
-                                                stop_loss=1.0, trading_history=['BTC', 1, 5])
+    def test_get_trade_action(self):
 
-            get_trade = strategy.get_trade(action=chosen_action, test=True, set_price=1.02)
+        strategy = TargetStopActionStrategy(position_size=20)
+        trade_result = strategy.get_trade(action=2)
+        expected_type = TradeType.MARKET_BUY
+        expected_amount = strategy._exchange.instrument_balance(strategy.instrument_symbol, 0) * 0.25
+        assert expected_type == trade_result[1] and expected_amount == trade_result[2]
 
-            expected_trade = Trade('BTC', TradeType.MARKET_SELL, 5, 1.02)
-
-            assert get_trade == expected_trade
-
-    def test_get_trade_(self):
-        actions = [2, 7, 3, 4, 16]
-        for chosen_action in actions:
-            strategy = TargetStopActionStrategy(position_size=20, profit_target=1.0,
-                                                stop_loss=1.0, trading_history=['BTC', 1, 5])
-
-            get_trade = strategy.get_trade(action=chosen_action, test=True, set_price=0.98)
-
-            expected_trade = Trade('BTC', TradeType.MARKET_SELL, 5, 1.02)
-
-            assert get_trade == expected_trade
+        strategy = TargetStopActionStrategy(position_size=20)
+        strategy.get_trade(action=2)
+        expected_profit = 0.75
+        expected_stop_loss = -0.75
+        history = strategy.trading_history
+        assert expected_profit == history[3] and expected_stop_loss == history[4]
