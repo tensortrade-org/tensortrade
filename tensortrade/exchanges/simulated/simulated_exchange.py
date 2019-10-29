@@ -37,23 +37,21 @@ class SimulatedExchange(InstrumentExchange):
         super().__init__(base_instrument=kwargs.get('base_instrument', 'USD'),
                          dtype=kwargs.get('dtype', np.float16),
                          feature_pipeline=kwargs.get('feature_pipeline', None))
-        self._previously_transformed = False
-        self._should_pretransform_obs = kwargs.get('should_pretransform_obs', False)
-
-        if data_frame is not None:
-            self.data_frame = data_frame.astype(self._dtype)
 
         self._commission_percent = kwargs.get('commission_percent', 0.3)
         self._base_precision = kwargs.get('base_precision', 2)
         self._instrument_precision = kwargs.get('instrument_precision', 8)
-        self._initial_balance = kwargs.get('initial_balance', 1E4)
-        self._min_order_amount = kwargs.get('min_order_amount', 1E-3)
-        self._window_size = kwargs.get('window_size', 1)
-
         self._min_trade_price = kwargs.get('min_trade_price', 1E-6)
         self._max_trade_price = kwargs.get('max_trade_price', 1E6)
         self._min_trade_amount = kwargs.get('min_trade_amount', 1E-3)
         self._max_trade_amount = kwargs.get('max_trade_amount', 1E6)
+        self._min_order_amount = kwargs.get('min_order_amount', 1E-3)
+
+        self._initial_balance = kwargs.get('initial_balance', 1E4)
+        self._window_size = kwargs.get('window_size', 1)
+        self._should_pretransform_obs = kwargs.get('should_pretransform_obs', False)
+
+        self.data_frame = data_frame
 
         max_allowed_slippage_percent = kwargs.get('max_allowed_slippage_percent', 1.0)
 
@@ -63,11 +61,18 @@ class SimulatedExchange(InstrumentExchange):
     @property
     def data_frame(self) -> pd.DataFrame:
         """The underlying data model backing the price and volume simulation."""
-        return self._data_frame
+        return getattr(self, '_data_frame', None)
 
     @data_frame.setter
     def data_frame(self, data_frame: pd.DataFrame):
-        self._data_frame = data_frame
+        self._previously_transformed = False
+
+        if not isinstance(data_frame, pd.DataFrame):
+            self._data_frame = data_frame
+            return
+
+        self._unmodified_data_frame = data_frame.copy(deep=True)
+        self._data_frame = data_frame[['open', 'high', 'low', 'close', 'volume']]
 
         if self._should_pretransform_obs:
             self.transform_data_frame()
@@ -80,7 +85,7 @@ class SimulatedExchange(InstrumentExchange):
     def feature_pipeline(self, feature_pipeline=FeaturePipeline):
         self._feature_pipeline = feature_pipeline
 
-        if self._should_pretransform_obs:
+        if isinstance(self.data_frame, pd.DataFrame) and self._should_pretransform_obs:
             self.transform_data_frame()
 
         return self._feature_pipeline
@@ -122,9 +127,16 @@ class SimulatedExchange(InstrumentExchange):
 
     def _create_observation_generator(self) -> Generator[pd.DataFrame, None, None]:
         for step in range(self._current_step, len(self._data_frame)):
-            self._current_step = step
+            self._current_step = max((step, 0))
 
-            obs = self._data_frame.iloc[step - self._window_size + 1:step + 1]
+            lower_range = max((step - self._window_size, 0))
+            upper_range = max(min(step, self._current_step, len(self._data_frame)), 1)
+
+            obs = self._data_frame.iloc[lower_range:upper_range]
+
+            if len(obs) < self._window_size:
+                padding = np.zeros((len(self.generated_columns), self._window_size - len(obs)))
+                obs = pd.concat([pd.DataFrame(padding), obs], ignore_index=True)
 
             if not self._should_pretransform_obs and self._feature_pipeline is not None:
                 obs = self._feature_pipeline.transform(obs, self.generated_space)
@@ -140,10 +152,13 @@ class SimulatedExchange(InstrumentExchange):
                                                                 self.generated_space)
 
     def current_price(self, symbol: str) -> float:
-        if len(self._data_frame) is 0:
-            self.next_observation()
+        if self.data_frame is not None:
+            frame = self._unmodified_data_frame.iloc[self._current_step]
 
-        return float(self._data_frame['close'].values[self._current_step])
+            if frame.empty is False:
+                return frame['close']
+
+        return 0
 
     def _is_valid_trade(self, trade: Trade) -> bool:
         if trade.trade_type is TradeType.MARKET_BUY or trade.trade_type is TradeType.LIMIT_BUY:
@@ -154,7 +169,7 @@ class SimulatedExchange(InstrumentExchange):
         return True
 
     def _update_account(self, trade: Trade):
-        if trade.amount > 0:
+        if self._is_valid_trade(trade) and not trade.is_hold:
             self._trades = self._trades.append({
                 'step': self._current_step,
                 'symbol': trade.symbol,
@@ -179,14 +194,15 @@ class SimulatedExchange(InstrumentExchange):
 
     def execute_trade(self, trade: Trade) -> Trade:
         current_price = self.current_price(symbol=trade.symbol)
-
         commission = self._commission_percent / 100
-
         filled_trade = trade.copy()
 
         if filled_trade.is_hold or not self._is_valid_trade(filled_trade):
             filled_trade.amount = 0
-        elif filled_trade.is_buy:
+
+            return filled_trade
+
+        if filled_trade.is_buy:
             price_adjustment = price_adjustment = (1 + commission)
             filled_trade.price = max(round(current_price * price_adjustment,
                                            self._base_precision), self.base_precision)
@@ -206,9 +222,8 @@ class SimulatedExchange(InstrumentExchange):
     def reset(self):
         super().reset()
 
-        self._balance = self._initial_balance
-
-        self._portfolio = {self._base_instrument: self._balance}
+        self._balance = self.initial_balance
+        self._portfolio = {self.base_instrument: self.balance}
         self._trades = pd.DataFrame([], columns=['step', 'symbol', 'type', 'amount', 'price'])
         self._performance = pd.DataFrame([], columns=['balance', 'net_worth'])
 

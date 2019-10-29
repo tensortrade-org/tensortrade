@@ -51,8 +51,17 @@ class StableBaselinesTradingStrategy(TradingStrategy):
         self._model = model
         self._model_kwargs = model_kwargs
 
-        self._environment = DummyVecEnv([lambda: environment])
+        self.environment = environment
         self._agent = self._model(policy, self._environment, **self._model_kwargs)
+
+    @property
+    def environment(self) -> 'TradingEnvironment':
+        """A `TradingEnvironment` instance for the agent to trade within."""
+        return self._environment
+
+    @environment.setter
+    def environment(self, environment: 'TradingEnvironment'):
+        self._environment = DummyVecEnv([lambda: environment])
 
     def restore_agent(self, path: str):
         """Deserialize the strategy's learning agent from a file.
