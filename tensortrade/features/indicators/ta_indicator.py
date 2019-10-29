@@ -94,8 +94,10 @@ class TAIndicator(FeatureTransformer):
 
     def __init__(self,
                  indicators: Union[List[str], str, None] = None,
+                 lows: Union[List[float], List[int]] = None,
+                 highs: Union[List[float], List[int]] = None
                  ):
-        """
+        """S
         :param columns (optional): A list of indicators to apply as part of the transformation.  Leaving this value
         blank will apply all that are supported by the library.
         """
@@ -103,13 +105,25 @@ class TAIndicator(FeatureTransformer):
         self._indicator_names = TAIndicator.indicators if not indicators else indicators
         self._indicators = list(
             map(lambda indicator_name: self._str_to_indicator(indicator_name), indicators))
+        self._lows = lows or np.zeros(len(indicators))
+        self._highs = highs or np.ones(len(indicators))
+
 
     def _str_to_indicator(self, indicator_name: str):
         # Only one result expected
         return next(i for i in TAIndicator.indicators if i[0] == indicator_name)
 
     def transform_space(self, input_space: Space, column_names: List[str]) -> Space:
-        raise NotImplementedError()
+        output_space = copy(input_space)
+        shape_x, *shape_y = input_space.shape
+
+        output_space.shape = (shape_x + len(self._indicators), *shape_y)
+
+        for i in range(len(self._indicators)):
+            output_space.low = np.append(output_space.low, self._lows[i])
+            output_space.high = np.append(output_space.high, self._highs[i])
+
+        return output_space
 
     def transform(self, df: pd.DataFrame, input_space: Space) -> pd.DataFrame:
         """

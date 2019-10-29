@@ -31,9 +31,7 @@ class TestTAIndicator():
         assert ('AO', ta.ao, ['High', 'Close']) in test_feature.indicators
 
     def test_transform_space(self):
-        test_feature = TAIndicator(TestTAIndicator.indicators_to_test)
-        with pytest.raises(NotImplementedError):
-            test_feature.transform_space(None, None)
+        assert 0
 
     def test_transform(self, data_frame):
         test_feature = TAIndicator(TestTAIndicator.indicators_to_test)
