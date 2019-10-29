@@ -4,6 +4,12 @@ import pandas as pd
 
 from tensortrade.actions import TargetStopActionStrategy
 from tensortrade.trades import Trade, TradeType
+import tensortrade.exchanges as exchanges
+
+
+@pytest.fixture
+def exchange():
+    return exchanges.get('fbm')
 
 
 class TestTargetStopActionStrategy:
