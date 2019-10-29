@@ -61,8 +61,6 @@ class TradingEnvironment(gym.Env):
         if feature_pipeline is not None:
             self._exchange.feature_pipeline = feature_pipeline
 
-        self._exchange.reset()
-
         self._action_strategy.exchange = self._exchange
         self._reward_strategy.exchange = self._exchange
 
@@ -73,6 +71,8 @@ class TradingEnvironment(gym.Env):
         self.logger.setLevel(kwargs.get('log_level', logging.DEBUG))
 
         logging.getLogger('tensorflow').disabled = kwargs.get('disable_tensorflow_logger', True)
+
+        self.reset()
 
     @property
     def exchange(self) -> InstrumentExchange:
@@ -201,11 +201,11 @@ class TradingEnvironment(gym.Env):
         Returns:
             observation: the initial observation.
         """
+        self._current_step = 0
+
         self._action_strategy.reset()
         self._reward_strategy.reset()
         self._exchange.reset()
-
-        self._current_step = 0
 
         return self._next_observation(Trade('N/A', 'hold', 0, 0))
 

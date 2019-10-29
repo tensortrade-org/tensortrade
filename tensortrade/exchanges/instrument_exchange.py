@@ -153,6 +153,9 @@ class InstrumentExchange(Component):
             return net_worth
 
         for symbol, amount in portfolio.items():
+            if symbol == self._base_instrument:
+                continue
+
             current_price = self.current_price(symbol=symbol)
             net_worth += current_price * amount
 

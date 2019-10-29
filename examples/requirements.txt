@@ -9,3 +9,4 @@ mpi4py
 stochastic==0.4.0
 ccxt==1.18.1220
 jupyterlab==1.1.4
+scikit-learn
