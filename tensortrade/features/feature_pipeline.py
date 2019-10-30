@@ -18,13 +18,16 @@ import numpy as np
 from gym import Space
 from typing import List, Union, Callable
 
+from tensortrade import Component
 from .feature_transformer import FeatureTransformer
+
 
 DTypeString = Union[type, str]
 
 
-class FeaturePipeline(object):
+class FeaturePipeline(Component):
     """An pipeline for transforming observation data frames into features for learning."""
+    registered_name = "features"
 
     def __init__(self, steps: List[FeatureTransformer], **kwargs):
         """

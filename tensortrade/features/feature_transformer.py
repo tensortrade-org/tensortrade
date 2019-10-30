@@ -18,9 +18,13 @@ from gym import Space
 from typing import List, Union
 from abc import ABCMeta, abstractmethod
 
+from tensortrade import Component
 
-class FeatureTransformer(object, metaclass=ABCMeta):
+
+class FeatureTransformer(Component, metaclass=ABCMeta):
     """An abstract feature transformer for use within feature pipelines."""
+
+    registered_name = "features"
 
     def __init__(self, *args, **kwargs):
         pass

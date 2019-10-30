@@ -1,78 +1,193 @@
-
-import abc
 import threading
-
+import json
+import yaml
 
 from typing import Union, List
 from collections import UserDict
+from .registry import registered_names, get_major_component_names
+
+
+def _diff(c1, c2, path=None, changes=None):
+    path = [] if not path else path
+    changes = [] if not changes else changes
+    old_path = path
+    for k in c1.keys():
+        path = old_path + [k]
+        if k not in c2:
+            changes += [('key', path, True, False)]
+        else:
+            if isinstance(c1[k], dict) and isinstance(c2[k], dict):
+                changes = _diff(c1[k], c2[k], path, changes)
+            else:
+                if c1[k] != c2[k]:
+                    changes += [('value', path, c1[k], c2[k])]
+
+    for k in c2.keys():
+        path = old_path + [k]
+        if k not in c1:
+            changes += [('key', path, False, True)]
+    return changes
+
+
+def diff(c1, c2):
+    return _diff(c1, c2)
+
+
+def is_conflicting(d1, d2):
+    for d in diff(d1, d2):
+        if d[0] == 'value':
+            return True
+    return False
 
 
 class TradingContext(UserDict):
-    """Functionality for objects that put themselves in a base using
+    """A class that objects that put themselves in a `Context` using
     the `with` statement.
 
     This implementation for this class is heavily borrowed from the pymc3
     library and adapted with the design goals of TensorTrade in mind.
 
-    Parameters
+    Parameters:
     ----------
     base_instrument : str
-
+        The exchange symbol of the instrument to store/measure value in.
     products : List[str]
-        The exchange symbols of the instruments being traded.
+        The exchange symbols of the instruments being traded on.
+    shared : Context
+        A context that is shared between all components that are made under
+        the overarching `TradingContext`.
+    exchanges : Context
+        A context that is specific to components with a registered name of
+        `exchanges`.
+    actions : Context
+        A context that is specific to components with a registered name of
+        `actions`.
+    rewards : Context
+        A context that is specific to components with a registered name of
+        `rewards`.
+    features : Context
+        A context that is specific to components with a registered name of
+        `features`.
 
-    credentials : dict
-
+    Warnings:
+    --------
+        If there is a conflict in the contexts of different components because
+    they were initialized under different contexts, can have undesirable effects.
+    Therefore, a warning should be made to the user indicating that using
+    components together that have conflicting contexts can lead to unwanted
+    behavior.
 
     Reference:
+    ---------
         - https://github.com/pymc-devs/pymc3/blob/master/pymc3/model.py
+
     """
     contexts = threading.local()
 
     def __init__(self,
                  base_instrument: str = 'USD',
                  products: Union[str, List[str]] = 'BTC',
-                 credentials: dict = None,
                  **config):
         super(TradingContext, self).__init__(
             base_instrument=base_instrument,
             products=products,
-            credentials=credentials,
             **config
         )
-        self._base_instrument = base_instrument
         if type(products) == str:
             products = [products]
-        self._products = products
-        self._credentials = credentials
 
-        self.__dict__ = {**self.__dict__, **self.data}
+        self._base_instrument = base_instrument
+        self._products = products
+
+        major_components = [
+            'shared',
+            'exchanges',
+            'actions',
+            'rewards',
+            'features'
+        ]
+        for name in registered_names():
+            if name not in get_major_component_names():
+                setattr(self, name, config.get(name, {}))
+
+        self._shared = config.get('shared', {})
+        self._exchanges = config.get('exchanges', {})
+        self._actions = config.get('actions', {})
+        self._rewards = config.get('rewards', {})
+        self._features = config.get('features', {})
+        self._slippage = config.get('slippage', {})
+
+        self._shared = {
+            'base_instrument': base_instrument,
+            'products': products,
+            **self._shared,
+            **{k: config[k] for k in config.keys()
+                if k not in registered_names()}
+        }
 
     @property
-    def base_instrument(self) -> str:
+    def base_instrument(self):
         return self._base_instrument
 
-    @base_instrument.setter
-    def base_instrument(self, base_instrument: str):
-        self._base_instrument = base_instrument
-
     @property
-    def products(self) -> List[str]:
+    def products(self):
         return self._products
 
-    @products.setter
-    def products(self, products: Union[str, List[str]]):
-        self._products = products
+    @property
+    def shared(self) -> dict:
+        return self._shared
+
+    @shared.setter
+    def shared(self, shared: dict):
+        self._shared = shared
 
     @property
-    def credentials(self) -> dict:
-        return self._credentials
+    def exchanges(self) -> dict:
+        return self._exchanges
 
-    @credentials.setter
-    def credentials(self, credentials: dict):
-        self._credentials = credentials
+    @exchanges.setter
+    def exchanges(self, exchanges: dict):
+        self._exchanges = exchanges
+
+    @property
+    def actions(self) -> dict:
+        return self._actions
+
+    @actions.setter
+    def actions(self, actions: dict):
+        self._actions = actions
+
+    @property
+    def rewards(self) -> dict:
+        return self._rewards
+
+    @rewards.setter
+    def rewards(self, rewards: dict):
+        self._rewards = rewards
+
+    @property
+    def features(self) -> dict:
+        return self._features
+
+    @features.setter
+    def features(self, features: dict):
+        self._features = features
+
+    @property
+    def slippage(self) -> dict:
+        return self._slippage
+
+    @slippage.setter
+    def slippage(self, slippage: dict):
+        self._slippage = slippage
 
     def __enter__(self):
+        """Adds a new context to the context stack.
+
+        This method is used for a `with` statement and adds a `TradingContext`
+        to the context stack. The new context on the stack is then used by every
+        class that subclasses `Component` the initialization of its instances.
+        """
         type(self).get_contexts().append(self)
         return self
 
@@ -92,33 +207,27 @@ class TradingContext(UserDict):
     @classmethod
     def get_context(cls):
         """Gets the deepest context on the stack."""
-        try:
-            return cls.get_contexts()[-1]
-        except IndexError:
-            raise TypeError("No context on context stack")
+        return cls.get_contexts()[-1]
+
+    @classmethod
+    def from_json(cls, path: str):
+        with open(path, "rb") as fp:
+            config = json.load(fp)
+        return TradingContext(**config)
+
+    @classmethod
+    def from_yaml(cls, path: str):
+        with open(path, "rb") as fp:
+            config = yaml.load(fp, Loader=yaml.FullLoader)
+        return TradingContext(**config)
 
 
-class InitContextMeta(abc.ABCMeta):
-    """Metaclass that executes `__init__` of instance in it's base"""
+class Context(UserDict):
 
-    def __call__(cls, *args, **kwargs):
-        instance = cls.__new__(cls, *args, **kwargs)
-        try:
-            setattr(instance, 'context', TradingContext.get_context())
-        except TypeError:
-            setattr(instance, 'context', None)
-        instance.__init__(*args, **kwargs)
-        return instance
+    def __init__(self, **kwargs):
+        super(Context, self).__init__(**kwargs)
+        self.__dict__ = {**self.__dict__, **self.data}
 
-
-class ContextualizedMixin(object):
-    """This class is to be mixed in with any class that must function in a
-    contextual setting.
-    """
-    @property
-    def context(self) -> TradingContext:
-        return self._context
-
-    @context.setter
-    def context(self, context: TradingContext):
-        self._context = context
+    def __str__(self):
+        data = ['{}={}'.format(k, getattr(self, k)) for k in self.__slots__]
+        return '<{}: {}>'.format(self.__class__.__name__, ', '.join(data))

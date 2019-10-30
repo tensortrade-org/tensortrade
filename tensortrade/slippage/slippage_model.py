@@ -21,6 +21,8 @@ from tensortrade.trades import Trade
 class SlippageModel(Component):
     """A model for simulating slippage on an exchange trade."""
 
+    registered_name = "slippage"
+
     def __init__(self):
         pass
 

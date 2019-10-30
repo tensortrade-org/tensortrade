@@ -28,6 +28,8 @@ TradeActionUnion = Union[int, float, tuple]
 class ActionStrategy(Component):
     """An abstract strategy for determining the action to take at each timestep within a trading environment."""
 
+    registered_name = "actions"
+
     @abstractmethod
     def __init__(self, action_space: Space, dtype: DTypeString = np.float16):
         """

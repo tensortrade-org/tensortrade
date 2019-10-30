@@ -1,12 +1,17 @@
 
 import tensortrade as td
-
+import pytest
+import tensortrade.base as base
 
 from abc import abstractmethod
 from tensortrade.base import Component
+from tensortrade.base.registry import registry
+
 
 
 class DataMessageComponent(Component):
+
+    registered_name = "messages"
 
     @abstractmethod
     def __init__(self, data: dict):
@@ -37,6 +42,8 @@ class WorthMessageComponent(DataMessageComponent):
 
 
 class PlanComponent(Component):
+
+    registered_name = "plans"
 
     @abstractmethod
     def __init__(self, plan: str):
@@ -79,18 +86,14 @@ def test_no_context_injected_outside_with():
     value = 'the time and effort.'
     instance = WorthMessageComponent(name=name, value=value)
 
-    assert instance.context is None
+    assert instance.context
     assert instance.name == name
     assert instance.value == value
 
 
 config = {
         'base_instrument': 'EURO',
-        'products': ['BTC', 'ETH'],
-        'credentials': {
-            'api_key': '48hg34wydghi7ef',
-            'api_secret_key': '0984hgoe8d7htg'
-        }
+        'products': ['BTC', 'ETH']
 }
 
 
@@ -119,9 +122,66 @@ def test_inject_multiple_components_with_context():
     assert instance.context == win.context == lose.context
 
 
+def test_injects_component_space():
+    c = {
+        'messages': {
+            'msg_var': 0,
+            'valid': ['Hello', 'World']
+        },
+        **config
+    }
+
+    with td.TradingContext(**c) as c:
+        name = 'TensorTrade'
+        value = 'the time and effort.'
+        instance = WorthMessageComponent(name=name, value=value)
+
+        assert hasattr(instance.context, 'msg_var')
+        assert hasattr(instance.context, 'valid')
+
+        assert instance.context.msg_var == 0
+        assert instance.context.valid == ['Hello', 'World']
+
+
+def test_only_name_registered_component_space():
+    c = {
+        'actions': {
+            'n_actions': 20
+        },
+        'messages': {
+            'msg_var': 0,
+            'valid': ['Hello', 'World']
+        },
+        'plans': {
+            'future': 'looking good'
+        },
+        **config
+    }
+
+    with td.TradingContext(**c) as c:
+        name = 'TensorTrade'
+        value = 'the time and effort.'
+        instance = WorthMessageComponent(name=name, value=value)
+
+        assert instance.context == {'msg_var': 0, 'valid': ['Hello', 'World'], **config}
+
+
 def test_inject_contexts_at_different_levels():
-    c1 = {'level': 0, **config}
-    c2 = {'level': 1, **config}
+    c1 = {
+        'messages': {
+            'msg_var': 0
+        },
+        'plans': {
+            'plans_var': 24
+        },
+        **config
+    }
+    c2 = {
+        'messages': {
+            'level': 1
+        },
+        **config
+    }
 
     with td.TradingContext(**c1) as tc1:
         name = 'TensorTrade'
@@ -129,30 +189,14 @@ def test_inject_contexts_at_different_levels():
         instance1 = WorthMessageComponent(name=name, value=value)
         win1 = WinPlanComponent()
         lose1 = LosePlanComponent()
-        assert instance1.context is tc1
-        assert win1.context is tc1
-        assert lose1.context is tc1
-
-        assert instance1.context == win1.context == lose1.context
+        assert hasattr(instance1.context, 'msg_var')
+        assert hasattr(win1.context, 'plans_var')
+        assert hasattr(lose1.context, 'plans_var')
 
         with td.TradingContext(**c2) as tc2:
             name = 'TensorTrade'
             value = 'the time and effort.'
             instance2 = WorthMessageComponent(name=name, value=value)
-            win2 = WinPlanComponent()
-            lose2 = LosePlanComponent()
-            assert instance2.context is tc2
-            assert win2.context is tc2
-            assert lose2.context is tc2
 
-            assert instance2.context == win2.context == lose2.context
-
-        assert instance2.context == win2.context == lose2.context
-
-    assert instance1.context is tc1
-    assert win1.context is tc1
-    assert lose1.context is tc1
-
-    assert instance2.context is tc2
-    assert win2.context is tc2
-    assert lose2.context is tc2
+            assert hasattr(instance2.context, 'level')
+            assert instance2.context == {'level': 1, **config}

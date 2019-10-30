@@ -22,6 +22,8 @@ from tensortrade.trades import Trade
 
 class RewardStrategy(Component):
 
+    registered_name = "rewards"
+
     def __init__(self):
         pass
 

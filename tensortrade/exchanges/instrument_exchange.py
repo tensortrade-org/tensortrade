@@ -38,6 +38,7 @@ class InstrumentExchange(Component):
     feature_pipeline : `FeaturePipeline`
         A pipeline of feature transformations for transforming observations.
     """
+    registered_name = "exchanges"
 
     def __init__(self, dtype: TypeString = np.float16, feature_pipeline: FeaturePipeline = None):
         self._base_instrument = self.context.base_instrument

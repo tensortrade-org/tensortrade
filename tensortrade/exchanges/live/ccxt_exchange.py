@@ -34,7 +34,7 @@ class CCXTExchange(InstrumentExchange):
         )
 
         self._exchange = exchange
-        self._credentials = self.context.credentials
+        self._credentials = self.context.get('credentials', None)
 
         self._exchange.enableRateLimit = kwargs.get('enable_rate_limit', True)
         self._markets = self._exchange.load_markets()

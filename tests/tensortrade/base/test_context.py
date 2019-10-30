@@ -19,9 +19,11 @@ def test_is_trading_context_class_there():
 def test_has_config_attribute():
     c = TradingContext()
 
-    assert hasattr(c, 'base_instrument')
-    assert hasattr(c, 'products')
-    assert hasattr(c, 'credentials')
+    assert hasattr(c, 'shared')
+    assert hasattr(c, 'exchanges')
+    assert hasattr(c, 'actions')
+    assert hasattr(c, 'rewards')
+    assert hasattr(c, 'features')
 
 
 config = {
@@ -35,48 +37,16 @@ config = {
 
 
 def test_init():
-
     c = TradingContext(base_instrument=config['base_instrument'],
-                       products=config['products'],
-                       credentials=config['credentials'])
+                       products=config['products'])
     assert c.base_instrument == 'EURO'
     assert c.products == ['BTC', 'ETH']
-    assert c.credentials == {'api_key': '48hg34wydghi7ef',
-                             'api_secret_key': '0984hgoe8d7htg'}
 
 
 def test_init_with_kwargs():
     c = TradingContext(**config)
     assert c.base_instrument == 'EURO'
     assert c.products == ['BTC', 'ETH']
-    assert c.credentials == {'api_key': '48hg34wydghi7ef',
-                             'api_secret_key': '0984hgoe8d7htg'}
-
-
-def test_init_instance_attr():
-
-    d = {
-        **config,
-        'apple': 1,
-        'banana': 2,
-        'carrot': 3
-    }
-
-    c = TradingContext(**d)
-    assert c.base_instrument == 'EURO'
-    assert c.products == ['BTC', 'ETH']
-    assert c.credentials == {'api_key': '48hg34wydghi7ef',
-                             'api_secret_key': '0984hgoe8d7htg'}
-
-    assert c['apple'] == 1
-    assert hasattr(c, 'apple')
-    assert c['apple'] == c.apple
-    assert c['banana'] == 2
-    assert hasattr(c, 'banana')
-    assert c['banana'] == c.banana
-    assert c['carrot'] == 3
-    assert hasattr(c, 'carrot')
-    assert c['carrot'] == c.carrot
 
 
 def test_context_creation():
@@ -112,3 +82,43 @@ def test_context_retains_data_outside_with():
         assert tc.data == config
 
     assert tc.data == config
+
+
+def test_create_trading_context_from_json():
+    path = "tests/tensortrade/base/config/configuration.json"
+
+    actions = {"n_actions": 24, "action_type": "discrete"}
+    exchanges = {
+        "credentials": {
+            "api_key": "487r63835t4323",
+            "api_secret_key": "do8u43hgiurwfnlveio"
+        },
+        "name": "coinbase"
+    }
+
+    with td.TradingContext.from_json(path) as tc:
+        print(tc.data)
+        assert tc.base_instrument == "EURO"
+        assert tc.products == ["BTC", "ETH"]
+        assert tc.actions == actions
+        assert tc.exchanges == exchanges
+
+
+def test_create_trading_context_from_yaml():
+    path = "tests/tensortrade/base/config/configuration.yaml"
+
+    actions = {"n_actions": 24, "action_type": "discrete"}
+    exchanges = {
+        "credentials": {
+            "api_key": "487r63835t4323",
+            "api_secret_key": "do8u43hgiurwfnlveio"
+        },
+        "name": "coinbase"
+    }
+
+    with td.TradingContext.from_yaml(path) as tc:
+        print(tc.data)
+        assert tc.base_instrument == "EURO"
+        assert tc.products == ["BTC", "ETH"]
+        assert tc.actions == actions
+        assert tc.exchanges == exchanges

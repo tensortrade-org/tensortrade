@@ -32,7 +32,8 @@ def data_frame():
     return data_frame
 
 
-class TestFeaturePipeline():
+class TestFeaturePipeline:
+
     def test_incremental_transform(self, data_frame, exchange):
         difference_all = FractionalDifference(
             difference_order=0.5, inplace=True)
