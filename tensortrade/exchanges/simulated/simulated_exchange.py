@@ -17,7 +17,7 @@ import pandas as pd
 
 from abc import abstractmethod
 from gym.spaces import Space, Box
-from typing import List, Dict, Generator
+from typing import List, Dict
 
 from tensortrade.trades import Trade, TradeType
 from tensortrade.exchanges import InstrumentExchange
@@ -125,25 +125,22 @@ class SimulatedExchange(InstrumentExchange):
     def has_next_observation(self) -> bool:
         return self._current_step < len(self._data_frame) - 1
 
-    def _create_observation_generator(self) -> Generator[pd.DataFrame, None, None]:
-        for step in range(self._current_step, len(self._data_frame)):
-            self._current_step = max((step, 0))
+    def _next_observation(self) -> pd.DataFrame:
+        lower_range = max((self._current_step - self._window_size, 0))
+        upper_range = max(min(self._current_step, len(self._data_frame)), 1)
 
-            lower_range = max((step - self._window_size, 0))
-            upper_range = max(min(step, self._current_step, len(self._data_frame)), 1)
+        obs = self._data_frame.iloc[lower_range:upper_range]
 
-            obs = self._data_frame.iloc[lower_range:upper_range]
+        if len(obs) < self._window_size:
+            padding = np.zeros((len(self.generated_columns), self._window_size - len(obs)))
+            obs = pd.concat([pd.DataFrame(padding), obs], ignore_index=True)
 
-            if len(obs) < self._window_size:
-                padding = np.zeros((len(self.generated_columns), self._window_size - len(obs)))
-                obs = pd.concat([pd.DataFrame(padding), obs], ignore_index=True)
+        if not self._should_pretransform_obs and self._feature_pipeline is not None:
+            obs = self._feature_pipeline.transform(obs, self.generated_space)
 
-            if not self._should_pretransform_obs and self._feature_pipeline is not None:
-                obs = self._feature_pipeline.transform(obs, self.generated_space)
+        self._current_step += 1
 
-            yield obs
-
-        raise StopIteration
+        return obs
 
     def transform_data_frame(self) -> bool:
         if self._feature_pipeline is not None and self._previously_transformed is not True:
@@ -222,9 +219,8 @@ class SimulatedExchange(InstrumentExchange):
     def reset(self):
         super().reset()
 
+        self._current_step = 0
         self._balance = self.initial_balance
         self._portfolio = {self.base_instrument: self.balance}
         self._trades = pd.DataFrame([], columns=['step', 'symbol', 'type', 'amount', 'price'])
         self._performance = pd.DataFrame([], columns=['balance', 'net_worth'])
-
-        self._current_step = 0
