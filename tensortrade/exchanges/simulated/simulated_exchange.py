@@ -48,8 +48,10 @@ class SimulatedExchange(InstrumentExchange):
         self._min_order_amount = kwargs.get('min_order_amount', 1E-3)
 
         self._initial_balance = kwargs.get('initial_balance', 1E4)
+        self._observation_columns = kwargs.get(
+            'observation_columns', ['open', 'high', 'low', 'close', 'volume'])
         self._window_size = kwargs.get('window_size', 1)
-        self._should_pretransform_obs = kwargs.get('should_pretransform_obs', False)
+        self._pretransform = kwargs.get('pretransform', True)
 
         self.data_frame = data_frame
 
@@ -65,16 +67,13 @@ class SimulatedExchange(InstrumentExchange):
 
     @data_frame.setter
     def data_frame(self, data_frame: pd.DataFrame):
-        self._previously_transformed = False
-
         if not isinstance(data_frame, pd.DataFrame):
             self._data_frame = data_frame
             return
 
-        self._unmodified_data_frame = data_frame.copy(deep=True)
-        self._data_frame = data_frame[['open', 'high', 'low', 'close', 'volume']]
+        self._data_frame = data_frame[self._observation_columns]
 
-        if self._should_pretransform_obs:
+        if self._pretransform:
             self.transform_data_frame()
 
     @property
@@ -85,7 +84,7 @@ class SimulatedExchange(InstrumentExchange):
     def feature_pipeline(self, feature_pipeline=FeaturePipeline):
         self._feature_pipeline = feature_pipeline
 
-        if isinstance(self.data_frame, pd.DataFrame) and self._should_pretransform_obs:
+        if isinstance(self.data_frame, pd.DataFrame) and self._pretransform:
             self.transform_data_frame()
 
         return self._feature_pipeline
@@ -119,7 +118,7 @@ class SimulatedExchange(InstrumentExchange):
 
     @property
     def generated_columns(self) -> List[str]:
-        return list(['open', 'high', 'low', 'close', 'volume'])
+        return list(self._observation_columns)
 
     @property
     def has_next_observation(self) -> bool:
@@ -135,7 +134,7 @@ class SimulatedExchange(InstrumentExchange):
             padding = np.zeros((len(self.generated_columns), self._window_size - len(obs)))
             obs = pd.concat([pd.DataFrame(padding), obs], ignore_index=True)
 
-        if not self._should_pretransform_obs and self._feature_pipeline is not None:
+        if not self._pretransform and self._feature_pipeline is not None:
             obs = self._feature_pipeline.transform(obs, self.generated_space)
 
         self._current_step += 1
@@ -143,14 +142,13 @@ class SimulatedExchange(InstrumentExchange):
         return obs
 
     def transform_data_frame(self) -> bool:
-        if self._feature_pipeline is not None and self._previously_transformed is not True:
-            self._previously_transformed = True
+        if self._feature_pipeline is not None:
             self._data_frame = self._feature_pipeline.transform(self._data_frame,
                                                                 self.generated_space)
 
     def current_price(self, symbol: str) -> float:
         if self.data_frame is not None:
-            frame = self._unmodified_data_frame.iloc[self._current_step]
+            frame = self._data_frame.iloc[self._current_step]
 
             if frame.empty is False:
                 return frame['close']
