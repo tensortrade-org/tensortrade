@@ -13,8 +13,10 @@
 # limitations under the License.
 
 import pandas as pd
+import numpy as np
 
 from gym import Space
+from copy import copy
 from typing import List, Union
 from abc import ABCMeta, abstractmethod
 
@@ -22,8 +24,14 @@ from abc import ABCMeta, abstractmethod
 class FeatureTransformer(object, metaclass=ABCMeta):
     """An abstract feature transformer for use within feature pipelines."""
 
-    def __init__(self, *args, **kwargs):
-        pass
+    def __init__(self, columns: Union[List[str], str, None] = None, inplace: bool = True, **kwargs):
+        """
+        Arguments:
+            columns (optional): A list of column names to normalize.
+            inplace (optional): If `False`, a new column will be added to the output for each input column.
+        """
+        self._inplace = inplace
+        self.columns = columns
 
     @property
     def columns(self) -> List[str]:
@@ -40,7 +48,6 @@ class FeatureTransformer(object, metaclass=ABCMeta):
         """Optionally implementable method for resetting stateful transformers."""
         pass
 
-    @abstractmethod
     def transform_space(self, input_space: Space, column_names: List[str]) -> Space:
         """Get the transformed output space for a given input space.
 
@@ -51,7 +58,23 @@ class FeatureTransformer(object, metaclass=ABCMeta):
         Returns:
             A `gym.Space` matching the shape of the pipeline's output.
         """
-        raise NotImplementedError
+        if self._inplace:
+            return input_space
+
+        output_space = copy(input_space)
+        columns = self.columns or column_names
+
+        shape_x, *shape_y = input_space.shape
+        output_space.shape = (shape_x + len(columns), *shape_y)
+
+        for column in columns:
+            column_index = column_names.index(column)
+            low, high = input_space.low[column_index], input_space.high[column_index]
+
+            output_space.low = np.append(output_space.low - output_space.high, low)
+            output_space.high = np.append(output_space.high, high)
+
+        return output_space
 
     @abstractmethod
     def transform(self, X: pd.DataFrame, input_space: Space) -> pd.DataFrame:
