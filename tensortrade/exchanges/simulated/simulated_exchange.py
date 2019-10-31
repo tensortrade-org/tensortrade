@@ -14,15 +14,14 @@
 
 import numpy as np
 import pandas as pd
-import tensortrade.slippage as slippage
 
-from abc import abstractmethod
 from gym.spaces import Space, Box
-from typing import List, Dict, Generator
+from typing import List, Dict
 
 from tensortrade.trades import Trade, TradeType
 from tensortrade.exchanges import InstrumentExchange
 from tensortrade.features import FeaturePipeline
+from tensortrade.slippage import RandomUniformSlippageModel
 
 
 class SimulatedExchange(InstrumentExchange):
@@ -48,16 +47,20 @@ class SimulatedExchange(InstrumentExchange):
         self._min_order_amount = self.default('min_order_amount', 1e-3, kwargs)
 
         self._initial_balance = self.default('initial_balance', 1e4, kwargs)
+        self._observation_columns = self.default(
+            'observation_columns',
+            ['open', 'high', 'low', 'close', 'volume'],
+            kwargs
+        )
         self._window_size = self.default('window_size', 1, kwargs)
-        self._should_pretransform_obs = self.default('should_pretransform_obs', False, kwargs)
+        self._pretransform = self.default('pretransform', True, kwargs)
 
         self.data_frame = self.default('data_frame', data_frame)
 
-        self._max_allowed_slippage_percent = self.default('max_allowed_slippage_percent', 1.0, kwargs)
+        max_allowed_slippage_percent = self.default('max_allowed_slippage_percent', 1.0, kwargs)
 
-        model = self.default('slippage_model', 'uniform', kwargs)
-        self._slippage_model = slippage.get(model) if isinstance(model, str) else model
-
+        model = self.default('slippage_model', RandomUniformSlippageModel, kwargs)
+        self._slippage_model = model(max_allowed_slippage_percent)
 
     @property
     def data_frame(self) -> pd.DataFrame:
@@ -66,16 +69,13 @@ class SimulatedExchange(InstrumentExchange):
 
     @data_frame.setter
     def data_frame(self, data_frame: pd.DataFrame):
-        self._previously_transformed = False
-
         if not isinstance(data_frame, pd.DataFrame):
             self._data_frame = data_frame
             return
 
-        self._unmodified_data_frame = data_frame.copy(deep=True)
-        self._data_frame = data_frame[['open', 'high', 'low', 'close', 'volume']]
+        self._data_frame = data_frame[self._observation_columns]
 
-        if self._should_pretransform_obs:
+        if self._pretransform:
             self.transform_data_frame()
 
     @property
@@ -86,7 +86,7 @@ class SimulatedExchange(InstrumentExchange):
     def feature_pipeline(self, feature_pipeline=FeaturePipeline):
         self._feature_pipeline = feature_pipeline
 
-        if isinstance(self.data_frame, pd.DataFrame) and self._should_pretransform_obs:
+        if isinstance(self.data_frame, pd.DataFrame) and self._pretransform:
             self.transform_data_frame()
 
         return self._feature_pipeline
@@ -120,41 +120,37 @@ class SimulatedExchange(InstrumentExchange):
 
     @property
     def generated_columns(self) -> List[str]:
-        return list(['open', 'high', 'low', 'close', 'volume'])
+        return list(self._observation_columns)
 
     @property
     def has_next_observation(self) -> bool:
         return self._current_step < len(self._data_frame) - 1
 
-    def _create_observation_generator(self) -> Generator[pd.DataFrame, None, None]:
-        for step in range(self._current_step, len(self._data_frame)):
-            self._current_step = max((step, 0))
+    def _next_observation(self) -> pd.DataFrame:
+        lower_range = max((self._current_step - self._window_size, 0))
+        upper_range = max(min(self._current_step, len(self._data_frame)), 1)
 
-            lower_range = max((step - self._window_size, 0))
-            upper_range = max(min(step, self._current_step, len(self._data_frame)), 1)
+        obs = self._data_frame.iloc[lower_range:upper_range]
 
-            obs = self._data_frame.iloc[lower_range:upper_range]
+        if len(obs) < self._window_size:
+            padding = np.zeros((len(self.generated_columns), self._window_size - len(obs)))
+            obs = pd.concat([pd.DataFrame(padding), obs], ignore_index=True)
 
-            if len(obs) < self._window_size:
-                padding = np.zeros((len(self.generated_columns), self._window_size - len(obs)))
-                obs = pd.concat([pd.DataFrame(padding), obs], ignore_index=True)
+        if not self._pretransform and self._feature_pipeline is not None:
+            obs = self._feature_pipeline.transform(obs, self.generated_space)
 
-            if not self._should_pretransform_obs and self._feature_pipeline is not None:
-                obs = self._feature_pipeline.transform(obs, self.generated_space)
+        self._current_step += 1
 
-            yield obs
-
-        raise StopIteration
+        return obs
 
     def transform_data_frame(self) -> bool:
-        if self._feature_pipeline is not None and self._previously_transformed is not True:
-            self._previously_transformed = True
+        if self._feature_pipeline is not None:
             self._data_frame = self._feature_pipeline.transform(self._data_frame,
                                                                 self.generated_space)
 
     def current_price(self, symbol: str) -> float:
         if self.data_frame is not None:
-            frame = self._unmodified_data_frame.iloc[self._current_step]
+            frame = self._data_frame.iloc[self._current_step]
 
             if frame.empty is False:
                 return frame['close']
@@ -223,9 +219,8 @@ class SimulatedExchange(InstrumentExchange):
     def reset(self):
         super().reset()
 
+        self._current_step = 0
         self._balance = self.initial_balance
         self._portfolio = {self.base_instrument: self.balance}
         self._trades = pd.DataFrame([], columns=['step', 'symbol', 'type', 'amount', 'price'])
         self._performance = pd.DataFrame([], columns=['balance', 'net_worth'])
-
-        self._current_step = 0

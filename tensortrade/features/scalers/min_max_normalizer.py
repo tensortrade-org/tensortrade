@@ -27,20 +27,20 @@ class MinMaxNormalizer(FeatureTransformer):
 
     def __init__(self,
                  columns: Union[List[str], str, None] = None,
-                 feature_min=0,
-                 feature_max=1,
-                 inplace=True):
+                 feature_min: float = 0,
+                 feature_max: float = 1,
+                 inplace: bool = True):
         """
         Arguments:
             columns (optional): A list of column names to normalize.
-            feature_min (optional): The minimum value in the range to scale to.
-            feature_max (optional): The maximum value in the range to scale to.
+            feature_min (optional): The minimum `float` in the range to scale to. Defaults to 0.
+            feature_max (optional): The maximum `float` in the range to scale to. Defaults to 1.
             inplace (optional): If `False`, a new column will be added to the output for each input column.
         """
+        super().__init__(columns=columns, inplace=inplace)
+
         self._feature_min = feature_min
         self._feature_max = feature_max
-        self._inplace = inplace
-        self.columns = columns
 
     def transform_space(self, input_space: Space, column_names: List[str]) -> Space:
         if self._inplace:
@@ -71,10 +71,11 @@ class MinMaxNormalizer(FeatureTransformer):
             scale = (self._feature_max - self._feature_min) + self._feature_min
             normalized_column = (X[column] - low) / (high - low + 1E-9) * scale
 
-            if self._inplace:
-                X[column] = normalized_column
-            else:
-                column_name = '{}_minmax_{}_{}'.format(column, self._feature_min, self._feature_max)
-                X[column_name] = normalized_column
+            if not self._inplace:
+                column = '{}_minmax_{}_{}'.format(column, self._feature_min, self._feature_max)
+
+            args = dict(zip(column, normalized_column))
+
+            X.assign(**args)
 
         return X

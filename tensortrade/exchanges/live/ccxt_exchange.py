@@ -17,7 +17,7 @@ import ccxt
 import numpy as np
 import pandas as pd
 
-from typing import Dict, List, Generator, Union
+from typing import Dict, List, Union
 from gym.spaces import Space, Box
 from ccxt import Exchange, BadRequest
 
@@ -121,35 +121,34 @@ class CCXTExchange(InstrumentExchange):
 
         return self._exchange.has['fetchTrades']
 
-    def _create_observation_generator(self) -> Generator[pd.DataFrame, None, None]:
-        while True:
-            if self._observation_type == 'ohlcv':
-                ohlcv = self._exchange.fetch_ohlcv(
-                    self._observation_symbol, timeframe=self._timeframe)
+    def _next_observation(self) -> pd.DataFrame:
+        if self._observation_type == 'ohlcv':
+            ohlcv = self._exchange.fetch_ohlcv(
+                self._observation_symbol, timeframe=self._timeframe)
 
-                obs = [l[1:] for l in ohlcv]
-            elif self._observation_type == 'trades':
-                trades = self._exchange.fetch_trades(self._observation_symbol)
+            obs = [l[1:] for l in ohlcv]
+        elif self._observation_type == 'trades':
+            trades = self._exchange.fetch_trades(self._observation_symbol)
 
-                obs = [[0 if t['side'] == 'buy' else 1, t['price'], t['amount'], t['cost']]
-                       for t in trades]
+            obs = [[0 if t['side'] == 'buy' else 1, t['price'], t['amount'], t['cost']]
+                   for t in trades]
 
-            obs = pd.DataFrame(obs, columns=self.generated_columns)
-            obs = pd.concat([self._data_frame, obs], ignore_index=True)
+        obs = pd.DataFrame(obs, columns=self.generated_columns)
+        obs = pd.concat([self._data_frame, obs], ignore_index=True)
 
-            self._data_frame = obs
+        self._data_frame = obs
 
-            if len(self._data_frame) >= self._window_size:
-                self._data_frame = self._data_frame.iloc[-(self._window_size - 1):]
+        if len(self._data_frame) >= self._window_size:
+            self._data_frame = self._data_frame.iloc[-(self._window_size - 1):]
 
-            if len(obs) < self._window_size:
-                padding = np.zeros((len(self.generated_columns), self._window_size - len(obs)))
-                obs = pd.concat([pd.DataFrame(padding), obs], ignore_index=True)
+        if len(obs) < self._window_size:
+            padding = np.zeros((len(self.generated_columns), self._window_size - len(obs)))
+            obs = pd.concat([pd.DataFrame(padding), obs], ignore_index=True)
 
-            if self._feature_pipeline is not None:
-                obs = self._feature_pipeline.transform(obs, self.generated_space)
+        if self._feature_pipeline is not None:
+            obs = self._feature_pipeline.transform(obs, self.generated_space)
 
-            yield obs
+        return obs
 
     def current_price(self, symbol: str) -> float:
         try:

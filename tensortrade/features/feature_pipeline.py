@@ -98,7 +98,8 @@ class FeaturePipeline(Component):
         Raises:
             ValueError: In the case that an invalid observation frame has been input.
         """
-        features = self._transform(observation, input_space)
+        obs = observation.copy(deep=True)
+        features = self._transform(obs, input_space)
 
         if not isinstance(features, pd.DataFrame):
             raise ValueError("A FeaturePipeline must transform a pandas.DataFrame into another pandas.DataFrame.\n \

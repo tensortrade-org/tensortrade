@@ -33,10 +33,10 @@ class StandardNormalizer(FeatureTransformer):
             feature_max (optional): The maximum value in the range to scale to.
             inplace (optional): If `False`, a new column will be added to the output for each input column.
         """
+        super().__init__(columns=columns, inplace=inplace)
+
         self._feature_min = feature_min
         self._feature_max = feature_max
-        self._inplace = inplace
-        self.columns = columns
 
         self._history = {}
 

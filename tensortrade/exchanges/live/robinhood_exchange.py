@@ -16,7 +16,7 @@ import time
 import numpy as np
 import pandas as pd
 
-from typing import Dict, List, Generator
+from typing import Dict, List
 from gym.spaces import Space, Box
 from ccxt import Exchange
 
@@ -93,8 +93,7 @@ class RobinhoodExchange(InstrumentExchange):
         # TODO
         raise NotImplementedError
 
-    @property
-    def _observation_generator(self) -> Generator[pd.DataFrame, None, None]:
+    def _next_observation(self) -> pd.DataFrame:
         # TODO
         raise NotImplementedError
 

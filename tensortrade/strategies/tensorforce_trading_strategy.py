@@ -108,7 +108,8 @@ class TensorforceTradingStrategy(TradingStrategy):
 
         n_episodes = self._runner.episodes
         n_timesteps = self._runner.timesteps
-        avg_reward = np.mean(self._runner.episode_rewards)
+        avg_reward = np.mean(self._runner.episode_rewards) \
+            if self._runner.episodes > 0 else self._runner.episode_reward
 
         print("Finished running strategy.")
         print("Total episodes: {} ({} timesteps).".format(n_episodes, n_timesteps))

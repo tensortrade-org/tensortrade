@@ -16,7 +16,7 @@ import pandas as pd
 import numpy as np
 
 from abc import abstractmethod
-from typing import Dict, Union, List, Generator
+from typing import Dict, Union, List
 from gym.spaces import Space
 
 from tensortrade import Component
@@ -183,9 +183,8 @@ class InstrumentExchange(Component):
         """
         raise NotImplementedError
 
-    @abstractmethod
-    def _create_observation_generator(self) -> Generator[pd.DataFrame, None, None]:
-        raise NotImplementedError
+    def _next_observation(self) -> Union[pd.DataFrame, np.ndarray]:
+        raise NotImplementedError()
 
     def next_observation(self) -> np.ndarray:
         """Generate the next observation from the exchange.
@@ -193,7 +192,7 @@ class InstrumentExchange(Component):
         Returns:
             The next multi-dimensional list of observations.
         """
-        observation = next(self._observation_generator, None)
+        observation = self._next_observation()
 
         if isinstance(observation, pd.DataFrame):
             observation = observation.fillna(0, axis=1)
@@ -247,5 +246,3 @@ class InstrumentExchange(Component):
         """Reset the feature pipeline, initial balance, trades, performance, and any other temporary stateful data."""
         if self._feature_pipeline is not None:
             self.feature_pipeline.reset()
-
-        self._observation_generator = self._create_observation_generator()
