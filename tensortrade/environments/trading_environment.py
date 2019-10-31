@@ -49,7 +49,6 @@ class TradingEnvironment(gym.Env):
             kwargs (optional): Additional arguments for tuning the environment, logging, etc.
         """
         super().__init__()
-
         self._exchange = exchanges.get(exchange) if isinstance(exchange, str) else exchange
         self._action_strategy = actions.get(action_strategy) if isinstance(
             action_strategy, str) else action_strategy

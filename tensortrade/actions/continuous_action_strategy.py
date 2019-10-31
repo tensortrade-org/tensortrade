@@ -39,7 +39,9 @@ class ContinuousActionStrategy(ActionStrategy):
     def __init__(self, max_allowed_slippage_percent: float = 1.0, dtype: DTypeString = np.float16):
         super().__init__(action_space=Box(0, 1, shape=(1, 1), dtype=dtype), dtype=dtype)
         self._product = self.context.products[0]
-        self.max_allowed_slippage_percent = max_allowed_slippage_percent
+        self.max_allowed_slippage_percent = \
+            self.context.get('max_allowed_slippage_percent', None) or \
+            max_allowed_slippage_percent
 
     def get_trade(self, action: TradeActionUnion) -> Trade:
         action_type, trade_amount = action

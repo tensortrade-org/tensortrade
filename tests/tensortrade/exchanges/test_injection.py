@@ -1,6 +1,8 @@
 from typing import Generator, List, Dict
 
 import pandas as pd
+import tensortrade.slippage as slippage
+
 from gym import Space
 
 from tensortrade import TradingContext
@@ -8,6 +10,7 @@ from tensortrade.exchanges import *
 from tensortrade.exchanges.live import *
 from tensortrade.exchanges.simulated import *
 from tensortrade.trades import Trade
+from tensortrade.slippage import SlippageModel
 
 
 class ConcreteInstrumentExchange(InstrumentExchange):
@@ -61,7 +64,7 @@ class ConcreteInstrumentExchange(InstrumentExchange):
 
 
 config = {
-        'base_instrument': 'USD',
+        'base_instrument': 'EURO',
         'products': 'ETH',
         'exchanges': {
             'credentials': {
@@ -87,7 +90,7 @@ def test_injects_base_instrument():
     with TradingContext(**config) as tc:
         exchange = SimulatedExchange()
 
-        assert exchange.base_instrument == tc.base_instrument
+        assert exchange.base_instrument == 'EURO'
 
 
 def test_injects_string_initialized_action_strategy():
@@ -99,3 +102,60 @@ def test_injects_string_initialized_action_strategy():
         assert hasattr(exchange.context, 'credentials')
         assert exchange.context.credentials == config['exchanges']['credentials']
         assert exchange.context['credentials'] == config['exchanges']['credentials']
+
+
+def test_initialize_ccxt_from_config():
+
+    config = {
+        'base_instrument': 'USD',
+        'products': 'ETH',
+        'exchanges': {
+            'exchange': 'binance',
+            'credentials': {
+                'api_key': '48hg34wydghi7ef',
+                'api_secret_key': '0984hgoe8d7htg'
+            }
+        }
+    }
+
+    with TradingContext(**config):
+
+        exchange = CCXTExchange()
+
+        assert str(exchange._exchange) == 'Binance'
+        assert exchange._credentials == config['exchanges']['credentials']
+
+
+def test_simlulated_from_config():
+
+    class NoSlippage(SlippageModel):
+
+        def fill_order(self, trade: Trade, **kwargs) -> Trade:
+            return trade
+
+    config = {
+        'base_instrument': 'EURO',
+        'products': ['BTC', 'ETH'],
+        'exchanges': {
+            'commission_percent': 0.5,
+            'base_precision': 0.3,
+            'instrument_precision': 10,
+            'min_trade_price': 1e-7,
+            'max_trade_price': 1e7,
+            'min_trade_amount': 1e-4,
+            'max_trade_amount': 1e4,
+            'min_order_amount': 1e-4,
+            'initial_balance': 1e5,
+            'window_size': 5,
+            'should_pretransform_obs': True,
+            'max_allowed_slippage_percent': 3.0,
+            'slippage_model': NoSlippage
+        }
+    }
+
+    with TradingContext(**config):
+
+        exchange = SimulatedExchange()
+
+        exchange.base_instrument == 'EURO'
+        exchange._commission_percent == 0.5

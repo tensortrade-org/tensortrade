@@ -42,6 +42,6 @@ def get(identifier: str) -> InstrumentExchange:
 
     if identifier in ccxt.exchanges:
         ccxt_exchange = getattr(ccxt, identifier)()
-        return live.CCXTExchange(exchange=ccxt_exchange)
+        return live.CCXTExchange(exchange=identifier)
 
     raise KeyError('Identifier {} is not associated with any `InstrumentExchange`.'.format(identifier))

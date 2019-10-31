@@ -43,8 +43,14 @@ class MultiDiscreteActionStrategy(ActionStrategy):
         )
 
         self._products = self.context.products
-        self._actions_per_instrument = actions_per_instrument
-        self._max_allowed_slippage_percent = max_allowed_slippage_percent
+
+        self._actions_per_instrument = \
+            self.context.get('actions_per_instrument', None) or \
+            actions_per_instrument
+
+        self._max_allowed_slippage_percent = \
+            self.context.get('max_allowed_slippage_percent', None) or \
+            max_allowed_slippage_percent
 
     @property
     def dtype(self) -> DTypeString:

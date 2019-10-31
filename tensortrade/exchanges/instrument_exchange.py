@@ -42,8 +42,8 @@ class InstrumentExchange(Component):
 
     def __init__(self, dtype: TypeString = np.float16, feature_pipeline: FeaturePipeline = None):
         self._base_instrument = self.context.base_instrument
-        self._dtype = dtype
-        self._feature_pipeline = feature_pipeline
+        self._dtype = self.default('dtype', dtype)
+        self._feature_pipeline = self.default('feature_pipeline', feature_pipeline)
 
     @property
     def base_instrument(self) -> str:

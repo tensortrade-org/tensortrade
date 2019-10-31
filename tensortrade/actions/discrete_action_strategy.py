@@ -34,10 +34,14 @@ class DiscreteActionStrategy(ActionStrategy):
         Defaults to 1.0 (i.e. 1%).
     """
     def __init__(self, n_actions: int = 20, max_allowed_slippage_percent: float = 1.0):
+        n_actions = self.context.get('n_actions', None) or n_actions
         super().__init__(action_space=Discrete(n_actions), dtype=np.int64)
         self.n_actions = n_actions
         self._product = self.context.products[0]
-        self.max_allowed_slippage_percent = max_allowed_slippage_percent
+        self.max_allowed_slippage_percent = \
+            self.context.get('max_allowed_slippage_percent', None) or \
+            max_allowed_slippage_percent
+
 
     @property
     def dtype(self) -> DTypeString:

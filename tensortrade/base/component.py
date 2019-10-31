@@ -1,6 +1,8 @@
 
 import abc
 
+from typing import Union
+
 from .context import TradingContext, Context
 from .registry import registry, register, get_registered_name
 
@@ -41,3 +43,8 @@ class Component(abc.ABC, ContextualizedMixin, metaclass=InitContextMeta):
         super().__init_subclass__(**kwargs)
         if cls not in registry():
             register(cls, cls.registered_name)
+
+    def default(self, key: str, value: any, kwargs: dict = None):
+        if not kwargs:
+            return self.context.get(key, None) or value
+        return self.context.get(key, None) or kwargs.get(key, value)

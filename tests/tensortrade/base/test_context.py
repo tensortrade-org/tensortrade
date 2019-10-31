@@ -39,14 +39,14 @@ config = {
 def test_init():
     c = TradingContext(base_instrument=config['base_instrument'],
                        products=config['products'])
-    assert c.base_instrument == 'EURO'
-    assert c.products == ['BTC', 'ETH']
+    assert c.shared.get('base_instrument') == 'EURO'
+    assert c.shared.get('products') == ['BTC', 'ETH']
 
 
 def test_init_with_kwargs():
     c = TradingContext(**config)
-    assert c.base_instrument == 'EURO'
-    assert c.products == ['BTC', 'ETH']
+    assert c.shared.get('base_instrument') == 'EURO'
+    assert c.shared.get('products') == ['BTC', 'ETH']
 
 
 def test_context_creation():
@@ -85,7 +85,7 @@ def test_context_retains_data_outside_with():
 
 
 def test_create_trading_context_from_json():
-    path = "tests/tensortrade/base/config/configuration.json"
+    path = "tests/data/config/configuration.json"
 
     actions = {"n_actions": 24, "action_type": "discrete"}
     exchanges = {
@@ -97,15 +97,15 @@ def test_create_trading_context_from_json():
     }
 
     with td.TradingContext.from_json(path) as tc:
-        print(tc.data)
-        assert tc.base_instrument == "EURO"
-        assert tc.products == ["BTC", "ETH"]
+
+        assert tc.shared['base_instrument'] == "EURO"
+        assert tc.shared['products'] == ["BTC", "ETH"]
         assert tc.actions == actions
         assert tc.exchanges == exchanges
 
 
 def test_create_trading_context_from_yaml():
-    path = "tests/tensortrade/base/config/configuration.yaml"
+    path = "tests/data/config/configuration.yaml"
 
     actions = {"n_actions": 24, "action_type": "discrete"}
     exchanges = {
@@ -117,8 +117,8 @@ def test_create_trading_context_from_yaml():
     }
 
     with td.TradingContext.from_yaml(path) as tc:
-        print(tc.data)
-        assert tc.base_instrument == "EURO"
-        assert tc.products == ["BTC", "ETH"]
+
+        assert tc.shared['base_instrument'] == "EURO"
+        assert tc.shared['products'] == ["BTC", "ETH"]
         assert tc.actions == actions
         assert tc.exchanges == exchanges

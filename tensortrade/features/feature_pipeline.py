@@ -36,7 +36,7 @@ class FeaturePipeline(Component):
         """
         self._steps = steps
 
-        self._dtype: DTypeString = kwargs.get('dtype', np.float16)
+        self._dtype: DTypeString = self.default('dtype', np.float16, kwargs)
 
     @property
     def steps(self) -> List[FeatureTransformer]:

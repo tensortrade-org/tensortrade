@@ -1,0 +1,44 @@
+{
+  "simulated_discrete_simple": {
+    "base_instrument": "EURO",
+    "products": ["BTC", "ETH"],
+    "exchanges": {
+        "commission_percent": 0.5,
+        "base_precision": 0.3,
+        "instrument_precision": 10,
+        "min_trade_price": 1e-7,
+        "max_trade_price": 1e7,
+        "min_trade_amount": 1e-4,
+        "max_trade_amount": 1e4,
+        "min_order_amount": 1e-4,
+        "initial_balance": 1e5,
+        "window_size": 5,
+        "should_pretransform_obs": true,
+        "max_allowed_slippage_percent": 3.0,
+        "slippage_model": "uniform"
+    }
+    },
+    "simulated_continuous_simple": {
+      "base_instrument": "EURO",
+      "products": ["BTC", "ETH"],
+      "exchanges": {
+          "commission_percent": 0.5,
+          "base_precision": 0.3,
+          "instrument_precision": 10,
+          "min_trade_price": 1e-7,
+          "max_trade_price": 1e7,
+          "min_trade_amount": 1e-4,
+          "max_trade_amount": 1e4,
+          "min_order_amount": 1e-4,
+          "initial_balance": 1e5,
+          "window_size": 5,
+          "should_pretransform_obs": true,
+          "max_allowed_slippage_percent": 3.0,
+          "slippage_model": "uniform"
+      }
+  },
+  "simulated_multi-discrete_simple": {},
+  "fbm_discrete_simple": {},
+  "fbm_continuous_simple": {},
+  "fbm_multi-discrete_simple": {}
+}

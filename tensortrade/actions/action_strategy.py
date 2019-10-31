@@ -38,7 +38,7 @@ class ActionStrategy(Component):
             dtype: A type or str corresponding to the dtype of the `action_space`. Defaults to `np.float16`.
         """
         self._action_space = action_space
-        self._dtype = dtype
+        self._dtype = self.context.get('dtype', None) or dtype
 
     @property
     def action_space(self) -> Space:

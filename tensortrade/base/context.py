@@ -4,7 +4,7 @@ import yaml
 
 from typing import Union, List
 from collections import UserDict
-from .registry import registered_names, get_major_component_names
+from .registry import registered_names, get_major_component_names, registry
 
 
 def _diff(c1, c2, path=None, changes=None):
@@ -49,10 +49,6 @@ class TradingContext(UserDict):
 
     Parameters:
     ----------
-    base_instrument : str
-        The exchange symbol of the instrument to store/measure value in.
-    products : List[str]
-        The exchange symbols of the instruments being traded on.
     shared : Context
         A context that is shared between all components that are made under
         the overarching `TradingContext`.
@@ -96,16 +92,6 @@ class TradingContext(UserDict):
         if type(products) == str:
             products = [products]
 
-        self._base_instrument = base_instrument
-        self._products = products
-
-        major_components = [
-            'shared',
-            'exchanges',
-            'actions',
-            'rewards',
-            'features'
-        ]
         for name in registered_names():
             if name not in get_major_component_names():
                 setattr(self, name, config.get(name, {}))
@@ -126,60 +112,28 @@ class TradingContext(UserDict):
         }
 
     @property
-    def base_instrument(self):
-        return self._base_instrument
-
-    @property
-    def products(self):
-        return self._products
-
-    @property
     def shared(self) -> dict:
         return self._shared
-
-    @shared.setter
-    def shared(self, shared: dict):
-        self._shared = shared
 
     @property
     def exchanges(self) -> dict:
         return self._exchanges
 
-    @exchanges.setter
-    def exchanges(self, exchanges: dict):
-        self._exchanges = exchanges
-
     @property
     def actions(self) -> dict:
         return self._actions
-
-    @actions.setter
-    def actions(self, actions: dict):
-        self._actions = actions
 
     @property
     def rewards(self) -> dict:
         return self._rewards
 
-    @rewards.setter
-    def rewards(self, rewards: dict):
-        self._rewards = rewards
-
     @property
     def features(self) -> dict:
         return self._features
 
-    @features.setter
-    def features(self, features: dict):
-        self._features = features
-
     @property
     def slippage(self) -> dict:
         return self._slippage
-
-    @slippage.setter
-    def slippage(self, slippage: dict):
-        self._slippage = slippage
 
     def __enter__(self):
         """Adds a new context to the context stack.
@@ -193,10 +147,6 @@ class TradingContext(UserDict):
 
     def __exit__(self, typ, value, traceback):
         type(self).get_contexts().pop()
-
-    def __str__(self):
-        data = ['{}={}'.format(k, getattr(self, k)) for k in self.__slots__]
-        return '<{}: {}>'.format(self.__class__.__name__, ', '.join(data))
 
     @classmethod
     def get_contexts(cls):
@@ -223,10 +173,37 @@ class TradingContext(UserDict):
 
 
 class Context(UserDict):
+    """A context that is injected into every instance of a class that is
+    a subclass of component.
 
-    def __init__(self, **kwargs):
-        super(Context, self).__init__(**kwargs)
+    Parameters:
+    ----------
+    base_instrument : str
+        The exchange symbol of the instrument to store/measure value in.
+    products : List[str]
+        The exchange symbols of the instruments being traded on.
+    """
+
+    def __init__(self,
+                 base_instrument: str = 'USD',
+                 products: Union[str, List[str]] = 'BTC',
+                 **kwargs):
+        super(Context, self).__init__(
+            base_instrument=base_instrument,
+            products=products,
+            **kwargs
+        )
+        self._base_instrument = base_instrument
+        self._products = products
         self.__dict__ = {**self.__dict__, **self.data}
+
+    @property
+    def base_instrument(self):
+        return self._base_instrument
+
+    @property
+    def products(self):
+        return self._products
 
     def __str__(self):
         data = ['{}={}'.format(k, getattr(self, k)) for k in self.__slots__]

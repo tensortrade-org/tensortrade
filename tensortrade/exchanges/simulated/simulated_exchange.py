@@ -14,6 +14,7 @@
 
 import numpy as np
 import pandas as pd
+import tensortrade.slippage as slippage
 
 from abc import abstractmethod
 from gym.spaces import Space, Box
@@ -21,7 +22,6 @@ from typing import List, Dict, Generator
 
 from tensortrade.trades import Trade, TradeType
 from tensortrade.exchanges import InstrumentExchange
-from tensortrade.slippage import RandomUniformSlippageModel
 from tensortrade.features import FeaturePipeline
 
 
@@ -34,28 +34,30 @@ class SimulatedExchange(InstrumentExchange):
     """
 
     def __init__(self, data_frame: pd.DataFrame = None, **kwargs):
-        super().__init__(dtype=kwargs.get('dtype', np.float16),
-                         feature_pipeline=kwargs.get('feature_pipeline', None))
+        super().__init__(
+            dtype=kwargs.get('dtype', np.float16),
+            feature_pipeline=kwargs.get('feature_pipeline', None)
+        )
+        self._commission_percent = self.default('commission_percent', 0.3, kwargs)
+        self._base_precision = self.default('base_precision', 2, kwargs)
+        self._instrument_precision = self.default('instrument_precision', 8, kwargs)
+        self._min_trade_price = self.default('min_trade_price', 1e-6, kwargs)
+        self._max_trade_price = self.default('max_trade_price', 1e6, kwargs)
+        self._min_trade_amount = self.default('min_trade_amount', 1e-3, kwargs)
+        self._max_trade_amount = self.default('max_trade_amount', 1e6, kwargs)
+        self._min_order_amount = self.default('min_order_amount', 1e-3, kwargs)
 
-        self._commission_percent = kwargs.get('commission_percent', 0.3)
-        self._base_precision = kwargs.get('base_precision', 2)
-        self._instrument_precision = kwargs.get('instrument_precision', 8)
-        self._min_trade_price = kwargs.get('min_trade_price', 1E-6)
-        self._max_trade_price = kwargs.get('max_trade_price', 1E6)
-        self._min_trade_amount = kwargs.get('min_trade_amount', 1E-3)
-        self._max_trade_amount = kwargs.get('max_trade_amount', 1E6)
-        self._min_order_amount = kwargs.get('min_order_amount', 1E-3)
+        self._initial_balance = self.default('initial_balance', 1e4, kwargs)
+        self._window_size = self.default('window_size', 1, kwargs)
+        self._should_pretransform_obs = self.default('should_pretransform_obs', False, kwargs)
 
-        self._initial_balance = kwargs.get('initial_balance', 1E4)
-        self._window_size = kwargs.get('window_size', 1)
-        self._should_pretransform_obs = kwargs.get('should_pretransform_obs', False)
+        self.data_frame = self.default('data_frame', data_frame)
 
-        self.data_frame = data_frame
+        self._max_allowed_slippage_percent = self.default('max_allowed_slippage_percent', 1.0, kwargs)
 
-        max_allowed_slippage_percent = kwargs.get('max_allowed_slippage_percent', 1.0)
+        model = self.default('slippage_model', 'uniform', kwargs)
+        self._slippage_model = slippage.get(model) if isinstance(model, str) else model
 
-        SlippageModelClass = kwargs.get('slippage_model', RandomUniformSlippageModel)
-        self._slippage_model = SlippageModelClass(max_allowed_slippage_percent)
 
     @property
     def data_frame(self) -> pd.DataFrame:
