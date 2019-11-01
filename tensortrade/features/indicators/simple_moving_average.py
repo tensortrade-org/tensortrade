@@ -49,6 +49,6 @@ class SimpleMovingAverage(FeatureTransformer):
             args = {}
             args[column] = moving_average
 
-            X.assign(**args)
+            X = X.assign(**args)
 
         return X
