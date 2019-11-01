@@ -18,7 +18,7 @@ def get_major_component_names():
     return MAJOR_COMPONENTS
 
 
-def registry():
+def get_registry():
     return _REGISTRY
 
 

@@ -36,8 +36,8 @@ class StableBaselinesTradingStrategy(TradingStrategy):
 
     Parameters:
     ----------
-    environment : `TradingEnvironment`
-        An instance of a trading environment for the agent to trade within.
+    environments : `TradingEnvironment`
+        An instance of a trading environments for the agent to trade within.
     model : BaseRLModel
         The RL model to create the agent with.
         Defaults to DQN.

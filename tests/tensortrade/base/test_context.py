@@ -1,5 +1,4 @@
 
-import pytest
 import tensortrade as td
 
 from tensortrade.base.context import TradingContext

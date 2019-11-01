@@ -27,7 +27,7 @@ TypeString = Union[type, str]
 
 
 class InstrumentExchange(Component):
-    """An abstract instrument exchange for use within a trading environment.
+    """An abstract instrument exchange for use within a trading environments.
 
     Parameters
     ----------

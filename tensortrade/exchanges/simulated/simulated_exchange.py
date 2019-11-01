@@ -14,6 +14,7 @@
 
 import numpy as np
 import pandas as pd
+import tensortrade.slippage as slippage
 
 from gym.spaces import Space, Box
 from typing import List, Dict
@@ -21,7 +22,6 @@ from typing import List, Dict
 from tensortrade.trades import Trade, TradeType
 from tensortrade.exchanges import InstrumentExchange
 from tensortrade.features import FeaturePipeline
-from tensortrade.slippage import RandomUniformSlippageModel
 
 
 class SimulatedExchange(InstrumentExchange):
@@ -29,7 +29,7 @@ class SimulatedExchange(InstrumentExchange):
     trade execution is largely decided by the designated slippage model.
 
     If the `data_frame` parameter is not supplied upon initialization, it must be set before
-    the exchange can be used within a trading environment.
+    the exchange can be used within a trading environments.
     """
 
     def __init__(self, data_frame: pd.DataFrame = None, **kwargs):
@@ -57,10 +57,8 @@ class SimulatedExchange(InstrumentExchange):
 
         self.data_frame = self.default('data_frame', data_frame)
 
-        max_allowed_slippage_percent = self.default('max_allowed_slippage_percent', 1.0, kwargs)
-
-        model = self.default('slippage_model', RandomUniformSlippageModel, kwargs)
-        self._slippage_model = model(max_allowed_slippage_percent)
+        model = self.default('slippage_model', 'uniform', kwargs)
+        self._slippage_model = slippage.get(model) if isinstance(model, str) else model()
 
     @property
     def data_frame(self) -> pd.DataFrame:
@@ -200,7 +198,7 @@ class SimulatedExchange(InstrumentExchange):
             return filled_trade
 
         if filled_trade.is_buy:
-            price_adjustment = price_adjustment = (1 + commission)
+            price_adjustment = (1 + commission)
             filled_trade.price = max(round(current_price * price_adjustment,
                                            self._base_precision), self.base_precision)
             filled_trade.amount = round(

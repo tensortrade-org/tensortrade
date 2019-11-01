@@ -1,10 +1,9 @@
 
 import abc
 
-from typing import Union
 
 from .context import TradingContext, Context
-from .registry import registry, register, get_registered_name
+from .registry import get_registry, register
 
 
 class InitContextMeta(abc.ABCMeta):
@@ -12,7 +11,7 @@ class InitContextMeta(abc.ABCMeta):
 
     def __call__(cls, *args, **kwargs):
         instance = cls.__new__(cls, *args, **kwargs)
-        registered_name = registry()[cls]
+        registered_name = get_registry()[cls]
         tc = TradingContext.get_context()
         shared = tc.shared
         data = tc.data.get(registered_name, {})
@@ -41,7 +40,7 @@ class Component(abc.ABC, ContextualizedMixin, metaclass=InitContextMeta):
 
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
-        if cls not in registry():
+        if cls not in get_registry():
             register(cls, cls.registered_name)
 
     def default(self, key: str, value: any, kwargs: dict = None):

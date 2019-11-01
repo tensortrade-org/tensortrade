@@ -4,7 +4,7 @@ import yaml
 
 from typing import Union, List
 from collections import UserDict
-from .registry import registered_names, get_major_component_names, registry
+from .registry import registered_names, get_major_component_names
 
 
 def _diff(c1, c2, path=None, changes=None):
@@ -84,7 +84,7 @@ class TradingContext(UserDict):
                  base_instrument: str = 'USD',
                  products: Union[str, List[str]] = 'BTC',
                  **config):
-        super(TradingContext, self).__init__(
+        super().__init__(
             base_instrument=base_instrument,
             products=products,
             **config

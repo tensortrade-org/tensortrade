@@ -29,7 +29,7 @@ class RewardStrategy(Component):
 
     @property
     def exchange(self) -> 'InstrumentExchange':
-        """The exchange being used by the current trading environment. Setting the exchange causes the strategy to reset."""
+        """The exchange being used by the current trading environments. Setting the exchange causes the strategy to reset."""
         return self._exchange
 
     @exchange.setter
@@ -45,7 +45,7 @@ class RewardStrategy(Component):
     def get_reward(self, current_step: int, trade: Trade) -> float:
         """
         Arguments:
-            current_step: The environment's current timestep.
+            current_step: The environments's current timestep.
             trade: The trade executed and filled this timestep.
 
         Returns:

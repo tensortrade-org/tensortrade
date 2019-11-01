@@ -1,6 +1,4 @@
 
-import pytest
-
 from tensortrade import TradingContext
 from tensortrade.environments import TradingEnvironment
 
@@ -20,16 +18,6 @@ config = {
 
 def make_env(exchange: str, action: str, reward: str):
     return TradingEnvironment(exchange=exchange, action_strategy=action, reward_strategy=reward)
-
-
-def test_injects_simulated_discrete_simple_environment():
-    env = make_env('simulated', 'discrete', 'simple')
-
-    assert env.action_strategy.n_actions == 20
-
-    with TradingContext(**config):
-        env = make_env('simulated', 'discrete', 'simple')
-        assert env.action_strategy.n_actions == 50
 
 
 def test_injects_simulated_discrete_simple_environment():

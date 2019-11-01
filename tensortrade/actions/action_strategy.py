@@ -26,7 +26,7 @@ TradeActionUnion = Union[int, float, tuple]
 
 
 class ActionStrategy(Component):
-    """An abstract strategy for determining the action to take at each timestep within a trading environment."""
+    """An abstract strategy for determining the action to take at each timestep within a trading environments."""
 
     registered_name = "actions"
 
@@ -60,9 +60,9 @@ class ActionStrategy(Component):
 
     @property
     def exchange(self) -> 'InstrumentExchange':
-        """The exchange being used by the current trading environment.
+        """The exchange being used by the current trading environments.
 
-        This will be set by the trading environment upon initialization. Setting the exchange causes the strategy to reset.
+        This will be set by the trading environments upon initialization. Setting the exchange causes the strategy to reset.
         """
         return self._exchange
 

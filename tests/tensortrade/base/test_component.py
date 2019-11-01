@@ -1,12 +1,8 @@
 
 import tensortrade as td
-import pytest
-import tensortrade.base as base
 
 from abc import abstractmethod
 from tensortrade.base import Component
-from tensortrade.base.registry import registry
-
 
 
 class DataMessageComponent(Component):

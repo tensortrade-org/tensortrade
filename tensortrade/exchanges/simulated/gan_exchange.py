@@ -29,7 +29,7 @@ class GANExchange(InstrumentExchange):
     model with supplied parameters.
 
     If the `training_data` parameter is not supplied upon initialization, it must be set before
-    the exchange can be used within a trading environment.
+    the exchange can be used within a trading environments.
     """
 
     def __init__(self, training_data: pd.DataFrame = None, **kwargs):
