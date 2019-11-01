@@ -114,8 +114,8 @@ class SimulatedExchange(InstrumentExchange):
 
     @property
     def generated_space(self) -> Space:
-        low = np.array([self._min_trade_price, ] * 4 + [self._min_trade_amount, ])
-        high = np.array([self._max_trade_price, ] * 4 + [self._max_trade_amount, ])
+        low = np.array([self._min_trade_price, ] * (len(self._observation_columns)-1) + [self._min_trade_amount, ])
+        high = np.array([self._max_trade_price, ] * (len(self._observation_columns)-1) + [self._max_trade_amount, ])
 
         return Box(low=low, high=high, dtype='float')
 
