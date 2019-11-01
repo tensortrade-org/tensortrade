@@ -110,6 +110,6 @@ class FractionalDifference(FeatureTransformer):
             args = {}
             args[column] = diffed_series
 
-            X.assign(**args)
+            X = X.assign(**args)
 
         return X.iloc[-len(X):]
