@@ -99,7 +99,11 @@ If you would like to support this project financially, there are a few ways you 
 
 Github Sponsors: https://github.com/sponsors/notadamking
 
-**All Github Sponsors donations are matched 1:1 by Github up to \$5,000!**
+_All Github Sponsors donations are matched 1:1 by Github up to \$5,000!_
+
+Gitcoin Grants: https://gitcoin.co/grants/155/tensortrade-trade-efficiently-with-reinforcement-l
+
+_All Gitcoin Grants donations go directly towards funding our Gitcoin issues._
 
 BTC Address: `1Lc47bhYvdyKGk1qN8oBHdYQTkbFLL3PFw`
 

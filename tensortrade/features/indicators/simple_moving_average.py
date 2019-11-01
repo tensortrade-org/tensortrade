@@ -46,8 +46,9 @@ class SimpleMovingAverage(FeatureTransformer):
             if not self._inplace:
                 column = '{}_sma_{}'.format(column, self._window_size)
 
-            args = dict(zip(column, moving_average))
+            args = {}
+            args[column] = moving_average
 
-            X.assign(**args)
+            X = X.assign(**args)
 
         return X

@@ -34,8 +34,8 @@ class SimulatedExchange(InstrumentExchange):
 
     def __init__(self, data_frame: pd.DataFrame = None, **kwargs):
         super().__init__(
-            dtype=kwargs.get('dtype', np.float16),
-            feature_pipeline=kwargs.get('feature_pipeline', None)
+            dtype=self.default('dtype', np.float16),
+            feature_pipeline=self.default('feature_pipeline', None)
         )
         self._commission_percent = self.default('commission_percent', 0.3, kwargs)
         self._base_precision = self.default('base_precision', 2, kwargs)
@@ -52,8 +52,10 @@ class SimulatedExchange(InstrumentExchange):
             ['open', 'high', 'low', 'close', 'volume'],
             kwargs
         )
+        self._price_column = self.default('price_column', 'close', kwargs)
         self._window_size = self.default('window_size', 1, kwargs)
         self._pretransform = self.default('pretransform', True, kwargs)
+        self._price_history = None
 
         self.data_frame = self.default('data_frame', data_frame)
 
@@ -72,6 +74,7 @@ class SimulatedExchange(InstrumentExchange):
             return
 
         self._data_frame = data_frame[self._observation_columns]
+        self._price_history = data_frame[self._price_column]
 
         if self._pretransform:
             self.transform_data_frame()
@@ -111,8 +114,8 @@ class SimulatedExchange(InstrumentExchange):
 
     @property
     def generated_space(self) -> Space:
-        low = np.array([self._min_trade_price, ] * 4 + [self._min_trade_amount, ])
-        high = np.array([self._max_trade_price, ] * 4 + [self._max_trade_amount, ])
+        low = np.array([self._min_trade_price, ] * (len(self._observation_columns)-1) + [self._min_trade_amount, ])
+        high = np.array([self._max_trade_price, ] * (len(self._observation_columns)-1) + [self._max_trade_amount, ])
 
         return Box(low=low, high=high, dtype='float')
 
@@ -147,11 +150,8 @@ class SimulatedExchange(InstrumentExchange):
                                                                 self.generated_space)
 
     def current_price(self, symbol: str) -> float:
-        if self.data_frame is not None:
-            frame = self._data_frame.iloc[self._current_step]
-
-            if frame.empty is False:
-                return frame['close']
+        if self._price_history is not None:
+            return float(self._price_history.iloc[self._current_step])
 
         return 0
 
