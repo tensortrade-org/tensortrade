@@ -69,7 +69,8 @@ class MinMaxNormalizer(FeatureTransformer):
             high = input_space.high[idx]
 
             scale = (self._feature_max - self._feature_min) + self._feature_min
-            if high-low == 0:
+
+            if high - low == 0:
                 normalized_column = (1/len(X[column])) * scale
             else:
                 normalized_column = (X[column] - low) / (high - low) * scale
@@ -79,6 +80,7 @@ class MinMaxNormalizer(FeatureTransformer):
 
             args = {}
             args[column] = normalized_column
+
             X = X.assign(**args)
 
         return X
