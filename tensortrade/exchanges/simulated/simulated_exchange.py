@@ -50,8 +50,10 @@ class SimulatedExchange(InstrumentExchange):
         self._initial_balance = kwargs.get('initial_balance', 1E4)
         self._observation_columns = kwargs.get(
             'observation_columns', ['open', 'high', 'low', 'close', 'volume'])
+        self._price_column = kwargs.get('price_column', 'close')
         self._window_size = kwargs.get('window_size', 1)
         self._pretransform = kwargs.get('pretransform', True)
+        self._price_history = None
 
         self.data_frame = data_frame
 
@@ -72,6 +74,7 @@ class SimulatedExchange(InstrumentExchange):
             return
 
         self._data_frame = data_frame[self._observation_columns]
+        self._price_history = data_frame[self._price_column]
 
         if self._pretransform:
             self.transform_data_frame()
@@ -147,11 +150,8 @@ class SimulatedExchange(InstrumentExchange):
                                                                 self.generated_space)
 
     def current_price(self, symbol: str) -> float:
-        if self.data_frame is not None:
-            frame = self._data_frame.iloc[self._current_step]
-
-            if frame.empty is False:
-                return frame['close']
+        if self._price_history is not None:
+            return float(self._price_history.iloc[self._current_step])
 
         return 0
 
