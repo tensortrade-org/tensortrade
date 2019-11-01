@@ -107,7 +107,8 @@ class FractionalDifference(FeatureTransformer):
             if not self._inplace:
                 column = '{}_diff_{}'.format(column, self._difference_order)
 
-            args = dict(zip(column, diffed_series))
+            args = {}
+            args[column] = diffed_series
 
             X.assign(**args)
 
