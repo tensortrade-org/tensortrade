@@ -2,7 +2,7 @@
 
 Simple continuous strategy, which calculates the trade amount as a fraction of the total balance.
 
-## Class Variables
+## Key Variables
 
 
 * `max_allowed_slippage`

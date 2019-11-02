@@ -1,6 +1,6 @@
 # FeatureTransformer
 
-As stated before in the [README](../README.md),  We use an ABCMeta abstract hierarchy to handle the transformation of new assets. The `FeatureTransformer` is an abstract of all other price transformers available inside of the tensortrade library. As such, it has a set of common functions that are called on almost every transformer.
+As stated before in the [overview](../overview.md),  We use an `ABCMeta` abstract hierarchy to handle the transformation calls of each asset. The `FeatureTransformer` is an abstract of all other price transformers available inside of the `tensortrade` library. As such, it has a set of common functions that are called on almost every transformer.
 
 ## Properties and Setters
 

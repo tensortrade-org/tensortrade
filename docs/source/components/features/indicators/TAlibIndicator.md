@@ -21,7 +21,7 @@ Adds one or more TAlib indicators to a data frame, based on existing open, high,
 
 ## Functions
 
-Below are the functions that the `InstrumentExchange` uses to effectively operate. 
+Below are the functions that the `TAlibIndicator` uses to effectively operate. 
 
 ### Private
 * `_str_to_indicator` - Converts the name of an indicator to an actual instance of the indicator. For a list of indicators see list [here](http://mrjbq7.github.io/ta-lib/).

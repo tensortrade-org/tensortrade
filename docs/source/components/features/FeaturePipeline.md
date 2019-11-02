@@ -14,7 +14,7 @@ The `FeaturePipeline` has a setup that resembles the `keras` library. The concep
 1. We take in an observation of data (price information), usually in the form of a pandas dataframe.
 2. We take the observation and effectively run it through all declared ways of transforming that data inside of the FeaturePipeline and turn the result as a `gym.space`.
 
-Just like kera's `Sequential` module, it accepts a list inside of its constructor and iterates through each piece.
+Just like kera's `Sequential` module, it accepts a list inside of its constructor and iterates through each piece on call. To draw on parallels, look at `keras`:
 
 ```py
 model = Sequential([
@@ -38,8 +38,6 @@ model = Sequential([
   * The `dtype` that elements in the pipeline should be input and output as.
 * `reset`
   * Reset all transformers within the feature pipeline.
-
-
 
 
 ## Functions

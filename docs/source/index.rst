@@ -14,15 +14,80 @@
 
 .. toctree::
   :maxdepth: 1
-  :caption: Components
+  :caption: Components Types
 
+  components/overview.md
   components/components.md
-  components/trading_environment.md
-  components/instrument_exchange.md
-  components/feature_pipeline.md
-  components/action_strategy.md
-  components/reward_strategy.md
-  components/trading_strategy.md
+  components/component_types/action_stategy.md
+  components/component_types/feature_pipeline.md
+  components/component_types/instrument_exchange.md
+  components/component_types/reward_strategy.md
+  components/component_types/trading_enviornment.md
+  components/component_types/trading_strategy.md
+
+
+.. toctree::
+  :maxdepth: 1
+  :caption: Trading Environment
+
+  components/environments/TradingEnvironment.md
+
+
+
+.. toctree::
+  :maxdepth: 1
+  :caption: Actions
+
+  components/actions/ActionStrategy.md
+  components/actions/ContinuousActionStrategy.md
+  components/actions/DiscreteActionStrategy.md
+  components/actions/MultiDiscreteActionStrategy.md
+
+
+
+.. toctree::
+  :maxdepth: 1
+  :caption: Exchanges
+  
+  components/exchanges/InstrumentExchange.md
+  components/exchanges/simulated/SimulatedExchange.md
+  components/exchanges/simulated/FBMExchange.md
+  components/exchanges/live/CCXTExchange.md
+  components/exchanges/live/InteractiveBrokersExchange.md
+
+
+
+.. toctree::
+  :maxdepth: 1
+  :caption: Features
+
+
+  components/features/FeaturePipeline.md
+  components/features/FeatureTransformer.md
+  components/features/scalers/MinMaxNormalizer.md
+  components/features/scalers/StandardNormalizer.md
+  components/features/stationarity/FractionalDifference.md
+  components/features/indicators/TAlibIndicator.md
+
+
+.. toctree::
+  :maxdepth: 1
+  :caption: Rewards
+  
+  components/rewards/RewardStrategy.md
+  components/rewards/RiskAdjustedReturnStrategy.md
+  components/rewards/SimpleProfitStrategy.md
+
+
+.. toctree::
+  :maxdepth: 1
+  :caption: Strategies
+  
+  components/strategies/TradingStrategy.md
+  components/strategies/StableBaselinesTradingStrategy.md
+  components/strategies/TensorforceTradingStrategy.md
+
+
 
 .. toctree::
   :maxdepth: 1

@@ -32,7 +32,7 @@ Each property and property setter.
   * Get the trade to be executed on the exchange based on the action provided.
   * Usually this is the way we distill the information generated from the `action_space`.
   
-## See `DiscreteActionStrategy` in Action
+## Use Cases
 
 ```py
 from tensortrade.actions import DiscreteActionStrategy

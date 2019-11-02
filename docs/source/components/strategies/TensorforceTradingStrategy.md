@@ -3,6 +3,8 @@
 A trading strategy capable of self tuning, training, and evaluating with Tensorforce.
 
 
+It has all of the training loop inside of class to standardize different training methods.
+
 ## See **`TensorforceTradingStrategy`** in Action
 
 ```py

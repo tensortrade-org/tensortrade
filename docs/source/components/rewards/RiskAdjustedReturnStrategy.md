@@ -24,13 +24,17 @@ The **sortino ratio** takes the same idea, though it focuses more on penalizing 
 Below are the functions that the `RiskAdjustedReturnStrategy` uses to effectively operate. 
 
 ### Private
-* `_return_algorithm_from_str` - Allows us to dynamically choose an algorithm for the reward within a given selection. We can choose between either sharpe or sortino ratios. Each are volatility models we've discussed above.
-* `_sharpe_ratio` - Return the sharpe ratio for a given series of a returns.
-* `_sortino_ratio` - Return the sortino ratio for a given series of a returns.
+* `_return_algorithm_from_str`
+  * Allows us to dynamically choose an algorithm for the reward within a given selection. We can choose between either sharpe or sortino ratios. Each are volatility models we've discussed above.
+* `_sharpe_ratio`
+  * Return the sharpe ratio for a given series of a returns.
+* `_sortino_ratio`
+  * Return the sortino ratio for a given series of a returns.
 
 ### Public
 
-* `get_reward` - Return the reward corresponding to the selected risk-adjusted return metric.
+* `get_reward`
+  * Return the reward corresponding to the selected risk-adjusted return metric.
 
 
 ## Use Cases
@@ -40,5 +44,5 @@ Below are the functions that the `RiskAdjustedReturnStrategy` uses to effectivel
 Keeps track of ...
 
 ```py
-print("Hello World")
+
 ```

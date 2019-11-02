@@ -92,9 +92,12 @@ To better understand what's inside of the `TradingEnvironment`, you should under
 
 
 ### Public
-* `step` - Run one timestep within the environment based on the specified action.
-* `reset` - Resets the state of the environment and returns an initial observation.
-* `render` - This sends an output of what's occuring in the gym enviornment for the user to keep track of.
+* `step`
+  * Run one timestep within the environment based on the specified action.
+* `reset`
+  * Resets the state of the environment and returns an initial observation.
+* `render`
+  * This sends an output of what's occuring in the gym enviornment for the user to keep track of.
 
 
 Almost 100% of the private functions belong in the step function. 

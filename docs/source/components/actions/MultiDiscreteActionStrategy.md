@@ -40,7 +40,7 @@ Each property and property setter.
   * Usually this is the way we distill the information generated from the `action_space`. 
 
 
-## See `MultiDiscreteActionStrategy` in Action
+## Use Cases
 
 ```py
 from tensortrade.actions import MultiDiscreteActionStrategy
