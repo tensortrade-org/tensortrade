@@ -12,6 +12,7 @@ from tensortrade.exchanges.simulated import *
 from tensortrade.trades import Trade
 from tensortrade.slippage import SlippageModel
 
+import numpy as np
 
 class ConcreteInstrumentExchange(InstrumentExchange):
 
