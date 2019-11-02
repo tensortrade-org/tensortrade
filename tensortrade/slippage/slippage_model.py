@@ -27,15 +27,11 @@ class SlippageModel(Component):
         pass
 
     @abstractmethod
-    def fill_order(self, trade: Trade, **kwargs) -> Trade:
-        """Simulate slippage on a trade ordered on a specific exchange.
+    def slip_up(self, number: float = 0, percentage: float = 0) -> float:
+        slip = percentage/100
+        return (number + (number*slip))
 
-        Arguments:
-            trade: The trade executed on the exchange.
-            **kwargs: Any other arguments necessary for the model.
-
-        Returns:
-            A filled `Trade` with the `price` and `amount` adjusted for slippage.
-        """
-
-        raise NotImplementedError()
+    @abstractmethod
+    def slip_down(self, number: float = 0, percentage: float = 0) -> float:
+        slip = percentage/100
+        return (number - (number*slip))

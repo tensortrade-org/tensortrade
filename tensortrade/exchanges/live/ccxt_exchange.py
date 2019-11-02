@@ -169,13 +169,13 @@ class CCXTExchange(Exchange):
 
     def execute_trade(self, trade: Trade) -> Trade:
         if trade.trade_type == TradeType.LIMIT_BUY:
-            order = self._exchange.create_limit_buy_order(trade.symbol, trade.amount, trade.price)
+            order = self._exchange.create_limit_buy_order(trade.symbol, trade.order_amount, trade.order_price)
         elif trade.trade_type == TradeType.MARKET_BUY:
-            order = self._exchange.create_market_buy_order(trade.symbol, trade.amount)
+            order = self._exchange.create_market_buy_order(trade.symbol, trade.order_amount)
         elif trade.trade_type == TradeType.LIMIT_SELL:
-            order = self._exchange.create_limit_sell_order(trade.symbol, trade.amount, trade.price)
+            order = self._exchange.create_limit_sell_order(trade.symbol, trade.order_amount, trade.order_price)
         elif trade.trade_type == TradeType.MARKET_SELL:
-            order = self._exchange.create_market_sell_order(trade.symbol, trade.amount)
+            order = self._exchange.create_market_sell_order(trade.symbol, trade.order_amount)
         else:
             return trade.copy()
 

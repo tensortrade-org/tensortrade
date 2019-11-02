@@ -38,7 +38,7 @@ class TradeType(Enum):
         Returns:
             Whether the trade type is a buy offer.
         """
-        return self == TradeType.MARKET_BUY or self == TradeType.LIMIT_BUY
+        return self.is_limit_buy or self.is_market_buy
 
     @property
     def is_sell(self) -> bool:
@@ -46,4 +46,36 @@ class TradeType(Enum):
         Returns:
             Whether the trade type is a sell offer.
         """
-        return self == TradeType.MARKET_SELL or self == TradeType.LIMIT_SELL
+        return self.is_limit_sell or self.is_market_sell
+
+    @property
+    def is_limit_buy(self) -> bool:
+        """
+        Returns:
+            Whether the trade type is a buy offer.
+        """
+        return self == TradeType.LIMIT_BUY
+
+    @property
+    def is_market_buy(self) -> bool:
+        """
+        Returns:
+            Whether the trade type is a buy offer.
+        """
+        return self == TradeType.MARKET_BUY
+
+    @property
+    def is_limit_sell(self) -> bool:
+        """
+        Returns:
+            Whether the trade type is a sell offer.
+        """
+        return self == TradeType.LIMIT_SELL
+
+    @property
+    def is_market_sell(self) -> bool:
+        """
+        Returns:
+            Whether the trade type is a sell offer.
+        """
+        return self == TradeType.MARKET_SELL

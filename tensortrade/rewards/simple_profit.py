@@ -37,15 +37,16 @@ class SimpleProfit(RewardScheme):
         """
         if trade.is_hold and self._is_holding_instrument:
             return 1
-        elif trade.is_buy and trade.amount > 0:
-            self._purchase_price = trade.price
-            self._is_holding_instrument = True
 
+        elif trade.is_buy and trade.transact_amount > 0:
+            self._purchase_price = trade._transact_price
+            self._is_holding_instrument = True
             return 2
-        elif trade.is_sell and trade.amount > 0:
+
+        elif trade.is_sell and trade.transact_amount > 0:
             self._is_holding_instrument = False
-            profit_per_instrument = trade.price - self._purchase_price
-            profit = trade.amount * profit_per_instrument
+            profit_per_instrument = trade._transact_price - self._purchase_price
+            profit = trade.transact_amount * profit_per_instrument
             profit_sign = np.sign(profit)
 
             return profit_sign * (1 + (5 ** np.log10(abs(profit))))

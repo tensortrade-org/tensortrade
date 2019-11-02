@@ -61,9 +61,9 @@ class MinMaxNormalizer(FeatureTransformer):
             scale = (self._feature_max - self._feature_min)
 
             if high - low == 0:
-                normalized_column = (1/len(X[column])) * scale
+                normalized_column = ((1/len(X[column])) * scale) + self._feature_min
             else:
-                normalized_column = (X[column] - low) / (high - low) * scale
+                normalized_column = ((X[column] - low) / (high - low) * scale) + self._feature_min
 
             if not self._inplace:
                 column = '{}_minmax_{}_{}'.format(column, self._feature_min, self._feature_max)

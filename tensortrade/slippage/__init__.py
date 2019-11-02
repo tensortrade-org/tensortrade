@@ -1,5 +1,5 @@
 from .slippage_model import SlippageModel
-from .random_slippage_model import RandomUniformSlippageModel
+from .random_uniform_slippage_model import RandomUniformSlippageModel
 
 
 _registry = {
