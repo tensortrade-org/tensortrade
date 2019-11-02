@@ -17,7 +17,8 @@ def net_worths():
     }])
 
 
-class TestRiskAdjustedReturnStrategy():
+class TestRiskAdjustedReturnStrategy:
+
     def test_sharpe_ratio(self, net_worths):
         strategy = RiskAdjustedReturnStrategy(return_algorithm='sharpe', risk_free_rate=0)
 

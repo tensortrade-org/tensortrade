@@ -14,14 +14,13 @@
 
 import numpy as np
 import pandas as pd
+import tensortrade.slippage as slippage
 
-from abc import abstractmethod
 from gym.spaces import Space, Box
-from typing import List, Dict, Generator
+from typing import List, Dict
 
 from tensortrade.trades import Trade, TradeType
 from tensortrade.exchanges import InstrumentExchange
-from tensortrade.slippage import RandomUniformSlippageModel
 from tensortrade.features import FeaturePipeline
 
 
@@ -30,46 +29,54 @@ class SimulatedExchange(InstrumentExchange):
     trade execution is largely decided by the designated slippage model.
 
     If the `data_frame` parameter is not supplied upon initialization, it must be set before
-    the exchange can be used within a trading environment.
+    the exchange can be used within a trading environments.
     """
 
     def __init__(self, data_frame: pd.DataFrame = None, **kwargs):
-        super().__init__(base_instrument=kwargs.get('base_instrument', 'USD'),
-                         dtype=kwargs.get('dtype', np.float16),
-                         feature_pipeline=kwargs.get('feature_pipeline', None))
-        self._previously_transformed = False
-        self._should_pretransform_obs = kwargs.get('should_pretransform_obs', False)
+        super().__init__(
+            dtype=self.default('dtype', np.float16),
+            feature_pipeline=self.default('feature_pipeline', None)
+        )
+        self._commission_percent = self.default('commission_percent', 0.3, kwargs)
+        self._base_precision = self.default('base_precision', 2, kwargs)
+        self._instrument_precision = self.default('instrument_precision', 8, kwargs)
+        self._min_trade_price = self.default('min_trade_price', 1e-6, kwargs)
+        self._max_trade_price = self.default('max_trade_price', 1e6, kwargs)
+        self._min_trade_amount = self.default('min_trade_amount', 1e-3, kwargs)
+        self._max_trade_amount = self.default('max_trade_amount', 1e6, kwargs)
+        self._min_order_amount = self.default('min_order_amount', 1e-3, kwargs)
 
-        if data_frame is not None:
-            self.data_frame = data_frame.astype(self._dtype)
+        self._initial_balance = self.default('initial_balance', 1e4, kwargs)
+        self._observation_columns = self.default(
+            'observation_columns',
+            ['open', 'high', 'low', 'close', 'volume'],
+            kwargs
+        )
+        self._price_column = self.default('price_column', 'close', kwargs)
+        self._window_size = self.default('window_size', 1, kwargs)
+        self._pretransform = self.default('pretransform', True, kwargs)
+        self._price_history = None
 
-        self._commission_percent = kwargs.get('commission_percent', 0.3)
-        self._base_precision = kwargs.get('base_precision', 2)
-        self._instrument_precision = kwargs.get('instrument_precision', 8)
-        self._initial_balance = kwargs.get('initial_balance', 1E4)
-        self._min_order_amount = kwargs.get('min_order_amount', 1E-3)
-        self._window_size = kwargs.get('window_size', 1)
+        self.data_frame = self.default('data_frame', data_frame)
 
-        self._min_trade_price = kwargs.get('min_trade_price', 1E-6)
-        self._max_trade_price = kwargs.get('max_trade_price', 1E6)
-        self._min_trade_amount = kwargs.get('min_trade_amount', 1E-3)
-        self._max_trade_amount = kwargs.get('max_trade_amount', 1E6)
-
-        max_allowed_slippage_percent = kwargs.get('max_allowed_slippage_percent', 1.0)
-
-        SlippageModelClass = kwargs.get('slippage_model', RandomUniformSlippageModel)
-        self._slippage_model = SlippageModelClass(max_allowed_slippage_percent)
+        model = self.default('slippage_model', 'uniform', kwargs)
+        self._slippage_model = slippage.get(model) if isinstance(model, str) else model()
 
     @property
     def data_frame(self) -> pd.DataFrame:
         """The underlying data model backing the price and volume simulation."""
-        return self._data_frame
+        return getattr(self, '_data_frame', None)
 
     @data_frame.setter
     def data_frame(self, data_frame: pd.DataFrame):
-        self._data_frame = data_frame
+        if not isinstance(data_frame, pd.DataFrame):
+            self._data_frame = data_frame
+            return
 
-        if self._should_pretransform_obs:
+        self._data_frame = data_frame[self._observation_columns]
+        self._price_history = data_frame[self._price_column]
+
+        if self._pretransform:
             self.transform_data_frame()
 
     @property
@@ -80,7 +87,7 @@ class SimulatedExchange(InstrumentExchange):
     def feature_pipeline(self, feature_pipeline=FeaturePipeline):
         self._feature_pipeline = feature_pipeline
 
-        if self._should_pretransform_obs:
+        if isinstance(self.data_frame, pd.DataFrame) and self._pretransform:
             self.transform_data_frame()
 
         return self._feature_pipeline
@@ -107,43 +114,46 @@ class SimulatedExchange(InstrumentExchange):
 
     @property
     def generated_space(self) -> Space:
-        low = np.array([self._min_trade_price, ] * 4 + [self._min_trade_amount, ])
-        high = np.array([self._max_trade_price, ] * 4 + [self._max_trade_amount, ])
+        low = np.array([self._min_trade_price, ] * (len(self._observation_columns)-1) + [self._min_trade_amount, ])
+        high = np.array([self._max_trade_price, ] * (len(self._observation_columns)-1) + [self._max_trade_amount, ])
 
         return Box(low=low, high=high, dtype='float')
 
     @property
     def generated_columns(self) -> List[str]:
-        return list(['open', 'high', 'low', 'close', 'volume'])
+        return list(self._observation_columns)
 
     @property
     def has_next_observation(self) -> bool:
         return self._current_step < len(self._data_frame) - 1
 
-    def _create_observation_generator(self) -> Generator[pd.DataFrame, None, None]:
-        for step in range(self._current_step, len(self._data_frame)):
-            self._current_step = step
+    def _next_observation(self) -> pd.DataFrame:
+        lower_range = max((self._current_step - self._window_size, 0))
+        upper_range = max(min(self._current_step, len(self._data_frame)), 1)
 
-            obs = self._data_frame.iloc[step - self._window_size + 1:step + 1]
+        obs = self._data_frame.iloc[lower_range:upper_range]
 
-            if not self._should_pretransform_obs and self._feature_pipeline is not None:
-                obs = self._feature_pipeline.transform(obs, self.generated_space)
+        if len(obs) < self._window_size:
+            padding = np.zeros((len(self.generated_columns), self._window_size - len(obs)))
+            obs = pd.concat([pd.DataFrame(padding), obs], ignore_index=True)
 
-            yield obs
+        if not self._pretransform and self._feature_pipeline is not None:
+            obs = self._feature_pipeline.transform(obs, self.generated_space)
 
-        raise StopIteration
+        self._current_step += 1
+
+        return obs
 
     def transform_data_frame(self) -> bool:
-        if self._feature_pipeline is not None and self._previously_transformed is not True:
-            self._previously_transformed = True
+        if self._feature_pipeline is not None:
             self._data_frame = self._feature_pipeline.transform(self._data_frame,
                                                                 self.generated_space)
 
     def current_price(self, symbol: str) -> float:
-        if len(self._data_frame) is 0:
-            self.next_observation()
+        if self._price_history is not None:
+            return float(self._price_history.iloc[self._current_step])
 
-        return float(self._data_frame['close'].values[self._current_step])
+        return 0
 
     def _is_valid_trade(self, trade: Trade) -> bool:
         if trade.trade_type is TradeType.MARKET_BUY or trade.trade_type is TradeType.LIMIT_BUY:
@@ -154,7 +164,7 @@ class SimulatedExchange(InstrumentExchange):
         return True
 
     def _update_account(self, trade: Trade):
-        if trade.amount > 0:
+        if self._is_valid_trade(trade) and not trade.is_hold:
             self._trades = self._trades.append({
                 'step': self._current_step,
                 'symbol': trade.symbol,
@@ -179,15 +189,16 @@ class SimulatedExchange(InstrumentExchange):
 
     def execute_trade(self, trade: Trade) -> Trade:
         current_price = self.current_price(symbol=trade.symbol)
-
         commission = self._commission_percent / 100
-
         filled_trade = trade.copy()
 
         if filled_trade.is_hold or not self._is_valid_trade(filled_trade):
             filled_trade.amount = 0
-        elif filled_trade.is_buy:
-            price_adjustment = price_adjustment = (1 + commission)
+
+            return filled_trade
+
+        if filled_trade.is_buy:
+            price_adjustment = (1 + commission)
             filled_trade.price = max(round(current_price * price_adjustment,
                                            self._base_precision), self.base_precision)
             filled_trade.amount = round(
@@ -206,10 +217,8 @@ class SimulatedExchange(InstrumentExchange):
     def reset(self):
         super().reset()
 
-        self._balance = self._initial_balance
-
-        self._portfolio = {self._base_instrument: self._balance}
+        self._current_step = 0
+        self._balance = self.initial_balance
+        self._portfolio = {self.base_instrument: self.balance}
         self._trades = pd.DataFrame([], columns=['step', 'symbol', 'type', 'amount', 'price'])
         self._performance = pd.DataFrame([], columns=['balance', 'net_worth'])
-
-        self._current_step = 0

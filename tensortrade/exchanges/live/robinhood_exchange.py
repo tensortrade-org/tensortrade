@@ -16,7 +16,7 @@ import time
 import numpy as np
 import pandas as pd
 
-from typing import Dict, List, Generator
+from typing import Dict, List
 from gym.spaces import Space, Box
 from ccxt import Exchange
 
@@ -28,18 +28,17 @@ class RobinhoodExchange(InstrumentExchange):
     """An instrument exchange for trading using the Robinhood API."""
 
     def __init__(self,  **kwargs):
-        super().__init__(base_instrument=kwargs.get('base_instrument', 'USD'),
-                         dtype=kwargs.get('dtype', np.float16),
-                         feature_pipeline=kwargs.get('feature_pipeline', None))
+        super().__init__(dtype=self.default('dtype', np.float16, kwargs),
+                         feature_pipeline=self.default('feature_pipeline', None, kwargs))
         # TODO: Initialize the Robinhood client
 
-        self._observation_type = kwargs.get('observation_type', 'ohlcv')
-        self._observation_symbol = kwargs.get('observation_symbols', ['AAPL', 'MSFT', 'GOOG'])
-        self._timeframe = kwargs.get('timeframe', '10m')
-        self._window_size = kwargs.get('window_size', 1)
+        self._observation_type = self.default('observation_type', 'ohlcv', kwargs)
+        self._observation_symbol = self.default('observation_symbols', ['AAPL', 'MSFT', 'GOOG'], kwargs)
+        self._timeframe = self.default('timeframe', '10m', kwargs)
+        self._window_size = self.default('window_size', 1, kwargs)
 
-        self._async_timeout_in_ms = kwargs.get('async_timeout_in_ms', 15)
-        self._max_trade_wait_in_sec = kwargs.get('max_trade_wait_in_sec', 60)
+        self._async_timeout_in_ms = self.default('async_timeout_in_ms', 15, kwargs)
+        self._max_trade_wait_in_sec = self.default('max_trade_wait_in_sec', 60, kwargs)
 
     @property
     def base_precision(self) -> float:
@@ -94,8 +93,7 @@ class RobinhoodExchange(InstrumentExchange):
         # TODO
         raise NotImplementedError
 
-    @property
-    def _observation_generator(self) -> Generator[pd.DataFrame, None, None]:
+    def _next_observation(self) -> pd.DataFrame:
         # TODO
         raise NotImplementedError
 

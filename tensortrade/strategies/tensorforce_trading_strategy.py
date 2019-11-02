@@ -31,7 +31,7 @@ from tensortrade.strategies import TradingStrategy
 class TensorforceTradingStrategy(TradingStrategy):
     """A trading strategy capable of self tuning, training, and evaluating with Tensorforce."""
 
-    def __init__(self, environment: 'TradingEnvironment', agent_spec: any, save_best_agent: bool = True, **kwargs):
+    def __init__(self, environment: 'TradingEnvironment', agent_spec: any, save_best_agent: bool = False, **kwargs):
         """
         Arguments:
             environment: A `TradingEnvironment` instance for the agent to trade within.
@@ -100,7 +100,7 @@ class TensorforceTradingStrategy(TradingStrategy):
     def tune(self, steps: int = None, episodes: int = None, callback: Callable[[pd.DataFrame], bool] = None) -> pd.DataFrame:
         raise NotImplementedError
 
-    def run(self, steps: int = None, episodes: int = None, evaluation: bool = True, episode_callback: Callable[[pd.DataFrame], bool] = None) -> pd.DataFrame:
+    def run(self, steps: int = None, episodes: int = None, evaluation: bool = False, episode_callback: Callable[[pd.DataFrame], bool] = None) -> pd.DataFrame:
         self._runner.run(evaluation=evaluation,
                          num_timesteps=steps,
                          num_episodes=episodes,
@@ -108,7 +108,8 @@ class TensorforceTradingStrategy(TradingStrategy):
 
         n_episodes = self._runner.episodes
         n_timesteps = self._runner.timesteps
-        avg_reward = np.mean(self._runner.episode_rewards)
+        avg_reward = np.mean(self._runner.episode_rewards) \
+            if self._runner.episodes > 0 else self._runner.episode_reward
 
         print("Finished running strategy.")
         print("Total episodes: {} ({} timesteps).".format(n_episodes, n_timesteps))

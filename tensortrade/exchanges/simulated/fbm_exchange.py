@@ -33,14 +33,13 @@ class FBMExchange(SimulatedExchange):
 
     def __init__(self, **kwargs):
         super().__init__(data_frame=None, **kwargs)
-
-        self._base_price = kwargs.get('base_price', 10000)
-        self._base_volume = kwargs.get('base_volume', 1)
-        self._start_date = kwargs.get('start_date', '2010-01-01')
-        self._start_date_format = kwargs.get('start_date_format', '%Y-%m-%d')
-        self._times_to_generate = kwargs.get('times_to_generate', 100000)
-        self._hurst = kwargs.get('hurst', 0.61)
-        self._timeframe = kwargs.get('timeframe', '1h')
+        self._base_price = self.default('base_price', 1, kwargs)
+        self._base_volume = self.default('base_volume', 1, kwargs)
+        self._start_date = self.default('start_date', '2010-01-01', kwargs)
+        self._start_date_format = self.default('start_date_format', '%Y-%m-%d', kwargs)
+        self._times_to_generate = self.default('times_to_generate', 100000, kwargs)
+        self._hurst = self.default('hurst', 0.61, kwargs)
+        self._timeframe = self.default('timeframe', '1h', kwargs)
 
     def _generate_price_history(self):
         try:

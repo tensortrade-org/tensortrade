@@ -32,7 +32,23 @@ from tensortrade.strategies import TradingStrategy
 
 
 class StableBaselinesTradingStrategy(TradingStrategy):
-    """A trading strategy capable of self tuning, training, and evaluating with stable-baselines."""
+    """A trading strategy capable of self tuning, training, and evaluating with stable-baselines.
+
+    Parameters:
+    ----------
+    environments : `TradingEnvironment`
+        An instance of a trading environments for the agent to trade within.
+    model : BaseRLModel
+        The RL model to create the agent with.
+        Defaults to DQN.
+    policy : Union[str, BasePolicy]
+        The RL policy to train the agent's model with.
+        Defaults to 'MlpPolicy'.
+    model_kwargs : any
+        Any additional keyword arguments to adjust the model.
+    kwargs : dict
+        Optional keyword arguments to adjust the strategy.
+    """
 
     def __init__(self,
                  environment: TradingEnvironment,
@@ -40,19 +56,20 @@ class StableBaselinesTradingStrategy(TradingStrategy):
                  policy: Union[str, BasePolicy] = 'MlpPolicy',
                  model_kwargs: any = {},
                  **kwargs):
-        """
-        Arguments:
-            environment: A `TradingEnvironment` instance for the agent to trade within.
-            model (optional): The RL model to create the agent with. Defaults to DQN.
-            policy (optional): The RL policy to train the agent's model with. Defaults to 'MlpPolicy'.
-            model_kwargs (optional): Any additional keyword arguments to adjust the model.
-            kwargs (optional): Optional keyword arguments to adjust the strategy.
-        """
         self._model = model
         self._model_kwargs = model_kwargs
 
-        self._environment = DummyVecEnv([lambda: environment])
+        self.environment = environment
         self._agent = self._model(policy, self._environment, **self._model_kwargs)
+
+    @property
+    def environment(self) -> 'TradingEnvironment':
+        """A `TradingEnvironment` instance for the agent to trade within."""
+        return self._environment
+
+    @environment.setter
+    def environment(self, environment: 'TradingEnvironment'):
+        self._environment = DummyVecEnv([lambda: environment])
 
     def restore_agent(self, path: str):
         """Deserialize the strategy's learning agent from a file.

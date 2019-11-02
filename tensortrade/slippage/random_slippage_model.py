@@ -27,8 +27,10 @@ class RandomUniformSlippageModel(SlippageModel):
             max_price_slippage_percent: The maximum random slippage to be applied to the fill price. Defaults to 3.0 (i.e. 3%).
             max_amount_slippage_percent: The maximum random slippage to be applied to the fill amount. Defaults to 0.
         """
-        self.max_price_slippage_percent = max_price_slippage_percent
-        self.max_amount_slippage_percent = max_amount_slippage_percent
+        self.max_price_slippage_percent = self.default('max_price_slippage_percent',
+                                                       max_price_slippage_percent)
+        self.max_amount_slippage_percent = self.default('max_amount_slippage_percent',
+                                                        max_amount_slippage_percent)
 
     def fill_order(self, trade: Trade, current_price: float) -> Trade:
         amount_slippage = np.random.uniform(0, self.max_amount_slippage_percent / 100)

@@ -50,7 +50,7 @@ Here's a quick guide to submitting your improvements:
 
 3) Make sure any new function or class you introduce has proper docstrings. Make sure any code you touch still has up-to-date docstrings and documentation. **Docstring style should be respected.** In particular, they should be formatted in MarkDown, and there should be sections for `Arguments`, `Returns`, `Raises` (if applicable). Look at other docstrings in the codebase for examples.
 
-4) Write tests. Your code should have full unit test coverage. If you want to see your PR merged promptly, this is crucial.
+4) Write tests. Your code should have full unit test coverage. If you want to see your PR merged promptly, this is crucial. Use the _coverage_  module module to make sure that code coverage is increased on the component you are working on. PRs that decrease coverage may be rejected. 
 
 5) Run our test suite locally. It's easy: from the TensorTrade folder, simply run: `py.test tests/`.
 
@@ -69,6 +69,7 @@ Here's a quick guide to submitting your improvements:
 9) Update the documentation. If introducing new functionality, make sure you include code snippets demonstrating the usage of your new feature.
 
 10) Submit your PR. If your changes have been approved in a previous discussion, and if you have complete (and passing) unit tests as well as proper docstrings/documentation, your PR is likely to be merged promptly.
+
 
 ---
 

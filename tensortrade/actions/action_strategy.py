@@ -15,17 +15,20 @@
 import numpy as np
 
 from typing import Union
-from abc import ABCMeta, abstractmethod
+from abc import abstractmethod
 from gym.spaces import Space
 
+from tensortrade import Component
 from tensortrade.trades import Trade
 
 DTypeString = Union[type, str]
 TradeActionUnion = Union[int, float, tuple]
 
 
-class ActionStrategy(object, metaclass=ABCMeta):
-    """An abstract strategy for determining the action to take at each timestep within a trading environment."""
+class ActionStrategy(Component):
+    """An abstract strategy for determining the action to take at each timestep within a trading environments."""
+
+    registered_name = "actions"
 
     @abstractmethod
     def __init__(self, action_space: Space, dtype: DTypeString = np.float16):
@@ -34,9 +37,8 @@ class ActionStrategy(object, metaclass=ABCMeta):
             action_space: The shape of the actions produced by the strategy.
             dtype: A type or str corresponding to the dtype of the `action_space`. Defaults to `np.float16`.
         """
-
         self._action_space = action_space
-        self._dtype = dtype
+        self._dtype = self.context.get('dtype', None) or dtype
 
     @property
     def action_space(self) -> Space:
@@ -58,9 +60,9 @@ class ActionStrategy(object, metaclass=ABCMeta):
 
     @property
     def exchange(self) -> 'InstrumentExchange':
-        """The exchange being used by the current trading environment.
+        """The exchange being used by the current trading environments.
 
-        This will be set by the trading environment upon initialization. Setting the exchange causes the strategy to reset.
+        This will be set by the trading environments upon initialization. Setting the exchange causes the strategy to reset.
         """
         return self._exchange
 

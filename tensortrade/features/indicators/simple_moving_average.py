@@ -13,25 +13,42 @@
 # limitations under the License
 
 import pandas as pd
+import numpy as np
 
 from gym import Space
-from typing import Union, List, Tuple
+from copy import copy
+from typing import Union, List, Tuple, Dict
 
 from tensortrade.features.feature_transformer import FeatureTransformer
 
 
 class SimpleMovingAverage(FeatureTransformer):
-    """A transformer to get the simple moving average of one or more columns in a data frame."""
+    """A transformer to add the simple moving average of a column to a feature pipeline."""
 
-    def __init__(self, columns: Union[List[str], str, None] = None):
+    def __init__(self, columns: Union[List[str], str, None] = None, window_size: int = 20, inplace: bool = True, **kwargs):
         """
         Arguments:
             columns (optional): A list of column names to normalize.
+            window_size (optional): The length of the moving average window. Defaults to 20.
+            inplace (optional): If `False`, a new column will be added to the output for each input column.
         """
-        self.columns = columns
+        super().__init__(columns=columns, inplace=inplace)
 
-    def transform_space(self, input_space: Space, column_names: List[str]) -> Space:
-        raise NotImplementedError
+        self._window_size = window_size
 
     def transform(self, X: pd.DataFrame, input_space: Space) -> pd.DataFrame:
-        raise NotImplementedError
+        if self.columns is None:
+            self.columns = list(X.columns)
+
+        for column in self.columns:
+            moving_average = X[column].rolling(self._window_size).mean()
+
+            if not self._inplace:
+                column = '{}_sma_{}'.format(column, self._window_size)
+
+            args = {}
+            args[column] = moving_average
+
+            X = X.assign(**args)
+
+        return X

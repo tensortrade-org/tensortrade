@@ -15,29 +15,35 @@
 import pandas as pd
 import numpy as np
 
-from abc import ABCMeta, abstractmethod
-from typing import Dict, Union, List, Generator
+from abc import abstractmethod
+from typing import Dict, Union, List
 from gym.spaces import Space
 
+from tensortrade import Component
 from tensortrade.trades import Trade
 from tensortrade.features import FeaturePipeline
 
 TypeString = Union[type, str]
 
 
-class InstrumentExchange(object, metaclass=ABCMeta):
-    """An abstract instrument exchange for use within a trading environment."""
+class InstrumentExchange(Component):
+    """An abstract instrument exchange for use within a trading environments.
 
-    def __init__(self, base_instrument: str = 'USD', dtype: TypeString = np.float16, feature_pipeline: FeaturePipeline = None):
-        """
-        Arguments:
-            base_instrument: The exchange symbol of the instrument to store/measure value in.
-            dtype: A type or str corresponding to the dtype of the `observation_space`.
-            feature_pipeline: A pipeline of feature transformations for transforming observations.
-        """
-        self._base_instrument = base_instrument
-        self._dtype = dtype
-        self._feature_pipeline = feature_pipeline
+    Parameters
+    ----------
+    base_instrument : str
+        The exchange symbol of the instrument to store/measure value in.
+    dtype : `TypeString`
+        A type or str corresponding to the dtype of the `observation_space`.
+    feature_pipeline : `FeaturePipeline`
+        A pipeline of feature transformations for transforming observations.
+    """
+    registered_name = "exchanges"
+
+    def __init__(self, dtype: TypeString = np.float16, feature_pipeline: FeaturePipeline = None):
+        self._base_instrument = self.context.base_instrument
+        self._dtype = self.default('dtype', dtype)
+        self._feature_pipeline = self.default('feature_pipeline', feature_pipeline)
 
     @property
     def base_instrument(self) -> str:
@@ -148,6 +154,9 @@ class InstrumentExchange(object, metaclass=ABCMeta):
             return net_worth
 
         for symbol, amount in portfolio.items():
+            if symbol == self._base_instrument:
+                continue
+
             current_price = self.current_price(symbol=symbol)
             net_worth += current_price * amount
 
@@ -174,9 +183,8 @@ class InstrumentExchange(object, metaclass=ABCMeta):
         """
         raise NotImplementedError
 
-    @abstractmethod
-    def _create_observation_generator(self) -> Generator[pd.DataFrame, None, None]:
-        raise NotImplementedError
+    def _next_observation(self) -> Union[pd.DataFrame, np.ndarray]:
+        raise NotImplementedError()
 
     def next_observation(self) -> np.ndarray:
         """Generate the next observation from the exchange.
@@ -184,7 +192,7 @@ class InstrumentExchange(object, metaclass=ABCMeta):
         Returns:
             The next multi-dimensional list of observations.
         """
-        observation = next(self._observation_generator, None)
+        observation = self._next_observation()
 
         if isinstance(observation, pd.DataFrame):
             observation = observation.fillna(0, axis=1)
@@ -238,5 +246,3 @@ class InstrumentExchange(object, metaclass=ABCMeta):
         """Reset the feature pipeline, initial balance, trades, performance, and any other temporary stateful data."""
         if self._feature_pipeline is not None:
             self.feature_pipeline.reset()
-
-        self._observation_generator = self._create_observation_generator()
