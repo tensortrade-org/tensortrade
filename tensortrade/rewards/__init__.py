@@ -3,8 +3,8 @@ from .simple_profit_strategy import SimpleProfitStrategy
 from .risk_adjusted_return_strategy import RiskAdjustedReturnStrategy
 
 _registry = {
-    'simple': SimpleProfitStrategy(),
-    'risk-adjusted': RiskAdjustedReturnStrategy()
+    'simple': SimpleProfitStrategy,
+    'risk-adjusted': RiskAdjustedReturnStrategy
 }
 
 
@@ -20,4 +20,4 @@ def get(identifier: str) -> RewardStrategy:
     if identifier not in _registry.keys():
         raise KeyError(
             'Identifier {} is not associated with any `RewardStrategy`.'.format(identifier))
-    return _registry[identifier]
+    return _registry[identifier]()

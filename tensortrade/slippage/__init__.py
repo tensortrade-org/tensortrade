@@ -3,7 +3,7 @@ from .random_slippage_model import RandomUniformSlippageModel
 
 
 _registry = {
-    'uniform': RandomUniformSlippageModel()
+    'uniform': RandomUniformSlippageModel
 }
 
 
@@ -18,4 +18,4 @@ def get(identifier: str) -> SlippageModel:
     """
     if identifier not in _registry.keys():
         raise KeyError('Identifier {} is not associated with any `SlippageModel`.'.format(identifier))
-    return _registry[identifier]
+    return _registry[identifier]()
