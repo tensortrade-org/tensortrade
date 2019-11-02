@@ -13,6 +13,7 @@
 # limitations under the License
 
 import time
+import ccxt
 import numpy as np
 import pandas as pd
 
@@ -27,23 +28,25 @@ from tensortrade.exchanges import InstrumentExchange
 class CCXTExchange(InstrumentExchange):
     """An instrument exchange for trading on CCXT-supported cryptocurrency exchanges."""
 
-    def __init__(self, exchange: Exchange,  **kwargs):
-        super().__init__(base_instrument=kwargs.get('base_instrument', 'USD'),
-                         dtype=kwargs.get('dtype', np.float16),
-                         feature_pipeline=kwargs.get('feature_pipeline', None))
+    def __init__(self, exchange: Union[Exchange, str] = 'coinbase',  **kwargs):
+        super(CCXTExchange, self).__init__(
+            dtype=self.default('dtype', np.float16, kwargs),
+            feature_pipeline=self.default('feature_pipeline', None, kwargs)
+        )
+        exchange = self.default('exchange', exchange)
 
-        self._exchange = exchange
+        self._exchange = getattr(ccxt, exchange)() if \
+            isinstance(exchange, str) else exchange
 
-        self._exchange.enableRateLimit = kwargs.get('enable_rate_limit', True)
+        self._credentials = self.default('credentials', None, kwargs)
+        self._exchange.enableRateLimit = self.default('enable_rate_limit', True, kwargs)
         self._markets = self._exchange.load_markets()
-
-        self._observation_type = kwargs.get('observation_type', 'trades')
-        self._observation_symbol = kwargs.get('observation_symbol', 'ETH/BTC')
-        self._timeframe = kwargs.get('timeframe', '10m')
-        self._window_size = kwargs.get('window_size', 1)
-
-        self._async_timeout_in_ms = kwargs.get('async_timeout_in_ms', 15)
-        self._max_trade_wait_in_sec = kwargs.get('max_trade_wait_in_sec', 60)
+        self._observation_type = self.default('observation_type', 'trades', kwargs)
+        self._observation_symbol = self.default('observation_symbol', 'ETH/BTC', kwargs)
+        self._timeframe = self.default('timeframe', '10m', kwargs)
+        self._window_size = self.default('window_size', 1, kwargs)
+        self._async_timeout_in_ms = self.default('async_timeout_in_ms', 15, kwargs)
+        self._max_trade_wait_in_sec = self.default('max_trade_wait_in_sec', 15, kwargs)
 
     @property
     def base_precision(self) -> float:

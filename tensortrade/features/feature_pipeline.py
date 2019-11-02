@@ -18,13 +18,16 @@ import numpy as np
 from gym import Space
 from typing import List, Union, Callable
 
+from tensortrade import Component
 from .feature_transformer import FeatureTransformer
+
 
 DTypeString = Union[type, str]
 
 
-class FeaturePipeline(object):
+class FeaturePipeline(Component):
     """An pipeline for transforming observation data frames into features for learning."""
+    registered_name = "features"
 
     def __init__(self, steps: List[FeatureTransformer], **kwargs):
         """
@@ -33,7 +36,7 @@ class FeaturePipeline(object):
         """
         self._steps = steps
 
-        self._dtype: DTypeString = kwargs.get('dtype', np.float16)
+        self._dtype: DTypeString = self.default('dtype', np.float16, kwargs)
 
     @property
     def steps(self) -> List[FeatureTransformer]:

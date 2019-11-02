@@ -21,20 +21,27 @@ from tensortrade.trades import Trade, TradeType
 
 
 class DiscreteActionStrategy(ActionStrategy):
-    """Simple discrete strategy, which calculates the trade amount as a fraction of the total balance."""
+    """Simple discrete strategy, which calculates the trade amount as a fraction of the total balance.
 
-    def __init__(self, n_actions: int = 20, instrument_symbol: str = 'BTC', max_allowed_slippage_percent: float = 1.0):
-        """
-        Arguments:
-            n_actions: The number of bins to divide the total balance by. Defaults to 20 (i.e. 1/20, 2/20, ..., 20/20).
-            instrument_symbol: The exchange symbol of the instrument being traded. Defaults to 'BTC'.
-            max_allowed_slippage: The maximum amount above the current price the strategy will pay for an instrument. Defaults to 1.0 (i.e. 1%).
-        """
+    Parameters
+    ----------
+    n_actions : int
+        The number of bins to divide the total balance by.
+        Defaults to 20 (i.e. 1/20, 2/20, ..., 20/20).
+    max_allowed_slippage_percent : float
+        The maximum amount above the current price the strategy will pay for
+        an instrument.
+        Defaults to 1.0 (i.e. 1%).
+    """
+    def __init__(self, n_actions: int = 20, max_allowed_slippage_percent: float = 1.0):
+        n_actions = self.context.get('n_actions', None) or n_actions
         super().__init__(action_space=Discrete(n_actions), dtype=np.int64)
-
         self.n_actions = n_actions
-        self.instrument_symbol = instrument_symbol
-        self.max_allowed_slippage_percent = max_allowed_slippage_percent
+        self._product = self.context.products[0]
+        self.max_allowed_slippage_percent = \
+            self.context.get('max_allowed_slippage_percent', None) or \
+            max_allowed_slippage_percent
+
 
     @property
     def dtype(self) -> DTypeString:
@@ -44,7 +51,8 @@ class DiscreteActionStrategy(ActionStrategy):
     @dtype.setter
     def dtype(self, dtype: DTypeString):
         raise ValueError(
-            'Cannot change the dtype of a `SimpleDiscreteStrategy` due to the requirements of `gym.spaces.Discrete` spaces. ')
+            'Cannot change the dtype of a `SimpleDiscreteStrategy` due to '
+            'the requirements of `gym.spaces.Discrete` spaces. ')
 
     def get_trade(self, action: TradeActionUnion) -> Trade:
         """The trade type is determined by `action % len(TradeType)`, and the trade amount is determined by the multiplicity of the action.
@@ -55,11 +63,11 @@ class DiscreteActionStrategy(ActionStrategy):
         trade_type = TradeType(action % len(TradeType))
         trade_amount = int(action / len(TradeType)) * float(1 / n_splits) + (1 / n_splits)
 
-        current_price = self._exchange.current_price(symbol=self.instrument_symbol)
+        current_price = self._exchange.current_price(symbol=self._product)
         base_precision = self._exchange.base_precision
         instrument_precision = self._exchange.instrument_precision
 
-        amount = self._exchange.instrument_balance(self.instrument_symbol)
+        amount = self._exchange.instrument_balance(self._product)
         price = current_price
 
         if trade_type is TradeType.MARKET_BUY or trade_type is TradeType.LIMIT_BUY:
@@ -71,7 +79,7 @@ class DiscreteActionStrategy(ActionStrategy):
         elif trade_type is TradeType.MARKET_SELL or trade_type is TradeType.LIMIT_SELL:
             price_adjustment = 1 - (self.max_allowed_slippage_percent / 100)
             price = round(current_price * price_adjustment, base_precision)
-            amount_held = self._exchange.portfolio.get(self.instrument_symbol, 0)
+            amount_held = self._exchange.portfolio.get(self._product, 0)
             amount = round(amount_held * trade_amount, instrument_precision)
 
-        return Trade(self.instrument_symbol, trade_type, amount, price)
+        return Trade(self._product, trade_type, amount, price)

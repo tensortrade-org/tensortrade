@@ -48,7 +48,8 @@ setup(
     install_requires=[
         'numpy==1.16.4',
         'pandas==0.25.0',
-        'gym==0.14.0'
+        'gym==0.14.0',
+        'pyyaml==5.1.2'
     ],
     extras_require={
         'tf': ['tensorflow==1.13.1'],

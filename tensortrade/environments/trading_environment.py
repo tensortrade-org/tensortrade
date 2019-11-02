@@ -32,7 +32,7 @@ from tensortrade.trades import Trade
 
 
 class TradingEnvironment(gym.Env):
-    """A trading environment made for use with Gym-compatible reinforcement learning algorithms."""
+    """A trading environments made for use with Gym-compatible reinforcement learning algorithms."""
 
     def __init__(self,
                  exchange: Union[InstrumentExchange, str],
@@ -46,10 +46,9 @@ class TradingEnvironment(gym.Env):
             action_strategy:  The strategy for transforming an action into a `Trade` at each timestep.
             reward_strategy: The strategy for determining the reward at each timestep.
             feature_pipeline (optional): The pipeline of features to pass the observations through.
-            kwargs (optional): Additional arguments for tuning the environment, logging, etc.
+            kwargs (optional): Additional arguments for tuning the environments, logging, etc.
         """
         super().__init__()
-
         self._exchange = exchanges.get(exchange) if isinstance(exchange, str) else exchange
         self._action_strategy = actions.get(action_strategy) if isinstance(
             action_strategy, str) else action_strategy
@@ -85,7 +84,7 @@ class TradingEnvironment(gym.Env):
 
     @property
     def action_strategy(self) -> ActionStrategy:
-        """The strategy for transforming an action into a `Trade` at each timestep."""
+        """The strategy for transforming an action into a `Trade` at each time step."""
         return self._action_strategy
 
     @action_strategy.setter
@@ -94,7 +93,7 @@ class TradingEnvironment(gym.Env):
 
     @property
     def reward_strategy(self) -> RewardStrategy:
-        """The strategy for determining the reward at each timestep."""
+        """The strategy for determining the reward at each time step."""
         return self._reward_strategy
 
     @reward_strategy.setter
@@ -129,7 +128,7 @@ class TradingEnvironment(gym.Env):
         """Returns the next observation from the exchange.
 
         Returns:
-            The observation provided by the environment's exchange, often OHLCV or tick trade history data points.
+            The observation provided by the environments's exchange, often OHLCV or tick trade history data points.
         """
         self._current_step += 1
 
@@ -154,10 +153,10 @@ class TradingEnvironment(gym.Env):
         return reward
 
     def _done(self) -> bool:
-        """Returns whether or not the environment is done and should be restarted.
+        """Returns whether or not the environments is done and should be restarted.
 
         Returns:
-            A boolean signaling whether the environment is done and should be restarted.
+            A boolean signaling whether the environments is done and should be restarted.
         """
         lost_90_percent_net_worth = self._exchange.profit_loss_percent < 0.1
 
@@ -175,15 +174,15 @@ class TradingEnvironment(gym.Env):
                 'filled_trade': filled_trade}
 
     def step(self, action) -> Tuple[pd.DataFrame, float, bool, dict]:
-        """Run one timestep within the environment based on the specified action.
+        """Run one timestep within the environments based on the specified action.
 
         Arguments:
             action: The trade action provided by the agent for this timestep.
 
         Returns:
-            observation (pandas.DataFrame): Provided by the environment's exchange, often OHLCV or tick trade history data points.
+            observation (pandas.DataFrame): Provided by the environments's exchange, often OHLCV or tick trade history data points.
             reward (float): An amount corresponding to the benefit earned by the action taken this timestep.
-            done (bool): If `True`, the environment is complete and should be restarted.
+            done (bool): If `True`, the environments is complete and should be restarted.
             info (dict): Any auxiliary, diagnostic, or debugging information to output.
         """
         executed_trade, filled_trade = self._take_action(action)
@@ -196,7 +195,7 @@ class TradingEnvironment(gym.Env):
         return observation, reward, done, info
 
     def reset(self) -> pd.DataFrame:
-        """Resets the state of the environment and returns an initial observation.
+        """Resets the state of the environments and returns an initial observation.
 
         Returns:
             observation: the initial observation.
@@ -210,5 +209,5 @@ class TradingEnvironment(gym.Env):
         return self._next_observation(Trade('N/A', 'hold', 0, 0))
 
     def render(self, mode='none'):
-        """Renders the environment."""
+        """Renders the environments."""
         pass

@@ -20,9 +20,13 @@ from copy import copy
 from typing import List, Union
 from abc import ABCMeta, abstractmethod
 
+from tensortrade import Component
 
-class FeatureTransformer(object, metaclass=ABCMeta):
+
+class FeatureTransformer(Component, metaclass=ABCMeta):
     """An abstract feature transformer for use within feature pipelines."""
+
+    registered_name = "features"
 
     def __init__(self, columns: Union[List[str], str, None] = None, inplace: bool = True, **kwargs):
         """
@@ -30,8 +34,9 @@ class FeatureTransformer(object, metaclass=ABCMeta):
             columns (optional): A list of column names to normalize.
             inplace (optional): If `False`, a new column will be added to the output for each input column.
         """
-        self._inplace = inplace
-        self.columns = columns
+        self.columns = self.default('columns', columns)
+        self._inplace = self.default('inplace', inplace)
+
 
     @property
     def columns(self) -> List[str]:
