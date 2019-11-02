@@ -12,8 +12,6 @@ from tensortrade.exchanges.simulated import *
 from tensortrade.trades import Trade
 from tensortrade.slippage import SlippageModel
 
-import numpy as np
-
 class ConcreteInstrumentExchange(InstrumentExchange):
 
     def __init__(self):
@@ -51,7 +49,7 @@ class ConcreteInstrumentExchange(InstrumentExchange):
     def has_next_observation(self) -> bool:
         pass
         
-    def next_observation(self) -> np.ndarray:
+    def next_observation(self) -> pd.DataFrame:
         pass
 
     def _create_observation_generator(self) -> Generator[pd.DataFrame, None, None]:

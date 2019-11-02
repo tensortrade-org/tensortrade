@@ -184,7 +184,7 @@ class InstrumentExchange(Component):
         raise NotImplementedError
 
     @abstractmethod
-    def next_observation(self) -> np.ndarray:
+    def next_observation(self) -> pd.DataFrame:
         """Generate the next observation from the exchange.
 
         Returns:

@@ -121,7 +121,7 @@ class CCXTExchange(InstrumentExchange):
 
         return self._exchange.has['fetchTrades']
 
-    def next_observation(self) -> np.ndarray:
+    def next_observation(self) -> pd.DataFrame:
         if self._observation_type == 'ohlcv':
             ohlcv = self._exchange.fetch_ohlcv(
                 self._observation_symbol, timeframe=self._timeframe)
