@@ -93,7 +93,7 @@ class RobinhoodExchange(InstrumentExchange):
         # TODO
         raise NotImplementedError
 
-    def _next_observation(self) -> pd.DataFrame:
+    def next_observation(self) -> pd.DataFrame:
         # TODO
         raise NotImplementedError
 

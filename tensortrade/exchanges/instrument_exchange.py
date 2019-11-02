@@ -184,24 +184,13 @@ class InstrumentExchange(Component):
         raise NotImplementedError
 
     @abstractmethod
-    def _next_observation(self) -> Union[pd.DataFrame, np.ndarray]:
-        raise NotImplementedError()
-
     def next_observation(self) -> np.ndarray:
         """Generate the next observation from the exchange.
-        This function uses the internal behaviour "_next_observation" which should be implemented in the Concrete class.
 
         Returns:
             The next multi-dimensional list of observations.
         """
-        observation = self._next_observation()
-
-        if isinstance(observation, pd.DataFrame):
-            observation = observation.fillna(0, axis=1)
-
-            return observation.values
-
-        return observation
+        raise NotImplementedError()
 
     def instrument_balance(self, symbol: str) -> float:
         """The current balance of the specified symbol on the exchange, denoted in the base instrument.

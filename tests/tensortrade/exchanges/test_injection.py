@@ -49,6 +49,9 @@ class ConcreteInstrumentExchange(InstrumentExchange):
     @property
     def has_next_observation(self) -> bool:
         pass
+        
+    def next_observation(self) -> np.ndarray:
+        pass
 
     def _create_observation_generator(self) -> Generator[pd.DataFrame, None, None]:
         pass
