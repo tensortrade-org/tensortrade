@@ -177,11 +177,14 @@ class InstrumentExchange(object, metaclass=ABCMeta):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def _next_observation(self) -> Union[pd.DataFrame, np.ndarray]:
         raise NotImplementedError()
 
+    @abstractmethod
     def next_observation(self) -> np.ndarray:
         """Generate the next observation from the exchange.
+        This function uses the internal behaviour "_next_observation" which should be implemented in the Concrete class.
 
         Returns:
             The next multi-dimensional list of observations.
@@ -195,6 +198,7 @@ class InstrumentExchange(object, metaclass=ABCMeta):
 
         return observation
 
+    @abstractmethod
     def instrument_balance(self, symbol: str) -> float:
         """The current balance of the specified symbol on the exchange, denoted in the base instrument.
 
