@@ -124,7 +124,7 @@ class TradingEnvironment(gym.Env):
 
         return executed_trade, filled_trade
 
-    def _next_observation(self, trade: Trade) -> np.ndarray:
+    def _next_observation(self, trade: Trade) -> pd.DataFrame:
         """Returns the next observation from the exchange.
 
         Returns:
@@ -134,7 +134,7 @@ class TradingEnvironment(gym.Env):
 
         observation = self._exchange.next_observation()
         if len(observation) != 0:
-            observation = observation[0]
+            observation = observation.iloc[0]
             observation = np.nan_to_num(observation)
         return observation
 
