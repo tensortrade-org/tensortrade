@@ -108,7 +108,6 @@ class TAIndicator(FeatureTransformer):
         self._lows = lows or np.zeros(len(indicators))
         self._highs = highs or np.ones(len(indicators))
 
-
     def _str_to_indicator(self, indicator_name: str):
         # Only one result expected
         return next(i for i in TAIndicator.indicators if i[0] == indicator_name)
