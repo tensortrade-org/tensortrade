@@ -33,7 +33,7 @@ Below are the functions that the `MinMaxNormalizer` uses to effectively operate.
   * Apply the pipeline of feature transformations to an observation frame.
 
 
-## See **`MinMaxNormalizer`** in action:
+## Use Cases:
 
 ```py
 from tensortrade.features import FeaturePipeline

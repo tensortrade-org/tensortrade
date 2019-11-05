@@ -34,7 +34,12 @@ Below are the functions that the `FractionalDifference` uses to effectively oper
   * Resets the history of the standard scaler.
 
 
-## See `FractionalDifference` in action:
+## Use Cases:
+
+**Use Case #1: Different Input Spaces**
+
+This `FeatureTransformer` operates differently depending on if we pretransform the observation to an ndarray or keep it as a pandas dataframe.
+
 
 ```py
 from tensortrade.features import FeaturePipeline
@@ -45,12 +50,5 @@ feature_pipeline = FeaturePipeline(steps=[difference_all])
 exchange.feature_pipeline = feature_pipeline
 ```
 
-## Use Case
 
-**Use Case #1: Different Input Spaces**
 
-This `FeatureTransformer` operates differently depending on if we pretransform the observation to an ndarray or keep it as a pandas dataframe.
-
-```py
-
-```

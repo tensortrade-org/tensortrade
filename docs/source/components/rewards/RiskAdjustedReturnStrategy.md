@@ -42,10 +42,4 @@ Below are the functions that the `RiskAdjustedReturnStrategy` uses to effectivel
 
 ## Use Cases
 
-**Use Case #1: Sum of Risk Over Time**
-
-Keeps track of ...
-
-```py
-
-```
+...

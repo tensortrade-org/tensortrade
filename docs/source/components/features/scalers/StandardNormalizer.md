@@ -36,11 +36,15 @@ Below are the functions that the `StandardNormalizer` uses to effectively operat
   * Resets the history of the standard scaler.
 
 
-## See **`StandardNormalizer`** in action:
+## Use Cases:
+
+**Use Case #1: Different Input Spaces**
+
+This `StandardNormalizer` operates differently depending on if we pretransform the observation to an ndarray or keep it as a pandas dataframe.
 
 ```py
 from tensortrade.features import FeaturePipeline
-from tensortrade.features.scalers import MinMaxNormalizer
+from tensortrade.features.scalers import StandardNormalizer
 from tensortrade.features.stationarity import FractionalDifference
 from tensortrade.features.indicators import SimpleMovingAverage
 price_columns = ["open", "high", "low", "close"]
@@ -54,8 +58,3 @@ exchange.feature_pipeline = feature_pipeline
 ```
 
 
-## Use Cases
-
-**Use Case #1: Different Input Spaces**
-
-This `StandardNormalizer` operates differently depending on if we pretransform the observation to an ndarray or keep it as a pandas dataframe.

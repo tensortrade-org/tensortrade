@@ -65,7 +65,9 @@ At the end the observations are converted into a ndarray so that they can be int
 * `transform_space`
   * Apply the pipeline of feature transformations to an observation frame.
 
-## See The **`FeaturePipeline`** In Action
+## Use Cases
+
+**Use Case #1: Initiate Pipeline**
 
 ```py
 from tensortrade.features import FeaturePipeline

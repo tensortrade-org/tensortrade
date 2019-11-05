@@ -74,7 +74,7 @@ Below are the functions that the `InstrumentExchange` uses to effectively operat
 
 ## Use Cases
 
-**Use Case #1: Generate Price History for Exchange**
+**Use Case #1: Initiating Interactive Broker**
 
 We generate the price history when
 
