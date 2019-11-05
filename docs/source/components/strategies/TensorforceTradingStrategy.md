@@ -1,11 +1,51 @@
 # TensorforceTradingStrategy
 
-A trading strategy capable of self tuning, training, and evaluating with Tensorforce.
+# StableBaselinesTradingStrategy
+
+A trading strategy capable of self tuning, training, and evaluating with stable-baselines.
+
+## Class Parameters
+
+* `environment`
+  * A `TradingEnvironment` instance for the agent to trade within.
+* `agent`
+  * A `Tensorforce` agent or agent specification.
+* `model`
+  * The runner will automatically save the best agent
+* `policy`
+  * The RL policy to train the agent's model with. Defaults to 'MlpPolicy'.
+
+* `_model_kwargs`
+
+## Properties and Setters
+* `environment`
+  * A `TradingEnvironment` instance for the agent to trade within.
 
 
-It has all of the training loop inside of class to standardize different training methods.
+## Functions
+* `restore_agent`
+  * Deserialize the strategy's learning agent from a file.
+  * **parameters**:
+    * `path`
+      * The `str` path of the file the agent specification is stored in.
+* `save_agent`
+  * Serialize the learning agent to a file for restoring later.
+  * **parameters**:
+    * `path`
+      * The `str` path of the file to store the agent specification in.
+* `tune`
+  * Function `NotImplemented`
+* `run`
+  * Runs all of the episodes specified. 
+  * **parameters**:
+    * steps
+    * episodes
+    * episode_callback
 
-## See **`TensorforceTradingStrategy`** in Action
+## Use Cases
+
+
+**Use Case #1: Run a Strategy**
 
 ```py
 from stable_baselines import PPO2
@@ -30,9 +70,14 @@ network_spec = [
 a_strategy = TensorforceTradingStrategy(environment=environment,
                                         agent_spec=agent_spec,
                                         network_spec=network_spec)
+a_strategy.run()
 ```
+<!-- 
+**Use Case #2**
 
+```py
 
+``` -->
 <!-- ## Use Cases
 
 **Use Case #1**

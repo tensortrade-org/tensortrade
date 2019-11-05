@@ -103,6 +103,7 @@
    :caption: Examples
 
    examples/train_and_evaluate.ipynb
+   examples/tutorial.ipynb
 
 .. toctree::
    :maxdepth: 1
