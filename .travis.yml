@@ -9,7 +9,7 @@ python:
   - '3.6'
 
 install:
-  - pip install -e .[tf,tensorforce,ccxt,fbm,tests]
+  - pip install -e .[all-tests]
 
 script: pytest
 
