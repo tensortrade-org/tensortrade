@@ -1,4 +1,4 @@
-# Trading Coding Structure
+# Code Structure
 
 The TensorTrade library is modular. The `tensortrade` library usually has a common setup:
 
@@ -6,10 +6,10 @@ The TensorTrade library is modular. The `tensortrade` library usually has a comm
 2. Specific applications of that abstract class are then specified later to make more detailed specifications.
 
 ## Example of Structure:
+
 A good example of this structure is the `InstrumentExchange` component. It represents all exchange interactions.
 
 The beginning of the code in [InstrumentExchange](https://github.com/notadamking/tensortrade/blob/master/tensortrade/exchanges/instrument_exchange.py) is seen here.
-
 
 ```py
 class InstrumentExchange(object, metaclass=ABCMeta):
@@ -27,12 +27,9 @@ class InstrumentExchange(object, metaclass=ABCMeta):
         self._feature_pipeline = feature_pipeline
 ```
 
-
 As you can see above, the [InstrumentExchange](https://github.com/notadamking/tensortrade/blob/master/tensortrade/exchanges/instrument_exchange.py) has a large majority of the instantiation details that carries over to all other reprentations of that type of class. `ABCMeta` represents that all classes that inherit it shall be recognizable as an instance of `InstrumentExchange`. This is nice when you need to do type checking.
 
 When creating a new exchange type (everything that's an inheritance of the `InstrumentExchange`), one needs to add further details for how information should be declared by default. Once you create a new type of exchange, you can have new rules placed in by default. Let's look at the SimulatedExchange and it can have parameters dynamically set via the `**kwargs` arguement in later exchanges.
-
-
 
 **SimulatedExchange:**
 
@@ -72,7 +69,6 @@ class SimulatedExchange(InstrumentExchange):
         self._slippage_model = SlippageModelClass(max_allowed_slippage_percent)
 ```
 
-
 Everything that inherits `SimulatedExchange` uses the specified kwargs to set the parameters.
 
 Therefore, even when we don't directly see the parameters inside of `FBMExchange`, all of the defaults are being called.
@@ -82,4 +78,3 @@ Therefore, even when we don't directly see the parameters inside of `FBMExchange
 ```py
 exchange = FBMExchange(base_instrument='BTC', timeframe='1h', base_precision=4) # we're replacing the default base precision.
 ```
-

@@ -7,3 +7,4 @@ sphinxcontrib.apidoc
 nbsphinx
 nbsphinx_link
 m2r
+ipykernel
