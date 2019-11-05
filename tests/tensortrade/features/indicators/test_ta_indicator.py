@@ -13,7 +13,7 @@ def data_frame():
 
 @pytest.fixture
 def input_space():
-    return Box(low=0.0, high=100, shape=(5,5), dtype=np.float32)
+    return Box(low=0.0, high=100, shape=(5, 5), dtype=np.float32)
 
 
 class TestTAIndicator:
@@ -34,21 +34,15 @@ class TestTAIndicator:
         test_feature = TAIndicator(TestTAIndicator.indicators_to_test)
         test_feature.transform(data_frame, None)
         assert set(TestTAIndicator.indicators_to_test).issubset(data_frame.columns)
-        print(data_frame.rsi)
 
     def test_transform_single_indicator(self, data_frame):
         test_feature = TAIndicator('rsi')
         test_feature.transform(data_frame, None)
         assert 'rsi' in data_frame.columns
-        print(data_frame.rsi)
 
-    def test_add_volatility_ta(self, data_frame):
-        test_feature = TAIndicator('add_volatility_ta')
-        print(test_feature._indicator_names)
-        test_feature.transform(data_frame, None)
-        print(data_frame.columns)
-        print(data_frame.dtypes)
-
-
-
-
+    # def test_add_volatility_ta(self, data_frame):
+    #     test_feature = TAIndicator('add_volatility_ta')
+    #     print(test_feature._indicator_names)
+    #     test_feature.transform(data_frame, None)
+    #     print(data_frame.columns)
+    #     print(data_frame.dtypes)
