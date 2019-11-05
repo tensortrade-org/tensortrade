@@ -113,14 +113,4 @@ Below are the functions that the `InstrumentExchange` uses to effectively operat
 
 ## Use Cases
 
-<!-- **Use Case #1**
-
-```py
-print("Hello World")
-```
-
-**Use Case #2**
-
-```py
-print("Hello World")
-``` -->
+...
