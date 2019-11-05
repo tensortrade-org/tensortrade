@@ -3,9 +3,12 @@
 An instrument exchange for trading using the Interactive Brokers API.
 
 ## Class Parameters
-* `base_instrument` - The exchange symbol of the instrument to store/measure value in.
-* `dtype` - A type or str corresponding to the dtype of the `observation_space`.
-* `feature_pipeline` - A pipeline of feature transformations for transforming observations.
+* `base_instrument`
+  * The exchange symbol of the instrument to store/measure value in.
+* `dtype`
+  * A type or str corresponding to the dtype of the `observation_space`.
+* `feature_pipeline`
+  * A pipeline of feature transformations for transforming observations.
 
 ## Properties and Setters
 
@@ -71,32 +74,12 @@ Below are the functions that the `InstrumentExchange` uses to effectively operat
 
 ## Use Cases
 
-**Use Case #1: Getting Price Information**
+**Use Case #1: Generate Price History for Exchange**
 
 We generate the price history when
 
 ```py
-def reset(self):
-    super().reset()
+from tensortrade.exchanges.live import InteractiveBrokersExchange
 
-    self._generate_price_history()
-```
-
-**Use Case #2: Making A Trade**
-
-```py
-
-```
-
-
-**Use Case #3: Adding Exchange Keys**
-
-```py
-
-```
-
-**Use Case #4: Start Live Exchange**
-
-```py
-
+exchange = InteractiveBrokersExchange(base_instrument='BTC', timeframe='1h')
 ```

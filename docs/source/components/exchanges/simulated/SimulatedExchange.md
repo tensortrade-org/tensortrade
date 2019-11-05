@@ -87,7 +87,9 @@ exchange = SimulatedExchange(data_frame=df, base_instrument='USD')
 
 ## Use Cases
 
-**Use Case #1**
+Working on it.
+
+<!-- **Use Case #1**
 
 ```py
 ```
@@ -95,4 +97,4 @@ exchange = SimulatedExchange(data_frame=df, base_instrument='USD')
 **Use Case #2**
 
 ```py
-```
+``` -->

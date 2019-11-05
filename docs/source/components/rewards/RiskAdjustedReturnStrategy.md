@@ -14,9 +14,12 @@ The **sortino ratio** takes the same idea, though it focuses more on penalizing 
 ![Sortino Ratio](../../_static/images/sortino.png)
 
 ## Class Parameters
-* `return_algorithm` - The risk-adjusted return metric to use. Options are 'sharpe' and 'sortino'. Defaults to 'sharpe'.
-* `risk_free_rate` - The risk free rate of returns to use for calculating metrics. Defaults to 0.
-* `target_returns` - The target returns per period for use in calculating the sortino ratio. Default to 0.
+* `return_algorithm`
+  * The risk-adjusted return metric to use. Options are 'sharpe' and 'sortino'. Defaults to 'sharpe'.
+* `risk_free_rate`
+  * The risk free rate of returns to use for calculating metrics. Defaults to 0.
+* `target_returns`
+  * The target returns per period for use in calculating the sortino ratio. Default to 0.
 
 
 ## Functions

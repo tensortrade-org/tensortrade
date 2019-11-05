@@ -98,12 +98,18 @@ Below are the functions that the `InstrumentExchange` uses to effectively operat
 
 ### Public
 
-* `has_next_observation` - Return the reward corresponding to the selected risk-adjusted return metric.
-* `next_observation` - Generate the next observation from the exchange.
-* `instrument_balance` - The current balance of the specified symbol on the exchange, denoted in the base instrument.
-* `current_price` - The current price of an instrument on the exchange, denoted in the base instrument.
-* `execute_trade` - Execute a trade on the exchange, accounting for slippage.
-* `reset` - Reset the feature pipeline, initial balance, trades, performance, and any other temporary stateful data.
+* `has_next_observation`
+  * Return the reward corresponding to the selected risk-adjusted return metric.
+* `next_observation`
+  * Generate the next observation from the exchange.
+* `instrument_balance`
+  * The current balance of the specified symbol on the exchange, denoted in the base instrument.
+* `current_price`
+  * The current price of an instrument on the exchange, denoted in the base instrument.
+* `execute_trade`
+  * Execute a trade on the exchange, accounting for slippage.
+* `reset`
+  * Reset the feature pipeline, initial balance, trades, performance, and any other temporary stateful data.
 
 ## Use Cases
 

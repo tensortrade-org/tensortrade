@@ -85,30 +85,14 @@ Below are the functions that the `FBMExchange` uses to effectively operate.
   * Reset the feature pipeline, initial balance, trades, performance, and any other temporary stateful data.
 
 
-## `FBMExchange` Use Cases
+## Use Cases
+
+**Use Case #1: Generate Price History for Exchange**
+
+We generate the price history when
 
 ```py
 from tensortrade.exchanges.simulated import FBMExchange
 
 exchange = FBMExchange(base_instrument='BTC', timeframe='1h')
-```
-
-## Use Cases
-
-**Use Case #1: Generate Price History**
-
-We generate the price history when
-
-```py
-def reset(self):
-    super().reset()
-
-    self._generate_price_history()
-
-```
-
-**Use Case #2: Getting an observation**
-
-```py
-
 ```
