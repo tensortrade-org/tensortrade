@@ -1,8 +1,6 @@
 # TensorforceTradingStrategy
 
-# StableBaselinesTradingStrategy
-
-A trading strategy capable of self tuning, training, and evaluating with stable-baselines.
+A trading strategy capable of self tuning, training, and evaluating with Tensorforce.
 
 ## Class Parameters
 
@@ -44,7 +42,6 @@ A trading strategy capable of self tuning, training, and evaluating with stable-
 
 ## Use Cases
 
-
 **Use Case #1: Run a Strategy**
 
 ```py
@@ -70,24 +67,5 @@ network_spec = [
 a_strategy = TensorforceTradingStrategy(environment=environment,
                                         agent_spec=agent_spec,
                                         network_spec=network_spec)
-a_strategy.run()
+a_strategy.run(episodes=10)
 ```
-<!-- 
-**Use Case #2**
-
-```py
-
-``` -->
-<!-- ## Use Cases
-
-**Use Case #1**
-
-```py
-print("Hello World")
-```
-
-**Use Case #2**
-
-```py
-print("Hello World")
-``` -->

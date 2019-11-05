@@ -76,3 +76,9 @@ a_strategy.run()
 ```py
 
 ``` -->
+<!-- 
+**Use Case #2**
+
+```py
+
+``` -->

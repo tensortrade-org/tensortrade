@@ -1,0 +1,856 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Trade Smarter w/ Reinforcement Learning\n",
+    "## A deep dive into TensorTrade - the Python framework for trading and investing using deep reinforcement learning\n",
+    "\n",
+    "![Banner](../_static/images/banner.jpeg)\n",
+    "\n",
+    "Winning high stakes poker tournaments, beating world-class StarCraft players, and autonomously driving Tesla's futuristic sports cars. What do they all have in common? Each of these extremely complex tasks were long thought to be impossible by machines, until only recently being made possible through the massive advancements in deep reinforcement learning. \n",
+    "\n",
+    "Reinforcement learning is beginning to take over the world.\n",
+    "\n",
+    "![Source: https://deepmind.com/blog/article/alphastar-mastering-real-time-strategy-game-starcraft-ii](img/alphastar.gif)\n",
+    "\n",
+    "A little over two months ago, I decided I wanted to take part in the revolution, so I set out on a journey to create a profitable Bitcoin trading strategy using state-of-the-art deep reinforcement learning algorithms. While I made quite a bit of progress on that front, I realized that the tooling for this sort of project can be quite daunting to wrap your head around, and as such, it is very easy to get lost in the details.\n",
+    "\n",
+    "In between optimizing my previous project for distributed high-performance computing (HPC) systems; getting lost in endless pipelines of data and feature optimizations; and running my head in circles around efficient model set-up, tuning, training, and evaluation; I realized that there had to be a better way of doing things. After countless hours of researching existing projects, spending endless nights watching PyData conference talks, and having many back-and-forth conversations with the hundreds of members of the  RL trading Discord community, I realized there weren't any existing solutions that were all that good.\n",
+    "\n",
+    "There were many bits and pieces of great reinforcement learning trading systems spread across the inter-webs, but nothing solid and complete. For this reason, I've decided to create an open source Python framework for getting any trading strategy from idea to production, efficiently, using deep reinforcement learning. \n",
+    "\n",
+    "Enter TensorTrade. The idea was to create a highly modular framework for building efficient reinforcement learning trading strategies in a composable, maintainable way. Sounds like a mouthful of buzz-words if you ask me, so let's get into the meat."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Overview\n",
+    "\n",
+    "![Logo](img/logo.jpeg)\n",
+    "\n",
+    "TensorTrade is an open source Python framework for training, evaluating, and deploying robust trading strategies using deep reinforcement learning. The framework focuses on being highly composable and extensible, to allow the system to scale from simple trading strategies on a single CPU, to complex investment strategies run on a distribution of HPC machines.\n",
+    "\n",
+    "Under the hood, the framework uses many of the APIs from existing machine learning libraries to maintain high quality data pipelines and learning models. One of the main goals of TensorTrade is to enable fast experimentation with algorithmic trading strategies, by leveraging the existing tools and pipelines provided by `numpy`, `pandas`, `gym`, `keras`, and `tensorflow`.\n",
+    "\n",
+    "The aim is to simplify the process of testing and deploying robust trading agents using deep reinforcement learning, to allow you and I to focus on creating profitable strategies.\n",
+    "\n",
+    "## RL Primer\n",
+    "\n",
+    "In case your reinforcement learning chops are a bit rusty, let's quickly go over the basic concepts.\n",
+    "\n",
+    "Every reinforcement learning problem starts out with an environment and one or more agents that can interact with the environment.\n",
+    "\n",
+    "![Primer](img/primer.jpg)\n",
+    "\n",
+    "_This technique is based off Markov Decision Processes (MDP) dating back to the 1950s._\n",
+    "\n",
+    "The agent will first observe the environment, then build a model of the current state and the expected value of actions within that environment. Based on that model, the agent will then take the action it has deemed as having the highest expected value.\n",
+    "\n",
+    "Based on the effects of the chosen action within the environment, the agent will be rewarded by an amount corresponding to the actual value of that action. The reinforcement learning agent can then, through the process of trial and error (i.e. learning through reinforcement), improve its underlying model and learn to take more rewarding actions over time.\n",
+    "\n",
+    "If you still need a bit of refreshment on the subject, there is a link to an article titled _Introduction to Deep Reinforcement Learning_ in the references for this article, which goes much more in-depth into the details. Let's move on.\n",
+    "\n",
+    "## Getting Started\n",
+    "\n",
+    "The following tutorial should provide enough examples to get you started with creating simple trading strategies using TensorTrade, although you will quickly see the framework is capable of handling much more complex configurations.\n",
+    "\n",
+    "## Installation\n",
+    "\n",
+    "TensorTrade requires Python 3.6 or later, so make sure you're using a valid version before pip installing the framework. "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [
+    {
+     "evalue": "Error: Command failed: . /home/kevin/.pyenv/shims/activate && echo 'e8b39361-0157-4923-80e1-22d70d46dee6' && python /home/kevin/.vscode/extensions/ms-python.python-2019.10.44104/pythonFiles/printEnvVariables.py\npyenv-virtualenv: version `system' is not a virtualenv\n",
+     "output_type": "error"
+    }
+   ],
+   "source": [
+    "import os\n",
+    "import sys\n",
+    "import warnings\n",
+    "import numpy\n",
+    "\n",
+    "def warn(*args, **kwargs):\n",
+    "    pass\n",
+    "\n",
+    "warnings.warn = warn\n",
+    "warnings.simplefilter(action='ignore', category=FutureWarning)\n",
+    "numpy.seterr(divide = 'ignore') \n",
+    "\n",
+    "sys.path.append(os.path.dirname(os.path.abspath('')))"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "To follow this entire tutorial, you will need to install some extra dependencies, such as `tensorflow`, `stable-baselines`, `tensorforce`, `ccxt`, and `stochastic`."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "!pip install -e ..[tf,tensorforce,baselines,ccxt,fbm] -U"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "That's all the installation necessary! Let's get into the code.\n",
+    "\n",
+    "# TensorTrade Components\n",
+    "\n",
+    "TensorTrade is built around modular components that together make up a trading strategy. Trading strategies combine reinforcement learning agents with composable trading logic in the form of a `gym` environment. A trading environment is made up of a set of modular components that can be mixed and matched to create highly diverse trading and investment strategies. I will explain this in further detail later, but for now it is enough to know the basics.\n",
+    "\n",
+    "![Components](../_static/images/components.jpeg)\n",
+    "\n",
+    "Just like electrical components, the purpose of TensorTrade components is to be able to mix and match them as necessary.\n",
+    "\n",
+    "_The code snippets in this section should serve as guidelines for creating new strategies and components. There will likely be missing implementation details that will become more clear in a later section, as more components are defined._"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Trading Environment\n",
+    "\n",
+    "A trading environment is a reinforcement learning environment that follows OpenAI's `gym.Env` specification. This allows us to leverage many of the existing reinforcement learning models in our trading agent, if we'd like.\n",
+    "\n",
+    "![Environment](../_static/images/environment.jpeg)\n",
+    "\n",
+    "Each environment is a fully configurable `gym` environment with highly composable `InstrumentExchange`, `FeaturePipeline`, `ActionStrategy`, and `RewardStrategy` components.\n",
+    "\n",
+    "* The `InstrumentExchange` provides observations to the environment and executes the agent's trades.\n",
+    "* The `FeaturePipeline` optionally transforms the exchange output into a more meaningful set of features before it is passed to the agent.\n",
+    "* The `ActionStrategy` converts the agent's actions into executable trades.\n",
+    "* The `RewardStrategy` calculates the reward for each time step based on the agent's performance.\n",
+    "\n",
+    "If it seems a bit complicated now, it's really not. That is all there is to it, now it's just a matter of composing each of these components into a complete environment.\n",
+    "\n",
+    "When the reset method of a `TradingEnvironment` is called, all of the child components will also be reset. The internal state of each instrument exchange, feature pipeline, transformer, action strategy, and reward strategy will be set back to their default values, ready for the next episode.\n",
+    "\n",
+    "Let's begin with an example environment. As mentioned before, initializing a `TradingEnvironment` requires an exchange, an action strategy, and a reward strategy, the feature pipeline is optional."
+   ]
+  },
+  {
+   "cell_type": "raw",
+   "metadata": {},
+   "source": [
+    "from tensortrade.environments import TradingEnvironment\n",
+    "\n",
+    "environment = TradingEnvironment(exchange=exchange,\n",
+    "                                 feature_pipeline=feature_pipeline,\n",
+    "                                 action_strategy=action_strategy,\n",
+    "                                 reward_strategy=reward_strategy)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "_While the recommended use case is to plug a trading environment into a trading strategy, you can obviously use the trading environment separately, however you'd like._\n",
+    "\n",
+    "## Instrument Exchanges\n",
+    "\n",
+    "Instrument exchanges determine the universe of tradable instruments within a trading environment, return observations to the environment on each time step, and execute trades made within the environment. There are two types of instrument exchanges: live and simulated. \n",
+    "\n",
+    "Live exchanges are implementations of `InstrumentExchange` backed by live pricing data and a live trade execution engine. For example, `CCXTExchange` is a live exchange, which is capable of returning pricing data and executing trades on hundreds of live cryptocurrency exchanges, such as Binance and [Coinbase](https://coinbase-consumer.sjv.io/c/1949163/626313/9251). "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [
+    {
+     "evalue": "Error: Command failed: . /home/kevin/.pyenv/shims/activate && echo 'e8b39361-0157-4923-80e1-22d70d46dee6' && python /home/kevin/.vscode/extensions/ms-python.python-2019.10.44104/pythonFiles/printEnvVariables.py\npyenv-virtualenv: version `system' is not a virtualenv\n",
+     "output_type": "error"
+    }
+   ],
+   "source": [
+    "import ccxt\n",
+    "from tensortrade.exchanges.live import CCXTExchange\n",
+    "\n",
+    "coinbase = ccxt.coinbasepro()\n",
+    "exchange = CCXTExchange(exchange=coinbase, base_instrument='USD')"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Simulated exchanges, on the other hand, are implementations of `InstrumentExchange` backed by simulated pricing data and trade execution. For example, `FBMExchange` is a simulated exchange, which generates pricing and volume data using fractional brownian motion (FBM). Since its price is simulated, the trades it executes must be simulated as well. The exchange uses a simple slippage model to simulate price and volume slippage on trades, though like almost everything in TensorTrade, this slippage model can easily be swapped out for something more complex.\n",
+    "\n",
+    "Though the `FBMExchange` generates fake price and volume data using a stochastic model, it is simply an implementation of `SimulatedExchange`. Under the hood, `SimulatedExchange` only requires a `data_frame` of price history to generate its simulations. This data_frame can either be provided by a coded implementation such as `FBMExchange`, or at runtime such as in the following example."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [
+    {
+     "evalue": "Error: Command failed: . /home/kevin/.pyenv/shims/activate && echo 'e8b39361-0157-4923-80e1-22d70d46dee6' && python /home/kevin/.vscode/extensions/ms-python.python-2019.10.44104/pythonFiles/printEnvVariables.py\npyenv-virtualenv: version `system' is not a virtualenv\n",
+     "output_type": "error"
+    }
+   ],
+   "source": [
+    "import pandas as pd\n",
+    "from tensortrade.exchanges.simulated import SimulatedExchange\n",
+    "\n",
+    "df = pd.read_csv('data/Coinbase_BTCUSD_1h.csv', skiprows=1)\n",
+    "exchange = SimulatedExchange(data_frame=df, base_instrument='USD', pretransform=True)\n",
+    "\n",
+    "exchange.data_frame"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Feature Pipelines\n",
+    "\n",
+    "Feature pipelines are meant for transforming observations from the environment into meaningful features for an agent to learn from. If a pipeline has been added to a particular exchange, then observations will be passed through the `FeaturePipeline` before being output to the environment. For example, a feature pipeline could normalize all price values, make a time series stationary, add a moving average column, and remove an unnecessary column, all before the observation is returned to the agent.\n",
+    "\n",
+    "![Pipeline](../_static/images/pipeline.jpeg)\n",
+    "\n",
+    "Feature pipelines can be initialized with an arbitrary number of comma-separated transformers. Each `FeatureTransformer` needs to be initialized with the set of columns to transform, or if nothing is passed, all input columns will be transformed.\n",
+    "\n",
+    "Each feature transformer has a transform method, which will transform a single observation (a `pandas.DataFrame`) from a larger data set, keeping any necessary state in memory to transform the next frame. For this reason, it is often necessary to reset the `FeatureTransformer` periodically. This is done automatically each time the parent `FeaturePipeline` or `InstrumentExchange` is reset.\n",
+    "\n",
+    "Let's create an example pipeline and add it to our existing exchange."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [
+    {
+     "evalue": "Error: Command failed: . /home/kevin/.pyenv/shims/activate && echo 'e8b39361-0157-4923-80e1-22d70d46dee6' && python /home/kevin/.vscode/extensions/ms-python.python-2019.10.44104/pythonFiles/printEnvVariables.py\npyenv-virtualenv: version `system' is not a virtualenv\n",
+     "output_type": "error"
+    }
+   ],
+   "source": [
+    "from tensortrade.features import FeaturePipeline\n",
+    "from tensortrade.features.scalers import MinMaxNormalizer\n",
+    "from tensortrade.features.stationarity import FractionalDifference\n",
+    "\n",
+    "normalize_price = MinMaxNormalizer([\"open\", \"high\", \"low\", \"close\"])\n",
+    "difference_all = FractionalDifference(difference_order=0.6)\n",
+    "\n",
+    "feature_pipeline = FeaturePipeline(steps=[normalize_price, difference_all])\n",
+    "\n",
+    "exchange.feature_pipeline = feature_pipeline\n",
+    "\n",
+    "exchange.data_frame"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "_This feature pipeline normalizes the price values between 0 and 1, before making the entire time series stationary by fractionally differencing consecutive values._\n",
+    "\n",
+    "## Action Strategies\n",
+    "\n",
+    "Action strategies define the action space of the environment and convert an agent's actions into executable trades. For example, if we were using a discrete action space of 3 actions (0 = `hold`, 1 = `buy 100%`, 2 = `sell 100%`), our learning agent does not need to know that returning an action of 1 is equivalent to buying an instrument. Rather, our agent needs to know the reward for returning an action of 1 in specific circumstances, and can leave the implementation details of converting actions to trades to the `ActionStrategy`.\n",
+    "\n",
+    "Each action strategy has a get_trade method, which will transform the agent's specified action into an executable `Trade`. It is often necessary to store additional state within the strategy, for example to keep track of the currently traded position. This state should be reset each time the action strategy's reset method is called, which is done automatically when the parent `TradingEnvironment` is reset."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [
+    {
+     "evalue": "Error: Command failed: . /home/kevin/.pyenv/shims/activate && echo 'e8b39361-0157-4923-80e1-22d70d46dee6' && python /home/kevin/.vscode/extensions/ms-python.python-2019.10.44104/pythonFiles/printEnvVariables.py\npyenv-virtualenv: version `system' is not a virtualenv\n",
+     "output_type": "error"
+    }
+   ],
+   "source": [
+    "from tensortrade.actions import DiscreteActionStrategy\n",
+    "\n",
+    "action_strategy = DiscreteActionStrategy(n_actions=20, instrument_symbol='BTC')"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "_This discrete action strategy uses 20 discrete actions, which equates to 4 discrete amounts for each of the 5 trade types (market buy/sell, limit buy/sell, and hold). E.g. [0,5,10,15]=hold, 1=market buy 25%, 2=market sell 25%, 3=limit buy 25%, 4=limit sell 25%, 6=market buy 50%, 7=market sell 50%, etc…_\n",
+    "\n",
+    "## Reward Strategies\n",
+    "\n",
+    "Reward strategies receive the trade taken at each time step and return a float, corresponding to the benefit of that specific action. For example, if the action taken this step was a sell that resulted in positive profits, our `RewardStrategy` could return a positive number to encourage more trades like this. On the other hand, if the action was a sell that resulted in a loss, the strategy could return a negative reward to teach the agent not to make similar actions in the future.\n",
+    "\n",
+    "A version of this example algorithm is implemented in `SimpleProfitStrategy`, however more complex strategies can obviously be used instead.\n",
+    "\n",
+    "Each reward strategy has a get_reward method, which takes in the trade executed at each time step and returns a float corresponding to the value of that action. As with action strategies, it is often necessary to store additional state within a reward strategy for various reasons. This state should be reset each time the reward strategy's reset method is called, which is done automatically when the parent `TradingEnvironment` is reset."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [
+    {
+     "evalue": "Error: Command failed: . /home/kevin/.pyenv/shims/activate && echo 'e8b39361-0157-4923-80e1-22d70d46dee6' && python /home/kevin/.vscode/extensions/ms-python.python-2019.10.44104/pythonFiles/printEnvVariables.py\npyenv-virtualenv: version `system' is not a virtualenv\n",
+     "output_type": "error"
+    }
+   ],
+   "source": [
+    "from tensortrade.rewards import SimpleProfitStrategy\n",
+    "\n",
+    "reward_strategy = SimpleProfitStrategy()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "_The simple profit strategy returns a reward of -1 for not holding a trade, 1 for holding a trade, 2 for purchasing an instrument, and a value corresponding to the (positive/negative) profit earned by a trade if an instrument was sold._\n",
+    "\n",
+    "## Learning Agents\n",
+    "\n",
+    "Up until this point, we haven't seen the \"deep\" part of the deep reinforcement learning framework. This is where learning agents come in. Learning agents are where the math (read: magic) happens.\n",
+    "\n",
+    "![Agent](../_static/images/agents.jpeg)\n",
+    "\n",
+    "At each time step, the agent takes the observation from the environment as input, runs it through its underlying model (a neural network most of the time), and outputs the action to take. For example, the observation might be the previous open, high, low, and close price from the exchange. The learning model would take these values as input and output a value corresponding to the action to take, such as buy, sell, or hold.\n",
+    "\n",
+    "It is important to remember the learning model has no intuition of the prices or trades being represented by these values. Rather, the model is simply learning which values to output for specific input values or sequences of input values, to earn the highest reward.\n",
+    "\n",
+    "## Stable Baselines\n",
+    "\n",
+    "In this example, we will be using the Stable Baselines library to provide learning agents to our trading strategy, however, the TensorTrade framework is compatible with many reinforcement learning libraries such as Tensorforce, Ray's RLLib, OpenAI's Baselines, Intel's Coach, or anything from the TensorFlow line such as TF Agents.\n",
+    "\n",
+    "It is possible that custom TensorTrade learning agents will be added to this framework in the future, though it will always be a goal of the framework to be interoperable with as many existing reinforcement learning libraries as possible, since there is so much concurrent growth in the space.\n",
+    "\n",
+    "But for now, Stable Baselines is simple and powerful enough for our needs."
+   ]
+  },
+  {
+   "cell_type": "raw",
+   "metadata": {},
+   "source": [
+    "from stable_baselines.common.policies import MlpLnLstmPolicy\n",
+    "from stable_baselines import PPO2\n",
+    "\n",
+    "model = PPO2\n",
+    "policy = MlpLnLstmPolicy\n",
+    "params = { \"learning_rate\": 1e-5 }\n",
+    "\n",
+    "agent = model(policy, environment, model_kwargs=params)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "_Note: Stable Baselines is not required to use TensorTrade though it is required for this tutorial. This example uses a GPU-enabled Proximal Policy Optimization model with a layer-normalized LSTM perceptron network. If you would like to know more about Stable Baselines, you can view the [Documentation](https://stable-baselines.readthedocs.io/en/master/)._\n",
+    "\n",
+    "## Tensorforce\n",
+    "\n",
+    "I will also quickly cover the Tensorforce library to show how simple it is to switch between reinforcement learning frameworks."
+   ]
+  },
+  {
+   "cell_type": "raw",
+   "metadata": {},
+   "source": [
+    "from tensorforce.agents import Agent\n",
+    "\n",
+    "network_spec = [\n",
+    "    dict(type='dense', size=128, activation=\"tanh\"),\n",
+    "    dict(type='dense', size=64, activation=\"tanh\"),\n",
+    "    dict(type='dense', size=32, activation=\"tanh\")\n",
+    "]\n",
+    "\n",
+    "agent_spec = {\n",
+    "    \"type\": \"ppo\",\n",
+    "    \"learning_rate\": 1e-4,\n",
+    "    \"discount\": 0.99,\n",
+    "    \"likelihood_ratio_clipping\": 0.2,\n",
+    "    \"estimate_terminal\": False,\n",
+    "    \"max_episode_timesteps\": 2000,\n",
+    "    \"network\": network_spec,\n",
+    "    \"batch_size\": 10,\n",
+    "    \"update_frequency\": \"never\"\n",
+    "}\n",
+    "\n",
+    "agent = Agent.create(agent=agent_spec, environment=environment)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "_If you would like to know more about Tensorforce agents, you can view the [Documentation](https://tensorforce.readthedocs.io/en/0.4.4)._"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Trading Strategy\n",
+    "\n",
+    "A `TradingStrategy` consists of a learning agent and one or more trading environments to tune, train, and evaluate on. If only one environment is provided, it will be used for tuning, training, and evaluating. Otherwise, a separate environment may be provided at each step."
+   ]
+  },
+  {
+   "cell_type": "raw",
+   "metadata": {},
+   "source": [
+    "from tensortrade.strategies import TensorforceTradingStrategy,\n",
+    "                                   StableBaselinesTradingStrategy\n",
+    "    \n",
+    "a_strategy = TensorforceTradingStrategy(environment=environment,\n",
+    "                                        agent_spec=agent_spec,\n",
+    "                                        network_spec=network_spec)\n",
+    "\n",
+    "b_strategy = StableBaselinesTradingStrategy(environment=environment,\n",
+    "                                            model=PPO2,\n",
+    "                                            policy=MlpLnLSTMPolicy)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "_Don't worry if you don't understand the strategy initialization just yet, it will be explained in more detail later._\n",
+    "\n",
+    "# Putting it All Together\n",
+    "\n",
+    "Now that we know about each component that makes up a `TradingStrategy`, let's build and evaluate one.\n",
+    "\n",
+    "![Tuning](img/tuning.jpeg)\n",
+    "\n",
+    "For a quick recap, a `TradingStrategy` is made up of a `TradingEnvironment` and a learning agent. A `TradingEnvironment` is a gym environment that takes an `InstrumentExchange`, an `ActionStrategy`, a `RewardStrategy`, and an optional `FeaturePipeline`, and returns observations and rewards that the learning agent can be trained and evaluated on.\n",
+    "\n",
+    "## Creating an Environment\n",
+    "\n",
+    "The first step is to create a `TradingEnvironment` using the components outlined above."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [
+    {
+     "evalue": "Error: Command failed: . /home/kevin/.pyenv/shims/activate && echo 'e8b39361-0157-4923-80e1-22d70d46dee6' && python /home/kevin/.vscode/extensions/ms-python.python-2019.10.44104/pythonFiles/printEnvVariables.py\npyenv-virtualenv: version `system' is not a virtualenv\n",
+     "output_type": "error"
+    }
+   ],
+   "source": [
+    "from tensortrade.environments import TradingEnvironment\n",
+    "\n",
+    "environment = TradingEnvironment(exchange=exchange,\n",
+    "                                 feature_pipeline=feature_pipeline,\n",
+    "                                 action_strategy=action_strategy,\n",
+    "                                 reward_strategy=reward_strategy)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Simple enough, now `environment` is a `gym` environment that can be used by any compatible trading strategy or learning agent.\n",
+    "\n",
+    "## Defining the Agent\n",
+    "\n",
+    "Now that the environment is set up, it’s time to create our learning agent. Again, we will be using Stable Baselines for this, but feel free to drop in any other reinforcement learning agent here.\n",
+    "\n",
+    "Since we are using `StableBaselinesTradingStrategy`, all we need to do is provide a model type and a policy type for the underlying neural network to be trained. For this example, we will be using a simple proximal policy optimization (PPO) model and a layer-normalized LSTM policy network.\n",
+    "\n",
+    "For more examples of model and policy specifications, see the [Stable Baselines Documentation](http://stable-baselines.readthedocs.io/en/master/)."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [
+    {
+     "evalue": "Error: Command failed: . /home/kevin/.pyenv/shims/activate && echo 'e8b39361-0157-4923-80e1-22d70d46dee6' && python /home/kevin/.vscode/extensions/ms-python.python-2019.10.44104/pythonFiles/printEnvVariables.py\npyenv-virtualenv: version `system' is not a virtualenv\n",
+     "output_type": "error"
+    }
+   ],
+   "source": [
+    "from stable_baselines.common.policies import MlpLnLstmPolicy\n",
+    "from stable_baselines import PPO2\n",
+    "\n",
+    "model = PPO2\n",
+    "policy = MlpLnLstmPolicy\n",
+    "params = { \"learning_rate\": 1e-5, 'nminibatches': 1 }"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Training a Strategy\n",
+    "\n",
+    "Creating our trading strategy is as simple as plugging in our agent and the environment."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [
+    {
+     "evalue": "Error: Command failed: . /home/kevin/.pyenv/shims/activate && echo 'e8b39361-0157-4923-80e1-22d70d46dee6' && python /home/kevin/.vscode/extensions/ms-python.python-2019.10.44104/pythonFiles/printEnvVariables.py\npyenv-virtualenv: version `system' is not a virtualenv\n",
+     "output_type": "error"
+    }
+   ],
+   "source": [
+    "from tensortrade.strategies import StableBaselinesTradingStrategy\n",
+    "\n",
+    "strategy = StableBaselinesTradingStrategy(environment=environment,\n",
+    "                                          model=model,\n",
+    "                                          policy=policy,\n",
+    "                                          model_kwargs=params)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Then to train the strategy (i.e. train the agent on the current environment), all we need to do is call `strategy.run()` with the total number of steps or episodes you’d like to run."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [
+    {
+     "evalue": "Error: Command failed: . /home/kevin/.pyenv/shims/activate && echo 'e8b39361-0157-4923-80e1-22d70d46dee6' && python /home/kevin/.vscode/extensions/ms-python.python-2019.10.44104/pythonFiles/printEnvVariables.py\npyenv-virtualenv: version `system' is not a virtualenv\n",
+     "output_type": "error"
+    }
+   ],
+   "source": [
+    "performance = strategy.run(steps=10000)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [
+    {
+     "evalue": "Error: Command failed: . /home/kevin/.pyenv/shims/activate && echo 'e8b39361-0157-4923-80e1-22d70d46dee6' && python /home/kevin/.vscode/extensions/ms-python.python-2019.10.44104/pythonFiles/printEnvVariables.py\npyenv-virtualenv: version `system' is not a virtualenv\n",
+     "output_type": "error"
+    }
+   ],
+   "source": [
+    "%matplotlib inline\n",
+    "\n",
+    "performance.net_worth.plot()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "If this feedback loop is a bit slow for you, you can pass a callback function to `run`, which will be called at the end of each episode. The callback function will pass in a `data_frame` containing the agent's performance that episode, and expects a `bool` in return. If `True`, the agent will continue training, otherwise, the agent will stop and return its overall performance.\n",
+    "\n",
+    "## Saving and Restoring\n",
+    "\n",
+    "All trading strategies are capable of saving their agent to a file, for later restoring. The environment is not saved, as it does not have state that we care about preserving. To save our `TensorflowTradingStrategy` to a file, we just need to provide the path of the file to our strategy."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [
+    {
+     "evalue": "Error: Command failed: . /home/kevin/.pyenv/shims/activate && echo 'e8b39361-0157-4923-80e1-22d70d46dee6' && python /home/kevin/.vscode/extensions/ms-python.python-2019.10.44104/pythonFiles/printEnvVariables.py\npyenv-virtualenv: version `system' is not a virtualenv\n",
+     "output_type": "error"
+    }
+   ],
+   "source": [
+    "strategy.save_agent(path=\"agents/ppo_btc_1h\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "_This specific strategy saves multiple files, including a directory of models to the path provided._\n",
+    "\n",
+    "To restore the agent from the file, we first need to instantiate our strategy, before calling restore_agent."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [
+    {
+     "evalue": "Error: Command failed: . /home/kevin/.pyenv/shims/activate && echo 'e8b39361-0157-4923-80e1-22d70d46dee6' && python /home/kevin/.vscode/extensions/ms-python.python-2019.10.44104/pythonFiles/printEnvVariables.py\npyenv-virtualenv: version `system' is not a virtualenv\n",
+     "output_type": "error"
+    }
+   ],
+   "source": [
+    "new_strategy = StableBaselinesTradingStrategy(environment=environment,\n",
+    "                                          model=model,\n",
+    "                                          policy=policy,\n",
+    "                                          model_kwargs=params)\n",
+    "\n",
+    "new_strategy.restore_agent(path=\"agents/ppo_btc_1h\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Our strategy is now restored back to its previous state, and ready to be used again. Let's see how it does.\n",
+    "\n",
+    "## Tuning Your Strategy\n",
+    "\n",
+    "Sometimes a trading strategy will require tuning a set of hyper-parameters, or features, on an environment to achieve maximum performance. In this case, each `TradingStrategy` provides an optionally implementable tune method.\n",
+    "\n",
+    "Tuning a model is similar to training a model, however in addition to adjusting and saving the weights and biases of the best performing model, the strategy also adjusts and persists the hyper-parameters that produced that model. "
+   ]
+  },
+  {
+   "cell_type": "raw",
+   "metadata": {},
+   "source": [
+    "from tensortrade.environments import TradingEnvironment\n",
+    "from tensortrade.exchanges.simulated import FBMExchange\n",
+    "\n",
+    "exchange = FBMExchange(timeframe='1h',\n",
+    "                       base_instrument='BTC',\n",
+    "                       feature_pipeline=feature_pipeline)\n",
+    "\n",
+    "environment = TradingEnvironment(exchange=exchange,\n",
+    "                                 action_strategy=action_strategy,\n",
+    "                                 reward_strategy=reward_strategy)\n",
+    "\n",
+    "new_strategy.environment = environment\n",
+    "\n",
+    "tuned_performance = new_strategy.tune(episodes=10)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "In this case, the agent will be trained for 10 episodes, with a different set of hyper-parameters each episode. The best set will be saved within the strategy, and used any time strategy.run() is called thereafter.\n",
+    "\n",
+    "## Strategy Evaluation\n",
+    "\n",
+    "Now that we've tuned and trained our agent, it's time to see how well it performs. To evaluate our strategy's performance on unseen data, we will need to run it on a new environment backed by such data."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [
+    {
+     "evalue": "Error: Command failed: . /home/kevin/.pyenv/shims/activate && echo 'e8b39361-0157-4923-80e1-22d70d46dee6' && python /home/kevin/.vscode/extensions/ms-python.python-2019.10.44104/pythonFiles/printEnvVariables.py\npyenv-virtualenv: version `system' is not a virtualenv\n",
+     "output_type": "error"
+    }
+   ],
+   "source": [
+    "import pandas as pd\n",
+    "from tensortrade.environments import TradingEnvironment\n",
+    "from tensortrade.exchanges.simulated import SimulatedExchange\n",
+    "\n",
+    "df = pd.read_csv('data/Coinbase_BTCUSD_d.csv', skiprows=1)\n",
+    "exchange = SimulatedExchange(data_frame=df,\n",
+    "                             feature_pipeline=feature_pipeline,\n",
+    "                             base_instrument='USD',\n",
+    "                             pretransform=True)\n",
+    "\n",
+    "environment = TradingEnvironment(exchange=exchange,\n",
+    "                                 action_strategy=action_strategy,\n",
+    "                                 reward_strategy=reward_strategy)\n",
+    "\n",
+    "new_strategy.environment = environment\n",
+    "\n",
+    "test_performance = new_strategy.run(steps=2000)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [
+    {
+     "evalue": "Error: Command failed: . /home/kevin/.pyenv/shims/activate && echo 'e8b39361-0157-4923-80e1-22d70d46dee6' && python /home/kevin/.vscode/extensions/ms-python.python-2019.10.44104/pythonFiles/printEnvVariables.py\npyenv-virtualenv: version `system' is not a virtualenv\n",
+     "output_type": "error"
+    }
+   ],
+   "source": [
+    "%matplotlib inline\n",
+    "\n",
+    "test_performance.net_worth.plot()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "When complete, strategy.run returns a `Pandas.data_frame` of the agent's performance, including the net worth and balance of the agent at each time step.\n",
+    "\n",
+    "## Live Trading\n",
+    "\n",
+    "Once you've built a profitable trading strategy, trained an agent to trade it properly, and ensured its \"generalize-ability\" to new data sets, all there is left to do is profit. Using a live exchange such as `CCXTExchange`, you can plug your strategy in and let it run!\n",
+    "\n",
+    "![Trading](img/trading.jpeg)\n",
+    "\n",
+    "While the gambler in you may enjoy starting a strategy and letting it run without bounds, the more risk averse of you can use a `trade_callback`, which will be called each time the strategy makes a trade. This callback function, similar to the episode callback, will pass in a data frame containing the agent's overall performance, and expects a `bool` in return. If `True`, the agent will continue trading, otherwise, the agent will stop and return its performance over the session."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [
+    {
+     "evalue": "Error: Command failed: . /home/kevin/.pyenv/shims/activate && echo 'e8b39361-0157-4923-80e1-22d70d46dee6' && python /home/kevin/.vscode/extensions/ms-python.python-2019.10.44104/pythonFiles/printEnvVariables.py\npyenv-virtualenv: version `system' is not a virtualenv\n",
+     "output_type": "error"
+    }
+   ],
+   "source": [
+    "import ccxt\n",
+    "from tensortrade.environments import TradingEnvironment\n",
+    "from tensortrade.exchanges.live import CCXTExchange\n",
+    "\n",
+    "binance = ccxt.binance({\n",
+    "    'apiKey': 'HfPX38sJ2aKewYDUJx6TaWrDhuT7rq426elO5Gbc55Dvg4klASEfm0aqcdl4Mpz6',\n",
+    "    'secret': 'aGdMMaaol3GkyzDcrSEoc4aFlWG78qCxnGl3o22ub24u2scrZRcsIe2qn0kI82GQ',\n",
+    "    'enableRateLimit': True,\n",
+    "})\n",
+    "\n",
+    "exchange = CCXTExchange(exchange=binance,\n",
+    "                        base_instrument='BNB',\n",
+    "                        observation_type='ohlcv',\n",
+    "                        timeframe='1h')\n",
+    "\n",
+    "btcusd_actions = DiscreteActionStrategy(n_actions=20, instrument_symbol='BNB/BTC')\n",
+    "\n",
+    "environment = TradingEnvironment(exchange=exchange,\n",
+    "                                 feature_pipeline=feature_pipeline,\n",
+    "                                 action_strategy=btcusd_actions,\n",
+    "                                 reward_strategy=reward_strategy)\n",
+    "\n",
+    "strategy.environment = environment\n",
+    "\n",
+    "live_performance = strategy.run(steps=1)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [
+    {
+     "evalue": "Error: Command failed: . /home/kevin/.pyenv/shims/activate && echo 'e8b39361-0157-4923-80e1-22d70d46dee6' && python /home/kevin/.vscode/extensions/ms-python.python-2019.10.44104/pythonFiles/printEnvVariables.py\npyenv-virtualenv: version `system' is not a virtualenv\n",
+     "output_type": "error"
+    }
+   ],
+   "source": [
+    "live_performance"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "_Passing `steps=0` instructs the strategy to run until otherwise stopped._\n",
+    "\n",
+    "That's all there is to it! As you can see, it is quite simple to build complex trading strategies using simple components and deep reinforcement learning. So what are you waiting for? Dive in, get your hands dirty, and see what's possible using TensorTrade.\n",
+    "\n",
+    "# Final Thoughts\n",
+    "\n",
+    "TensorTrade is a powerful framework capable of building highly modular, high performance trading systems. It is fairly simple and easy to experiment with new trading and investment strategies, while allowing you to leverage components from one strategy in another. But don't take my word for it, create a strategy of your own and start teaching your robots to take over the world!\n",
+    "\n",
+    "While this tutorial should be enough to get you started, there is still quite a lot more to learn if you want to create a profitable trading strategy. I encourage you to head over to the [Github](https://github.com/notadamking/tensortrade) and dive into the codebase, or take a look at our documentation at [tensortrade.org](https://tensortrade.org). There is also quite an active [Discord community](https://discord.gg/ZZ7BGWh) with nearly 1000 total members, so if you have questions, feedback, or feature requests, feel free to drop them there!\n",
+    "\n",
+    "![Commits](img/commits.png)\n",
+    "\n",
+    "I've gotten the project to a highly usable state. Though, my time is limited, and I believe there are many of you out there who could make valuable contributions to the open source codebase. So if you are a developer or data scientist with an interest in building state-of-the-art trading systems, I'd love to see you open a pull request, even if its just a simple test case!\n",
+    "\n",
+    "Others have asked how they can contribute to the project without writing code. There are currently three ways that you can do that. \n",
+    "\n",
+    "1. Write code or documentation for the TensorTrade framework. Many issues on the Github are funded through Gitcoin smart contracts, so you can actually get paid to contribute.\n",
+    "\n",
+    "2. Fund this project with either [Bitcoin](https://www.blockchain.com/btc/address/1Lc47bhYvdyKGk1qN8oBHdYQTkbFLL3PFw) or [Ethereum](https://www.blockchain.com/eth/address/0x9907A0cF64Ec9Fbf6Ed8FD4971090DE88222a9aC). These donations are used to fund our Gitcoin smart contracts, which allows anyone who contributes quality code and documentation to get paid for their contributions.\n",
+    "\n",
+    "3. Sponsor me on [Patreon](https://www.patreon.com/notadamking). Your support means a lot to me, and allows me to continue spending my time working on the framework and writing articles like this. All patrons have gotten early access to this article and codebase, and will continue to get early access to any articles I write in the future as a thank you.\n",
+    "\n",
+    "Thanks for reading! As always, all of the code for this tutorial can be found on my [GitHub](https://github.com/notadamking/tensortrade). Leave a comment below if you have any questions or feedback, I'd love to hear from you! I can also be reached on [Twitter](https://twitter.com/notadamking) at @notadamking.\n",
+    "\n",
+    "## References\n",
+    "\n",
+    "[1.] Introduction to Deep Reinforcement Learning Hui, Jonathan. \"RL- Introduction to Deep Reinforcement Learning.\" Medium, 7 Jan. 2019, https://medium.com/@jonathan_hui/rl-introduction-to-deep-reinforcement-learning-35c25e04c199.\n",
+    "\n",
+    "[2.] Policy Gradient Algorithms\n",
+    "Weng, Lilian. \"Policy Gradient Algorithms.\" Lil'Log, 8 Apr. 2018, https://lilianweng.github.io/lil-log/2018/04/08/policy-gradient-algorithms.html#reinforce.\n",
+    "\n",
+    "[3.] Clean Code: A Handbook of Agile Software Craftsmanship\n",
+    "[Martin, Robert C. Clean Code: a Handbook of Agile Software Craftsmanship. Prentice Hall, 2010](https://amzn.to/2XANX1X).\n",
+    "\n",
+    "[4.] Advances in Financial Machine Learning\n",
+    "[Prado Marcos López de. Advances in Financial Machine Learning. Wiley, 2018](https://amzn.to/2J6YCrW)."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "file_extension": ".py",
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.7.4"
+  },
+  "mimetype": "text/x-python",
+  "name": "python",
+  "npconvert_exporter": "python",
+  "pygments_lexer": "ipython3",
+  "version": 3
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2
+}
