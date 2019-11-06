@@ -103,16 +103,3 @@ To better understand what's inside of the `TradingEnvironment`, you should under
 Almost 100% of the private functions belong in the step function. 
 
 
-<!-- ## Use Cases
-
-**Use Case #1**
-
-```py
-print("Hello World")
-```
-
-**Use Case #2**
-
-```py
-print("Hello World")
-``` -->

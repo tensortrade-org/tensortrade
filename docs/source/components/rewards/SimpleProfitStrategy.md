@@ -3,7 +3,7 @@
 A reward strategy that rewards the agent for profitable trades and prioritizes trading over not trading.
 
 ## Class Parameters
-None
+`None`
 
 ## Functions
 Below are the functions that the `SimpleProfitStrategy` uses to effectively operate. 
