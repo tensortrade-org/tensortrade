@@ -73,7 +73,7 @@ Below are the functions that the `InstrumentExchange` uses to effectively operat
 
 ## Use Cases
 
-**Use Case #1: Getting Price Information**
+**Use Case #1: Initiating CCXTExchnage**
 
 ```python
 import ccxt

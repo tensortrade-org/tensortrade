@@ -35,22 +35,8 @@ Below are the functions that the `TAlibIndicator` uses to effectively operate.
 
 
 
-## See `TalibIndicator` in action:
+## Use Cases:
 
-```py
-from tensortrade.features import FeaturePipeline
-from tensortrade.features.scalers import MinMaxNormalizer
-from tensortrade.features.stationarity import FractionalDifference
-from tensortrade.features.indicators import TAlibIndicator
-price_columns = ["open", "high", "low", "close"]
-normalize_price = MinMaxNormalizer(price_columns)
-moving_averages = TAlibIndicator(["EMA", "RSI", "BB"])
-difference_all = FractionalDifference(difference_order=0.6)
-feature_pipeline = FeaturePipeline(steps=[normalize_price,
-                                          moving_averages,
-                                          difference_all])
-exchange.feature_pipeline = feature_pipeline
-```
 
 
 ## Use Cases
@@ -70,4 +56,21 @@ This runs through the indicators in the list, at runtime and matches them to wha
 for i in range(len(self._indicators)):
     output_space.low = np.append(output_space.low, self._lows[i])
     output_space.high = np.append(output_space.high, self._highs[i])
+```
+
+Actual Use
+
+```py
+from tensortrade.features import FeaturePipeline
+from tensortrade.features.scalers import MinMaxNormalizer
+from tensortrade.features.stationarity import FractionalDifference
+from tensortrade.features.indicators import TAlibIndicator
+price_columns = ["open", "high", "low", "close"]
+normalize_price = MinMaxNormalizer(price_columns)
+moving_averages = TAlibIndicator(["EMA", "RSI", "BB"])
+difference_all = FractionalDifference(difference_order=0.6)
+feature_pipeline = FeaturePipeline(steps=[normalize_price,
+                                          moving_averages,
+                                          difference_all])
+exchange.feature_pipeline = feature_pipeline
 ```

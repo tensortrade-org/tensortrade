@@ -43,10 +43,4 @@ Below are the functions that the `RiskAdjustedReturns` uses to effectively opera
 
 ## Use Cases
 
-**Use Case #1: Sum of Risk Over Time**
-
-Keeps track of ...
-
-```py
-
-```
+...
