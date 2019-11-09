@@ -32,11 +32,12 @@ _Inspired by [Keras' guiding principles](https://github.com/keras-team/keras)._
 
 - **User friendliness.** TensorTrade is an API designed for human beings, not machines. It puts user experience front and center. TensorTrade follows best practices for reducing cognitive load: it offers consistent & simple APIs, it minimizes the number of user actions required for common use cases, and it provides clear and actionable feedback upon user error.
 
-- **Modularity.** A trading environment is a conglomeration of fully configurable modules that can be plugged together with as few restrictions as possible. In particular, instrument exchanges, feature pipelines, action strategies, reward strategies, trading agents, and performance reports are all standalone modules that you can combine to create new trading environments.
+- **Modularity.** A trading environment is a conglomeration of fully configurable modules that can be plugged together with as few restrictions as possible. In particular, instrument exchanges, feature pipelines, action schemes, reward schemes, trading agents, and performance reports are all standalone modules that you can combine to create new trading environments.
 
 - **Easy extensibility.** New modules are simple to add (as new classes and functions), and existing modules provide ample examples. To be able to easily create new modules allows for total expressiveness, making TensorTrade suitable for advanced research and production use.
 
 ## TensorTrade Hall of Fame
+
 TensorTrade is entirely community funded. We appreciate all of our great sponsors! If you would like to be featured on our Hall of Fame, or sponsor the framework in any other way, visit the [Sponsorship section below](#sponsorship).
 
 <a href="https://capfol.io">
@@ -86,7 +87,6 @@ make run-tests
 ## Support
 
 You can ask questions and join the development discussion:
-
 
 - On the [TensorTrade Discord server](https://discord.gg/ZZ7BGWh).
 - On the [TensorTrade Gitter](https://gitter.im/tensortrade-framework/community).

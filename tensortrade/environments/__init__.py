@@ -4,8 +4,8 @@ from .trading_environment import TradingEnvironment
 _registry = {
     'basic': {
         'exchange': 'simulated',
-        'action_strategy': 'discrete',
-        'reward_strategy': 'simple'
+        'action_scheme': 'discrete',
+        'reward_scheme': 'simple'
     }
 }
 

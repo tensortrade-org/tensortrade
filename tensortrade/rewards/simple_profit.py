@@ -15,14 +15,14 @@
 import pandas as pd
 import numpy as np
 
-from tensortrade.rewards import RewardStrategy
+from tensortrade.rewards import RewardScheme
 from tensortrade.trades import TradeType, Trade
 
 
-class SimpleProfitStrategy(RewardStrategy):
-    """A reward strategy that rewards the agent for profitable trades and prioritizes trading over not trading.
+class SimpleProfit(RewardScheme):
+    """A reward scheme that rewards the agent for profitable trades and prioritizes trading over not trading.
 
-    This strategy supports simple action strategies that trade a single position in a single instrument at a time.
+    This scheme supports simple action schemes that trade a single position in a single instrument at a time.
     """
 
     def reset(self):

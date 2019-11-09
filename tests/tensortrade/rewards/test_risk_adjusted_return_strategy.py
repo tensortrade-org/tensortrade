@@ -2,7 +2,7 @@ import pytest
 import numpy as np
 import pandas as pd
 
-from tensortrade.rewards import RiskAdjustedReturnStrategy
+from tensortrade.rewards import RiskAdjustedReturns
 
 
 @pytest.fixture
@@ -17,26 +17,26 @@ def net_worths():
     }])
 
 
-class TestRiskAdjustedReturnStrategy:
+class TestRiskAdjustedReturns:
 
     def test_sharpe_ratio(self, net_worths):
-        strategy = RiskAdjustedReturnStrategy(return_algorithm='sharpe', risk_free_rate=0)
+        scheme = RiskAdjustedReturns(return_algorithm='sharpe', risk_free_rate=0)
 
         returns = net_worths['net_worth'].diff()
 
-        sharpe_ratio = strategy._sharpe_ratio(returns)
+        sharpe_ratio = scheme._sharpe_ratio(returns)
 
         expected_ratio = returns.mean() / (returns.std() + 1E-9)
 
         assert sharpe_ratio == expected_ratio
 
     def test_sortino_ratio(self, net_worths):
-        strategy = RiskAdjustedReturnStrategy(
+        scheme = RiskAdjustedReturns(
             return_algorithm='sortino', risk_free_rate=0, target_returns=0)
 
         returns = net_worths['net_worth'].diff()
 
-        sortino_ratio = strategy._sortino_ratio(returns)
+        sortino_ratio = scheme._sortino_ratio(returns)
 
         downside_returns = pd.Series([0])
 

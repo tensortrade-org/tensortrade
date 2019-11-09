@@ -17,12 +17,12 @@ import numpy as np
 
 from typing import Callable
 
-from tensortrade.rewards import RewardStrategy
+from tensortrade.rewards import RewardScheme
 from tensortrade.trades import TradeType, Trade
 
 
-class RiskAdjustedReturnStrategy(RewardStrategy):
-    """A reward strategy that rewards the agent for increasing its net worth, while penalizing more volatile strategies.
+class RiskAdjustedReturns(RewardScheme):
+    """A reward scheme that rewards the agent for increasing its net worth, while penalizing more volatile strategies.
     """
 
     def __init__(self, return_algorithm: str = 'sharpe', risk_free_rate: float = 0., target_returns: float = 0.):

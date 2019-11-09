@@ -1,2 +1,2 @@
 from tensortrade import TradingContext
-from tensortrade.actions import ContinuousActionStrategy
+from tensortrade.actions import ContinuousActions

@@ -64,14 +64,14 @@ class ConcreteInstrumentExchange(InstrumentExchange):
 
 
 config = {
-        'base_instrument': 'EURO',
-        'products': 'ETH',
-        'exchanges': {
-            'credentials': {
+    'base_instrument': 'EURO',
+    'products': 'ETH',
+    'exchanges': {
+        'credentials': {
                 'api_key': '48hg34wydghi7ef',
                 'api_secret_key': '0984hgoe8d7htg'
-            }
         }
+    }
 }
 
 
@@ -81,8 +81,10 @@ def test_injects_exchange_with_credentials():
         exchange = ConcreteInstrumentExchange()
 
         assert hasattr(exchange.context, 'credentials')
-        assert exchange.context.credentials == {'api_key': '48hg34wydghi7ef', 'api_secret_key': '0984hgoe8d7htg'}
-        assert exchange.context['credentials'] == {'api_key': '48hg34wydghi7ef', 'api_secret_key': '0984hgoe8d7htg'}
+        assert exchange.context.credentials == {
+            'api_key': '48hg34wydghi7ef', 'api_secret_key': '0984hgoe8d7htg'}
+        assert exchange.context['credentials'] == {
+            'api_key': '48hg34wydghi7ef', 'api_secret_key': '0984hgoe8d7htg'}
 
 
 def test_injects_base_instrument():
@@ -93,7 +95,7 @@ def test_injects_base_instrument():
         assert exchange.base_instrument == 'EURO'
 
 
-def test_injects_string_initialized_action_strategy():
+def test_injects_string_initialized_action_scheme():
 
     with TradingContext(**config) as tc:
 
