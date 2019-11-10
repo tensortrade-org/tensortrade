@@ -114,8 +114,10 @@ class SimulatedExchange(Exchange):
 
     @property
     def generated_space(self) -> Space:
-        low = np.array([self._min_trade_price, ] * (len(self._observation_columns)-1) + [self._min_trade_amount, ])
-        high = np.array([self._max_trade_price, ] * (len(self._observation_columns)-1) + [self._max_trade_amount, ])
+        low = np.array([self._min_trade_price, ] *
+                       (len(self._observation_columns)-1) + [self._min_trade_amount, ])
+        high = np.array([self._max_trade_price, ] *
+                        (len(self._observation_columns)-1) + [self._max_trade_amount, ])
 
         return Box(low=low, high=high, dtype='float')
 
@@ -129,7 +131,7 @@ class SimulatedExchange(Exchange):
 
     def _next_observation(self) -> pd.DataFrame:
         lower_range = max((self._current_step - self._window_size, 0))
-        upper_range = max(min(self._current_step, len(self._data_frame)), 1)
+        upper_range = min(self._current_step + 1, len(self._data_frame))
 
         obs = self._data_frame.iloc[lower_range:upper_range]
 
