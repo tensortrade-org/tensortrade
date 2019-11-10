@@ -1,5 +1,5 @@
-tensortrade.exchanges.instrument\_exchange module
-=================================================
+tensortrade.exchanges.exchange module
+=====================================
 
 .. automodule:: tensortrade.exchanges.exchange
    :members:
