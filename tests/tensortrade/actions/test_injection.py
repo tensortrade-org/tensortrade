@@ -5,10 +5,10 @@ from tensortrade.actions import *
 from tensortrade.trades import Trade
 
 
-class ConcreteActionStrategy(ActionStrategy):
+class ConcreteActionScheme(ActionScheme):
 
     def __init__(self):
-        super(ConcreteActionStrategy, self).__init__(Discrete(20))
+        super(ConcreteActionScheme, self).__init__(Discrete(20))
         self.products = self.context.products
 
     def get_trade(self, action: TradeActionUnion) -> Trade:
@@ -16,17 +16,17 @@ class ConcreteActionStrategy(ActionStrategy):
 
 
 config = {
-        'base_instrument': 'USD',
-        'products': 'ETH',
-        'actions': {
-            'n_actions': 50
-        }
+    'base_instrument': 'USD',
+    'products': 'ETH',
+    'actions': {
+        'n_actions': 50
+    }
 }
 
 
 c1 = {
-        'base_instrument': 'USD',
-        'products': ['BTC', 'ETH'],
+    'base_instrument': 'USD',
+    'products': ['BTC', 'ETH'],
 }
 
 c2 = {
@@ -38,57 +38,57 @@ c2 = {
 def test_injects_strategy():
 
     with TradingContext(**config) as tc:
-        action_strategy = ConcreteActionStrategy()
+        action_scheme = ConcreteActionScheme()
 
-        assert hasattr(action_strategy.context, 'n_actions')
-        assert action_strategy.context.n_actions == 50
-        assert action_strategy.context['n_actions'] == 50
-
-
-def test_injects_products_into_discrete_strategy():
-
-    with TradingContext(**c1):
-        action_strategy = DiscreteActionStrategy(n_actions=25)
-
-    assert action_strategy._product == 'BTC'
-
-    with TradingContext(**c2):
-        action_strategy = DiscreteActionStrategy(n_actions=25)
-
-    assert action_strategy._product == 'ETH'
+        assert hasattr(action_scheme.context, 'n_actions')
+        assert action_scheme.context.n_actions == 50
+        assert action_scheme.context['n_actions'] == 50
 
 
-def test_injects_products_into_continuous_strategy():
+def test_injects_products_into_discrete_scheme():
 
     with TradingContext(**c1):
-        action_strategy = ContinuousActionStrategy()
+        action_scheme = DiscreteActions(n_actions=25)
 
-    assert action_strategy._product == 'BTC'
+    assert action_scheme._product == 'BTC'
 
     with TradingContext(**c2):
-        action_strategy = ContinuousActionStrategy()
+        action_scheme = DiscreteActions(n_actions=25)
 
-    assert action_strategy._product == 'ETH'
+    assert action_scheme._product == 'ETH'
 
 
-def test_injects_products_into_multi_discrete_strategy():
+def test_injects_products_into_continuous_scheme():
+
+    with TradingContext(**c1):
+        action_scheme = ContinuousActions()
+
+    assert action_scheme._product == 'BTC'
+
+    with TradingContext(**c2):
+        action_scheme = ContinuousActions()
+
+    assert action_scheme._product == 'ETH'
+
+
+def test_injects_products_into_multi_discrete_scheme():
 
     with TradingContext(**config) as tc:
 
-        action_strategy = MultiDiscreteActionStrategy(actions_per_instrument=25)
+        action_scheme = MultiDiscreteActions(actions_per_instrument=25)
 
-    assert action_strategy._products == tc.shared['products']
+    assert action_scheme._products == tc.shared['products']
 
 
-def test_injects_string_initialized_action_strategy():
+def test_injects_string_initialized_action_scheme():
 
     with TradingContext(**config) as tc:
 
-        action_strategy = get('discrete')
+        action_scheme = get('discrete')
 
-        assert hasattr(action_strategy.context, 'n_actions')
-        assert action_strategy.context.n_actions == 50
-        assert action_strategy.context['n_actions'] == 50
+        assert hasattr(action_scheme.context, 'n_actions')
+        assert action_scheme.context.n_actions == 50
+        assert action_scheme.context['n_actions'] == 50
 
 
 def test_injects_discrete_initialization():
@@ -104,10 +104,10 @@ def test_injects_discrete_initialization():
 
     with TradingContext(**c):
 
-        action_strategy = DiscreteActionStrategy()
+        action_scheme = DiscreteActions()
 
-        assert action_strategy.n_actions == 25
-        assert action_strategy.max_allowed_slippage_percent == 2.0
+        assert action_scheme.n_actions == 25
+        assert action_scheme.max_allowed_slippage_percent == 2.0
 
 
 def test_injects_continuous_initialization():
@@ -122,9 +122,9 @@ def test_injects_continuous_initialization():
 
     with TradingContext(**c):
 
-        action_strategy = ContinuousActionStrategy()
+        action_scheme = ContinuousActions()
 
-        assert action_strategy.max_allowed_slippage_percent == 2.0
+        assert action_scheme.max_allowed_slippage_percent == 2.0
 
 
 def test_injects_multi_discrete_initialization():
@@ -140,7 +140,7 @@ def test_injects_multi_discrete_initialization():
 
     with TradingContext(**c):
 
-        action_strategy = MultiDiscreteActionStrategy()
+        action_scheme = MultiDiscreteActions()
 
-        assert action_strategy._actions_per_instrument == 50
-        assert action_strategy._max_allowed_slippage_percent == 2.0
+        assert action_scheme._actions_per_instrument == 50
+        assert action_scheme._max_allowed_slippage_percent == 2.0

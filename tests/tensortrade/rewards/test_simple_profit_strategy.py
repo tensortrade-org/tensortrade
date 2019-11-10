@@ -1,3 +1,3 @@
 
 from tensortrade import TradingContext
-from tensortrade.rewards import SimpleProfitStrategy
+from tensortrade.rewards import SimpleProfit

@@ -20,7 +20,7 @@ from tensortrade import Component
 from tensortrade.trades import Trade
 
 
-class RewardStrategy(Component):
+class RewardScheme(Component):
 
     registered_name = "rewards"
 
@@ -29,7 +29,7 @@ class RewardStrategy(Component):
 
     @property
     def exchange(self) -> 'InstrumentExchange':
-        """The exchange being used by the current trading environments. Setting the exchange causes the strategy to reset."""
+        """The exchange being used by the current trading environments. Setting the exchange causes the scheme to reset."""
         return self._exchange
 
     @exchange.setter
@@ -38,7 +38,7 @@ class RewardStrategy(Component):
         self.reset()
 
     def reset(self):
-        """Optionally implementable method for resetting stateful strategies."""
+        """Optionally implementable method for resetting stateful schemes."""
         pass
 
     @abstractmethod

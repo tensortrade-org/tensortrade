@@ -1,5 +1,4 @@
 
 from tensortrade import TradingContext
-from tensortrade.rewards import RewardStrategy
+from tensortrade.rewards import RewardScheme
 from tensortrade.trades import Trade
-

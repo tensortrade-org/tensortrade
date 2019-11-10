@@ -25,8 +25,8 @@ DTypeString = Union[type, str]
 TradeActionUnion = Union[int, float, tuple]
 
 
-class ActionStrategy(Component):
-    """An abstract strategy for determining the action to take at each timestep within a trading environments."""
+class ActionScheme(Component):
+    """An abstract scheme for determining the action to take at each timestep within a trading environments."""
 
     registered_name = "actions"
 
@@ -34,7 +34,7 @@ class ActionStrategy(Component):
     def __init__(self, action_space: Space, dtype: DTypeString = np.float16):
         """
         Arguments:
-            action_space: The shape of the actions produced by the strategy.
+            action_space: The shape of the actions produced by the scheme.
             dtype: A type or str corresponding to the dtype of the `action_space`. Defaults to `np.float16`.
         """
         self._action_space = action_space
@@ -42,7 +42,7 @@ class ActionStrategy(Component):
 
     @property
     def action_space(self) -> Space:
-        """The shape of the actions produced by the strategy."""
+        """The shape of the actions produced by the scheme."""
         return self._action_space
 
     @action_space.setter
@@ -62,7 +62,7 @@ class ActionStrategy(Component):
     def exchange(self) -> 'InstrumentExchange':
         """The exchange being used by the current trading environments.
 
-        This will be set by the trading environments upon initialization. Setting the exchange causes the strategy to reset.
+        This will be set by the trading environments upon initialization. Setting the exchange causes the scheme to reset.
         """
         return self._exchange
 
@@ -72,7 +72,7 @@ class ActionStrategy(Component):
         self.reset()
 
     def reset(self):
-        """Optionally implementable method for resetting stateful strategies."""
+        """Optionally implementable method for resetting stateful schemes."""
         pass
 
     @abstractmethod

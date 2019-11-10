@@ -11,41 +11,57 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License
-
 import numpy as np
 
 from typing import Union
-from gym.spaces import Box
+from gym.spaces import Discrete
 
-from tensortrade.actions import ActionStrategy, TradeActionUnion, DTypeString
+from tensortrade.actions import ActionScheme, TradeActionUnion, DTypeString
 from tensortrade.trades import Trade, TradeType
 
 
-class ContinuousActionStrategy(ActionStrategy):
-    """Simple continuous strategy, which calculates the trade amount as
-    a fraction of the total balance.
+class DiscreteActions(ActionScheme):
+    """Simple discrete action scheme, which calculates the trade amount as a fraction of the total balance.
 
     Parameters
     ----------
+    n_actions : int
+        The number of bins to divide the total balance by.
+        Defaults to 20 (i.e. 1/20, 2/20, ..., 20/20).
     max_allowed_slippage_percent : float
-        The maximum amount above the current price the strategy will
-        pay for an instrument.
+        The maximum amount above the current price the scheme will pay for
+        an instrument.
         Defaults to 1.0 (i.e. 1%).
-    dtype : `DTypeString`
-        A type or str corresponding to the dtype of the `action_space`.
-        Defaults to `np.float16`.
     """
 
-    def __init__(self, max_allowed_slippage_percent: float = 1.0, dtype: DTypeString = np.float16):
-        super().__init__(action_space=Box(0, 1, shape=(1, 1), dtype=dtype), dtype=dtype)
+    def __init__(self, n_actions: int = 20, max_allowed_slippage_percent: float = 1.0):
+        n_actions = self.context.get('n_actions', None) or n_actions
+        super().__init__(action_space=Discrete(n_actions), dtype=np.int64)
+        self.n_actions = n_actions
         self._product = self.context.products[0]
         self.max_allowed_slippage_percent = \
             self.context.get('max_allowed_slippage_percent', None) or \
             max_allowed_slippage_percent
 
+    @property
+    def dtype(self) -> DTypeString:
+        """A type or str corresponding to the dtype of the `action_space`."""
+        return self._dtype
+
+    @dtype.setter
+    def dtype(self, dtype: DTypeString):
+        raise ValueError(
+            'Cannot change the dtype of a `DiscreteActions` due to '
+            'the requirements of `gym.spaces.Discrete` spaces. ')
+
     def get_trade(self, action: TradeActionUnion) -> Trade:
-        action_type, trade_amount = action
-        trade_type = TradeType(int(action_type * len(TradeType)))
+        """The trade type is determined by `action % len(TradeType)`, and the trade amount is determined by the multiplicity of the action.
+
+        For example, 1 = LIMIT_BUY|0.25, 2 = MARKET_BUY|0.25, 6 = LIMIT_BUY|0.5, 7 = MARKET_BUY|0.5, etc.
+        """
+        n_splits = self.n_actions / len(TradeType)
+        trade_type = TradeType(action % len(TradeType))
+        trade_amount = int(action / len(TradeType)) * float(1 / n_splits) + (1 / n_splits)
 
         current_price = self._exchange.current_price(symbol=self._product)
         base_precision = self._exchange.base_precision

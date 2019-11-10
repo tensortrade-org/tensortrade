@@ -1,8 +1,8 @@
 import pytest
 import pandas as pd
 
-from tensortrade.actions import DiscreteActionStrategy
-from tensortrade.rewards import SimpleProfitStrategy
+from tensortrade.actions import DiscreteActions
+from tensortrade.rewards import SimpleProfit
 from tensortrade.exchanges.simulated import SimulatedExchange
 from tensortrade import TradingContext
 from tensortrade.environments import TradingEnvironment
@@ -56,8 +56,8 @@ def test_injects_trading_strategy_with_context():
 
         env = TradingEnvironment(
             exchange='simulated',
-            action_strategy='discrete',
-            reward_strategy='simple'
+            action_scheme='discrete',
+            reward_scheme='simple'
         )
 
         strategy = ConcreteTradingStrategy(environment=env)
@@ -65,9 +65,9 @@ def test_injects_trading_strategy_with_context():
         assert hasattr(strategy.environment.exchange.context, 'credentials')
         assert strategy.environment.exchange.context.credentials == config['exchanges']['credentials']
 
-        assert hasattr(strategy.environment.action_strategy.context, 'n_actions')
-        assert strategy.environment.action_strategy.context.n_actions == 24
+        assert hasattr(strategy.environment.action_scheme.context, 'n_actions')
+        assert strategy.environment.action_scheme.context.n_actions == 24
 
-        print(strategy.environment.reward_strategy.context.data)
-        assert hasattr(strategy.environment.reward_strategy.context, 'amount')
-        assert strategy.environment.reward_strategy.context.amount == 100
+        print(strategy.environment.reward_scheme.context.data)
+        assert hasattr(strategy.environment.reward_scheme.context, 'amount')
+        assert strategy.environment.reward_scheme.context.amount == 100
