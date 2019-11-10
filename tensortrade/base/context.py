@@ -7,39 +7,6 @@ from collections import UserDict
 from .registry import registered_names, get_major_component_names
 
 
-def _diff(c1, c2, path=None, changes=None):
-    path = [] if not path else path
-    changes = [] if not changes else changes
-    old_path = path
-    for k in c1.keys():
-        path = old_path + [k]
-        if k not in c2:
-            changes += [('key', path, True, False)]
-        else:
-            if isinstance(c1[k], dict) and isinstance(c2[k], dict):
-                changes = _diff(c1[k], c2[k], path, changes)
-            else:
-                if c1[k] != c2[k]:
-                    changes += [('value', path, c1[k], c2[k])]
-
-    for k in c2.keys():
-        path = old_path + [k]
-        if k not in c1:
-            changes += [('key', path, False, True)]
-    return changes
-
-
-def diff(c1, c2):
-    return _diff(c1, c2)
-
-
-def is_conflicting(d1, d2):
-    for d in diff(d1, d2):
-        if d[0] == 'value':
-            return True
-    return False
-
-
 class TradingContext(UserDict):
     """A class that objects that put themselves in a `Context` using
     the `with` statement.
@@ -47,54 +14,45 @@ class TradingContext(UserDict):
     This implementation for this class is heavily borrowed from the pymc3
     library and adapted with the design goals of TensorTrade in mind.
 
-    Parameters:
-    ----------
-    shared : Context
-        A context that is shared between all components that are made under
-        the overarching `TradingContext`.
-    exchanges : Context
-        A context that is specific to components with a registered name of
-        `exchanges`.
-    actions : Context
-        A context that is specific to components with a registered name of
-        `actions`.
-    rewards : Context
-        A context that is specific to components with a registered name of
-        `rewards`.
-    features : Context
-        A context that is specific to components with a registered name of
-        `features`.
+    Arguments:
+        shared: A context that is shared between all components that are made under the overarching `TradingContext`.
+        exchanges: A context that is specific to components with a registered name of `exchanges`.
+        actions: A context that is specific to components with a registered name of `actions`.
+        rewards: A context that is specific to components with a registered name of `rewards`.
+        features: A context that is specific to components with a registered name of `features`.
 
     Warnings:
-    --------
         If there is a conflict in the contexts of different components because
-    they were initialized under different contexts, can have undesirable effects.
-    Therefore, a warning should be made to the user indicating that using
-    components together that have conflicting contexts can lead to unwanted
-    behavior.
+        they were initialized under different contexts, can have undesirable effects.
+        Therefore, a warning should be made to the user indicating that using
+        components together that have conflicting contexts can lead to unwanted
+        behavior.
 
     Reference:
-    ---------
-        - https://github.com/pymc-devs/pymc3/blob/master/pymc3/model.py
+        https://github.com/pymc-devs/pymc3/blob/master/pymc3/model.py
 
     """
     contexts = threading.local()
 
     def __init__(self,
                  base_instrument: str = 'USD',
-                 products: Union[str, List[str]] = 'BTC',
+                 instruments: Union[str, List[str]] = 'BTC',
                  **config):
         super().__init__(
             base_instrument=base_instrument,
-            products=products,
+            instruments=instruments,
             **config
         )
-        if type(products) == str:
-            products = [products]
+
+        if type(instruments) == str:
+            instruments = [instruments]
 
         for name in registered_names():
             if name not in get_major_component_names():
                 setattr(self, name, config.get(name, {}))
+
+        config_items = {k: config[k] for k in config.keys()
+                        if k not in registered_names()}
 
         self._shared = config.get('shared', {})
         self._exchanges = config.get('exchanges', {})
@@ -105,10 +63,9 @@ class TradingContext(UserDict):
 
         self._shared = {
             'base_instrument': base_instrument,
-            'products': products,
+            'instruments': instruments,
             **self._shared,
-            **{k: config[k] for k in config.keys()
-                if k not in registered_names()}
+            **config_items
         }
 
     @property
@@ -152,6 +109,7 @@ class TradingContext(UserDict):
     def get_contexts(cls):
         if not hasattr(cls.contexts, 'stack'):
             cls.contexts.stack = [TradingContext()]
+
         return cls.contexts.stack
 
     @classmethod
@@ -163,12 +121,14 @@ class TradingContext(UserDict):
     def from_json(cls, path: str):
         with open(path, "rb") as fp:
             config = json.load(fp)
+
         return TradingContext(**config)
 
     @classmethod
     def from_yaml(cls, path: str):
         with open(path, "rb") as fp:
             config = yaml.load(fp, Loader=yaml.FullLoader)
+
         return TradingContext(**config)
 
 
@@ -176,25 +136,23 @@ class Context(UserDict):
     """A context that is injected into every instance of a class that is
     a subclass of component.
 
-    Parameters:
-    ----------
-    base_instrument : str
-        The exchange symbol of the instrument to store/measure value in.
-    products : List[str]
-        The exchange symbols of the instruments being traded on.
+    Arguments:
+        base_instrument: The exchange symbol of the instrument to store/measure value in.
+        instruments: The exchange symbols of the instruments being traded.
     """
 
     def __init__(self,
                  base_instrument: str = 'USD',
-                 products: Union[str, List[str]] = 'BTC',
+                 instruments: Union[str, List[str]] = 'BTC',
                  **kwargs):
         super(Context, self).__init__(
             base_instrument=base_instrument,
-            products=products,
+            instruments=instruments,
             **kwargs
         )
+
         self._base_instrument = base_instrument
-        self._products = products
+        self._instruments = instruments
         self.__dict__ = {**self.__dict__, **self.data}
 
     @property
@@ -202,8 +160,8 @@ class Context(UserDict):
         return self._base_instrument
 
     @property
-    def products(self):
-        return self._products
+    def instruments(self):
+        return self._instruments
 
     def __str__(self):
         data = ['{}={}'.format(k, getattr(self, k)) for k in self.__slots__]

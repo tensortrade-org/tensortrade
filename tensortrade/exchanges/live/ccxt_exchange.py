@@ -22,11 +22,11 @@ from gym.spaces import Space, Box
 from ccxt import Exchange, BadRequest
 
 from tensortrade.trades import Trade, TradeType
-from tensortrade.exchanges import InstrumentExchange
+from tensortrade.exchanges import Exchange
 
 
-class CCXTExchange(InstrumentExchange):
-    """An instrument exchange for trading on CCXT-supported cryptocurrency exchanges."""
+class CCXTExchange(Exchange):
+    """An exchange for trading on CCXT-supported cryptocurrency exchanges."""
 
     def __init__(self, exchange: Union[Exchange, str] = 'coinbase',  **kwargs):
         super(CCXTExchange, self).__init__(
@@ -104,6 +104,9 @@ class CCXTExchange(InstrumentExchange):
         else:
             low = np.array([0, low_price, low_price, low_price * low_volume])
             high = np.array([1, high_price, high_volume, high_price * high_volume])
+
+        low = np.asarray([max(np.finfo(self._dtype).min, x) for x in low], dtype=self._dtype)
+        high = np.asarray([min(np.finfo(self._dtype).max, x) for x in high], dtype=self._dtype)
 
         return Box(low=low, high=high, dtype=self._dtype)
 

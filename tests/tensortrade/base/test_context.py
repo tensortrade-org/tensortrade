@@ -27,7 +27,7 @@ def test_has_config_attribute():
 
 config = {
     'base_instrument': 'EURO',
-    'products': ['BTC', 'ETH'],
+    'instruments': ['BTC', 'ETH'],
     'credentials': {
         'api_key': '48hg34wydghi7ef',
         'api_secret_key': '0984hgoe8d7htg'
@@ -37,15 +37,15 @@ config = {
 
 def test_init():
     c = TradingContext(base_instrument=config['base_instrument'],
-                       products=config['products'])
+                       instruments=config['instruments'])
     assert c.shared.get('base_instrument') == 'EURO'
-    assert c.shared.get('products') == ['BTC', 'ETH']
+    assert c.shared.get('instruments') == ['BTC', 'ETH']
 
 
 def test_init_with_kwargs():
     c = TradingContext(**config)
     assert c.shared.get('base_instrument') == 'EURO'
-    assert c.shared.get('products') == ['BTC', 'ETH']
+    assert c.shared.get('instruments') == ['BTC', 'ETH']
 
 
 def test_context_creation():
@@ -98,7 +98,7 @@ def test_create_trading_context_from_json():
     with td.TradingContext.from_json(path) as tc:
 
         assert tc.shared['base_instrument'] == "EURO"
-        assert tc.shared['products'] == ["BTC", "ETH"]
+        assert tc.shared['instruments'] == ["BTC", "ETH"]
         assert tc.actions == actions
         assert tc.exchanges == exchanges
 
@@ -118,6 +118,6 @@ def test_create_trading_context_from_yaml():
     with td.TradingContext.from_yaml(path) as tc:
 
         assert tc.shared['base_instrument'] == "EURO"
-        assert tc.shared['products'] == ["BTC", "ETH"]
+        assert tc.shared['instruments'] == ["BTC", "ETH"]
         assert tc.actions == actions
         assert tc.exchanges == exchanges

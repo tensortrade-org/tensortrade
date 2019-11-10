@@ -30,10 +30,10 @@
 
   components/components.md
   components/component_types/trading_environment.md
-  components/component_types/instrument_exchange.md
+  components/component_types/exchange.md
   components/component_types/feature_pipeline.md
-  components/component_types/action_strategy.md
-  components/component_types/reward_strategy.md
+  components/component_types/action_scheme.md
+  components/component_types/reward_scheme.md
   components/component_types/trading_strategy.md
 
 
@@ -48,7 +48,7 @@
   :maxdepth: 1
   :caption: Exchanges
   
-  components/exchanges/InstrumentExchange.md
+  components/exchanges/Exchange.md
   components/exchanges/simulated/SimulatedExchange.md
   components/exchanges/simulated/FBMExchange.md
   components/exchanges/live/CCXTExchange.md
@@ -72,19 +72,19 @@
   :maxdepth: 1
   :caption: Actions
 
-  components/actions/ActionStrategy.md
-  components/actions/ContinuousActionStrategy.md
-  components/actions/DiscreteActionStrategy.md
-  components/actions/MultiDiscreteActionStrategy.md
+  components/actions/ActionScheme.md
+  components/actions/ContinuousActions.md
+  components/actions/DiscreteActions.md
+  components/actions/MultiDiscreteActions.md
 
 
 .. toctree::
   :maxdepth: 1
   :caption: Rewards
   
-  components/rewards/RewardStrategy.md
-  components/rewards/RiskAdjustedReturnStrategy.md
-  components/rewards/SimpleProfitStrategy.md
+  components/rewards/RewardScheme.md
+  components/rewards/RiskAdjustedReturns.md
+  components/rewards/SimpleProfit.md
 
 
 .. toctree::

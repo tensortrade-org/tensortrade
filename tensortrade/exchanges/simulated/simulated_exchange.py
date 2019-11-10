@@ -20,12 +20,12 @@ from gym.spaces import Space, Box
 from typing import List, Dict
 
 from tensortrade.trades import Trade, TradeType
-from tensortrade.exchanges import InstrumentExchange
+from tensortrade.exchanges import Exchange
 from tensortrade.features import FeaturePipeline
 
 
-class SimulatedExchange(InstrumentExchange):
-    """An instrument exchange, in which the price history is based off the supplied data frame and
+class SimulatedExchange(Exchange):
+    """An exchange, in which the price history is based off the supplied data frame and
     trade execution is largely decided by the designated slippage model.
 
     If the `data_frame` parameter is not supplied upon initialization, it must be set before
@@ -114,10 +114,15 @@ class SimulatedExchange(InstrumentExchange):
 
     @property
     def generated_space(self) -> Space:
-        low = np.array([self._min_trade_price, ] * (len(self._observation_columns)-1) + [self._min_trade_amount, ])
-        high = np.array([self._max_trade_price, ] * (len(self._observation_columns)-1) + [self._max_trade_amount, ])
+        low = np.array([self._min_trade_price, ] *
+                       (len(self._observation_columns)-1) + [self._min_trade_amount, ])
+        high = np.array([self._max_trade_price, ] *
+                        (len(self._observation_columns) - 1) + [self._max_trade_amount, ])
 
-        return Box(low=low, high=high, dtype='float')
+        low = np.asarray([max(np.finfo(self._dtype).min, x) for x in low], dtype=self._dtype)
+        high = np.asarray([min(np.finfo(self._dtype).max, x) for x in high], dtype=self._dtype)
+
+        return Box(low=low, high=high, dtype=self._dtype)
 
     @property
     def generated_columns(self) -> List[str]:
@@ -129,7 +134,7 @@ class SimulatedExchange(InstrumentExchange):
 
     def _next_observation(self) -> pd.DataFrame:
         lower_range = max((self._current_step - self._window_size, 0))
-        upper_range = max(min(self._current_step, len(self._data_frame)), 1)
+        upper_range = min(self._current_step + 1, len(self._data_frame))
 
         obs = self._data_frame.iloc[lower_range:upper_range]
 
