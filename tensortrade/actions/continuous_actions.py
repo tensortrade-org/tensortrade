@@ -25,33 +25,37 @@ class ContinuousActions(ActionScheme):
     """Simple continuous action scheme, which calculates the trade amount as
     a fraction of the total balance.
 
-    Parameters
-    ----------
-    max_allowed_slippage_percent : float
-        The maximum amount above the current price the scheme will
-        pay for an instrument.
-        Defaults to 1.0 (i.e. 1%).
-    dtype : `DTypeString`
-        A type or str corresponding to the dtype of the `action_space`.
-        Defaults to `np.float16`.
+    Arguments:
+        max_allowed_slippage_percent: The maximum amount above the current price the scheme will pay for an instrument.
+            Defaults to 1.0 (i.e. 1%).
+        instrument: A `str` designating the instrument to be traded.
+            Defaults to 'BTC'.
+        dtype: A `type` or `str` corresponding to the dtype of the `action_space`.
+            Defaults to `np.float16`.
     """
 
-    def __init__(self, max_allowed_slippage_percent: float = 1.0, dtype: DTypeString = np.float16):
+    def __init__(self,
+                 instrument: str = 'BTC',
+                 max_allowed_slippage_percent: float = 1.0,
+                 dtype: DTypeString = np.float16):
         super().__init__(action_space=Box(0, 1, shape=(1, 1), dtype=dtype), dtype=dtype)
-        self._product = self.context.products[0]
-        self.max_allowed_slippage_percent = \
-            self.context.get('max_allowed_slippage_percent', None) or \
+
+        self._instrument = self.context.get('instruments', instrument)
+        self.max_allowed_slippage_percent = self.context.get('max_allowed_slippage_percent', None) or \
             max_allowed_slippage_percent
+
+        if isinstance(self._instrument, list):
+            self._instrument = self._instrument[0]
 
     def get_trade(self, action: TradeActionUnion) -> Trade:
         action_type, trade_amount = action
         trade_type = TradeType(int(action_type * len(TradeType)))
 
-        current_price = self._exchange.current_price(symbol=self._product)
+        current_price = self._exchange.current_price(symbol=self._instrument)
         base_precision = self._exchange.base_precision
         instrument_precision = self._exchange.instrument_precision
 
-        amount = self._exchange.instrument_balance(self._product)
+        amount = self._exchange.instrument_balance(self._instrument)
         price = current_price
 
         if trade_type is TradeType.MARKET_BUY or trade_type is TradeType.LIMIT_BUY:
@@ -63,7 +67,7 @@ class ContinuousActions(ActionScheme):
         elif trade_type is TradeType.MARKET_SELL or trade_type is TradeType.LIMIT_SELL:
             price_adjustment = 1 - (self.max_allowed_slippage_percent / 100)
             price = round(current_price * price_adjustment, base_precision)
-            amount_held = self._exchange.portfolio.get(self._product, 0)
+            amount_held = self._exchange.portfolio.get(self._instrument, 0)
             amount = round(amount_held * trade_amount, instrument_precision)
 
-        return Trade(self._product, trade_type, amount, price)
+        return Trade(self._instrument, trade_type, amount, price)

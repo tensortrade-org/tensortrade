@@ -11,7 +11,7 @@ class ConcreteRewardScheme(RewardScheme):
 
 config = {
     'base_instrument': 'USD',
-    'products': 'ETH',
+    'instruments': 'ETH',
     'rewards': {
         'amount': 0
     }
@@ -20,7 +20,7 @@ config = {
 
 def test_injects_reward_scheme_with_context():
 
-    with TradingContext(**config) as tc:
+    with TradingContext(**config):
 
         reward_scheme = ConcreteRewardScheme()
 
@@ -31,7 +31,7 @@ def test_injects_reward_scheme_with_context():
 
 def test_injects_string_intialized_reward_scheme():
 
-    with TradingContext(**config) as tc:
+    with TradingContext(**config):
 
         reward_scheme = get('simple')
 

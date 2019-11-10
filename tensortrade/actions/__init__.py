@@ -22,4 +22,5 @@ def get(identifier: str) -> ActionScheme:
     """
     if identifier not in _registry.keys():
         raise KeyError(f'Identifier {identifier} is not associated with any `ActionScheme`.')
+
     return _registry[identifier]()

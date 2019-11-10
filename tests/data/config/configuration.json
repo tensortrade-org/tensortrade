@@ -1,6 +1,6 @@
 {
   "base_instrument": "EURO",
-  "products": ["BTC", "ETH"],
+  "instruments": ["BTC", "ETH"],
   "actions": {
     "n_actions": 24,
     "action_type": "discrete"

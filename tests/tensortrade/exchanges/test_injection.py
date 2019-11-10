@@ -65,11 +65,11 @@ class ConcreteExchange(Exchange):
 
 config = {
     'base_instrument': 'EURO',
-    'products': 'ETH',
+    'instruments': 'ETH',
     'exchanges': {
         'credentials': {
-                'api_key': '48hg34wydghi7ef',
-                'api_secret_key': '0984hgoe8d7htg'
+            'api_key': '48hg34wydghi7ef',
+            'api_secret_key': '0984hgoe8d7htg'
         }
     }
 }
@@ -77,7 +77,7 @@ config = {
 
 def test_injects_exchange_with_credentials():
 
-    with TradingContext(**config) as tc:
+    with TradingContext(**config):
         exchange = ConcreteExchange()
 
         assert hasattr(exchange.context, 'credentials')
@@ -89,7 +89,7 @@ def test_injects_exchange_with_credentials():
 
 def test_injects_base_instrument():
 
-    with TradingContext(**config) as tc:
+    with TradingContext(**config):
         exchange = SimulatedExchange()
 
         assert exchange.base_instrument == 'EURO'
@@ -97,7 +97,7 @@ def test_injects_base_instrument():
 
 def test_injects_string_initialized_action_scheme():
 
-    with TradingContext(**config) as tc:
+    with TradingContext(**config):
 
         exchange = get('simulated')
 
@@ -110,7 +110,7 @@ def test_initialize_ccxt_from_config():
 
     config = {
         'base_instrument': 'USD',
-        'products': 'ETH',
+        'instruments': 'ETH',
         'exchanges': {
             'exchange': 'binance',
             'credentials': {
@@ -137,7 +137,7 @@ def test_simlulated_from_config():
 
     config = {
         'base_instrument': 'EURO',
-        'products': ['BTC', 'ETH'],
+        'instruments': ['BTC', 'ETH'],
         'exchanges': {
             'commission_percent': 0.5,
             'base_precision': 0.3,

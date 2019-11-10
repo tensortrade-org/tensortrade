@@ -7,7 +7,7 @@ For example, `0 = HOLD`, `1 = LIMIT_BUY|0.25`, `2 = MARKET_BUY|0.25`, `5 = HOLD`
 
 ## Key Variables
 
-- `_instrument_symbols`
+- `_instruments`
   - The exchange symbols of the instruments being traded.
 - `_actions_per_instrument`
   - The number of bins to divide the total balance by. Defaults to 20 (i.e. 1/20, 2/20, ..., 20/20).
@@ -39,7 +39,7 @@ Each property and property setter.
 ```py
 from tensortrade.actions import MultiDiscreteActions
 
-action_scheme = MultiDiscreteActions(n_actions=20, instrument_symbol='BTC')
+action_scheme = MultiDiscreteActions(n_actions=20, instrument='BTC')
 ```
 
 _This discrete action scheme uses 20 discrete actions, which equates to 4 discrete amounts for each of the 5 trade types (market buy/sell, limit buy/sell, and hold). E.g. [0,5,10,15]=hold, 1=market buy 25%, 2=market sell 25%, 3=limit buy 25%, 4=limit sell 25%, 6=market buy 50%, 7=market sell 50%, etc…_

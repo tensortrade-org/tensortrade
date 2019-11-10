@@ -88,8 +88,8 @@ def test_no_context_injected_outside_with():
 
 
 config = {
-        'base_instrument': 'EURO',
-        'products': ['BTC', 'ETH']
+    'base_instrument': 'EURO',
+    'instruments': ['BTC', 'ETH']
 }
 
 
@@ -179,7 +179,7 @@ def test_inject_contexts_at_different_levels():
         **config
     }
 
-    with td.TradingContext(**c1) as tc1:
+    with td.TradingContext(**c1):
         name = 'TensorTrade'
         value = 'the time and effort.'
         instance1 = WorthMessageComponent(name=name, value=value)
@@ -189,7 +189,7 @@ def test_inject_contexts_at_different_levels():
         assert hasattr(win1.context, 'plans_var')
         assert hasattr(lose1.context, 'plans_var')
 
-        with td.TradingContext(**c2) as tc2:
+        with td.TradingContext(**c2):
             name = 'TensorTrade'
             value = 'the time and effort.'
             instance2 = WorthMessageComponent(name=name, value=value)

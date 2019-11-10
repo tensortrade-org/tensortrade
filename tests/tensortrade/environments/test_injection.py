@@ -5,7 +5,7 @@ from tensortrade.environments import TradingEnvironment
 
 config = {
     'base_instrument': 50,
-    'products': ['BTC', 'ETH'],
+    'instruments': ['BTC', 'ETH'],
     'actions': {
         'n_actions': 50,
         'max_allowed_slippage': 2.0

@@ -31,7 +31,7 @@ class ConcreteTradingStrategy(TradingStrategy):
 
 config = {
     'base_instrument': 'USD',
-    'products': 'ETH',
+    'instruments': 'ETH',
     'exchanges': {
         'credentials': {
             'api_key': '48hg34wydghi7ef',
@@ -52,7 +52,7 @@ config = {
 
 def test_injects_trading_strategy_with_context():
 
-    with TradingContext(**config) as tc:
+    with TradingContext(**config):
 
         env = TradingEnvironment(
             exchange='simulated',
