@@ -117,9 +117,12 @@ class SimulatedExchange(Exchange):
         low = np.array([self._min_trade_price, ] *
                        (len(self._observation_columns)-1) + [self._min_trade_amount, ])
         high = np.array([self._max_trade_price, ] *
-                        (len(self._observation_columns)-1) + [self._max_trade_amount, ])
+                        (len(self._observation_columns) - 1) + [self._max_trade_amount, ])
 
-        return Box(low=low, high=high, dtype='float')
+        low = [lambda x: max(np.finfo(self._dtype).min, x) for x in low]
+        high = [lambda x: min(np.finfo(self._dtype).max, x) for x in high]
+
+        return Box(low=low, high=high, dtype=self._dtype)
 
     @property
     def generated_columns(self) -> List[str]:

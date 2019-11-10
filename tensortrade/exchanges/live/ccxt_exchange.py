@@ -105,6 +105,9 @@ class CCXTExchange(Exchange):
             low = np.array([0, low_price, low_price, low_price * low_volume])
             high = np.array([1, high_price, high_volume, high_price * high_volume])
 
+        low = [lambda x: max(np.finfo(self._dtype).min, x) for x in low]
+        high = [lambda x: min(np.finfo(self._dtype).max, x) for x in high]
+
         return Box(low=low, high=high, dtype=self._dtype)
 
     @property
