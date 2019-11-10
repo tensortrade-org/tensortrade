@@ -5,7 +5,7 @@ For example, a feature pipeline could normalize all price values, make a time se
 
 Feature pipelines can be initialized with an arbitrary number of comma-separated transformers. Each `FeatureTransformer` needs to be initialized with the set of columns to transform, or if nothing is passed, all input columns will be transformed.
 
-Each feature transformer has a transform method, which will transform a single observation (a `pandas.DataFrame`) from a larger data set, keeping any necessary state in memory to transform the next frame. For this reason, it is often necessary to reset the FeatureTransformer periodically. This is done automatically each time the parent `FeaturePipeline` or `InstrumentExchange` is reset.
+Each feature transformer has a transform method, which will transform a single observation (a `pandas.DataFrame`) from a larger data set, keeping any necessary state in memory to transform the next frame. For this reason, it is often necessary to reset the FeatureTransformer periodically. This is done automatically each time the parent `FeaturePipeline` or `Exchange` is reset.
 
 ## How It Operates
 

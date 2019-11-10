@@ -30,7 +30,7 @@
 
   components/components.md
   components/component_types/trading_environment.md
-  components/component_types/instrument_exchange.md
+  components/component_types/exchange.md
   components/component_types/feature_pipeline.md
   components/component_types/action_scheme.md
   components/component_types/reward_scheme.md
@@ -48,7 +48,7 @@
   :maxdepth: 1
   :caption: Exchanges
   
-  components/exchanges/InstrumentExchange.md
+  components/exchanges/Exchange.md
   components/exchanges/simulated/SimulatedExchange.md
   components/exchanges/simulated/FBMExchange.md
   components/exchanges/live/CCXTExchange.md

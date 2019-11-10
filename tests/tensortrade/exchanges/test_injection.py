@@ -13,10 +13,10 @@ from tensortrade.trades import Trade
 from tensortrade.slippage import SlippageModel
 
 
-class ConcreteInstrumentExchange(InstrumentExchange):
+class ConcreteExchange(Exchange):
 
     def __init__(self):
-        super(ConcreteInstrumentExchange, self).__init__()
+        super(ConcreteExchange, self).__init__()
 
     @property
     def initial_balance(self) -> float:
@@ -78,7 +78,7 @@ config = {
 def test_injects_exchange_with_credentials():
 
     with TradingContext(**config) as tc:
-        exchange = ConcreteInstrumentExchange()
+        exchange = ConcreteExchange()
 
         assert hasattr(exchange.context, 'credentials')
         assert exchange.context.credentials == {

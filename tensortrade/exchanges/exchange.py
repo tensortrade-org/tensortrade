@@ -26,8 +26,8 @@ from tensortrade.features import FeaturePipeline
 TypeString = Union[type, str]
 
 
-class InstrumentExchange(Component):
-    """An abstract instrument exchange for use within a trading environments.
+class Exchange(Component):
+    """An abstract exchange for use within a trading environments.
 
     Parameters
     ----------

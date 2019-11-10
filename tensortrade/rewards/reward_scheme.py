@@ -28,12 +28,12 @@ class RewardScheme(Component):
         pass
 
     @property
-    def exchange(self) -> 'InstrumentExchange':
+    def exchange(self) -> 'Exchange':
         """The exchange being used by the current trading environments. Setting the exchange causes the scheme to reset."""
         return self._exchange
 
     @exchange.setter
-    def exchange(self, exchange: 'InstrumentExchange'):
+    def exchange(self, exchange: 'Exchange'):
         self._exchange = exchange
         self.reset()
 

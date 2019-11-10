@@ -22,11 +22,11 @@ from gym.spaces import Space, Box
 from ccxt import Exchange, BadRequest
 
 from tensortrade.trades import Trade, TradeType
-from tensortrade.exchanges import InstrumentExchange
+from tensortrade.exchanges import Exchange
 
 
-class CCXTExchange(InstrumentExchange):
-    """An instrument exchange for trading on CCXT-supported cryptocurrency exchanges."""
+class CCXTExchange(Exchange):
+    """An exchange for trading on CCXT-supported cryptocurrency exchanges."""
 
     def __init__(self, exchange: Union[Exchange, str] = 'coinbase',  **kwargs):
         super(CCXTExchange, self).__init__(
