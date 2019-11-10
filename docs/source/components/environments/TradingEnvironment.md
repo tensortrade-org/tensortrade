@@ -4,16 +4,16 @@ A trading environment is a reinforcement learning environment that follows OpenA
 
 `TradingEnvironment` steps through the various interfaces from the `tensortrade` library in a consistent way, and will likely not change too often as all other parts of `tensortrade` changes. We're going to go through an overview of the Trading environment below.
 
-Trading environments are fully configurable gym environments with highly composable `InstrumentExchange`, `FeaturePipeline`, `ActionScheme`, and `RewardScheme` components.
+Trading environments are fully configurable gym environments with highly composable `Exchange`, `FeaturePipeline`, `ActionScheme`, and `RewardScheme` components.
 
-- The `InstrumentExchange` provides observations to the environment and executes the agent's trades.
+- The `Exchange` provides observations to the environment and executes the agent's trades.
 - The `FeaturePipeline` optionally transforms the exchange output into a more meaningful set of features before it is passed to the agent.
 - The `ActionScheme` converts the agent's actions into executable trades.
 - The `RewardScheme` calculates the reward for each time step based on the agent's performance.
 
 That's all there is to it, now it's just a matter of composing each of these components into a complete environment.
 
-When the reset method of a `TradingEnvironment` is called, all of the child components will also be reset. The internal state of each instrument exchange, feature pipeline, transformer, action scheme, and reward scheme will be set back to their default values, ready for the next episode.
+When the reset method of a `TradingEnvironment` is called, all of the child components will also be reset. The internal state of each exchange, feature pipeline, transformer, action scheme, and reward scheme will be set back to their default values, ready for the next episode.
 
 Let's begin with an example environment. As mentioned before, initializing a `TradingEnvironment` requires an exchange, an action scheme, and a reward scheme, the feature pipeline is optional.
 

@@ -59,7 +59,7 @@ class ActionScheme(Component):
         self._dtype = dtype
 
     @property
-    def exchange(self) -> 'InstrumentExchange':
+    def exchange(self) -> 'Exchange':
         """The exchange being used by the current trading environments.
 
         This will be set by the trading environments upon initialization. Setting the exchange causes the scheme to reset.
@@ -67,7 +67,7 @@ class ActionScheme(Component):
         return self._exchange
 
     @exchange.setter
-    def exchange(self, exchange: 'InstrumentExchange'):
+    def exchange(self, exchange: 'Exchange'):
         self._exchange = exchange
         self.reset()
 

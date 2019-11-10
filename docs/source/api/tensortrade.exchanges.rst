@@ -19,4 +19,4 @@ Submodules
 
 .. toctree::
 
-   tensortrade.exchanges.instrument_exchange
+   tensortrade.exchanges.exchange

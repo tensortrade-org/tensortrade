@@ -3,7 +3,7 @@ import pandas as pd
 
 from datetime import datetime
 
-from .instrument_exchange import InstrumentExchange
+from .exchange import Exchange
 
 from . import live
 from . import simulated
@@ -16,18 +16,18 @@ _registry = {
 }
 
 
-def get(identifier: str) -> InstrumentExchange:
-    """Gets the `InstrumentExchange` that matches with the identifier.
+def get(identifier: str) -> Exchange:
+    """Gets the `Exchange` that matches with the identifier.
 
     As a caution, when exchanges that require a data frame are instantiated by
     this function, the data frame is set as None and must be set at a later
     point in time for the exchange to work.
 
     Arguments:
-        identifier: The identifier for the `InstrumentExchange`
+        identifier: The identifier for the `Exchange`
 
     Raises:
-        KeyError: if identifier is not associated with any `InstrumentExchange`
+        KeyError: if identifier is not associated with any `Exchange`
     """
     if identifier in _registry.keys():
         if identifier == 'simulated':
@@ -41,7 +41,6 @@ def get(identifier: str) -> InstrumentExchange:
         return _registry[identifier]()
 
     if identifier in ccxt.exchanges:
-        ccxt_exchange = getattr(ccxt, identifier)()
         return live.CCXTExchange(exchange=identifier)
 
-    raise KeyError('Identifier {} is not associated with any `InstrumentExchange`.'.format(identifier))
+    raise KeyError('Identifier {} is not associated with any `Exchange`.'.format(identifier))

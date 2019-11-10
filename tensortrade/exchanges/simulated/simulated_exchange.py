@@ -20,12 +20,12 @@ from gym.spaces import Space, Box
 from typing import List, Dict
 
 from tensortrade.trades import Trade, TradeType
-from tensortrade.exchanges import InstrumentExchange
+from tensortrade.exchanges import Exchange
 from tensortrade.features import FeaturePipeline
 
 
-class SimulatedExchange(InstrumentExchange):
-    """An instrument exchange, in which the price history is based off the supplied data frame and
+class SimulatedExchange(Exchange):
+    """An exchange, in which the price history is based off the supplied data frame and
     trade execution is largely decided by the designated slippage model.
 
     If the `data_frame` parameter is not supplied upon initialization, it must be set before

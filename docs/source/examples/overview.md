@@ -7,13 +7,13 @@ The TensorTrade library is modular. The `tensortrade` library usually has a comm
 
 ## Example of Structure:
 
-A good example of this structure is the `InstrumentExchange` component. It represents all exchange interactions.
+A good example of this structure is the `Exchange` component. It represents all exchange interactions.
 
-The beginning of the code in [InstrumentExchange](https://github.com/notadamking/tensortrade/blob/master/tensortrade/exchanges/instrument_exchange.py) is seen here.
+The beginning of the code in [Exchange](https://github.com/notadamking/tensortrade/blob/master/tensortrade/exchanges/exchange.py) is seen here.
 
 ```py
-class InstrumentExchange(object, metaclass=ABCMeta):
-    """An abstract instrument exchange for use within a trading environment."""
+class Exchange(object, metaclass=ABCMeta):
+    """An abstract exchange for use within a trading environment."""
 
     def __init__(self, base_instrument: str = 'USD', dtype: TypeString = np.float16, feature_pipeline: FeaturePipeline = None):
         """
@@ -27,15 +27,15 @@ class InstrumentExchange(object, metaclass=ABCMeta):
         self._feature_pipeline = feature_pipeline
 ```
 
-As you can see above, the [InstrumentExchange](https://github.com/notadamking/tensortrade/blob/master/tensortrade/exchanges/instrument_exchange.py) has a large majority of the instantiation details that carries over to all other reprentations of that type of class. `ABCMeta` represents that all classes that inherit it shall be recognizable as an instance of `InstrumentExchange`. This is nice when you need to do type checking.
+As you can see above, the [Exchange](https://github.com/notadamking/tensortrade/blob/master/tensortrade/exchanges/exchange.py) has a large majority of the instantiation details that carries over to all other reprentations of that type of class. `ABCMeta` represents that all classes that inherit it shall be recognizable as an instance of `Exchange`. This is nice when you need to do type checking.
 
-When creating a new exchange type (everything that's an inheritance of the `InstrumentExchange`), one needs to add further details for how information should be declared by default. Once you create a new type of exchange, you can have new rules placed in by default. Let's look at the SimulatedExchange and it can have parameters dynamically set via the `**kwargs` arguement in later exchanges.
+When creating a new exchange type (everything that's an inheritance of the `Exchange`), one needs to add further details for how information should be declared by default. Once you create a new type of exchange, you can have new rules placed in by default. Let's look at the SimulatedExchange and it can have parameters dynamically set via the `**kwargs` arguement in later exchanges.
 
 **SimulatedExchange:**
 
 ```py
-class SimulatedExchange(InstrumentExchange):
-    """An instrument exchange, in which the price history is based off the supplied data frame and
+class SimulatedExchange(Exchange):
+    """An exchange, in which the price history is based off the supplied data frame and
     trade execution is largely decided by the designated slippage model.
     If the `data_frame` parameter is not supplied upon initialization, it must be set before
     the exchange can be used within a trading environment.
