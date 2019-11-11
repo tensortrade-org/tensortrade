@@ -6,11 +6,11 @@ import tensortrade.slippage as slippage
 from gym import Space
 
 from tensortrade import TradingContext
-from tensortrade.exchanges import *
-from tensortrade.exchanges.live import *
-from tensortrade.exchanges.simulated import *
 from tensortrade.trades import Trade
 from tensortrade.slippage import SlippageModel
+from tensortrade.exchanges import Exchange, get
+from tensortrade.exchanges.live import CCXTExchange
+from tensortrade.exchanges.simulated import SimulatedExchange, FBMExchange
 
 
 class ConcreteExchange(Exchange):
@@ -39,18 +39,14 @@ class ConcreteExchange(Exchange):
         pass
 
     @property
-    def generated_space(self) -> Space:
-        pass
-
-    @property
-    def generated_columns(self) -> List[str]:
+    def observation_columns(self) -> List[str]:
         pass
 
     @property
     def has_next_observation(self) -> bool:
         pass
 
-    def _create_observation_generator(self) -> Generator[pd.DataFrame, None, None]:
+    def next_observation(self) -> pd.DataFrame:
         pass
 
     def current_price(self, symbol: str) -> float:
