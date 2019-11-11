@@ -4,19 +4,18 @@ A transformer for normalizing values within a feature pipeline by removing the m
 
 ## Class Parameters
 
-
-* `columns` 
-  * A list of column names to normalize.
-* `feature_min`
-  * The minimum value in the range to scale to.
-* `feature_max`
-  * The maximum value in the range to scale to.
-* `inplace`
-  * If `False`, a new column will be added to the output for each input column.
+- `columns`
+  - A list of column names to normalize.
+- `feature_min`
+  - The minimum value in the range to scale to.
+- `feature_max`
+  - The maximum value in the range to scale to.
+- `inplace`
+  - If `False`, a new column will be added to the output for each input column.
 
 ## Properties and Setters
 
-* None
+- None
 
 ## Functions
 
@@ -24,17 +23,14 @@ Below are the functions that the `StandardNormalizer` uses to effectively operat
 
 ### Private
 
-*None*
+_None_
 
 ### Public
 
-* `transform_space`
-  * Get the transformed output space for a given input space.
-* `transform`
-  * Apply the pipeline of feature transformations to an observation frame.
-* `reset`
-  * Resets the history of the standard scaler.
-
+- `transform`
+  - Apply the pipeline of feature transformations to an observation frame.
+- `reset`
+  - Resets the history of the standard scaler.
 
 ## Use Cases:
 
@@ -56,5 +52,3 @@ feature_pipeline = FeaturePipeline(steps=[normalize_price,
                                           difference_all])
 exchange.feature_pipeline = feature_pipeline
 ```
-
-

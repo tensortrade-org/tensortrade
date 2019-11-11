@@ -30,23 +30,45 @@ class CCXTExchange(Exchange):
 
     def __init__(self, exchange: Union[Exchange, str] = 'coinbase',  **kwargs):
         super(CCXTExchange, self).__init__(
-            dtype=self.default('dtype', np.float16, kwargs),
-            feature_pipeline=self.default('feature_pipeline', None, kwargs)
+            dtype=self.default('dtype', np.float32, kwargs),
+            feature_pipeline=self.default('feature_pipeline', None, kwargs),
+            **kwargs
         )
+
         exchange = self.default('exchange', exchange)
 
         self._exchange = getattr(ccxt, exchange)() if \
             isinstance(exchange, str) else exchange
 
         self._credentials = self.default('credentials', None, kwargs)
-        self._exchange.enableRateLimit = self.default('enable_rate_limit', True, kwargs)
-        self._markets = self._exchange.load_markets()
+        self._timeframe = self.default('timeframe', '10m', kwargs)
         self._observation_type = self.default('observation_type', 'trades', kwargs)
         self._observation_symbol = self.default('observation_symbol', 'ETH/BTC', kwargs)
-        self._timeframe = self.default('timeframe', '10m', kwargs)
-        self._window_size = self.default('window_size', 1, kwargs)
         self._async_timeout_in_ms = self.default('async_timeout_in_ms', 15, kwargs)
         self._max_trade_wait_in_sec = self.default('max_trade_wait_in_sec', 15, kwargs)
+        self._exchange.enableRateLimit = self.default('enable_rate_limit', True, kwargs)
+
+        self._markets = self._exchange.load_markets()
+
+        self._min_trade_amount = float(
+            self._markets[self._observation_symbol]['limits']['amount']['min'])
+        self._max_trade_amount = float(
+            self._markets[self._observation_symbol]['limits']['amount']['max'])
+        self._min_trade_price = float(
+            self._markets[self._observation_symbol]['limits']['price']['min'])
+        self._max_trade_price = float(
+            self._markets[self._observation_symbol]['limits']['price']['max'])
+
+    @property
+    def data_frame(self) -> pd.DataFrame:
+        return self._data_frame
+
+    @data_frame.setter
+    def data_frame(self, data_frame: pd.DataFrame):
+        self._data_frame = data_frame
+
+        if len(self._data_frame) >= self._window_size:
+            self._data_frame = self._data_frame.iloc[-(self._window_size - 1):]
 
     @property
     def base_precision(self) -> float:
@@ -92,30 +114,18 @@ class CCXTExchange(Exchange):
         return self._performance
 
     @property
-    def generated_space(self) -> Space:
-        low_price = float(self._markets[self._observation_symbol]['limits']['price']['min'])
-        high_price = float(self._markets[self._observation_symbol]['limits']['price']['max'])
-        low_volume = float(self._markets[self._observation_symbol]['limits']['amount']['min'])
-        high_volume = float(self._markets[self._observation_symbol]['limits']['amount']['max'])
-
-        if self._observation_type == 'ohlcv':
-            low = np.array([low_price, low_price, low_price, low_price, low_volume])
-            high = np.array([high_price, high_price, high_price, high_price, high_volume])
-        else:
-            low = np.array([0, low_price, low_price, low_price * low_volume])
-            high = np.array([1, high_price, high_volume, high_price * high_volume])
-
-        low = np.asarray([max(np.finfo(self._dtype).min, x) for x in low], dtype=self._dtype)
-        high = np.asarray([min(np.finfo(self._dtype).max, x) for x in high], dtype=self._dtype)
-
-        return Box(low=low, high=high, dtype=self._dtype)
-
-    @property
     def generated_columns(self) -> List[str]:
         if self._observation_type == 'ohlcv':
             return list(['open', 'high', 'low', 'close', 'volume'])
 
         return list(['side', 'price', 'amount', 'cost'])
+
+    @property
+    def observation_columns(self) -> List[str]:
+        if self.has_next_observation:
+            self._next_observation().columns
+
+        return None
 
     @property
     def has_next_observation(self) -> bool:
@@ -139,17 +149,15 @@ class CCXTExchange(Exchange):
         obs = pd.DataFrame(obs, columns=self.generated_columns)
         obs = pd.concat([self._data_frame, obs], ignore_index=True)
 
-        self._data_frame = obs
-
-        if len(self._data_frame) >= self._window_size:
-            self._data_frame = self._data_frame.iloc[-(self._window_size - 1):]
-
-        if len(obs) < self._window_size:
-            padding = np.zeros((len(self.generated_columns), self._window_size - len(obs)))
-            obs = pd.concat([pd.DataFrame(padding), obs], ignore_index=True)
+        self.data_frame = obs
 
         if self._feature_pipeline is not None:
-            obs = self._feature_pipeline.transform(obs, self.generated_space)
+            obs = self._feature_pipeline.transform(obs)
+
+        if len(obs) < self._window_size:
+            padding = np.zeros((self._window_size - len(obs), len(self.observation_columns)))
+            padding = pd.DataFrame(padding, columns=self.observation_columns)
+            obs = pd.concat([padding, obs], ignore_index=True)
 
         return obs
 

@@ -15,7 +15,7 @@ The beginning of the code in [Exchange](https://github.com/notadamking/tensortra
 class Exchange(object, metaclass=ABCMeta):
     """An abstract exchange for use within a trading environment."""
 
-    def __init__(self, base_instrument: str = 'USD', dtype: TypeString = np.float16, feature_pipeline: FeaturePipeline = None):
+    def __init__(self, base_instrument: str = 'USD', dtype: TypeString = np.float32, feature_pipeline: FeaturePipeline = None):
         """
         Arguments:
             base_instrument: The exchange symbol of the instrument to store/measure value in.
@@ -42,31 +42,32 @@ class SimulatedExchange(Exchange):
     """
 
     def __init__(self, data_frame: pd.DataFrame = None, **kwargs):
-        super().__init__(base_instrument=kwargs.get('base_instrument', 'USD'),
-                         dtype=kwargs.get('dtype', np.float16),
-                         feature_pipeline=kwargs.get('feature_pipeline', None))
-        self._previously_transformed = False
-        self._should_pretransform_obs = kwargs.get('should_pretransform_obs', False)
+        super().__init__(
+            dtype=self.default('dtype', np.float32),
+            feature_pipeline=self.default('feature_pipeline', None)
+        )
 
-        if data_frame is not None:
-            self.data_frame = data_frame.astype(self._dtype)
+        self._commission_percent = self.default('commission_percent', 0.3, kwargs)
+        self._base_precision = self.default('base_precision', 2, kwargs)
+        self._instrument_precision = self.default('instrument_precision', 8, kwargs)
+        self._min_trade_amount = self.default('min_trade_amount', 1e-6, kwargs)
+        self._max_trade_amount = self.default('max_trade_amount', 1e6, kwargs)
 
-        self._commission_percent = kwargs.get('commission_percent', 0.3)
-        self._base_precision = kwargs.get('base_precision', 2)
-        self._instrument_precision = kwargs.get('instrument_precision', 8)
-        self._initial_balance = kwargs.get('initial_balance', 1E4)
-        self._min_order_amount = kwargs.get('min_order_amount', 1E-3)
-        self._window_size = kwargs.get('window_size', 1)
+        self._initial_balance = self.default('initial_balance', 1e4, kwargs)
+        self._observation_columns = self.default(
+            'observation_columns',
+            ['open', 'high', 'low', 'close', 'volume'],
+            kwargs
+        )
+        self._price_column = self.default('price_column', 'close', kwargs)
+        self._window_size = self.default('window_size', 1, kwargs)
+        self._pretransform = self.default('pretransform', True, kwargs)
+        self._price_history = None
 
-        self._min_trade_price = kwargs.get('min_trade_price', 1E-6)
-        self._max_trade_price = kwargs.get('max_trade_price', 1E6)
-        self._min_trade_amount = kwargs.get('min_trade_amount', 1E-3)
-        self._max_trade_amount = kwargs.get('max_trade_amount', 1E6)
+        self.data_frame = self.default('data_frame', data_frame)
 
-        max_allowed_slippage_percent = kwargs.get('max_allowed_slippage_percent', 1.0)
-
-        SlippageModelClass = kwargs.get('slippage_model', RandomUniformSlippageModel)
-        self._slippage_model = SlippageModelClass(max_allowed_slippage_percent)
+        model = self.default('slippage_model', 'uniform', kwargs)
+        self._slippage_model = slippage.get(model) if isinstance(model, str) else model()
 ```
 
 Everything that inherits `SimulatedExchange` uses the specified kwargs to set the parameters.

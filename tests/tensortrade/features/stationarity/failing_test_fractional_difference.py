@@ -154,15 +154,3 @@ class TestFractionalDifference():
         }])
 
         assert np.allclose(expected_data_frame.values, transformed_frame.values)
-
-    def test_transform_space(self, data_frame, exchange):
-        transformer = FractionalDifference(difference_order=0.5, inplace=False)
-
-        low = np.array([1E-3, ] * 4 + [1E-3, ])
-        high = np.array([1E3, ] * 4 + [1E3, ])
-
-        input_space = Box(low=low, high=high, dtype=np.float16)
-
-        transformed_space = transformer.transform_space(input_space, exchange.generated_columns)
-
-        assert transformed_space != input_space

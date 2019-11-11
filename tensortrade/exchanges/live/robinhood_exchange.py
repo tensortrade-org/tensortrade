@@ -28,7 +28,7 @@ class RobinhoodExchange(Exchange):
     """An exchange for trading using the Robinhood API."""
 
     def __init__(self,  **kwargs):
-        super().__init__(dtype=self.default('dtype', np.float16, kwargs),
+        super().__init__(dtype=self.default('dtype', np.float32, kwargs),
                          feature_pipeline=self.default('feature_pipeline', None, kwargs))
         # TODO: Initialize the Robinhood client
 
@@ -85,7 +85,7 @@ class RobinhoodExchange(Exchange):
         raise NotImplementedError
 
     @property
-    def generated_space(self) -> Space:
+    def observation_columns(self) -> List[str]:
         # TODO
         raise NotImplementedError
 

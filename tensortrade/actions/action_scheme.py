@@ -31,11 +31,11 @@ class ActionScheme(Component):
     registered_name = "actions"
 
     @abstractmethod
-    def __init__(self, action_space: Space, dtype: DTypeString = np.float16):
+    def __init__(self, action_space: Space, dtype: DTypeString = np.float32):
         """
         Arguments:
             action_space: The shape of the actions produced by the scheme.
-            dtype: A type or str corresponding to the dtype of the `action_space`. Defaults to `np.float16`.
+            dtype: A type or str corresponding to the dtype of the `action_space`. Defaults to `np.float32`.
         """
         self._action_space = action_space
         self._dtype = self.context.get('dtype', None) or dtype

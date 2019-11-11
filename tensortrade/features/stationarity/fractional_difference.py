@@ -89,7 +89,7 @@ class FractionalDifference(FeatureTransformer):
 
         return diff_series.fillna(method='bfill').fillna(0)
 
-    def transform(self, X: pd.DataFrame, input_space: Space) -> pd.DataFrame:
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         if self._history is None:
             self._history = X.copy()
         else:
@@ -99,7 +99,7 @@ class FractionalDifference(FeatureTransformer):
             self._history = self._history.iloc[-len(X) + 1:]
 
         if self.columns is None:
-            self.columns = list(X.columns)
+            self.columns = list(X.select_dtypes('number').columns)
 
         for column in self.columns:
             diffed_series = self._fractional_difference(self._history[column])
