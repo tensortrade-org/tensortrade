@@ -31,13 +31,13 @@ class ContinuousActions(ActionScheme):
         instrument: A `str` designating the instrument to be traded.
             Defaults to 'BTC'.
         dtype: A `type` or `str` corresponding to the dtype of the `action_space`.
-            Defaults to `np.float16`.
+            Defaults to `np.float32`.
     """
 
     def __init__(self,
                  instrument: str = 'BTC',
                  max_allowed_slippage_percent: float = 1.0,
-                 dtype: DTypeString = np.float16):
+                 dtype: DTypeString = np.float32):
         super().__init__(action_space=Box(0, 1, shape=(1, 1), dtype=dtype), dtype=dtype)
 
         self._instrument = self.context.get('instruments', instrument)

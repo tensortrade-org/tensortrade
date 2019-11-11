@@ -36,7 +36,7 @@ class SimpleMovingAverage(FeatureTransformer):
 
         self._window_size = window_size
 
-    def transform(self, X: pd.DataFrame, input_space: Space) -> pd.DataFrame:
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         if self.columns is None:
             self.columns = list(X.columns)
 

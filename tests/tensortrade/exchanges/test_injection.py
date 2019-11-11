@@ -146,7 +146,6 @@ def test_simlulated_from_config():
             'max_trade_price': 1e7,
             'min_trade_amount': 1e-4,
             'max_trade_amount': 1e4,
-            'min_order_amount': 1e-4,
             'initial_balance': 1e5,
             'window_size': 5,
             'should_pretransform_obs': True,

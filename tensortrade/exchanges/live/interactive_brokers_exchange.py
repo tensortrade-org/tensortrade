@@ -29,7 +29,7 @@ class InteractiveBrokersExchange(Exchange):
 
     def __init__(self,  **kwargs):
         super().__init__(
-            dtype=self.default('dtype', np.float16, kwargs),
+            dtype=self.default('dtype', np.float32, kwargs),
             feature_pipeline=self.default('feature_pipeline', None, kwargs)
         )
         # TODO: Initialize the Interactive Brokers client
@@ -87,7 +87,7 @@ class InteractiveBrokersExchange(Exchange):
         raise NotImplementedError
 
     @property
-    def generated_space(self) -> Space:
+    def observation_columns(self) -> List[str]:
         # TODO
         raise NotImplementedError
 

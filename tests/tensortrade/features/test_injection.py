@@ -11,11 +11,7 @@ from tensortrade.features.feature_pipeline import FeaturePipeline
 
 
 class Identity(FeatureTransformer):
-
-    def transform_space(self, input_space: Space, column_names: List[str]) -> Space:
-        return input_space
-
-    def transform(self, X: pd.DataFrame, input_space: Space) -> pd.DataFrame:
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         return X
 
 
