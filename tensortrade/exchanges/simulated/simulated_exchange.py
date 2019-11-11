@@ -34,28 +34,17 @@ class SimulatedExchange(Exchange):
 
     def __init__(self, data_frame: pd.DataFrame = None, **kwargs):
         super().__init__(
-            dtype=self.default('dtype', np.float16),
-            feature_pipeline=self.default('feature_pipeline', None)
+            dtype=self.default('dtype', np.float32),
+            feature_pipeline=self.default('feature_pipeline', None),
+            **kwargs
         )
+
         self._commission_percent = self.default('commission_percent', 0.3, kwargs)
         self._base_precision = self.default('base_precision', 2, kwargs)
         self._instrument_precision = self.default('instrument_precision', 8, kwargs)
-        self._min_trade_price = self.default('min_trade_price', 1e-6, kwargs)
-        self._max_trade_price = self.default('max_trade_price', 1e6, kwargs)
-        self._min_trade_amount = self.default('min_trade_amount', 1e-3, kwargs)
-        self._max_trade_amount = self.default('max_trade_amount', 1e6, kwargs)
-        self._min_order_amount = self.default('min_order_amount', 1e-3, kwargs)
-
         self._initial_balance = self.default('initial_balance', 1e4, kwargs)
-        self._observation_columns = self.default(
-            'observation_columns',
-            ['open', 'high', 'low', 'close', 'volume'],
-            kwargs
-        )
         self._price_column = self.default('price_column', 'close', kwargs)
-        self._window_size = self.default('window_size', 1, kwargs)
         self._pretransform = self.default('pretransform', True, kwargs)
-        self._price_history = None
 
         self.data_frame = self.default('data_frame', data_frame)
 
@@ -71,10 +60,12 @@ class SimulatedExchange(Exchange):
     def data_frame(self, data_frame: pd.DataFrame):
         if not isinstance(data_frame, pd.DataFrame):
             self._data_frame = data_frame
+            self._price_history = None
             return
 
-        self._data_frame = data_frame[self._observation_columns]
+        self._data_frame = data_frame
         self._price_history = data_frame[self._price_column]
+        self._pre_transformed_columns = data_frame.columns
 
         if self._pretransform:
             self.transform_data_frame()
@@ -113,20 +104,16 @@ class SimulatedExchange(Exchange):
         return self._performance
 
     @property
-    def generated_space(self) -> Space:
-        low = np.array([self._min_trade_price, ] *
-                       (len(self._observation_columns)-1) + [self._min_trade_amount, ])
-        high = np.array([self._max_trade_price, ] *
-                        (len(self._observation_columns) - 1) + [self._max_trade_amount, ])
+    def observation_columns(self) -> List[str]:
+        if self._data_frame is None:
+            return None
 
-        low = np.asarray([max(np.finfo(self._dtype).min, x) for x in low], dtype=self._dtype)
-        high = np.asarray([min(np.finfo(self._dtype).max, x) for x in high], dtype=self._dtype)
+        data_frame = self._data_frame.iloc[0:10]
 
-        return Box(low=low, high=high, dtype=self._dtype)
+        if self._feature_pipeline is not None:
+            data_frame = self._feature_pipeline.transform(data_frame)
 
-    @property
-    def generated_columns(self) -> List[str]:
-        return list(self._observation_columns)
+        return data_frame.select_dtypes(include=[np.float, np.number]).columns
 
     @property
     def has_next_observation(self) -> bool:
@@ -138,12 +125,15 @@ class SimulatedExchange(Exchange):
 
         obs = self._data_frame.iloc[lower_range:upper_range]
 
-        if len(obs) < self._window_size:
-            padding = np.zeros((len(self.generated_columns), self._window_size - len(obs)))
-            obs = pd.concat([pd.DataFrame(padding), obs], ignore_index=True)
-
         if not self._pretransform and self._feature_pipeline is not None:
-            obs = self._feature_pipeline.transform(obs, self.generated_space)
+            obs = self._feature_pipeline.transform(obs)
+
+        if len(obs) < self._window_size:
+            padding = np.zeros((self._window_size - len(obs), len(self.observation_columns)))
+            padding = pd.DataFrame(padding, columns=self.observation_columns)
+            obs = pd.concat([padding, obs], ignore_index=True)
+
+        obs = obs.select_dtypes(include='number')
 
         self._current_step += 1
 
@@ -151,8 +141,7 @@ class SimulatedExchange(Exchange):
 
     def transform_data_frame(self) -> bool:
         if self._feature_pipeline is not None:
-            self._data_frame = self._feature_pipeline.transform(self._data_frame,
-                                                                self.generated_space)
+            self._data_frame = self._feature_pipeline.transform(self._data_frame)
 
     def current_price(self, symbol: str) -> float:
         if self._price_history is not None:
@@ -161,12 +150,12 @@ class SimulatedExchange(Exchange):
         return 0
 
     def _is_valid_trade(self, trade: Trade) -> bool:
-        if trade.trade_type is TradeType.MARKET_BUY or trade.trade_type is TradeType.LIMIT_BUY:
-            return trade.amount >= self._min_order_amount and self._balance >= trade.amount * trade.price
-        elif trade.trade_type is TradeType.MARKET_SELL or trade.trade_type is TradeType.LIMIT_SELL:
-            return trade.amount >= self._min_order_amount and self._portfolio.get(trade.symbol, 0) >= trade.amount
+        if trade.is_buy and self._balance < trade.amount * trade.price:
+            return False
+        elif trade.is_sell and self._portfolio.get(trade.symbol, 0) < trade.amount:
+            return False
 
-        return True
+        return trade.amount >= self._min_trade_amount and trade.amount <= self._max_trade_amount
 
     def _update_account(self, trade: Trade):
         if self._is_valid_trade(trade) and not trade.is_hold:
