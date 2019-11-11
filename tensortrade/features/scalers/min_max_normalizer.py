@@ -50,7 +50,7 @@ class MinMaxNormalizer(FeatureTransformer):
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         if self.columns is None:
-            self.columns = list(X.columns)
+            self.columns = list(X.select_dtypes('number').columns)
 
         for column in self.columns:
             low, high = self._input_min, self._input_max

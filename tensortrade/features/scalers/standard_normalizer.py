@@ -45,6 +45,6 @@ class StandardNormalizer(FeatureTransformer):
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         if self.columns is None:
-            self.columns = list(X.columns)
+            self.columns = list(X.select_dtypes('number').columns)
 
         raise NotImplementedError

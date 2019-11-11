@@ -99,7 +99,7 @@ class FractionalDifference(FeatureTransformer):
             self._history = self._history.iloc[-len(X) + 1:]
 
         if self.columns is None:
-            self.columns = list(X.columns)
+            self.columns = list(X.select_dtypes('number').columns)
 
         for column in self.columns:
             diffed_series = self._fractional_difference(self._history[column])
