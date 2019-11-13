@@ -72,6 +72,9 @@ class DiscreteActions(ActionScheme):
 
         amount = self._exchange.instrument_balance(self._instrument)
         price = current_price
+        
+        if trade_type is TradeType.HOLD:
+            amount = 0
 
         if trade_type is TradeType.MARKET_BUY or trade_type is TradeType.LIMIT_BUY:
             price_adjustment = 1 + (self.max_allowed_slippage_percent / 100)
@@ -83,6 +86,6 @@ class DiscreteActions(ActionScheme):
             price_adjustment = 1 - (self.max_allowed_slippage_percent / 100)
             price = round(current_price * price_adjustment, base_precision)
             amount_held = self._exchange.portfolio.get(self._instrument, 0)
-            amount = round(amount_held * trade_amount, instrument_precision)
+            amount = round(amount_held, instrument_precision)
 
         return Trade(self._instrument, trade_type, amount, price)
