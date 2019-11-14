@@ -109,7 +109,7 @@ class StableBaselinesTradingStrategy(TradingStrategy):
             performance = exchange_performance if len(exchange_performance) > 0 else performance
 
             if dones[0]:
-                if episode_callback is not None and episode_callback(self._environment._exchange.performance):
+                if episode_callback is not None and not episode_callback(performance):
                     break
 
                 episodes_completed += 1
