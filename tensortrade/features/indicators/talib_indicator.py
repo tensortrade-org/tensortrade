@@ -24,13 +24,14 @@ from typing import Union, List, Callable
 from tensortrade.features import FeatureTransformer
 
 
+
 class TAlibIndicator(FeatureTransformer):
     """Adds one or more TAlib indicators to a data frame, based on existing open, high, low, and close column values."""
 
     def __init__(self, indicators: List[str], lows: Union[List[float], List[int]] = None, highs: Union[List[float], List[int]] = None, **kwargs):
         self._indicator_names, self._indicator_values = self.parse_indicators(indicators)
         self._indicators = list(
-            map(lambda indicator_name: self._str_to_indicator(indicator_name), self._indicator_names))
+    map(lambda indicator_name: self._str_to_indicator(indicator_name), self._indicator_names))
 
         self._history = self.init_history()
         self._window_size = kwargs.get("window_size", 10)
@@ -55,44 +56,39 @@ class TAlibIndicator(FeatureTransformer):
     def _str_to_indicator(self, indicator_name: str):
         return getattr(talib, indicator_name.upper())
 
-    def transform_space(self, input_space: Space, column_names: List[str]) -> Space:
-        output_space = copy(input_space)
-        *shape_x, shape_y = input_space.shape
+    def transform_spaces(self, low, high):
+        new_low, new_high = low.copy(), high.copy()
+        return new_low, new_high
 
-        output_space.shape = (*shape_x , shape_y + len(self.hist_cols))
-        #add new lows and highs for indicators in obs space
-        for i in range(len(self.hist_cols)):
-            new_lows = np.array([self._lows[i]] * self._window_size)[:,None]
-            new_highs = np.array([self._highs[i]] * self._window_size)[:,None]
-            output_space.low = np.concatenate((output_space.low, new_lows), axis=1)
-            output_space.high = np.concatenate((output_space.high, new_highs), axis=1)
-
-        return output_space
-
-    def transform(self, X: pd.DataFrame, input_space: Space) -> pd.DataFrame:
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         #append new obs to history 
         self._history = self._history.append(X.loc[X.index[-1], :])
         self._history = self._history.fillna(0)
 
         #loop over and apend each indicator to the last row of the history
         for i in range(len(self._indicators)):
-            indicator_name = self._indicator_names[i]
-            indicator = self._indicators[i]
+            indicator_name = self._indicator_names[i]	
+            indicator = self._indicators[i]	        
             indicator_args = [self._history[val].values for val in self._indicator_values[indicator_name]]
 
-            if indicator_name.upper() == 'MACD':
-                macd, macd_signal, _ = indicator(*indicator_args)
-                self._history[indicator_name.upper()] = macd
-
-            elif indicator_name.upper() == 'BBANDS':
+            if indicator_name.upper() == 'BBANDS':
                 upper, middle, lower = indicator(*indicator_args)
                 self._history["bb_upper"] = upper
                 self._history["bb_middle"] = middle
                 self._history["bb_lower"] = lower
 
             else:
-                self._history[indicator_name.upper()] = indicator(*indicator_args)
-                    
+                try:
+                    value = indicator(*indicator_args)
+                    if type(value) == tuple: 
+                        self._history[indicator_name.upper()] = value[0][0]
+                    else: 
+                        self._history[indicator_name.upper()] = value
+
+                except:
+                    #had more than one value to unpack 
+                    self._history[indicator_name.upper()] = indicator(*indicator_args)[0]
+
         #we must return number of entries equal to the window size
         self._history = self._history.fillna(0) 
         ret = self._history.tail(self._window_size).copy()
