@@ -56,9 +56,9 @@ class TAlibIndicator(FeatureTransformer):
     def _str_to_indicator(self, indicator_name: str):
         return getattr(talib, indicator_name.upper())
 
-    def transform_spaces(self, low, high):
-        new_low, new_high = low.copy(), high.copy()
-        return new_low, new_high
+    # def transform_spaces(self, low, high):
+    #     new_low, new_high = low.copy(), high.copy()
+    #     return new_low, new_high
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         #append new obs to history 
