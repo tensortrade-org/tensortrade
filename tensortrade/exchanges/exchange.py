@@ -40,8 +40,7 @@ class Exchange(Component):
         self._base_instrument = self.context.base_instrument
         self._dtype = self.default('dtype', dtype)
         self._feature_pipeline = self.default('feature_pipeline', feature_pipeline)
-
-        self._window_size = self.default('window_size', 1, kwargs)
+        self._window_size = self.default('window_size', 10) 
         self._min_trade_amount = self.default('min_trade_amount', 1e-6, kwargs)
         self._max_trade_amount = self.default('max_trade_amount', 1e6, kwargs)
         self._min_trade_price = self.default('min_trade_price', 1e-8, kwargs)
@@ -51,6 +50,11 @@ class Exchange(Component):
     def base_instrument(self) -> str:
         """The exchange symbol of the instrument to store/measure value in."""
         return self._base_instrument
+
+    @property
+    def window_size(self) -> int:
+        """The window size for observations"""
+        return self._window_size
 
     @base_instrument.setter
     def base_instrument(self, base_instrument: str):
@@ -140,10 +144,12 @@ class Exchange(Component):
             low = np.tile(low, self._window_size).reshape((self._window_size, n_features))
             high = np.tile(high, self._window_size).reshape((self._window_size, n_features))
 
+        if self.feature_pipeline is not None: 
+            low, high = self.feature_pipeline.transform_spaces(low, high)
+
         return Box(low=low, high=high, dtype=self._dtype)
 
-    @property
-    def net_worth(self) -> float:
+    def net_worth(self, step) -> float:
         """Calculate the net worth of the active account on the exchange.
 
         Returns:
@@ -159,7 +165,7 @@ class Exchange(Component):
             if symbol == self._base_instrument:
                 continue
 
-            current_price = self.current_price(symbol=symbol)
+            current_price = self.current_price(symbol=symbol, step=step)
             net_worth += current_price * amount
 
         return net_worth
@@ -171,7 +177,7 @@ class Exchange(Component):
         Returns:
             The percentage change in net worth since the last reset.
         """
-        return float(self.net_worth / self.initial_balance) * 100
+        return float(self.net_worth(self._current_step-1) / self.initial_balance) * 100
 
     @property
     @abstractmethod
@@ -190,7 +196,6 @@ class Exchange(Component):
 
     def next_observation(self) -> np.ndarray:
         """Generate the next observation from the exchange.
-
         Returns:
             The next multi-dimensional list of observations.
         """

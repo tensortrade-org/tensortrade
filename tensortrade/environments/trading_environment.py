@@ -1,17 +1,3 @@
-# Copyright 2019 The TensorTrade Authors.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 import gym
 import logging
 import pandas as pd
@@ -20,6 +6,7 @@ import tensortrade.exchanges as exchanges
 import tensortrade.actions as actions
 import tensortrade.rewards as rewards
 import tensortrade.features as features
+import os 
 
 from gym import spaces
 from typing import Union, Tuple, List
@@ -29,6 +16,7 @@ from tensortrade.rewards import RewardScheme
 from tensortrade.exchanges import Exchange
 from tensortrade.features import FeaturePipeline
 from tensortrade.trades import Trade
+from tensortrade.render import TradingChart
 
 
 class TradingEnvironment(gym.Env):
@@ -65,6 +53,13 @@ class TradingEnvironment(gym.Env):
 
         self.observation_space = self._exchange.observation_space
         self.action_space = self._action_scheme.action_space
+
+        #rendering  
+        self.render_benchmarks: List[Dict] = kwargs.get('render_benchmarks', [])
+        self.viewer = None 
+
+        #multiprocessing
+        self.n_envs = os.cpu_count()
 
         self.logger = logging.getLogger(kwargs.get('logger_name', __name__))
         self.logger.setLevel(kwargs.get('log_level', logging.DEBUG))
@@ -118,8 +113,7 @@ class TradingEnvironment(gym.Env):
         Returns:
             A tuple containing the (fill_amount, fill_price) of the executed trade.
         """
-        executed_trade = self._action_scheme.get_trade(action=action)
-
+        executed_trade = self._action_scheme.get_trade(action=action, step=self._current_step)
         filled_trade = self._exchange.execute_trade(executed_trade)
 
         return executed_trade, filled_trade
@@ -130,12 +124,8 @@ class TradingEnvironment(gym.Env):
         Returns:
             The observation provided by the environments's exchange, often OHLCV or tick trade history data points.
         """
-        self._current_step += 1
-
         observation = self._exchange.next_observation()
-        if len(observation) != 0:
-            observation = observation[0]
-            observation = np.nan_to_num(observation)
+        observation = np.nan_to_num(observation)
         return observation
 
     def _get_reward(self, trade: Trade) -> float:
@@ -144,7 +134,7 @@ class TradingEnvironment(gym.Env):
         Returns:
             A float corresponding to the benefit earned by the action taken this step.
         """
-        reward = self._reward_scheme.get_reward(current_step=self._current_step, trade=trade)
+        reward = self._reward_scheme.get_reward(current_step=trade.step, trade=trade)
         reward = np.nan_to_num(reward)
 
         if np.bitwise_not(np.isfinite(reward)):
@@ -162,35 +152,43 @@ class TradingEnvironment(gym.Env):
 
         return lost_90_percent_net_worth or not self._exchange.has_next_observation
 
-    def _info(self, executed_trade: Trade, filled_trade: Trade) -> dict:
+    def _info(self, executed_trade: Trade, filled_trade: Trade, reward: int) -> dict:
         """Returns any auxiliary, diagnostic, or debugging information for the current timestep.
 
         Returns:
             info: A dictionary containing the exchange used, the current timestep, and the filled trade, if any.
         """
-        return {'current_step': self._current_step,
-                'exchange': self._exchange,
-                'executed_trade': executed_trade,
-                'filled_trade': filled_trade}
+        assert filled_trade.step == executed_trade.step 
+        return {"episode":
+                            {
+                            'current_step': executed_trade.step,
+                            'exchange': self._exchange,
+                            'executed_trade': executed_trade,
+                            'filled_trade': filled_trade,
+                            'portfolio': self._exchange._portfolio, 
+                            'r': reward, 
+                            }
+                }
 
     def step(self, action) -> Tuple[pd.DataFrame, float, bool, dict]:
         """Run one timestep within the environments based on the specified action.
 
         Arguments:
             action: The trade action provided by the agent for this timestep.
-
+            
         Returns:
             observation (pandas.DataFrame): Provided by the environments's exchange, often OHLCV or tick trade history data points.
             reward (float): An amount corresponding to the benefit earned by the action taken this timestep.
             done (bool): If `True`, the environments is complete and should be restarted.
-            info (dict): Any auxiliary, diagnostic, or debugging information to output.
+        info (dict): Any auxiliary, diagnostic, or debugging information to output.
         """
         executed_trade, filled_trade = self._take_action(action)
-
         observation = self._next_observation(filled_trade)
         reward = self._get_reward(filled_trade)
         done = self._done()
-        info = self._info(executed_trade, filled_trade)
+        info = self._info(executed_trade, filled_trade, reward)
+
+        self._current_step += 1 
 
         return observation, reward, done, info
 
@@ -200,14 +198,31 @@ class TradingEnvironment(gym.Env):
         Returns:
             observation: the initial observation.
         """
-        self._current_step = 0
 
         self._action_scheme.reset()
         self._reward_scheme.reset()
         self._exchange.reset()
+        self._current_step = 0 
 
-        return self._next_observation(Trade('N/A', 'hold', 0, 0))
+        return self._next_observation(Trade('N/A', 'hold', 0, 0, 0))
 
     def render(self, mode='none'):
-        """Renders the environments."""
-        pass
+        """Renders the environment."""
+        if mode == 'system':
+            self.logger.info('Price: ' + str(self.exchange._current_price()))
+            self.logger.info('Net worth: ' + str(self.exchange.performance[-1]['net_worth']))
+
+        elif mode == 'human':
+            if self.viewer is None:
+                self.viewer = TradingChart(self.exchange.data_frame)
+
+            self.viewer.render(self._current_step,
+                                self.exchange.performance.loc[:,'net_worth'],
+                                self.render_benchmarks,
+                                self.exchange.trades)
+
+    def retrieve_trades(self):
+        """
+        Retrieves all trades
+        """
+        return self.exchange.trades
