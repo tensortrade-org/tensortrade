@@ -21,27 +21,23 @@ from typing import Dict
 
 from tensortrade.trades import Trade, TradeType
 from tensortrade.slippage import RandomUniformSlippageModel
-from tensortrade.exchanges import InstrumentExchange
+from tensortrade.exchanges import Exchange
 
 
-class GANExchange(InstrumentExchange):
-    """A simulated instrument exchange, in which the price history is based off a generative adversarial network
+class GANExchange(Exchange):
+    """A simulated exchange, in which the price history is based off a generative adversarial network
     model with supplied parameters.
 
     If the `training_data` parameter is not supplied upon initialization, it must be set before
-    the exchange can be used within a trading environment.
+    the exchange can be used within a trading environments.
     """
 
     def __init__(self, training_data: pd.DataFrame = None, **kwargs):
         super().__init__(**kwargs)
-
-        if training_data is not None:
-            self._training_data = training_data
-
-        self._prices_per_gen = kwargs.get('prices_per_gen', 1000)
-        self._n_samples = kwargs.get('n_samples', 64)
-        self._output_shape = kwargs.get('output_shape', (self._prices_per_gen, 5, 1))
-
+        self._training_data = self.default('training_data', training_data)
+        self._prices_per_gen = self.default('prices_per_gen', 1000, kwargs)
+        self._n_samples = self.default('n_samples', 64, kwargs)
+        self._output_shape = self.default('output_shape', (self._prices_per_gen, 5, 1), kwargs)
         self._initialize_gan()
 
     def _initialize_gan(self):

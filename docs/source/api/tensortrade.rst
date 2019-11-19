@@ -12,6 +12,7 @@ Subpackages
 .. toctree::
 
    tensortrade.actions
+   tensortrade.base
    tensortrade.environments
    tensortrade.exchanges
    tensortrade.features

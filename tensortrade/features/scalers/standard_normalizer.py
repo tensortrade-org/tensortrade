@@ -33,36 +33,18 @@ class StandardNormalizer(FeatureTransformer):
             feature_max (optional): The maximum value in the range to scale to.
             inplace (optional): If `False`, a new column will be added to the output for each input column.
         """
+        super().__init__(columns=columns, inplace=inplace)
+
         self._feature_min = feature_min
         self._feature_max = feature_max
-        self._inplace = inplace
-        self.columns = columns
 
         self._history = {}
 
     def reset(self):
         self._history = {}
 
-    def transform_space(self, input_space: Space, column_names: List[str]) -> Space:
-        if self._inplace:
-            return input_space
-
-        output_space = copy(input_space)
-
-        shape_x, *shape_y = input_space.shape
-
-        columns = self.columns or range(len(shape_x))
-
-        output_space.shape = (shape_x + len(columns), *shape_y)
-
-        for _ in columns:
-            output_space.low = np.append(output_space.low, self._feature_min)
-            output_space.high = np.append(output_space.high, self._feature_max)
-
-        return output_space
-
-    def transform(self, X: pd.DataFrame, input_space: Space) -> pd.DataFrame:
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         if self.columns is None:
-            self.columns = list(X.columns)
+            self.columns = list(X.select_dtypes('number').columns)
 
         raise NotImplementedError

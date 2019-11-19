@@ -18,18 +18,19 @@ from tensortrade.environments import TradingEnvironment
 warnings.filterwarnings("ignore")
 
 
-def test_continuous_action_strategy():
-    assert isinstance(actions.get('continuous'), ContinuousActionStrategy)
+def test_continuous_actions():
+    assert isinstance(actions.get('continuous'), ContinuousActions)
 
 
-def test_discrete_action_strategy():
-    assert isinstance(actions.get('continuous'), ContinuousActionStrategy)
+def test_discrete_actions():
+    assert isinstance(actions.get('discrete'), DiscreteActions)
 
 
 def test_simulated_exchange():
     assert isinstance(exchanges.get('simulated'), SimulatedExchange)
 
 
+@pytest.mark.skip(reason="Authentication Error")
 def test_ccxt_exchanges():
     for exchange_id in ['coinbasepro', 'coinbase', 'binance', 'bitstamp']:
         assert isinstance(exchanges.get(exchange_id), CCXTExchange)
@@ -44,8 +45,8 @@ def test_gan_exchange():
     assert isinstance(exchanges.get('gan'), GANExchange)
 
 
-def test_simple_reward_strategy():
-    assert isinstance(rewards.get('simple'), SimpleProfitStrategy)
+def test_simple_reward_scheme():
+    assert isinstance(rewards.get('simple'), SimpleProfit)
 
 
 def test_random_uniform_slippage_model():
@@ -57,7 +58,7 @@ def test_basic_environment():
 
 
 def make_env(exchange: str, action: str, reward: str):
-    return TradingEnvironment(exchange=exchange, action_strategy=action, reward_strategy=reward)
+    return TradingEnvironment(exchange=exchange, action_scheme=action, reward_scheme=reward)
 
 
 def test_simulated_continuous_simple_env():

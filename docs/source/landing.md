@@ -18,6 +18,6 @@ _Inspired by_ [Keras' guiding principles](https://github.com/keras-team/keras).
 
 _User friendliness._ TensorTrade is an API designed for human beings, not machines. It puts user experience front and center. TensorTrade follows best practices for reducing cognitive load: it offers consistent & simple APIs, it minimizes the number of user actions required for common use cases, and it provides clear and actionable feedback upon user error.
 
-_Modularity._ A trading environment is a conglomeration of fully configurable modules that can be plugged together with as few restrictions as possible. In particular, instrument exchanges, feature pipelines, action strategies, reward strategies, trading agents, and performance reports are all standalone modules that you can combine to create new trading environments.
+_Modularity._ A trading environment is a conglomeration of fully configurable modules that can be plugged together with as few restrictions as possible. In particular, exchanges, feature pipelines, action schemes, reward schemes, trading agents, and performance reports are all standalone modules that you can combine to create new trading environments.
 
 _Easy extensibility._ New modules are simple to add (as new classes and functions), and existing modules provide ample examples. To be able to easily create new modules allows for total expressiveness, making TensorTrade suitable for advanced research and production use.
