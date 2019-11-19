@@ -50,6 +50,10 @@ class TargetStopActionStrategy(ActionStrategy):
         self.reset()
 
     @property
+
+
+
+    @property
     def dtype(self) -> DTypeString:
         """A type or str corresponding to the dtype of the `action_space`."""
         return self._dtype
@@ -63,7 +67,7 @@ class TargetStopActionStrategy(ActionStrategy):
         self.current_step = 0
         self.trading_history = list([])
 
-    def get_trade(self, action: TradeActionUnion) -> Trade:
+    def get_trade(self, action: TradeActionUnion, profit_target: Union[int, float], stop_target: Union[int, float]) -> Trade:
         """The trade type is determined by `action % len(TradeType)`, and the
         trade amount is determined by the multiplicity of the action.
 
@@ -76,16 +80,12 @@ class TargetStopActionStrategy(ActionStrategy):
         Subsequently, 1 < (7 / 5) < 2 , therefore the trade amount would be calculated as:
         ((1) + 1) * ( 1 / 4 (No. of sections)) = 2 * 0.25 = 0.5
         ---------------------------------------------------------
-        Profit target and stop loss percent are calculated as
-        the inverse percentage of the trade amount of the maximum value in the range.
-
-        For example, if the trade amount is 0.25, the profit target percent is:
-        75% of the maximum value of self.profit_target_range
-        (By default, 75% of 100; the profit target is then 0.75 * the traded price, or 75% above)
-
-        The stop-loss in this case would be:
-        -75% of the maximum value of self.stop_loss_range
-        (By default, -75% of 100; the stop-loss is then -0.75 * the traded price, or 75% below.)
+        Profit target and Stop loss percentages are provided by the profit_target
+        and stop_target arguments of get_trade.
+        These values are kept within the specified profit_target_range and stop_loss_range of the Action Strategy.
+        For example:
+         If the profit range is between 20 and 100, a profit target of 9 will be rounded to 20%,
+         and a profit target of 110 will be rounded to 100%
         """
 
         n_splits = self.position_size / len(TradeType)
@@ -102,13 +102,13 @@ class TargetStopActionStrategy(ActionStrategy):
         for idx, trade in enumerate(self.trading_history):
             timeout_hit = current_step - trade[0] >= self.timeout_steps
             self.current_step += 1
-            if trade[5] == TradeType.HOLD:
+            if timeout_hit:
                 pass
-            elif timeout_hit:
+            elif trade[5] == TradeType.HOLD:
                 break
             else:
-                profit_target_hit = current_price >= (trade[1] * trade[3])
-                stop_loss_hit = current_price <= (trade[1] * trade[4])
+                profit_target_hit = current_price >= (current_price + (trade[1] * trade[3]))
+                stop_loss_hit = current_price <= (current_price + (trade[1] * trade[4]))
 
                 if profit_target_hit or stop_loss_hit:
 
@@ -126,9 +126,18 @@ class TargetStopActionStrategy(ActionStrategy):
         else:
             trade_amount = (int(action / len(TradeType)) + 1) * float(1 / n_splits)
 
-        profit_target_percent = (max(self.profit_target_range) * (1 - trade_amount)) / 100
+        if profit_target > max(self.profit_target_range):
+            profit_target = max(self.profit_target_range)
+        elif profit_target < min(self.profit_target_range) or profit_target < 0:
+            profit_target = min(self.profit_target_range)
 
-        stop_loss_percent = (-(max(self.profit_target_range) * (1 - trade_amount))) / 100
+        if stop_target > max(self.stop_loss_range):
+            stop_target = max(self.stop_loss_range)
+        elif stop_target < min(self.stop_loss_range) or stop_target < 0:
+            stop_target = min(self.stop_loss_range)
+
+        profit_target_percent = profit_target / 100
+        stop_loss_percent = -stop_target / 100
 
         if TradeType is TradeType.MARKET_BUY or TradeType is TradeType.LIMIT_BUY:
             amount = round(self._exchange.balance * 0.99 *
