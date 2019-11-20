@@ -58,12 +58,8 @@ class TradingEnvironment(gym.Env):
         self.render_benchmarks: List[Dict] = kwargs.get('render_benchmarks', [])
         self.viewer = None 
 
-        #multiprocessing
-        self.n_envs = os.cpu_count()
-
         self.logger = logging.getLogger(kwargs.get('logger_name', __name__))
         self.logger.setLevel(kwargs.get('log_level', logging.DEBUG))
-
         logging.getLogger('tensorflow').disabled = kwargs.get('disable_tensorflow_logger', True)
 
         self.reset()
@@ -134,12 +130,10 @@ class TradingEnvironment(gym.Env):
         Returns:
             A float corresponding to the benefit earned by the action taken this step.
         """
-        reward = self._reward_scheme.get_reward(current_step=trade.step, trade=trade)
+        reward = self._reward_scheme.get_reward(trade=trade)
         reward = np.nan_to_num(reward)
-
         if np.bitwise_not(np.isfinite(reward)):
             raise ValueError('Reward returned by the reward scheme must by a finite float.')
-
         return reward
 
     def _done(self) -> bool:
@@ -148,8 +142,7 @@ class TradingEnvironment(gym.Env):
         Returns:
             A boolean signaling whether the environments is done and should be restarted.
         """
-        lost_90_percent_net_worth = self._exchange.profit_loss_percent < 0.1
-
+        lost_90_percent_net_worth = self._exchange.profit_loss_percent(step = self._current_step) < 0.1
         return lost_90_percent_net_worth or not self._exchange.has_next_observation
 
     def _info(self, executed_trade: Trade, filled_trade: Trade, reward: int) -> dict:
@@ -194,11 +187,9 @@ class TradingEnvironment(gym.Env):
 
     def reset(self) -> pd.DataFrame:
         """Resets the state of the environments and returns an initial observation.
-
         Returns:
             observation: the initial observation.
         """
-
         self._action_scheme.reset()
         self._reward_scheme.reset()
         self._exchange.reset()
@@ -211,11 +202,8 @@ class TradingEnvironment(gym.Env):
         if mode == 'system':
             self.logger.info('Price: ' + str(self.exchange._current_price()))
             self.logger.info('Net worth: ' + str(self.exchange.performance[-1]['net_worth']))
-
         elif mode == 'human':
-            if self.viewer is None:
-                self.viewer = TradingChart(self.exchange.data_frame)
-
+            if self.viewer is None: self.viewer = TradingChart(self.exchange.data_frame)
             self.viewer.render(self._current_step,
                                 self.exchange.performance.loc[:,'net_worth'],
                                 self.render_benchmarks,

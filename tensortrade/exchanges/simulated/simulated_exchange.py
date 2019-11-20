@@ -214,9 +214,8 @@ class SimulatedExchange(Exchange):
 
     def reset(self):
         super().reset()
-
         self._current_step = 0
         self._balance = self.initial_balance
         self._portfolio = {self.base_instrument: self.balance}
         self._trades = pd.DataFrame([], columns=['step', 'symbol', 'type', 'amount', 'price'])
-        self._performance = pd.DataFrame([[self._initial_balance, self.net_worth(step=self._current_step)]], columns=['balance', 'net_worth'])
+        self._performance = pd.DataFrame([[self._initial_balance, self.net_worth(step=0)]], columns=['balance', 'net_worth'])

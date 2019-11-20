@@ -30,13 +30,9 @@ class TAlibIndicator(FeatureTransformer):
 
     def __init__(self, indicators: List[str], lows: Union[List[float], List[int]] = None, highs: Union[List[float], List[int]] = None, **kwargs):
         self._indicator_names, self._indicator_values = self.parse_indicators(indicators)
-        self._indicators = list(
-    map(lambda indicator_name: self._str_to_indicator(indicator_name), self._indicator_names))
-
+        self._indicators = list(map(lambda indicator_name: self._str_to_indicator(indicator_name), self._indicator_names))
         self._history = self.init_history()
         self._window_size = kwargs.get("window_size", 10)
-        self._lows = lows or np.zeros(len(self.hist_cols))
-        self._highs = highs or np.ones(len(self.hist_cols))            
 
     def init_history(self):
         ohlcv_cols = ['open', 'high', 'low', 'close', 'volume']
@@ -56,9 +52,9 @@ class TAlibIndicator(FeatureTransformer):
     def _str_to_indicator(self, indicator_name: str):
         return getattr(talib, indicator_name.upper())
 
-    # def transform_spaces(self, low, high):
-    #     new_low, new_high = low.copy(), high.copy()
-    #     return new_low, new_high
+    def transform_spaces(self, low, high):
+        new_low, new_high = low.copy(), high.copy()
+        return new_low, new_high
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         #append new obs to history 

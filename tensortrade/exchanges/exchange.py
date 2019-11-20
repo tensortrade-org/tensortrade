@@ -170,14 +170,13 @@ class Exchange(Component):
 
         return net_worth
 
-    @property
-    def profit_loss_percent(self) -> float:
+    def profit_loss_percent(self, step:int) -> float:
         """Calculate the percentage change in net worth since the last reset.
 
         Returns:
             The percentage change in net worth since the last reset.
         """
-        return float(self.net_worth(self._current_step-1) / self.initial_balance) * 100
+        return float(self.net_worth(step) / self.initial_balance) * 100
 
     @property
     @abstractmethod
@@ -203,9 +202,8 @@ class Exchange(Component):
 
         if isinstance(observation, pd.DataFrame):
             observation = observation.fillna(0, axis=1)
-
             return observation.values
-
+        
         return observation
 
     def instrument_balance(self, symbol: str) -> float:
@@ -225,7 +223,7 @@ class Exchange(Component):
         return 0
 
     @abstractmethod
-    def current_price(self, symbol: str) -> float:
+    def current_price(self, step:int, symbol: str) -> float:
         """The current price of an instrument on the exchange, denoted in the base instrument.
 
         Arguments:
