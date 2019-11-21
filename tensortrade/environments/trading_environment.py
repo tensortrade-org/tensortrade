@@ -1,22 +1,39 @@
+# Copyright 2019 The TensorTrade Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import gym
 import logging
+import importlib
 import pandas as pd
 import numpy as np
+
 import tensortrade.exchanges as exchanges
 import tensortrade.actions as actions
 import tensortrade.rewards as rewards
 import tensortrade.features as features
-import os
 
 from gym import spaces
-from typing import Union, Tuple, List
+from typing import Union, Tuple, List, Dict
 
 from tensortrade.actions import ActionScheme, TradeActionUnion
 from tensortrade.rewards import RewardScheme
 from tensortrade.exchanges import Exchange
 from tensortrade.features import FeaturePipeline
 from tensortrade.trades import Trade
-from tensortrade.render import TradingChart
+
+if importlib.util.find_spec("matplotlib") is not None:
+    from tensortrade.environments.render import MatplotlibTradingChart
 
 
 class TradingEnvironment(gym.Env):
@@ -55,7 +72,6 @@ class TradingEnvironment(gym.Env):
         self.observation_space = self._exchange.observation_space
         self.action_space = self._action_scheme.action_space
 
-        # rendering
         self.render_benchmarks: List[Dict] = kwargs.get('render_benchmarks', [])
         self.viewer = None
 
@@ -73,6 +89,11 @@ class TradingEnvironment(gym.Env):
     @exchange.setter
     def exchange(self, exchange: Exchange):
         self._exchange = exchange
+
+    @property
+    def episode_trades(self) -> pd.DataFrame:
+        """A `pandas.DataFrame` of trades made this episode."""
+        return self.exchange.trades
 
     @property
     def action_scheme(self) -> ActionScheme:
@@ -110,12 +131,12 @@ class TradingEnvironment(gym.Env):
         Returns:
             A tuple containing the (fill_amount, fill_price) of the executed trade.
         """
-        executed_trade = self._action_scheme.get_trade(action=action, step=self._current_step)
+        executed_trade = self._action_scheme.get_trade(current_step=self._current_step,
+                                                       action=action)
         filled_trade = self._exchange.execute_trade(executed_trade)
-
         return executed_trade, filled_trade
 
-    def _next_observation(self, trade: Trade) -> np.ndarray:
+    def _next_observation(self) -> np.ndarray:
         """Returns the next observation from the exchange.
 
         Returns:
@@ -131,10 +152,13 @@ class TradingEnvironment(gym.Env):
         Returns:
             A float corresponding to the benefit earned by the action taken this step.
         """
-        reward = self._reward_scheme.get_reward(trade=trade)
+        reward = self._reward_scheme.get_reward(current_step=self._current_step,
+                                                trade=trade)
         reward = np.nan_to_num(reward)
+
         if np.bitwise_not(np.isfinite(reward)):
             raise ValueError('Reward returned by the reward scheme must by a finite float.')
+
         return reward
 
     def _done(self) -> bool:
@@ -143,8 +167,7 @@ class TradingEnvironment(gym.Env):
         Returns:
             A boolean signaling whether the environments is done and should be restarted.
         """
-        lost_90_percent_net_worth = self._exchange.profit_loss_percent(
-            step=self._current_step) < 0.1
+        lost_90_percent_net_worth = self._exchange.profit_loss_percent(self._current_step) < 0.1
         return lost_90_percent_net_worth or not self._exchange.has_next_observation
 
     def _info(self, executed_trade: Trade, filled_trade: Trade, reward: int) -> dict:
@@ -154,16 +177,14 @@ class TradingEnvironment(gym.Env):
             info: A dictionary containing the exchange used, the current timestep, and the filled trade, if any.
         """
         assert filled_trade.step == executed_trade.step
-        return {"episode":
-                {
-                    'current_step': executed_trade.step,
-                    'exchange': self._exchange,
-                    'executed_trade': executed_trade,
-                    'filled_trade': filled_trade,
-                    'portfolio': self._exchange._portfolio,
-                    'r': reward,
-                }
-                }
+
+        return {
+            'current_step': executed_trade.step,
+            'executed_trade': executed_trade,
+            'filled_trade': filled_trade,
+            'reward': reward,
+            'exchange': self._exchange,
+        }
 
     def step(self, action) -> Tuple[pd.DataFrame, float, bool, dict]:
         """Run one timestep within the environments based on the specified action.
@@ -175,10 +196,11 @@ class TradingEnvironment(gym.Env):
             observation (pandas.DataFrame): Provided by the environments's exchange, often OHLCV or tick trade history data points.
             reward (float): An amount corresponding to the benefit earned by the action taken this timestep.
             done (bool): If `True`, the environments is complete and should be restarted.
-        info (dict): Any auxiliary, diagnostic, or debugging information to output.
+            info (dict): Any auxiliary, diagnostic, or debugging information to output.
         """
         executed_trade, filled_trade = self._take_action(action)
-        observation = self._next_observation(filled_trade)
+
+        observation = self._next_observation()
         reward = self._get_reward(filled_trade)
         done = self._done()
         info = self._info(executed_trade, filled_trade, reward)
@@ -189,31 +211,37 @@ class TradingEnvironment(gym.Env):
 
     def reset(self) -> pd.DataFrame:
         """Resets the state of the environments and returns an initial observation.
+
         Returns:
-            observation: the initial observation.
+            The episode's initial observation.
         """
         self._action_scheme.reset()
         self._reward_scheme.reset()
         self._exchange.reset()
+
         self._current_step = 0
 
-        return self._next_observation(Trade('N/A', 'hold', 0, 0, 0))
+        observation = self._next_observation()
+
+        self._current_step = 1
+
+        return observation
 
     def render(self, mode='none'):
-        """Renders the environment."""
+        """Renders the environment via matplotlib."""
         if mode == 'system':
             self.logger.info('Price: ' + str(self.exchange._current_price()))
             self.logger.info('Net worth: ' + str(self.exchange.performance[-1]['net_worth']))
         elif mode == 'human':
             if self.viewer is None:
-                self.viewer = TradingChart(self.exchange.data_frame)
+                self.viewer = MatplotlibTradingChart(self.exchange.data_frame)
+
             self.viewer.render(self._current_step,
                                self.exchange.performance.loc[:, 'net_worth'],
                                self.render_benchmarks,
                                self.exchange.trades)
 
-    def retrieve_trades(self):
-        """
-        Retrieves all trades
-        """
-        return self.exchange.trades
+    def close(self):
+        """Utility method to clean environment before closing."""
+        if self.viewer is not None:
+            self.viewer.close()
