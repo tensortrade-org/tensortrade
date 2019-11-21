@@ -172,6 +172,7 @@ class Exchange(Component):
 
         return net_worth
 
+    @property
     def profit_loss_percent(self) -> float:
         """Calculate the percentage change in net worth since the last reset.
 

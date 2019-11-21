@@ -167,7 +167,7 @@ class TradingEnvironment(gym.Env):
         Returns:
             A boolean signaling whether the environments is done and should be restarted.
         """
-        lost_90_percent_net_worth = self._exchange.profit_loss_percent(self._current_step) < 0.1
+        lost_90_percent_net_worth = self._exchange.profit_loss_percent < 0.1
         return lost_90_percent_net_worth or not self._exchange.has_next_observation
 
     def _info(self, executed_trade: Trade, filled_trade: Trade, reward: int) -> dict:
