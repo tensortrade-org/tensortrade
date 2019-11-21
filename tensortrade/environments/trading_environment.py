@@ -49,6 +49,7 @@ class TradingEnvironment(gym.Env):
             kwargs (optional): Additional arguments for tuning the environments, logging, etc.
         """
         super().__init__()
+
         self._exchange = exchanges.get(exchange) if isinstance(exchange, str) else exchange
         self._action_scheme = actions.get(action_scheme) if isinstance(
             action_scheme, str) else action_scheme
@@ -133,9 +134,8 @@ class TradingEnvironment(gym.Env):
         self._current_step += 1
 
         observation = self._exchange.next_observation()
-        if len(observation) != 0:
-            observation = observation[0]
-            observation = np.nan_to_num(observation)
+        observation = np.nan_to_num(observation)
+
         return observation
 
     def _get_reward(self, trade: Trade) -> float:
