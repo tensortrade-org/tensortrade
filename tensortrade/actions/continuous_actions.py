@@ -47,7 +47,7 @@ class ContinuousActions(ActionScheme):
         if isinstance(self._instrument, list):
             self._instrument = self._instrument[0]
 
-    def get_trade(self, action: TradeActionUnion) -> Trade:
+    def get_trade(self, current_step: int, action: TradeActionUnion) -> Trade:
         action_type, trade_amount = action
         trade_type = TradeType(int(action_type * len(TradeType)))
 
@@ -70,4 +70,4 @@ class ContinuousActions(ActionScheme):
             amount_held = self._exchange.portfolio.get(self._instrument, 0)
             amount = round(amount_held * trade_amount, instrument_precision)
 
-        return Trade(self._instrument, trade_type, amount, price)
+        return Trade(current_step, self._instrument, trade_type, amount, price)

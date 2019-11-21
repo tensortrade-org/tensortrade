@@ -57,4 +57,4 @@ class RandomUniformSlippageModel(SlippageModel):
                 fill_price = trade.price
                 fill_amount *= fill_price / trade.price
 
-        return Trade(trade.symbol, trade.trade_type, amount=fill_amount, price=fill_price)
+        return Trade(trade.step, trade.symbol, trade.trade_type, amount=fill_amount, price=fill_price)
