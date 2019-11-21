@@ -14,6 +14,7 @@
 
 import numpy as np
 import pandas as pd
+import pdb
 import tensortrade.slippage as slippage
 
 from gym.spaces import Space, Box
@@ -22,6 +23,8 @@ from typing import List, Dict
 from tensortrade.trades import Trade, TradeType
 from tensortrade.exchanges import Exchange
 from tensortrade.features import FeaturePipeline
+
+from lib.util import preprocess_data, feature_engineer
 
 
 class SimulatedExchange(Exchange):
@@ -35,7 +38,6 @@ class SimulatedExchange(Exchange):
     def __init__(self, data_frame: pd.DataFrame = None, **kwargs):
         super().__init__(
             dtype=self.default('dtype', np.float32),
-            feature_pipeline=self.default('feature_pipeline', None),
             **kwargs
         )
 
@@ -44,9 +46,11 @@ class SimulatedExchange(Exchange):
         self._instrument_precision = self.default('instrument_precision', 8, kwargs)
         self._initial_balance = self.default('initial_balance', 1e4, kwargs)
         self._price_column = self.default('price_column', 'close', kwargs)
-        self._pretransform = self.default('pretransform', True, kwargs)
+        self._pretransform = self.default('pretransform', False, kwargs)
 
+        self._ohlcv_cols = ['open', 'high', 'low', 'close', 'volume']
         self.data_frame = self.default('data_frame', data_frame)
+        self._observation_columns = self.set_observation_columns()
 
         model = self.default('slippage_model', 'uniform', kwargs)
         self._slippage_model = slippage.get(model) if isinstance(model, str) else model()
@@ -63,7 +67,8 @@ class SimulatedExchange(Exchange):
             self._price_history = None
             return
 
-        self._data_frame = data_frame
+        data_frame = data_frame.set_index('date')
+        self._data_frame = data_frame[self._ohlcv_cols]
         self._price_history = data_frame[self._price_column]
         self._pre_transformed_columns = data_frame.columns
 
@@ -103,17 +108,21 @@ class SimulatedExchange(Exchange):
     def performance(self) -> pd.DataFrame:
         return self._performance
 
+    @performance.setter
+    def performance(self, performance: pd.DataFrame):
+        self._performance = performance
+
     @property
-    def observation_columns(self) -> List[str]:
-        if self._data_frame is None:
-            return None
+    def observation_columns(self) -> pd.DataFrame:
+        return self._observation_columns
 
-        data_frame = self._data_frame.iloc[0:10]
-
+    def set_observation_columns(self) -> list:
+        df = self._data_frame.iloc[0:10].copy(deep=True)
         if self._feature_pipeline is not None:
-            data_frame = self._feature_pipeline.transform(data_frame)
-
-        return data_frame.select_dtypes(include=[np.float, np.number]).columns
+            df = self._feature_pipeline.transform(df)
+        obs_cols = df.select_dtypes(include=[np.float, np.number]).columns
+        self._feature_pipeline.reset()
+        return obs_cols
 
     @property
     def has_next_observation(self) -> bool:
@@ -122,11 +131,7 @@ class SimulatedExchange(Exchange):
     def _next_observation(self) -> pd.DataFrame:
         lower_range = max((self._current_step - self._window_size, 0))
         upper_range = min(self._current_step + 1, len(self._data_frame))
-
         obs = self._data_frame.iloc[lower_range:upper_range]
-
-        if not self._pretransform and self._feature_pipeline is not None:
-            obs = self._feature_pipeline.transform(obs)
 
         if len(obs) < self._window_size:
             padding = np.zeros((self._window_size - len(obs), len(self.observation_columns)))
@@ -135,6 +140,10 @@ class SimulatedExchange(Exchange):
 
         obs = obs.select_dtypes(include='number')
 
+        if self._feature_pipeline is not None:
+            obs = self._feature_pipeline.transform(obs)
+
+        obs = obs.fillna(0)
         self._current_step += 1
 
         return obs
@@ -143,11 +152,8 @@ class SimulatedExchange(Exchange):
         if self._feature_pipeline is not None:
             self._data_frame = self._feature_pipeline.transform(self._data_frame)
 
-    def current_price(self, symbol: str) -> float:
-        if self._price_history is not None:
-            return float(self._price_history.iloc[self._current_step])
-
-        return 0
+    def current_price(self, symbol: str, step: int) -> float:
+        return float(self._price_history.iloc[step])
 
     def _is_valid_trade(self, trade: Trade) -> bool:
         if trade.is_buy and self._balance < trade.amount * trade.price:
@@ -158,9 +164,9 @@ class SimulatedExchange(Exchange):
         return trade.amount >= self._min_trade_amount and trade.amount <= self._max_trade_amount
 
     def _update_account(self, trade: Trade):
-        if self._is_valid_trade(trade) and not trade.is_hold:
+        if self._is_valid_trade(trade):
             self._trades = self._trades.append({
-                'step': self._current_step,
+                'step': trade.step,
                 'symbol': trade.symbol,
                 'type': trade.trade_type,
                 'amount': trade.amount,
@@ -174,29 +180,28 @@ class SimulatedExchange(Exchange):
             self._balance += trade.amount * trade.price
             self._portfolio[trade.symbol] = self._portfolio.get(trade.symbol, 0) - trade.amount
 
-        self._portfolio[self._base_instrument] = self._balance
+        self._portfolio[self._base_instrument] = self.balance
 
         self._performance = self._performance.append({
             'balance': self.balance,
-            'net_worth': self.net_worth,
+            'net_worth': self.net_worth(trade.step),
         }, ignore_index=True)
 
     def execute_trade(self, trade: Trade) -> Trade:
-        current_price = self.current_price(symbol=trade.symbol)
+        current_price = self.current_price(symbol=trade.symbol, step=trade.step)
         commission = self._commission_percent / 100
         filled_trade = trade.copy()
 
         if filled_trade.is_hold or not self._is_valid_trade(filled_trade):
             filled_trade.amount = 0
-
+            self._update_account(filled_trade)
             return filled_trade
 
         if filled_trade.is_buy:
             price_adjustment = (1 + commission)
-            filled_trade.price = max(round(current_price * price_adjustment,
-                                           self._base_precision), self.base_precision)
-            filled_trade.amount = round(
-                (filled_trade.price * filled_trade.amount) / filled_trade.price, self._instrument_precision)
+            filled_trade.price = round(current_price * price_adjustment, self._base_precision)
+            filled_trade.amount = round((filled_trade.price * filled_trade.amount) / filled_trade.price,
+                                        self._instrument_precision)
         elif filled_trade.is_sell:
             price_adjustment = (1 - commission)
             filled_trade.price = round(current_price * price_adjustment, self._base_precision)
@@ -210,9 +215,9 @@ class SimulatedExchange(Exchange):
 
     def reset(self):
         super().reset()
-
         self._current_step = 0
         self._balance = self.initial_balance
         self._portfolio = {self.base_instrument: self.balance}
         self._trades = pd.DataFrame([], columns=['step', 'symbol', 'type', 'amount', 'price'])
-        self._performance = pd.DataFrame([], columns=['balance', 'net_worth'])
+        self._performance = pd.DataFrame(
+            [[self._initial_balance, self.net_worth(step=0)]], columns=['balance', 'net_worth'])
