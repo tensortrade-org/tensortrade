@@ -1,5 +1,6 @@
 from .trading_environment import TradingEnvironment
 
+from . import render
 
 _registry = {
     'basic': {

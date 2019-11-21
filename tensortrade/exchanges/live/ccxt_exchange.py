@@ -192,7 +192,7 @@ class CCXTExchange(Exchange):
             'net_worth': self.net_worth,
         }, ignore_index=True)
 
-        return Trade(symbol=trade.symbol, trade_type=trade.trade_type, amount=order['filled'], price=order['price'])
+        return Trade(step=trade.step, symbol=trade.symbol, trade_type=trade.trade_type, amount=order['filled'], price=order['price'])
 
     def reset(self):
         super().reset()

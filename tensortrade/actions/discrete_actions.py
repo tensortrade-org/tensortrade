@@ -57,7 +57,7 @@ class DiscreteActions(ActionScheme):
             'Cannot change the dtype of a `DiscreteActions` due to '
             'the requirements of `gym.spaces.Discrete` spaces. ')
 
-    def get_trade(self, action: TradeActionUnion) -> Trade:
+    def get_trade(self, current_step: int, action: TradeActionUnion) -> Trade:
         """The trade type is determined by `action % len(TradeType)`, and the trade amount is determined by the multiplicity of the action.
 
         For example, 1 = LIMIT_BUY|0.25, 2 = MARKET_BUY|0.25, 6 = LIMIT_BUY|0.5, 7 = MARKET_BUY|0.5, etc.
@@ -85,4 +85,4 @@ class DiscreteActions(ActionScheme):
             amount_held = self._exchange.portfolio.get(self._instrument, 0)
             amount = round(amount_held * trade_amount, instrument_precision)
 
-        return Trade(self._instrument, trade_type, amount, price)
+        return Trade(current_step, self._instrument, trade_type, amount, price)

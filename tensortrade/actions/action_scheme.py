@@ -76,10 +76,11 @@ class ActionScheme(Component):
         pass
 
     @abstractmethod
-    def get_trade(self, action: TradeActionUnion) -> Trade:
+    def get_trade(self, current_step: int, action: TradeActionUnion) -> Trade:
         """Get the trade to be executed on the exchange based on the action provided.
 
         Arguments:
+            current_step: The environments's current timestep.
             action: The action to be converted into a trade.
 
         Returns:
