@@ -131,7 +131,7 @@ class SimulatedExchange(Exchange):
         if len(obs) < self._window_size:
             padding = np.zeros((self._window_size - len(obs), len(self.observation_columns)))
             padding = pd.DataFrame(padding, columns=self.observation_columns)
-            obs = pd.concat([padding, obs], ignore_index=True)
+            obs = pd.concat([padding, obs], ignore_index=True, sort=False)
 
         obs = obs.select_dtypes(include='number')
 
