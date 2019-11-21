@@ -133,7 +133,7 @@ class SimulatedExchange(Exchange):
         return self._current_step < len(self._data_frame) - 1
 
     def _next_observation(self) -> pd.DataFrame:
-        lower_range = max((self._current_step - self._window_size, 0))
+        lower_range = max(self._current_step - self._window_size, 0)
         upper_range = min(self._current_step + 1, len(self._data_frame))
 
         obs = self._data_frame.iloc[lower_range:upper_range]
