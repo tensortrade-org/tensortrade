@@ -77,8 +77,9 @@ class SimulatedExchange(Exchange):
             return
 
         self._data_frame = data_frame
-        self._price_history = data_frame[self._price_column]
-        self._pre_transformed_columns = data_frame.columns
+        self._pre_transformed_data = data_frame.copy()
+        self._price_history = self._pre_transformed_data[self._price_column]
+        self._pre_transformed_columns = self._pre_transformed_data.columns
 
         if self._pretransform:
             self.transform_data_frame()
@@ -154,11 +155,12 @@ class SimulatedExchange(Exchange):
 
     def transform_data_frame(self) -> bool:
         if self._feature_pipeline is not None:
-            self._data_frame = self._feature_pipeline.transform(self._data_frame)
+            self._data_frame = self._feature_pipeline.transform(self._pre_transformed_data)
 
     def current_price(self, symbol: str) -> float:
         if self._price_history is not None:
             return float(self._price_history.iloc[self._current_step])
+        return np.inf
 
     def _is_valid_trade(self, trade: Trade) -> bool:
         if trade.is_buy and self._balance < trade.amount * trade.price:
@@ -226,5 +228,4 @@ class SimulatedExchange(Exchange):
         self._balance = self.initial_balance
         self._portfolio = {self.base_instrument: self.balance}
         self._trades = pd.DataFrame([], columns=['step', 'symbol', 'type', 'amount', 'price'])
-        self._performance = pd.DataFrame(
-            [[self._initial_balance, self.net_worth]], columns=['balance', 'net_worth'])
+        self._performance = pd.DataFrame([], columns=['step', 'balance', 'net_worth'])

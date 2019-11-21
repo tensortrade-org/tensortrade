@@ -143,7 +143,12 @@ class TradingEnvironment(gym.Env):
             The observation provided by the environments's exchange, often OHLCV or tick trade history data points.
         """
         observation = self._exchange.next_observation()
+
+        if len(observation) != 0:
+            observation = observation[0]
+
         observation = np.nan_to_num(observation)
+
         return observation
 
     def _get_reward(self, trade: Trade) -> float:
