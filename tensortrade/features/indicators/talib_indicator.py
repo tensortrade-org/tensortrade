@@ -47,7 +47,7 @@ class TAlibIndicator(FeatureTransformer):
                 X["bb_lower"] = lower
             else:
                 try:
-                    value = indicator(*indicator_args)
+                    value = indicator(*indicator_args,**indicator_params)
 
                     if type(value) == tuple:
                         X[indicator_name] = value[0][0]
@@ -55,6 +55,6 @@ class TAlibIndicator(FeatureTransformer):
                         X[indicator_name] = value
 
                 except:
-                    X[indicator_name] = indicator(*indicator_args)[0]
+                    X[indicator_name] = indicator(*indicator_args,**indicator_params)[0]
 
         return X
