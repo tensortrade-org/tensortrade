@@ -29,16 +29,18 @@ class TAlibIndicator(FeatureTransformer):
 
     def __init__(self, indicators: List[str], lows: Union[List[float], List[int]] = None, highs: Union[List[float], List[int]] = None, **kwargs):
         self._indicator_names = [indicator[0].upper() for indicator in indicators]
-        self._indicator_args = {indicator[0]:indicator[1] for indicator in indicators}
-        self._indicators = [getattr(talib, name) for name in self._indicator_names]
+        self._indicator_args = {indicator[0]:indicator[1]['args'] for indicator in indicators}
+        self._indicator_params = {indicator[0]: indicator[1]['params'] for indicator in indicators}
+        self._indicators = [getattr(talib, name.split('-')[0]) for name in self._indicator_names]
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         for idx, indicator in enumerate(self._indicators):
             indicator_name = self._indicator_names[idx]
             indicator_args = [X[arg].values for arg in self._indicator_args[indicator_name]]
+            indicator_params = self._indicator_params[indicator_name]
 
             if indicator_name == 'BBANDS':
-                upper, middle, lower = indicator(*indicator_args)
+                upper, middle, lower = indicator(*indicator_args,**indicator_params)
 
                 X["bb_upper"] = upper
                 X["bb_middle"] = middle
