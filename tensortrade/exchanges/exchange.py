@@ -40,7 +40,6 @@ class Exchange(Component):
         self._base_instrument = self.context.base_instrument
         self._dtype = self.default('dtype', dtype)
         self._feature_pipeline = self.default('feature_pipeline', feature_pipeline)
-
         self._window_size = self.default('window_size', 1, kwargs)
         self._min_trade_amount = self.default('min_trade_amount', 1e-6, kwargs)
         self._max_trade_amount = self.default('max_trade_amount', 1e6, kwargs)
@@ -55,6 +54,15 @@ class Exchange(Component):
     @base_instrument.setter
     def base_instrument(self, base_instrument: str):
         self._base_instrument = base_instrument
+
+    @property
+    def window_size(self) -> int:
+        """The window size of observations."""
+        return self._window_size
+
+    @window_size.setter
+    def window_size(self, window_size: int):
+        self._window_size = window_size
 
     @property
     def dtype(self) -> TypeString:
@@ -190,7 +198,6 @@ class Exchange(Component):
 
     def next_observation(self) -> np.ndarray:
         """Generate the next observation from the exchange.
-
         Returns:
             The next multi-dimensional list of observations.
         """
@@ -198,7 +205,6 @@ class Exchange(Component):
 
         if isinstance(observation, pd.DataFrame):
             observation = observation.fillna(0, axis=1)
-
             return observation.values
 
         return observation

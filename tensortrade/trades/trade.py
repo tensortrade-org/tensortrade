@@ -16,14 +16,16 @@
 class Trade(object):
     """A trade object for use within trading environments."""
 
-    def __init__(self, symbol: str, trade_type: 'TradeType', amount: float, price: float):
+    def __init__(self, step: int, symbol: str, trade_type: 'TradeType', amount: float, price: float):
         """
         Arguments:
+            step: The timestep the trade was made during the trading episode.
             symbol: The exchange symbol of the instrument in the trade (AAPL, ETH/USD, NQ1!, etc).
             trade_type: The type of trade executed (0 = HOLD, 1=LIMIT_BUY, 2=MARKET_BUY, 3=LIMIT_SELL, 4=MARKET_SELL).
             amount: The amount of the instrument in the trade (shares, satoshis, contracts, etc).
             price: The price paid per instrument in terms of the base instrument (e.g. 10000 represents $10,000.00 if the `base_instrument` is "USD").
         """
+        self._step = step
         self._symbol = symbol
         self._trade_type = trade_type
         self._amount = amount
@@ -31,7 +33,16 @@ class Trade(object):
 
     def copy(self) -> 'Trade':
         """Return a copy of the current trade object."""
-        return Trade(symbol=self._symbol, trade_type=self._trade_type, amount=self._amount, price=self._price)
+        return Trade(step=self._step, symbol=self._symbol, trade_type=self._trade_type, amount=self._amount, price=self._price)
+
+    @property
+    def step(self) -> str:
+        """The timestep the trade was made during the trading episode."""
+        return self._step
+
+    @step.setter
+    def step(self, step: str):
+        self._step = step
 
     @property
     def symbol(self) -> str:

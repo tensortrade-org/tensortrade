@@ -147,7 +147,7 @@ class CCXTExchange(Exchange):
                    for t in trades]
 
         obs = pd.DataFrame(obs, columns=self.generated_columns)
-        obs = pd.concat([self._data_frame, obs], ignore_index=True)
+        obs = pd.concat([self._data_frame, obs], ignore_index=True, sort=False)
 
         self.data_frame = obs
 
@@ -157,7 +157,7 @@ class CCXTExchange(Exchange):
         if len(obs) < self._window_size:
             padding = np.zeros((self._window_size - len(obs), len(self.observation_columns)))
             padding = pd.DataFrame(padding, columns=self.observation_columns)
-            obs = pd.concat([padding, obs], ignore_index=True)
+            obs = pd.concat([padding, obs], ignore_index=True, sort=False)
 
         return obs
 
@@ -192,7 +192,7 @@ class CCXTExchange(Exchange):
             'net_worth': self.net_worth,
         }, ignore_index=True)
 
-        return Trade(symbol=trade.symbol, trade_type=trade.trade_type, amount=order['filled'], price=order['price'])
+        return Trade(step=trade.step, symbol=trade.symbol, trade_type=trade.trade_type, amount=order['filled'], price=order['price'])
 
     def reset(self):
         super().reset()

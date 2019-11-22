@@ -16,8 +16,6 @@ import ta
 import numpy as np
 import pandas as pd
 
-from gym import Space
-from copy import copy
 from abc import abstractmethod
 from typing import Union, List, Callable
 
@@ -36,21 +34,17 @@ class TAIndicator(FeatureTransformer):
         if isinstance(indicators, str):
             indicators = [indicators]
 
-        self._indicator_names = indicators
-        self._indicators = list(
-            map(lambda indicator_name: self._str_to_indicator(indicator_name), indicators))
+        self._indicator_names = [x.lower() for x in indicators]
+        self._indicators = [getattr(ta, indicator_name) for indicator_name in self._indicator_names]
         self._lows = lows or np.zeros(len(indicators))
         self._highs = highs or np.ones(len(indicators))
 
-    def _str_to_indicator(self, indicator_name: str):
-        return getattr(ta, indicator_name.lower())
-
-    def transform(self, data_frame: pd.DataFrame) -> pd.DataFrame:
-        """Will add TAIndicator.indicator columns to DataFrame. Frame must have columns that match indicator parameters,
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        """Adds TAIndicator.indicator columns to DataFrame. Frame must have columns that match indicator parameters,
         e.g. ['high', 'low', 'close'], &c...
 
         Arguments:
-            data_frame: `pandas.DataFrame` with columns matching TA indicators function call. Case insensitive.
+            X: `pandas.DataFrame` with columns matching TA indicators function call. Case insensitive.
         """
         for i in range(len(self._indicators)):
             indicator = self._indicators[i]
@@ -60,12 +54,12 @@ class TAIndicator(FeatureTransformer):
             for param in indicator.__code__.co_varnames:
                 if param in ["df", "open", "high", "low", "close", "volume"]:
                     if param == "df":
-                        params[param] = data_frame
+                        params[param] = X
                     else:
-                        for column in data_frame.columns:
+                        for column in X.columns:
                             if column.lower() == param:
-                                params[param] = data_frame[column]
+                                params[param] = X[column]
 
-            data_frame[indicator_name] = indicator(**params)
+            X[indicator_name] = indicator(**params)
 
-        return data_frame
+        return X

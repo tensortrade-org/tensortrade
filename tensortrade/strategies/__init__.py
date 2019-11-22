@@ -1,4 +1,5 @@
 import importlib
+
 from .trading_strategy import TradingStrategy
 
 if importlib.util.find_spec("stable_baselines") is not None:
