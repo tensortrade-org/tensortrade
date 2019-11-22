@@ -29,7 +29,7 @@ class TAlibIndicator(FeatureTransformer):
 
     def __init__(self, indicators: List[str], lows: Union[List[float], List[int]] = None, highs: Union[List[float], List[int]] = None, **kwargs):
         self._indicator_names = [indicator[0].upper() for indicator in indicators]
-        self._indicator_args = [indicator[1] for indicator in indicators]
+        self._indicator_args = {indicator[0]:indicator[1] for indicator in indicators}
         self._indicators = [getattr(talib, name) for name in self._indicator_names]
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
