@@ -20,8 +20,7 @@ class MatplotlibTradingChart:
 
     def __init__(self, df):
         self.df = df
-        if "volumefrom" in self.df.columns:
-            self.df = self.df.rename({'volumefrom': 'volume'}, axis=1)
+
         # Create a figure on screen and set the title
         self.fig = plt.figure()
 
@@ -129,8 +128,8 @@ class MatplotlibTradingChart:
                                        size="large",
                                        arrowprops=dict(arrowstyle='simple', facecolor=color))
 
-    def render(self, current_step, net_worths, benchmarks, trades, window_size=200):
-        net_worth = round(list(net_worths)[-1], 2)
+    def render(self, current_step, net_worths, benchmarks, trades, window_size=50):
+        net_worth = round(net_worths[-1], 2)
         initial_net_worth = round(net_worths[0], 2)
         profit_percent = round((net_worth - initial_net_worth) / initial_net_worth * 100, 2)
 
