@@ -234,17 +234,18 @@ class TradingEnvironment(gym.Env):
 
     def render(self, mode='none'):
         """Renders the environment via matplotlib."""
-        if mode == 'system':
+        if mode == 'log':
             self.logger.info('Price: ' + str(self.exchange._current_price()))
             self.logger.info('Net worth: ' + str(self.exchange.performance[-1]['net_worth']))
-        elif mode == 'human':
-            if self.viewer is None:
-                self.viewer = MatplotlibTradingChart(self.exchange.data_frame)
+        elif mode == 'chart':
+            if self.viewer is None and hasattr(self.exchange, '_pre_transformed_data'):
+                self.viewer = MatplotlibTradingChart(self.exchange._pre_transformed_data)
 
-            self.viewer.render(self._current_step,
-                               self.exchange.performance.loc[:, 'net_worth'],
-                               self.render_benchmarks,
-                               self.exchange.trades)
+            if self.viewer is not None:
+                self.viewer.render(self._current_step - 1,
+                                   self.exchange.performance['net_worth'].values,
+                                   self.render_benchmarks,
+                                   self.exchange.trades)
 
     def close(self):
         """Utility method to clean environment before closing."""

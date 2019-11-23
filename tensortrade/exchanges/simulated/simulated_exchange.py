@@ -170,7 +170,7 @@ class SimulatedExchange(Exchange):
 
         return trade.amount >= self._min_trade_amount and trade.amount <= self._max_trade_amount
 
-    def _update_account(self, trade: Trade):
+    def _make_trade(self, trade: Trade):
         if not trade.is_hold:
             self._trades = self._trades.append({
                 'step': trade.step,
@@ -187,12 +187,16 @@ class SimulatedExchange(Exchange):
             self._balance += trade.amount * trade.price
             self._portfolio[trade.symbol] = self._portfolio.get(trade.symbol, 0) - trade.amount
 
+    def _update_account(self, trade: Trade):
+        if self._is_valid_trade(trade):
+            self._make_trade(trade)
+
         self._portfolio[self._base_instrument] = self.balance
 
         self._performance = self._performance.append({
             'step': self._current_step,
-            'balance': self.balance,
             'net_worth': self.net_worth,
+            'balance': self.balance,
         }, ignore_index=True)
 
     def execute_trade(self, trade: Trade) -> Trade:
@@ -216,8 +220,7 @@ class SimulatedExchange(Exchange):
         if not filled_trade.is_hold:
             filled_trade = self._slippage_model.fill_order(filled_trade, current_price)
 
-        if self._is_valid_trade(filled_trade):
-            self._update_account(filled_trade)
+        self._update_account(filled_trade)
 
         return filled_trade
 
