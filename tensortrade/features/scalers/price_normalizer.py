@@ -34,8 +34,7 @@ class PriceNormalizer(FeatureTransformer):
         """
         Arguments:
             columns (optional): A list of column names to normalize.
-            input_min (optional): The minimum `float` in the range to scale to. Defaults to -1E-8.
-            input_max (optional): The maximum `float` in the range to scale to. Defaults to 1E8.
+            price_column (optional): The column name of the price column on which normalization will be performed.
             feature_min (optional): The minimum `float` in the range to scale to. Defaults to 0.
             feature_max (optional): The maximum `float` in the range to scale to. Defaults to 1.
             inplace (optional): If `False`, a new column will be added to the output for each input column.
@@ -45,12 +44,12 @@ class PriceNormalizer(FeatureTransformer):
         self._price_column = price_column
         self._feature_min = feature_min
         self._feature_max = feature_max
-        # self._fillna = fillna
+        self._inplace = inplace
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         if X[self._price_column]==None:
             raise ValueError("Unable to find column {}".format(self._price_column))
-        
+
         for column in self.columns:
 
             normalized_column = X[column] / (2*X[self._price_column])

@@ -22,7 +22,7 @@ from typing import Union, List, Tuple, Dict
 from tensortrade.features.feature_transformer import FeatureTransformer
 
 
-class PercentNormalizer(FeatureTransformer):
+class PercentChangeNormalizer(FeatureTransformer):
     """A transformer for normalizing values within a feature pipeline by the column-wise extrema."""
 
     def __init__(self,
@@ -34,8 +34,6 @@ class PercentNormalizer(FeatureTransformer):
         """
         Arguments:
             columns (optional): A list of column names to normalize.
-            input_min (optional): The minimum `float` in the range to scale to. Defaults to -1E-8.
-            input_max (optional): The maximum `float` in the range to scale to. Defaults to 1E8.
             feature_min (optional): The minimum `float` in the range to scale to. Defaults to 0.
             feature_max (optional): The maximum `float` in the range to scale to. Defaults to 1.
             inplace (optional): If `False`, a new column will be added to the output for each input column.
@@ -44,6 +42,7 @@ class PercentNormalizer(FeatureTransformer):
 
         self._feature_min = feature_min
         self._feature_max = feature_max
+        self._inplace = inplace
 
         if feature_min>=feature_max:
             raise ValueError("feature_min must be less than feature_max")
