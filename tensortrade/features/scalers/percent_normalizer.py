@@ -22,13 +22,12 @@ from typing import Union, List, Tuple, Dict
 from tensortrade.features.feature_transformer import FeatureTransformer
 
 
-class MinMaxNormalizer(FeatureTransformer):
+class PercentNormalizer(FeatureTransformer):
     """A transformer for normalizing values within a feature pipeline by the column-wise extrema."""
 
     def __init__(self,
                  columns: Union[List[str], str, None] = None,
-                 input_min: float = -1E-8,
-                 input_max: float = 1E8,
+                 price_column: str = 'open',
                  feature_min: float = 0,
                  feature_max: float = 1,
                  inplace: bool = True):
@@ -43,30 +42,32 @@ class MinMaxNormalizer(FeatureTransformer):
         """
         super().__init__(columns=columns, inplace=inplace)
 
-        self._input_min = input_min
-        self._input_max = input_max
         self._feature_min = feature_min
         self._feature_max = feature_max
 
+        if feature_min>=feature_max:
+            raise ValueError("feature_min must be less than feature_max")
+
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
-        if self.columns is None:
-            self.columns = list(X.select_dtypes('number').columns)
 
         for column in self.columns:
-            low, high = self._input_min, self._input_max
+            feature_midpoint = (self._feature_max + self._feature_min) / 2
 
-            scale = (self._feature_max - self._feature_min)
+            if self._feature_max - self._feature_min < 1:
+                feature_scale = 1 / (self._feature_max - self._feature_min)
 
-            if high - low == 0:
-                normalized_column = (1/len(X[column])) * scale
-            else:
-                normalized_column = (X[column] - low) / (high - low) * scale
+            # set to percent_change, then add the midpoint of the scale
+            normalized_column = feature_scale * X[column].pct_change() + feature_scale
+            # pct_change causes the first item is set to NaN; we can either drop the first value or [set it to 0 as an initial value]
+            normalized_column[0] = 0
+            # clip to feature_min and feature_max, just in case of crazy outlier cases
+            normalized_column = normalized_column.clip(lower=self._feature_min, upper=self._feature_max)
 
             if not self._inplace:
-                column = '{}_minmax_{}_{}'.format(column, self._feature_min, self._feature_max)
+                column = '{}_price_{}_{}'.format(column, self._feature_min, self._feature_max)
 
             args = {}
-            args[column] = normalized_column + self._feature_min
+            args[column] = normalized_column
 
             X = X.assign(**args)
 

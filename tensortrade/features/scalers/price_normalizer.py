@@ -22,13 +22,12 @@ from typing import Union, List, Tuple, Dict
 from tensortrade.features.feature_transformer import FeatureTransformer
 
 
-class MinMaxNormalizer(FeatureTransformer):
+class PriceNormalizer(FeatureTransformer):
     """A transformer for normalizing values within a feature pipeline by the column-wise extrema."""
 
     def __init__(self,
                  columns: Union[List[str], str, None] = None,
-                 input_min: float = -1E-8,
-                 input_max: float = 1E8,
+                 price_column: str = 'close',
                  feature_min: float = 0,
                  feature_max: float = 1,
                  inplace: bool = True):
@@ -43,30 +42,24 @@ class MinMaxNormalizer(FeatureTransformer):
         """
         super().__init__(columns=columns, inplace=inplace)
 
-        self._input_min = input_min
-        self._input_max = input_max
+        self._price_column = price_column
         self._feature_min = feature_min
         self._feature_max = feature_max
+        # self._fillna = fillna
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
-        if self.columns is None:
-            self.columns = list(X.select_dtypes('number').columns)
-
+        if X[self._price_column]==None:
+            raise ValueError("Unable to find column {}".format(self._price_column))
+        
         for column in self.columns:
-            low, high = self._input_min, self._input_max
 
-            scale = (self._feature_max - self._feature_min)
-
-            if high - low == 0:
-                normalized_column = (1/len(X[column])) * scale
-            else:
-                normalized_column = (X[column] - low) / (high - low) * scale
+            normalized_column = X[column] / (2*X[self._price_column])
 
             if not self._inplace:
-                column = '{}_minmax_{}_{}'.format(column, self._feature_min, self._feature_max)
+                column = '{}_price_{}_{}'.format(column, self._feature_min, self._feature_max)
 
             args = {}
-            args[column] = normalized_column + self._feature_min
+            args[column] = normalized_column
 
             X = X.assign(**args)
 
