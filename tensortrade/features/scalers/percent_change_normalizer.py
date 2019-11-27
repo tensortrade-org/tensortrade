@@ -22,29 +22,30 @@ from typing import Union, List, Tuple, Dict
 from tensortrade.features.feature_transformer import FeatureTransformer
 
 
-class MinMaxNormalizer(FeatureTransformer):
-    """A transformer for normalizing values within a feature pipeline by the column-wise extrema."""
+class PercentChangeNormalizer(FeatureTransformer):
+    """
+    A transformer for normalizing values within a feature pipeline by the percent change of the previous value.
+    This would be used in cases where you want to generalize away from values where specific values have a meaning.
+    For example, if you are thinking about this on the close price, it has an advantage and a disadvantage:
+        - advantage: the price jump from 100 to 101 will be normalized the same as the price jump from 101 to 102.1
+        - disadvantage: the system will have a harder time with action dependent on specific values, like the price
+                        is constantly attracted to 100.
+    """
 
     def __init__(self,
                  columns: Union[List[str], str, None] = None,
-                 input_min: float = -1E-8,
-                 input_max: float = 1E8,
                  feature_min: float = 0,
                  feature_max: float = 1,
                  inplace: bool = True):
         """
         Arguments:
             columns (optional): A list of column names to normalize.
-            input_min (optional): The minimum `float` in the range to scale to. Defaults to -1E-8.
-            input_max (optional): The maximum `float` in the range to scale to. Defaults to 1E8.
             feature_min (optional): The minimum `float` in the range to scale to. Defaults to 0.
             feature_max (optional): The maximum `float` in the range to scale to. Defaults to 1.
             inplace (optional): If `False`, a new column will be added to the output for each input column.
         """
         super().__init__(columns=columns, inplace=inplace)
 
-        self._input_min = input_min
-        self._input_max = input_max
         self._feature_min = feature_min
         self._feature_max = feature_max
 
@@ -56,20 +57,22 @@ class MinMaxNormalizer(FeatureTransformer):
             self.columns = list(X.select_dtypes('number').columns)
 
         for column in self.columns:
-            low, high = self._input_min, self._input_max
+            feature_midpoint = (self._feature_max + self._feature_min) / 2
+            feature_scale = 1
 
-            scale = (self._feature_max - self._feature_min)
+            if self._feature_max - self._feature_min < 1:
+                feature_scale = 1 / (self._feature_max - self._feature_min)
 
-            if high - low == 0:
-                normalized_column = (1/len(X[column])) * scale
-            else:
-                normalized_column = (X[column] - low) / (high - low) * scale
+            normalized_column = feature_scale * X[column].pct_change() + feature_midpoint
+            normalized_column = normalized_column.fillna(0)
+            normalized_column = normalized_column.clip(lower=self._feature_min,
+                                                       upper=self._feature_max)
 
             if not self._inplace:
-                column = '{}_minmax_{}_{}'.format(column, self._feature_min, self._feature_max)
+                column = '{}_price_{}_{}'.format(column, self._feature_min, self._feature_max)
 
             args = {}
-            args[column] = normalized_column + self._feature_min
+            args[column] = normalized_column
 
             X = X.assign(**args)
 
