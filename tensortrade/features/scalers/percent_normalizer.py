@@ -61,7 +61,7 @@ class PercentChangeNormalizer(FeatureTransformer):
                 feature_scale = 1 / (self._feature_max - self._feature_min)
 
             # set to percent_change, then add the midpoint of the scale
-            normalized_column = feature_scale * X[column].pct_change() + feature_scale
+            normalized_column = feature_scale * X[column].pct_change() + feature_midpoint
             # pct_change causes the first item is set to NaN; we can either drop the first value or [set it to 0 as an initial value]
             normalized_column[0] = 0
             # clip to feature_min and feature_max, just in case of crazy outlier cases
