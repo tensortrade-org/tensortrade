@@ -23,11 +23,17 @@ from tensortrade.features.feature_transformer import FeatureTransformer
 
 
 class PercentChangeNormalizer(FeatureTransformer):
-    """A transformer for normalizing values within a feature pipeline by the column-wise extrema."""
+    """
+    A transformer for normalizing values within a feature pipeline by the percent change of the previous value.
+    This would be used in cases where you want to generalize away from values where specific values have a meaning.
+    For example, if you are thinking about this on the close price, it has an advantage and a disadvantage:
+        - advantage: the price jump from 100 to 101 will be normalized the same as the price jump from 101 to 102.1
+        - disadvantage: the system will have a harder time with action dependent on specific values, like the price
+                        is constantly attracted to 100.
+    """
 
     def __init__(self,
                  columns: Union[List[str], str, None] = None,
-                 price_column: str = 'open',
                  feature_min: float = 0,
                  feature_max: float = 1,
                  inplace: bool = True):
