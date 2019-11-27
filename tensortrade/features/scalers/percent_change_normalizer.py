@@ -49,23 +49,24 @@ class PercentChangeNormalizer(FeatureTransformer):
         self._feature_min = feature_min
         self._feature_max = feature_max
 
-        if feature_min>=feature_max:
+        if feature_min >= feature_max:
             raise ValueError("feature_min must be less than feature_max")
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        if self.columns is None:
+            self.columns = list(X.select_dtypes('number').columns)
 
         for column in self.columns:
             feature_midpoint = (self._feature_max + self._feature_min) / 2
+            feature_scale = 1
 
             if self._feature_max - self._feature_min < 1:
                 feature_scale = 1 / (self._feature_max - self._feature_min)
 
-            # set to percent_change, then add the midpoint of the scale
-            normalized_column = feature_scale * X[column].pct_change() + feature_scale
-            # pct_change causes the first item is set to NaN; we can either drop the first value or [set it to 0 as an initial value]
-            normalized_column[0] = 0
-            # clip to feature_min and feature_max, just in case of crazy outlier cases
-            normalized_column = normalized_column.clip(lower=self._feature_min, upper=self._feature_max)
+            normalized_column = feature_scale * X[column].pct_change() + feature_midpoint
+            normalized_column = normalized_column.fillna(0)
+            normalized_column = normalized_column.clip(lower=self._feature_min,
+                                                       upper=self._feature_max)
 
             if not self._inplace:
                 column = '{}_price_{}_{}'.format(column, self._feature_min, self._feature_max)

@@ -52,13 +52,18 @@ class ComparisonNormalizer(FeatureTransformer):
         self._feature_min = feature_min
         self._feature_max = feature_max
 
+        if feature_min >= feature_max:
+            raise ValueError("feature_min must be less than feature_max")
+
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
-        if X[self._comparison_column]==None:
+        if self.columns is None:
+            self.columns = list(X.select_dtypes('number').columns)
+
+        if self._comparison_column not in X:
             raise ValueError("Unable to find column {}".format(self._comparison_column))
 
         for column in self.columns:
-
-            normalized_column = X[column] / (2*X[self._comparison_column])
+            normalized_column = X[column] / (2 * X[self._comparison_column])
 
             if not self._inplace:
                 column = '{}_price_{}_{}'.format(column, self._feature_min, self._feature_max)

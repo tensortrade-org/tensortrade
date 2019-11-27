@@ -48,6 +48,9 @@ class MinMaxNormalizer(FeatureTransformer):
         self._feature_min = feature_min
         self._feature_max = feature_max
 
+        if feature_min >= feature_max:
+            raise ValueError("feature_min must be less than feature_max")
+
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         if self.columns is None:
             self.columns = list(X.select_dtypes('number').columns)
