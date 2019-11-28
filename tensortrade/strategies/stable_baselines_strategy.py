@@ -34,20 +34,14 @@ from tensortrade.strategies import TradingStrategy
 class StableBaselinesTradingStrategy(TradingStrategy):
     """A trading strategy capable of self tuning, training, and evaluating with stable-baselines.
 
-    Parameters:
-    ----------
-    environments : `TradingEnvironment`
-        An instance of a trading environments for the agent to trade within.
-    model : BaseRLModel
-        The RL model to create the agent with.
-        Defaults to DQN.
-    policy : Union[str, BasePolicy]
-        The RL policy to train the agent's model with.
-        Defaults to 'MlpPolicy'.
-    model_kwargs : any
-        Any additional keyword arguments to adjust the model.
-    kwargs : dict
-        Optional keyword arguments to adjust the strategy.
+    Arguments:
+        environments: An instance of a trading environments for the agent to trade within.
+        model: The RL model to create the agent with.
+            Defaults to DQN.
+        policy: The RL policy to train the agent's model with.
+            Defaults to 'MlpPolicy'.
+        model_kwargs: Any additional keyword arguments to adjust the model.
+        kwargs: Optional keyword arguments to adjust the strategy.
     """
 
     def __init__(self,
@@ -90,7 +84,11 @@ class StableBaselinesTradingStrategy(TradingStrategy):
     def tune(self, steps: int = None, episodes: int = None, callback: Callable[[pd.DataFrame], bool] = None) -> pd.DataFrame:
         raise NotImplementedError
 
-    def run(self, steps: int = None, episodes: int = None, episode_callback: Callable[[pd.DataFrame], bool] = None) -> pd.DataFrame:
+    def run(self,
+            steps: int = None,
+            episodes: int = None,
+            render_mode: str = None,
+            episode_callback: Callable[[pd.DataFrame], bool] = None) -> pd.DataFrame:
         if steps is None and episodes is None:
             raise ValueError(
                 'You must set the number of `steps` or `episodes` to run the strategy.')
@@ -114,8 +112,11 @@ class StableBaselinesTradingStrategy(TradingStrategy):
             exchange_performance = info[0].get('exchange').performance
             performance = exchange_performance if len(exchange_performance) > 0 else performance
 
+            if render_mode is not None:
+                self._environment.render(mode=render_mode)
+
             if dones[0]:
-                if episode_callback is not None and episode_callback(self._environment._exchange.performance):
+                if episode_callback is not None and not episode_callback(performance):
                     break
 
                 episodes_completed += 1

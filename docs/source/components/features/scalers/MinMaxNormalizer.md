@@ -4,15 +4,14 @@ A transformer for normalizing values within a feature pipeline by the column-wis
 
 ## Class Parameters
 
-
-* `columns` 
-  * A list of column names to normalize.
-* `feature_min`
-  * The minimum value in the range to scale to.
-* `feature_max`
-  * The maximum value in the range to scale to.
-* `inplace`
-  * If `False`, a new column will be added to the output for each input column.
+- `columns`
+  - A list of column names to normalize.
+- `feature_min`
+  - The minimum value in the range to scale to.
+- `feature_max`
+  - The maximum value in the range to scale to.
+- `inplace`
+  - If `False`, a new column will be added to the output for each input column.
 
 ## Properties and Setters
 
@@ -20,18 +19,16 @@ None
 
 ## Functions
 
-Below are the functions that the `MinMaxNormalizer` uses to effectively operate. 
+Below are the functions that the `MinMaxNormalizer` uses to effectively operate.
 
 ### Private
-*None*
+
+_None_
 
 ### Public
 
-* `transform_space`
-  * Get the transformed output space for a given input space.
-* `transform`
-  * Apply the pipeline of feature transformations to an observation frame.
-
+- `transform`
+  - Apply the pipeline of feature transformations to an observation frame.
 
 ## Use Cases:
 

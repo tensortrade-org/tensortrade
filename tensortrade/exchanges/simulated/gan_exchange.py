@@ -21,11 +21,11 @@ from typing import Dict
 
 from tensortrade.trades import Trade, TradeType
 from tensortrade.slippage import RandomUniformSlippageModel
-from tensortrade.exchanges import InstrumentExchange
+from tensortrade.exchanges import Exchange
 
 
-class GANExchange(InstrumentExchange):
-    """A simulated instrument exchange, in which the price history is based off a generative adversarial network
+class GANExchange(Exchange):
+    """A simulated exchange, in which the price history is based off a generative adversarial network
     model with supplied parameters.
 
     If the `training_data` parameter is not supplied upon initialization, it must be set before

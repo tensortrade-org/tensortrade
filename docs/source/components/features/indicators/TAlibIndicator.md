@@ -1,43 +1,36 @@
 # TAlibIndicator
-Adds one or more TAlib indicators to a data frame, based on existing open, high, low, and close column values.
 
+Adds one or more TAlib indicators to a data frame, based on existing open, high, low, and close column values.
 
 ![TalibIndicator](../../../_static/images/talib_transform.png)
 
-
 ## Class Parameters
-* `indicators`
-  * A list of indicators you want to transform the price information to.
-* `lows` 
-  * The lower end of the observation space. See `spaces.Box` to best understand.
-* `highs`
-  * The lower end of the observation space. See `spaces.Box` to best understand.
+
+- `indicators`
+  - A list of indicators you want to transform the price information to.
+- `lows`
+  - The lower end of the observation space. See `spaces.Box` to best understand.
+- `highs`
+  - The lower end of the observation space. See `spaces.Box` to best understand.
 
 ## Properties and Setters
 
-* **NONE**
-
-
+- **NONE**
 
 ## Functions
 
-Below are the functions that the `TAlibIndicator` uses to effectively operate. 
+Below are the functions that the `TAlibIndicator` uses to effectively operate.
 
 ### Private
-* `_str_to_indicator` - Converts the name of an indicator to an actual instance of the indicator. For a list of indicators see list [here](http://mrjbq7.github.io/ta-lib/).
+
+- `_str_to_indicator` - Converts the name of an indicator to an actual instance of the indicator. For a list of indicators see list [here](http://mrjbq7.github.io/ta-lib/).
 
 ### Public
 
-* `transform_space`
-  * Get the transformed output space for a given input space.
-* `transform`
-  * Transform the data set and return a new data frame.
-
-
+- `transform`
+  - Transform the data set and return a new data frame.
 
 ## Use Cases:
-
-
 
 ## Use Cases
 
@@ -50,7 +43,6 @@ talib_indicator = TAlibIndicator(["rsi", "ema"])
 ```
 
 This runs through the indicators in the list, at runtime and matches them to what is seen inside of TA-Lib. The features are then flattened into the `output_space`, both into the `high` and `low` segment of `space.Box`.
-
 
 ```py
 for i in range(len(self._indicators)):

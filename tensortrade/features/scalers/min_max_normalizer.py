@@ -27,48 +27,38 @@ class MinMaxNormalizer(FeatureTransformer):
 
     def __init__(self,
                  columns: Union[List[str], str, None] = None,
+                 input_min: float = -1E-8,
+                 input_max: float = 1E8,
                  feature_min: float = 0,
                  feature_max: float = 1,
                  inplace: bool = True):
         """
         Arguments:
             columns (optional): A list of column names to normalize.
+            input_min (optional): The minimum `float` in the range to scale to. Defaults to -1E-8.
+            input_max (optional): The maximum `float` in the range to scale to. Defaults to 1E8.
             feature_min (optional): The minimum `float` in the range to scale to. Defaults to 0.
             feature_max (optional): The maximum `float` in the range to scale to. Defaults to 1.
             inplace (optional): If `False`, a new column will be added to the output for each input column.
         """
         super().__init__(columns=columns, inplace=inplace)
 
+        self._input_min = input_min
+        self._input_max = input_max
         self._feature_min = feature_min
         self._feature_max = feature_max
 
-    def transform_space(self, input_space: Space, column_names: List[str]) -> Space:
-        if self._inplace:
-            return input_space
+        if feature_min >= feature_max:
+            raise ValueError("feature_min must be less than feature_max")
 
-        output_space = copy(input_space)
-
-        shape_x, *shape_y = input_space.shape
-
-        columns = self.columns or range(len(shape_x))
-
-        output_space.shape = (shape_x + len(columns), *shape_y)
-
-        for _ in columns:
-            output_space.low = np.append(output_space.low, self._feature_min)
-            output_space.high = np.append(output_space.high, self._feature_max)
-
-        return output_space
-
-    def transform(self, X: pd.DataFrame, input_space: Space) -> pd.DataFrame:
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         if self.columns is None:
-            self.columns = list(X.columns)
+            self.columns = list(X.select_dtypes('number').columns)
 
-        for idx, column in enumerate(self.columns):
-            low = input_space.low[idx]
-            high = input_space.high[idx]
+        for column in self.columns:
+            low, high = self._input_min, self._input_max
 
-            scale = (self._feature_max - self._feature_min) + self._feature_min
+            scale = (self._feature_max - self._feature_min)
 
             if high - low == 0:
                 normalized_column = (1/len(X[column])) * scale
@@ -79,7 +69,7 @@ class MinMaxNormalizer(FeatureTransformer):
                 column = '{}_minmax_{}_{}'.format(column, self._feature_min, self._feature_max)
 
             args = {}
-            args[column] = normalized_column
+            args[column] = normalized_column + self._feature_min
 
             X = X.assign(**args)
 

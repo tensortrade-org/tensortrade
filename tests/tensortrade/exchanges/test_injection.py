@@ -6,17 +6,17 @@ import tensortrade.slippage as slippage
 from gym import Space
 
 from tensortrade import TradingContext
-from tensortrade.exchanges import *
-from tensortrade.exchanges.live import *
-from tensortrade.exchanges.simulated import *
 from tensortrade.trades import Trade
 from tensortrade.slippage import SlippageModel
+from tensortrade.exchanges import Exchange, get
+from tensortrade.exchanges.live import CCXTExchange
+from tensortrade.exchanges.simulated import SimulatedExchange, FBMExchange
 
 
-class ConcreteInstrumentExchange(InstrumentExchange):
+class ConcreteExchange(Exchange):
 
     def __init__(self):
-        super(ConcreteInstrumentExchange, self).__init__()
+        super(ConcreteExchange, self).__init__()
 
     @property
     def initial_balance(self) -> float:
@@ -39,18 +39,14 @@ class ConcreteInstrumentExchange(InstrumentExchange):
         pass
 
     @property
-    def generated_space(self) -> Space:
-        pass
-
-    @property
-    def generated_columns(self) -> List[str]:
+    def observation_columns(self) -> List[str]:
         pass
 
     @property
     def has_next_observation(self) -> bool:
         pass
 
-    def _create_observation_generator(self) -> Generator[pd.DataFrame, None, None]:
+    def next_observation(self) -> pd.DataFrame:
         pass
 
     def current_price(self, symbol: str) -> float:
@@ -64,38 +60,40 @@ class ConcreteInstrumentExchange(InstrumentExchange):
 
 
 config = {
-        'base_instrument': 'EURO',
-        'products': 'ETH',
-        'exchanges': {
-            'credentials': {
-                'api_key': '48hg34wydghi7ef',
-                'api_secret_key': '0984hgoe8d7htg'
-            }
+    'base_instrument': 'EURO',
+    'instruments': 'ETH',
+    'exchanges': {
+        'credentials': {
+            'api_key': '48hg34wydghi7ef',
+            'api_secret_key': '0984hgoe8d7htg'
         }
+    }
 }
 
 
 def test_injects_exchange_with_credentials():
 
-    with TradingContext(**config) as tc:
-        exchange = ConcreteInstrumentExchange()
+    with TradingContext(**config):
+        exchange = ConcreteExchange()
 
         assert hasattr(exchange.context, 'credentials')
-        assert exchange.context.credentials == {'api_key': '48hg34wydghi7ef', 'api_secret_key': '0984hgoe8d7htg'}
-        assert exchange.context['credentials'] == {'api_key': '48hg34wydghi7ef', 'api_secret_key': '0984hgoe8d7htg'}
+        assert exchange.context.credentials == {
+            'api_key': '48hg34wydghi7ef', 'api_secret_key': '0984hgoe8d7htg'}
+        assert exchange.context['credentials'] == {
+            'api_key': '48hg34wydghi7ef', 'api_secret_key': '0984hgoe8d7htg'}
 
 
 def test_injects_base_instrument():
 
-    with TradingContext(**config) as tc:
+    with TradingContext(**config):
         exchange = SimulatedExchange()
 
         assert exchange.base_instrument == 'EURO'
 
 
-def test_injects_string_initialized_action_strategy():
+def test_injects_string_initialized_action_scheme():
 
-    with TradingContext(**config) as tc:
+    with TradingContext(**config):
 
         exchange = get('simulated')
 
@@ -108,7 +106,7 @@ def test_initialize_ccxt_from_config():
 
     config = {
         'base_instrument': 'USD',
-        'products': 'ETH',
+        'instruments': 'ETH',
         'exchanges': {
             'exchange': 'binance',
             'credentials': {
@@ -135,7 +133,7 @@ def test_simlulated_from_config():
 
     config = {
         'base_instrument': 'EURO',
-        'products': ['BTC', 'ETH'],
+        'instruments': ['BTC', 'ETH'],
         'exchanges': {
             'commission_percent': 0.5,
             'base_precision': 0.3,
@@ -144,7 +142,6 @@ def test_simlulated_from_config():
             'max_trade_price': 1e7,
             'min_trade_amount': 1e-4,
             'max_trade_amount': 1e4,
-            'min_order_amount': 1e-4,
             'initial_balance': 1e5,
             'window_size': 5,
             'should_pretransform_obs': True,

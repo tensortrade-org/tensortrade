@@ -15,7 +15,6 @@
 import pandas as pd
 import numpy as np
 
-from gym import Space
 from copy import copy
 from typing import List, Union
 from abc import ABCMeta, abstractmethod
@@ -37,7 +36,6 @@ class FeatureTransformer(Component, metaclass=ABCMeta):
         self.columns = self.default('columns', columns)
         self._inplace = self.default('inplace', inplace)
 
-
     @property
     def columns(self) -> List[str]:
         return self._columns
@@ -53,41 +51,12 @@ class FeatureTransformer(Component, metaclass=ABCMeta):
         """Optionally implementable method for resetting stateful transformers."""
         pass
 
-    def transform_space(self, input_space: Space, column_names: List[str]) -> Space:
-        """Get the transformed output space for a given input space.
-
-        Args:
-            input_space: A `gym.Space` matching the shape of the pipeline's input.
-            column_names: A list of all column names in the input data frame.
-
-        Returns:
-            A `gym.Space` matching the shape of the pipeline's output.
-        """
-        if self._inplace:
-            return input_space
-
-        output_space = copy(input_space)
-        columns = self.columns or column_names
-
-        shape_x, *shape_y = input_space.shape
-        output_space.shape = (shape_x + len(columns), *shape_y)
-
-        for column in columns:
-            column_index = column_names.index(column)
-            low, high = input_space.low[column_index], input_space.high[column_index]
-
-            output_space.low = np.append(output_space.low - output_space.high, low)
-            output_space.high = np.append(output_space.high, high)
-
-        return output_space
-
     @abstractmethod
-    def transform(self, X: pd.DataFrame, input_space: Space) -> pd.DataFrame:
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         """Transform the data set and return a new data frame.
 
         Arguments:
             X: The set of data to transform.
-            input_space: A `gym.Space` matching the shape of the pipeline's input.
 
         Returns:
             A transformed data frame.

@@ -36,9 +36,9 @@ class SimpleMovingAverage(FeatureTransformer):
 
         self._window_size = window_size
 
-    def transform(self, X: pd.DataFrame, input_space: Space) -> pd.DataFrame:
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         if self.columns is None:
-            self.columns = list(X.columns)
+            self.columns = list(X.select_dtypes('number').columns)
 
         for column in self.columns:
             moving_average = X[column].rolling(self._window_size).mean()

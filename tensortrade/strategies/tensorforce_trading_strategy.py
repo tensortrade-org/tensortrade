@@ -31,7 +31,7 @@ from tensortrade.strategies import TradingStrategy
 class TensorforceTradingStrategy(TradingStrategy):
     """A trading strategy capable of self tuning, training, and evaluating with Tensorforce."""
 
-    def __init__(self, environment: 'TradingEnvironment', agent_spec: any, save_best_agent: bool = False, **kwargs):
+    def __init__(self, environment: 'TradingEnvironment', agent_spec: any, **kwargs):
         """
         Arguments:
             environment: A `TradingEnvironment` instance for the agent to trade within.
@@ -40,6 +40,7 @@ class TensorforceTradingStrategy(TradingStrategy):
             kwargs (optional): Optional keyword arguments to adjust the strategy.
         """
         self._max_episode_timesteps = kwargs.get('max_episode_timesteps', False)
+        self._save_best_agent = kwargs.get('save_best_agent', False)
 
         self._environment = Environment.create(
             environment='gym', level=environment, max_episode_timesteps=self._max_episode_timesteps)
@@ -47,12 +48,32 @@ class TensorforceTradingStrategy(TradingStrategy):
         self._agent = Agent.create(agent=agent_spec, environment=self._environment)
 
         self._runner = Runner(agent=self._agent, environment=self._environment,
-                              save_best_agent=save_best_agent)
+                              save_best_agent=self._save_best_agent)
+
+    @property
+    def environment(self) -> 'TradingEnvironment':
+        """The `TradingEnvironment` being traded by the learning agent."""
+        return self._environment
+
+    @environment.setter
+    def environment(self, environment: 'TradingEnvironment'):
+        self._environment = Environment.create(
+            environment='gym', level=environment, max_episode_timesteps=self._max_episode_timesteps)
+
+        self._runner = Runner(agent=self._agent, environment=self._environment,
+                              save_best_agent=self._save_best_agent)
 
     @property
     def agent(self) -> Agent:
         """A Tensorforce `Agent` instance that will learn the strategy."""
         return self._agent
+
+    @agent.setter
+    def agent(self, agent_spec: any):
+        self._agent = Agent.create(agent=agent_spec, environment=self._environment)
+
+        self._runner = Runner(agent=self._agent, environment=self._environment,
+                              save_best_agent=self._save_best_agent)
 
     @property
     def max_episode_timesteps(self) -> int:

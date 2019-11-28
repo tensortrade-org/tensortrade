@@ -21,21 +21,22 @@ from gym.spaces import Space, Box
 from ccxt import Exchange
 
 from tensortrade.trades import Trade, TradeType
-from tensortrade.exchanges import InstrumentExchange
+from tensortrade.exchanges import Exchange
 
 
-class InteractiveBrokersExchange(InstrumentExchange):
-    """An instrument exchange for trading using the Interactive Brokers API."""
+class InteractiveBrokersExchange(Exchange):
+    """An exchange for trading using the Interactive Brokers API."""
 
     def __init__(self,  **kwargs):
         super().__init__(
-            dtype=self.default('dtype', np.float16, kwargs),
+            dtype=self.default('dtype', np.float32, kwargs),
             feature_pipeline=self.default('feature_pipeline', None, kwargs)
         )
         # TODO: Initialize the Interactive Brokers client
 
         self._observation_type = self.default('observation_type', 'ohlcv', kwargs)
-        self._observation_symbol = self.default('observation_symbols', ['AAPL', 'MSFT', 'GOOG'], kwargs)
+        self._observation_symbol = self.default(
+            'observation_symbols', ['AAPL', 'MSFT', 'GOOG'], kwargs)
         self._timeframe = self.default('timeframe', '10m', kwargs)
         self._window_size = self.default('window_size', 1, kwargs)
 
@@ -86,7 +87,7 @@ class InteractiveBrokersExchange(InstrumentExchange):
         raise NotImplementedError
 
     @property
-    def generated_space(self) -> Space:
+    def observation_columns(self) -> List[str]:
         # TODO
         raise NotImplementedError
 

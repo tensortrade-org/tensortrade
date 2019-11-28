@@ -21,39 +21,40 @@ from copy import copy
 from abc import abstractmethod
 from typing import Union, List, Callable
 
-from tensortrade.features.feature_transformer import FeatureTransformer
+from tensortrade.features import FeatureTransformer
+
 
 class TAlibIndicator(FeatureTransformer):
     """Adds one or more TAlib indicators to a data frame, based on existing open, high, low, and close column values."""
 
-    def __init__(self, indicators: List[str], lows: Union[List[float], List[int]] = None, highs: Union[List[float], List[int]] = None):
-        self._indicator_names = indicators
-        self._indicators = list(
-            map(lambda indicator_name: self._str_to_indicator(indicator_name), indicators))
+    def __init__(self, indicators: List[str], lows: Union[List[float], List[int]] = None, highs: Union[List[float], List[int]] = None, **kwargs):
+        self._indicator_names = [indicator[0].upper() for indicator in indicators]
+        self._indicator_args = {indicator[0]:indicator[1]['args'] for indicator in indicators}
+        self._indicator_params = {indicator[0]: indicator[1]['params'] for indicator in indicators}
+        self._indicators = [getattr(talib, name.split('-')[0]) for name in self._indicator_names]
 
-        self._lows = lows or np.zeros(len(indicators))
-        self._highs = highs or np.ones(len(indicators))
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        for idx, indicator in enumerate(self._indicators):
+            indicator_name = self._indicator_names[idx]
+            indicator_args = [X[arg].values for arg in self._indicator_args[indicator_name]]
+            indicator_params = self._indicator_params[indicator_name]
 
-    def _str_to_indicator(self, indicator_name: str):
-        return getattr(talib, indicator_name.upper())
+            if indicator_name == 'BBANDS':
+                upper, middle, lower = indicator(*indicator_args,**indicator_params)
 
-    def transform_space(self, input_space: Space, column_names: List[str]) -> Space:
-        output_space = copy(input_space)
-        shape_x, *shape_y = input_space.shape
+                X["bb_upper"] = upper
+                X["bb_middle"] = middle
+                X["bb_lower"] = lower
+            else:
+                try:
+                    value = indicator(*indicator_args,**indicator_params)
 
-        output_space.shape = (shape_x + len(self._indicators), *shape_y)
+                    if type(value) == tuple:
+                        X[indicator_name] = value[0][0]
+                    else:
+                        X[indicator_name] = value
 
-        for i in range(len(self._indicators)):
-            output_space.low = np.append(output_space.low, self._lows[i])
-            output_space.high = np.append(output_space.high, self._highs[i])
-
-        return output_space
-
-    def transform(self, X: pd.DataFrame, input_space: Space) -> pd.DataFrame:
-        for i in range(len(self._indicators)):
-            indicator_name = self._indicator_names[i]
-            indicator = self._indicators[i]
-
-            X[indicator_name.upper()] = indicator(X['open'], X['high'], X['low'], X['close'])
+                except:
+                    X[indicator_name] = indicator(*indicator_args,**indicator_params)[0]
 
         return X

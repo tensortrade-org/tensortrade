@@ -12,7 +12,7 @@ class ConcreteSlippageModel(SlippageModel):
 
 config = {
     'base_instrument': 'USD',
-    'products': 'ETH',
+    'instruments': 'ETH',
     'slippage': {
         'minimum': 0,
         'maximum': 100
@@ -22,7 +22,7 @@ config = {
 
 def test_injects_context_into_slippage_model():
 
-    with TradingContext(**config) as tc:
+    with TradingContext(**config):
         model = ConcreteSlippageModel()
 
         assert hasattr(model.context, 'minimum')
