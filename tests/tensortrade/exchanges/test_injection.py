@@ -155,4 +155,4 @@ def test_simlulated_from_config():
         exchange = SimulatedExchange()
 
         exchange.base_instrument == 'EURO'
-        exchange._commission_percent == 0.5
+        exchange._commission == 0.5

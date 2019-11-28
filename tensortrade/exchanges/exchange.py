@@ -46,7 +46,7 @@ class Exchange(Component):
         self._feature_pipeline = self.default('feature_pipeline', feature_pipeline)
         self._window_size = self.default('window_size', 1, kwargs)
 
-        self._commission_percent = kwargs.get('commission_percent', 0.3)
+        self._commission = kwargs.get('commission', 0.3)
 
         self._min_trade_amount = self.default('min_trade_amount', 1e-6, kwargs)
         self._max_trade_amount = self.default('max_trade_amount', 1e6, kwargs)
@@ -201,8 +201,10 @@ class Exchange(Component):
         raise NotImplementedError
 
     @property
-    def commission_percent(self):
-        return self._commission_percent / 100
+    def commission_to_percent(self) -> float:
+        """The _comission returned as a float percentage
+        """
+        return self._commission / 100
 
     def _next_observation(self) -> Union[pd.DataFrame, np.ndarray]:
         raise NotImplementedError()
@@ -248,14 +250,19 @@ class Exchange(Component):
         """
         raise NotImplementedError()
 
-    def _bind_trade_price(self, price: float) -> float:
-        price =  round(min(self._max_trade_price, max(price, self._min_trade_price)), self._base_precision)
+    def _trade_price_bounds_restriction(self, price: float) -> float:
+        """Binds the trade price to a range within the high and low value of the current step
+        This method is used to protect the price from slipping out of bounds when slippage is applied.
+        """
+        price =  min(self._max_trade_price, max(price, self._min_trade_price))
+
         current_min = self._price_history.iloc[self._current_step][self._low_column]
         current_max = self._price_history.iloc[self._current_step][self._high_column]
-        price = round(min(current_max, max(price, current_min)), self._base_precision)
-        return price
+        price = min(current_max, max(price, current_min))
+        return round(price, self._base_precision)
 
-    def _bind_trade_amount(self, amount: float) -> float:
+    def _trade_amount_bounds_restriction(self, amount: float) -> float:
+        """Binds the trade amount to the min and max amount set for the exchange."""
         return round(min(self._max_trade_amount, max(amount,self._min_trade_amount)), self._base_precision)
 
 

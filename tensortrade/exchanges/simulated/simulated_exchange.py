@@ -34,9 +34,9 @@ class SimulatedExchange(Exchange):
     """
 
     def __init__(self, data_frame: pd.DataFrame = None, **kwargs):
-        super().__init__(base_instrument=kwargs.get('base_instrument', 'USD'),
-                         dtype=kwargs.get('dtype', np.float16),
-                         feature_pipeline=kwargs.get('feature_pipeline', None))
+        super().__init__(dtype=kwargs.get('dtype', np.float16),
+                         feature_pipeline=kwargs.get('feature_pipeline', None),
+                         **kwargs)
 
 
         self._initial_balance = kwargs.get('initial_balance', 1E4)
@@ -55,14 +55,11 @@ class SimulatedExchange(Exchange):
         self._window_size = kwargs.get('window_size', 1)
         self._pretransform = kwargs.get('pretransform', True)
 
-        # dataframe for maintining pre-transformation price history
-        self._price_history = None
-
         # Note: This is invoking the data_frame setter
         self.data_frame = data_frame
 
-        self._max_price_slippage_percent = kwargs.get('max_allowed_slippage_percent', kwargs.get('_max_price_slippage_percent', 1.0))
-        self._max_amount_slippage_percent = kwargs.get('max_allowed_slippage_percent', kwargs.get('_max_amount_slippage_percent', 0.0))
+        self._max_price_slippage_percent = kwargs.get('max_price_slippage_percent', 1.0)
+        self._max_amount_slippage_percent = kwargs.get('max_amount_slippage_percent', 0.0)
 
         SlippageModelClass = kwargs.get('slippage_model', RandomUniformSlippageModel)
         self._price_slip_model = SlippageModelClass(min=self._min_trade_price,
@@ -196,7 +193,9 @@ class SimulatedExchange(Exchange):
 
     def _make_trade(self, trade: Trade):
         if not trade.is_hold:
+            # the current_step and index of the current_step may differ.
             self._trades = self._trades.append({
+                'index': self.data_frame.iloc[self._current_step].name,
                 'step': trade.step,
                 'symbol': trade.symbol,
                 'type': trade.trade_type,
@@ -205,6 +204,8 @@ class SimulatedExchange(Exchange):
             }, ignore_index=True)
 
     def _update_account(self, trade: Trade):
+        if not self._is_valid_trade(trade):
+            return
 
         log = {'step': self._current_step}
         if trade.is_buy:
@@ -220,23 +221,12 @@ class SimulatedExchange(Exchange):
         else:
             log['action'] = "Unknown Trade Type: {}".format(trade.to_dict)
 
-        if self._is_valid_trade(trade):
-            self._make_trade(trade)
-        if self._is_valid_trade(trade):
-            self._trades = self._trades.append({'index': self.data_frame.iloc[self._current_step].name,
-                                                'step': self._current_step,
-                                                'symbol': trade.symbol,
-                                                'type': trade.trade_type,
-                                                'amount': trade.transact_amount,
-                                                'price': trade.transact_total}, ignore_index=True)
+        self._make_trade(trade)
+
         log.update({'balance': self.balance,
                     'net_worth': self.net_worth})
 
         self._performance = self._performance.append( log , ignore_index=True)
-
-    def _update_account(self, trade: Trade):
-
-        self._portfolio[self._base_instrument] = self.balance
 
 
     def execute_trade(self, trade: Trade) -> Trade:
@@ -248,46 +238,39 @@ class SimulatedExchange(Exchange):
             trade.transact_amount = transact_amount
             trade.transact_price = transact_price
         else:
-            trade.order_commission = transact_price * self.commission_percent
+            trade.order_commission = transact_price * self.commission_to_percent
+            trade.order_commission_percent = self.commission_to_percent
+
 
         if trade.is_buy:
             if trade.is_limit_buy:
-                # our buying power will fluxuate slightly as the market moves
-                slip_adjusted_amount = (self.balance * (1-(self._max_amount_slippage_percent/100)) * transact_amount) / transact_price
-                transact_amount = self._amount_slip_model.random_slip(slip_adjusted_amount)
+                # our buying power will fluxuate slightly as the market moves during our limit order
+                transact_amount = self._amount_slip_model.random_slip(transact_amount)
             elif trade.is_market_buy:
                 # the price can fluxuate up or down during the market buy order
                 transact_price = self._price_slip_model.random_slip(transact_price)
-            else:
-                # catch all
-                transact_price = self._bind_trade_price(transact_price)
-                transact_amount = self._bind_trade_amount(transact_amount)
 
-        elif trade.is_sell:
+
+        if trade.is_sell:
             if trade.is_limit_sell:
-                # if we're selling we can only sell LESS than we have on hand.
+                # if we're selling we can only sell LESS than we have on hand at a given price.
                 amount = self._amount_slip_model.slip_down(transact_amount)
             elif trade.is_market_sell:
-                # sell price can fluxuate up or down during a market sale order
+                # but, sell price can fluxuate up or down during a market sale order
                 transact_price = self._price_slip_model.random_slip(transact_price)
-            else:
-                # catch all
-                transact_price = self._bind_trade_price(transact_price)
-                transact_amount = self._bind_trade_amount(transact_amount)
 
 
         # save all the
-        trade.transact_price = round(transact_price, self._base_precision)
-        trade.transact_amount = round(transact_amount, self._instrument_precision)
-        trade.transact_commission = round((transact_price*transact_amount) * (self.commission_percent), self._base_precision)
-        trade.transact_commission_percent=self.commission_percent
-        trade.transact_total = round((transact_price * transact_amount) * (1 + self.commission_percent), self._base_precision)
+        trade.transact_price = self._trade_price_bounds_restriction(round(transact_price, self._base_precision))
+        trade.transact_amount = self._trade_amount_bounds_restriction(round(transact_amount, self._instrument_precision))
+
+        trade.transact_commission = round((transact_price*transact_amount) * self.commission_to_percent, self._base_precision)
+        trade.transact_commission_percent = self.commission_to_percent
+        trade.transact_total = round((transact_price * transact_amount) * (1+self.commission_to_percent), self._base_precision)
 
         if self._is_valid_trade(trade):
             trade.valid = True
-
-            if not trade.is_hold:
-                trade.executed = True
+            trade.executed = True if not trade.is_hold else False
 
             self._update_account(trade)
         else:

@@ -47,7 +47,7 @@ class SimulatedExchange(Exchange):
             feature_pipeline=self.default('feature_pipeline', None)
         )
 
-        self._commission_percent = self.default('commission_percent', 0.3, kwargs)
+        self._commission = self.default('commission_percent', 0.3, kwargs)
         self._base_precision = self.default('base_precision', 2, kwargs)
         self._instrument_precision = self.default('instrument_precision', 8, kwargs)
         self._min_trade_amount = self.default('min_trade_amount', 1e-6, kwargs)
