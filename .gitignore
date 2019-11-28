@@ -17,6 +17,6 @@ tags
 .idea
 .vscode
 Pipfile
-
+Pipfile.lock
 # agent storage
 examples/agents
