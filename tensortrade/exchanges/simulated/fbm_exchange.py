@@ -14,6 +14,7 @@
 
 import pandas as pd
 import numpy as np
+import re
 
 from math import pi
 from gym import spaces
@@ -48,12 +49,12 @@ class FBMExchange(SimulatedExchange):
 
     def _generate_price_history(self):
         if self._maintain_data_frame_len:
-            if 'min' in self._timeframe:
-                self._times_to_generate = self._init_times_to_generate * int(self._timeframe[0])
+            if 'min' in self._timeframe:                
+                self._times_to_generate = self._init_times_to_generate * int(re.findall('\d+', self._timeframe)[0])
             elif 'H' in self._timeframe:
-                self._times_to_generate = self._init_times_to_generate * int(self._timeframe[0]) * 60
+                self._times_to_generate = self._init_times_to_generate * int(re.findall('\d+', self._timeframe)[0]) * 60
             elif 'D' in self._timeframe:
-                self._times_to_generate = self._init_times_to_generate * int(self._timeframe[0]) * 60 * 24
+                self._times_to_generate = self._init_times_to_generate * int(re.findall('\d+', self._timeframe)[0]) * 60 * 24
             else:
                 raise ValueError('If using maintain_data_frame_len than Timeframe must be either in minutes (min), Hours (H) or Days (D)')
         try:
