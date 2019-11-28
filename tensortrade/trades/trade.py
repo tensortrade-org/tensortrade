@@ -33,6 +33,7 @@ class Trade(object):
 
         self.order_price = price
         self.order_amount = amount
+
         self.order_commission_percent = kwargs.get('order_commission_percent', 0.0075)
         self.order_commission = kwargs.get('order_commission', 0)
 
@@ -61,8 +62,8 @@ class Trade(object):
                     step= self.step,
                     symbol=self.symbol,
                     trade_type=self._trade_type,
-                    amount=self.order_amount,
-                    price=self.order_price,
+                    amount=self.amount,
+                    price=self.price,
                     order_price=self.order_price,
                     order_amount=self.order_amount,
                     order_commission=self.order_commission,
@@ -88,8 +89,8 @@ class Trade(object):
             'step':self.step,
             'symbol':self.symbol,
             'trade_type':self._trade_type,
-            'amount':self.transact_amount,
-            'price':self.transact_price,
+            'amount':self.amount,
+            'price':self.price,
             'order_price':self.order_price,
             'order_amount':self.order_amount,
             'order_commission':self.order_commission,

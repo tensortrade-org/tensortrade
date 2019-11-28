@@ -38,26 +38,27 @@ class SimulatedExchange(Exchange):
                          dtype=kwargs.get('dtype', np.float16),
                          feature_pipeline=kwargs.get('feature_pipeline', None))
 
-        self._commission_percent = kwargs.get('commission_percent', 0.3)
-        self._base_precision = kwargs.get('base_precision', 2)
-        self._instrument_precision = kwargs.get('instrument_precision', 8)
-        self._min_trade_price = kwargs.get('min_trade_price', 1E-6)
-        self._max_trade_price = kwargs.get('max_trade_price', 1E6)
-        self._min_trade_amount = kwargs.get('min_trade_amount', 1E-3)
-        self._max_trade_amount = kwargs.get('max_trade_amount', 1E6)
-        self._min_order_amount = kwargs.get('min_order_amount', 1E-3)
 
         self._initial_balance = kwargs.get('initial_balance', 1E4)
         self._observation_columns = kwargs.get(
             'observation_columns', ['open', 'high', 'low', 'close', 'volume'])
-        self._price_column = kwargs.get('price_column', 'close')
+
+
+        # critical for maintining the actual price after transformation
+        self._close_column = kwargs.get('price_column', 'close')
+        # critical for mainting the high and low of the candle after transformation.
+        # used within the slip model to ensure slip bounds
+        self._open_column = kwargs.get('open_column', 'open')
         self._high_column = kwargs.get('high_column', 'high')
         self._low_column = kwargs.get('low_column', 'low')
 
         self._window_size = kwargs.get('window_size', 1)
         self._pretransform = kwargs.get('pretransform', True)
+
+        # dataframe for maintining pre-transformation price history
         self._price_history = None
 
+        # Note: This is invoking the data_frame setter
         self.data_frame = data_frame
 
         self._max_price_slippage_percent = kwargs.get('max_allowed_slippage_percent', kwargs.get('_max_price_slippage_percent', 1.0))
@@ -96,9 +97,7 @@ class SimulatedExchange(Exchange):
             return
 
         self._data_frame = data_frame
-        self._pre_transformed_data = data_frame.copy()
-        self._price_history = data_frame[[self._price_column, self._high_column, self._low_column]]
-        self._pre_transformed_columns = data_frame.columns
+        self._price_history = data_frame[[self._open_column, self._close_column, self._high_column, self._low_column]]
 
         if self._pretransform:
             self.transform_data_frame()
@@ -174,12 +173,13 @@ class SimulatedExchange(Exchange):
 
     def transform_data_frame(self) -> bool:
         if self._feature_pipeline is not None:
-            self._data_frame = self._feature_pipeline.transform(self._pre_transformed_data)
+            self._data_frame = self._feature_pipeline.transform(self._data_frame)
+
 
     def current_price(self, symbol: str) -> float:
         if self._price_history is not None:
-            return float(self._price_history.iloc[self._current_step][self._price_column])
-        return np.inf
+            return float(self._price_history.iloc[self._current_step][self._close_column])
+        # return np.inf
 
     def _is_valid_trade(self, trade: Trade) -> bool:
         if trade.valid:
@@ -188,9 +188,9 @@ class SimulatedExchange(Exchange):
         if trade.is_hold:
             return trade.transact_amount <= self.portfolio.get(trade.symbol, 0)
         elif trade.is_buy:
-            return trade.transact_amount >= self._min_order_amount and self.balance >= trade.transact_total
+            return trade.transact_amount >= self._min_trade_amount and self.balance >= trade.transact_total
         elif trade.is_sell:
-            return trade.transact_amount >= self._min_order_amount and self.portfolio.get(trade.symbol, 0) >= trade.transact_amount
+            return trade.transact_amount >= self._min_trade_amount and self.portfolio.get(trade.symbol, 0) >= trade.transact_amount
 
         return False
 

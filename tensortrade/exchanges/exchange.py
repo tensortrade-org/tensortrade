@@ -38,9 +38,16 @@ class Exchange(Component):
 
     def __init__(self, dtype: TypeString = np.float32, feature_pipeline: FeaturePipeline = None, **kwargs):
         self._base_instrument = self.context.base_instrument
+
+        self._instrument_precision = kwargs.get('instrument_precision', 8)
+        self._base_precision = kwargs.get('base_precision', 2)
+
         self._dtype = self.default('dtype', dtype)
         self._feature_pipeline = self.default('feature_pipeline', feature_pipeline)
         self._window_size = self.default('window_size', 1, kwargs)
+
+        self._commission_percent = kwargs.get('commission_percent', 0.3)
+
         self._min_trade_amount = self.default('min_trade_amount', 1e-6, kwargs)
         self._max_trade_amount = self.default('max_trade_amount', 1e6, kwargs)
         self._min_trade_price = self.default('min_trade_price', 1e-8, kwargs)

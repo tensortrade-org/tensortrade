@@ -87,6 +87,7 @@ class DiscreteActions(ActionScheme):
         instrument_precision = self._exchange.instrument_precision
 
         amount_held = self._exchange.instrument_balance(self._instrument)
+
         current_price = self._exchange.current_price(symbol=self._instrument)
 
         balance = self._exchange.balance
@@ -95,7 +96,6 @@ class DiscreteActions(ActionScheme):
             # as an aditional barrier to overflowing the balance,
             # we reserve 2% of our total balance for unseen slip and comissions.
             trade_amount = round(balance * 0.98 * trade_amount / current_price, instrument_precision)
-
         elif trade_type.is_sell:
             trade_amount = round(amount_held * trade_amount, instrument_precision)
 
