@@ -64,7 +64,7 @@ class PercentChangeNormalizer(FeatureTransformer):
                 feature_scale = 1 / (self._feature_max - self._feature_min)
 
             normalized_column = feature_scale * X[column].pct_change() + feature_midpoint
-            normalized_column = normalized_column.fillna(0)
+            normalized_column = normalized_column.fillna(feature_midpoint)
             normalized_column = normalized_column.clip(lower=self._feature_min,
                                                        upper=self._feature_max)
 
