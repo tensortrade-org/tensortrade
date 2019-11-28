@@ -254,7 +254,7 @@ class SimulatedExchange(Exchange):
         if trade.is_sell:
             if trade.is_limit_sell:
                 # if we're selling we can only sell LESS than we have on hand at a given price.
-                amount = self._amount_slip_model.slip_down(transact_amount)
+                transact_amount = self._amount_slip_model.slip_down(transact_amount)
             elif trade.is_market_sell:
                 # but, sell price can fluxuate up or down during a market sale order
                 transact_price = self._price_slip_model.random_slip(transact_price)
