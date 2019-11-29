@@ -178,6 +178,38 @@ class SimulatedExchange(Exchange):
             return float(self._price_history.iloc[self._current_step][self._close_column])
         # return np.inf
 
+    def next_close(self, symbol: str, lookahead: int=1) -> float:
+        if self._price_history is not None:
+            if len(self._price_history[self._close_column].values) > self._current_step + lookahead:
+                return float(self._price_history.iloc[self._current_step + lookahead][self._close_column])
+            else:
+                return float(self._price_history.iloc[self._current_step][self._close_column])
+        return 0
+
+    def next_open(self, symbol: str, lookahead: int=1) -> float:
+        if self._price_history is not None:
+            if len(self._price_history[self._open_column].values) > self._current_step + lookahead:
+                return float(self._price_history.iloc[self._current_step + lookahead][self._open_column])
+            else:
+                return float(self._price_history.iloc[self._current_step][self._open_column])
+        return 0
+
+    def next_high(self, symbol: str, lookahead: int=1) -> float:
+        if self._price_history is not None:
+            if len(self._price_history[self._high_column].values) > self._current_step + lookahead:
+                return float(self._price_history.iloc[self._current_step + lookahead][self._high_column])
+            else:
+                return float(self._price_history.iloc[self._current_step][self._high_column])
+        return 0
+
+    def next_low(self, symbol: str, lookahead: int=1) -> float:
+        if self._price_history is not None:
+            if len(self._price_history[self._low_column].values) > self._current_step + lookahead:
+                return float(self._price_history.iloc[self._current_step + lookahead][self._low_column])
+            else:
+                return float(self._price_history.iloc[self._current_step][self._low_column])
+        return 0
+
     def _is_valid_trade(self, trade: Trade) -> bool:
         if trade.valid:
             return True
