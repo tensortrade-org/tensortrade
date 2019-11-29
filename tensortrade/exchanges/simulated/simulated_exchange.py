@@ -162,6 +162,46 @@ class SimulatedExchange(Exchange):
             return float(self._price_history.iloc[self._current_step])
         return np.inf
 
+    def next_price(self, symbol: str, lookahead: int=1) -> float:
+        if self._price_history is not None:
+            if len(self._price_history.values) > self._current_step + lookahead:
+                return float(self._price_history.iloc[self._current_step + lookahead])
+            else:
+                return float(self._price_history.iloc[self._current_step])
+        return 0
+
+    def next_open(self, symbol: str, lookahead: int=1) -> float:
+        if self._pre_transformed_data is not None and self._pre_transformed_data.open is not None:
+            if len(self._pre_transformed_data.open.values) > self._current_step + lookahead:
+                return float(self._pre_transformed_data.open.iloc[self._current_step + lookahead])
+            else:
+                return self._pre_transformed_data.open.iloc[self._current_step]
+        return 0
+
+    def next_close(self, symbol: str, lookahead: int=1) -> float:
+            if self._pre_transformed_data is not None and self._pre_transformed_data.close is not None:
+                if len(self._pre_transformed_data.close.values) > self._current_step + lookahead:
+                    return float(self._pre_transformed_data.close.iloc[self._current_step + lookahead])
+                else:
+                    return self._pre_transformed_data.close.iloc[self._current_step]
+            return 0
+
+    def next_high(self, symbol: str, lookahead: int=1) -> float:
+        if self._pre_transformed_data is not None and self._pre_transformed_data.high is not None:
+            if len(self._pre_transformed_data.high.values) > self._current_step + lookahead:
+                return float(self._pre_transformed_data.high.iloc[self._current_step + lookahead])
+            else:
+                return self._pre_transformed_data.high.iloc[self._current_step]
+        return 0
+
+    def next_low(self, symbol: str, lookahead: int=1) -> float:
+        if self._pre_transformed_data is not None and self._pre_transformed_data.low is not None:
+            if len(self._pre_transformed_data.low.values) > int(self._current_step) + lookahead:
+                return float(self._pre_transformed_data.low.iloc[self._current_step + lookahead])
+            else:
+                return self._pre_transformed_data.low.iloc[self._current_step]
+        return 0
+
     def _is_valid_trade(self, trade: Trade) -> bool:
         if trade.is_buy and self._balance < trade.amount * trade.price:
             return False
