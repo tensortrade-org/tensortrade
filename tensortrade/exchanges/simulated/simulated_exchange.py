@@ -178,7 +178,7 @@ class SimulatedExchange(Exchange):
             return float(self._price_history.iloc[self._current_step][self._close_column])
         # return np.inf
 
-    def next_price(self, symbol: str, lookahead: int=1) -> float:
+    def next_close(self, symbol: str, lookahead: int=1) -> float:
         if self._price_history is not None:
             if len(self._price_history[self._close_column].values) > self._current_step + lookahead:
                 return float(self._price_history.iloc[self._current_step + lookahead][self._close_column])
