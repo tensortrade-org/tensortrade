@@ -191,7 +191,7 @@ class SimulatedExchange(Exchange):
         return 0
 
     def next_close(self, symbol: str, lookahead: int=1) -> float:
-        return next_price(symbol=symbol, lookahead=lookahead)
+        return next_price(symbol=symbol, column=self._close_column, lookahead=lookahead)
 
     def next_open(self, symbol: str, lookahead: int=1) -> float:
         return next_price(symbol=symbol, column=self._open_column, lookahead=lookahead)
