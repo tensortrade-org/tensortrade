@@ -173,42 +173,34 @@ class SimulatedExchange(Exchange):
             self._data_frame = self._feature_pipeline.transform(self._data_frame)
 
 
-    def current_price(self, symbol: str) -> float:
+    def current_price(self, symbol: str, column: str=None) -> float:
+        if column == None:
+            column = self._close_column
         if self._price_history is not None:
-            return float(self._price_history.iloc[self._current_step][self._close_column])
+            return float(self._price_history.iloc[self._current_step][column])
         # return np.inf
 
-    def next_close(self, symbol: str, lookahead: int=1) -> float:
+    def next_price(self, symbol: str, column: str=None, lookahead: int=1) -> float:
+        if column == None:
+            column = self._close_column
         if self._price_history is not None:
-            if len(self._price_history[self._close_column].values) > self._current_step + lookahead:
-                return float(self._price_history.iloc[self._current_step + lookahead][self._close_column])
+            if len(self._price_history[column].values) > self._current_step + lookahead:
+                return float(self._price_history.iloc[self._current_step + lookahead][column])
             else:
-                return float(self._price_history.iloc[self._current_step][self._close_column])
+                return float(self._price_history.iloc[self._current_step][column])
         return 0
+
+    def next_close(self, symbol: str, lookahead: int=1) -> float:
+        return next_price(symbol=symbol, lookahead=lookahead)
 
     def next_open(self, symbol: str, lookahead: int=1) -> float:
-        if self._price_history is not None:
-            if len(self._price_history[self._open_column].values) > self._current_step + lookahead:
-                return float(self._price_history.iloc[self._current_step + lookahead][self._open_column])
-            else:
-                return float(self._price_history.iloc[self._current_step][self._open_column])
-        return 0
+        return next_price(symbol=symbol, column=self._open_column, lookahead=lookahead)
 
     def next_high(self, symbol: str, lookahead: int=1) -> float:
-        if self._price_history is not None:
-            if len(self._price_history[self._high_column].values) > self._current_step + lookahead:
-                return float(self._price_history.iloc[self._current_step + lookahead][self._high_column])
-            else:
-                return float(self._price_history.iloc[self._current_step][self._high_column])
-        return 0
+        return next_price(symbol=symbol, column=self._high_column, lookahead=lookahead)
 
     def next_low(self, symbol: str, lookahead: int=1) -> float:
-        if self._price_history is not None:
-            if len(self._price_history[self._low_column].values) > self._current_step + lookahead:
-                return float(self._price_history.iloc[self._current_step + lookahead][self._low_column])
-            else:
-                return float(self._price_history.iloc[self._current_step][self._low_column])
-        return 0
+        return next_price(symbol=symbol, column=self._low_column, lookahead=lookahead)
 
     def _is_valid_trade(self, trade: Trade) -> bool:
         if trade.valid:
