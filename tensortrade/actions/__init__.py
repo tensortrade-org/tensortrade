@@ -1,13 +1,8 @@
-from .action_scheme import ActionScheme, DTypeString, TradeActionUnion
-from .continuous_actions import ContinuousActions
-from .discrete_actions import DiscreteActions
-from .multi_discrete_actions import MultiDiscreteActions
+from .action_scheme import ActionScheme
 
 
 _registry = {
-    'continuous': ContinuousActions,
-    'discrete': DiscreteActions,
-    'multi-discrete': MultiDiscreteActions,
+    'simple': ActionScheme,
 }
 
 

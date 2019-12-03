@@ -22,9 +22,6 @@ from tensortrade import Component
 from .feature_transformer import FeatureTransformer
 
 
-DTypeString = Union[type, str]
-
-
 class FeaturePipeline(Component):
     """An pipeline for transforming observation data frames into features for learning."""
     registered_name = "features"
@@ -36,7 +33,7 @@ class FeaturePipeline(Component):
         """
         self._steps = steps
 
-        self._dtype: DTypeString = self.default('dtype', np.float32, kwargs)
+        self._dtype: Union[type, str] = self.default('dtype', np.float32, kwargs)
 
     @property
     def steps(self) -> List[FeatureTransformer]:
@@ -48,12 +45,12 @@ class FeaturePipeline(Component):
         self._steps = steps
 
     @property
-    def dtype(self) -> DTypeString:
+    def dtype(self) -> Union[type, str]:
         """The `dtype` that elements in the pipeline should be input and output as."""
         return self._dtype
 
     @dtype.setter
-    def dtype(self, dtype: DTypeString):
+    def dtype(self, dtype: Union[type, str]):
         self._dtype = dtype
 
     def reset(self):

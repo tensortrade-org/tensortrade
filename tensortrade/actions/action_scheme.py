@@ -14,76 +14,94 @@
 
 import numpy as np
 
-from typing import Union
+from typing import Union, List
 from abc import abstractmethod
-from gym.spaces import Space
+from itertools import product
+from gym.spaces import Discrete
 
 from tensortrade import Component
 from tensortrade.trades import Trade
 
-DTypeString = Union[type, str]
-TradeActionUnion = Union[int, float, tuple]
-
 
 class ActionScheme(Component):
-    """An abstract scheme for determining the action to take at each timestep within a trading environments."""
+    """A discrete action scheme for determining the action to take at each timestep within a trading environments."""
 
     registered_name = "actions"
 
     @abstractmethod
-    def __init__(self, action_space: Space, dtype: DTypeString = np.float32):
+    def __init__(self,
+                 instruments: Union[List['Instrument'], 'Instrument'],
+                 trade_criteria: Union[List['TradeCriteria'], 'TradeCriteria'],
+                 amount_splits: Union[List[float], int] = 10):
         """
         Arguments:
-            action_space: The shape of the actions produced by the scheme.
+            instruments: The valid instruments to be traded by the agent.
+            trade_criteria: The valid trade criteria required to submit an order.
+            amount_splits: The number of times to split balances to determine valid trade amounts.
+                (e.g. 4 results in splits of [1, 1/2, 1/3, 1/4], or you can pass in a custom list such as [1/3, 1/5, 1/7].)
             dtype: A type or str corresponding to the dtype of the `action_space`. Defaults to `np.float32`.
         """
-        self._action_space = action_space
-        self._dtype = self.context.get('dtype', None) or dtype
+        self._instruments = self.context.get('instruments', None) or list(instruments)
+        self._trade_criteria = self.context.get('trade_criteria', None) or list(trade_criteria)
+        self._amount_splits = self.context.get('amount_splits', None) or list(amount_splits)
+
+        self.reset()
 
     @property
-    def action_space(self) -> Space:
-        """The shape of the actions produced by the scheme."""
+    def action_space(self) -> Discrete:
+        """The discrete action space produced by the action scheme."""
         return self._action_space
 
-    @action_space.setter
-    def action_space(self, action_space: Space):
-        self._action_space = action_space
+    @property
+    def instruments(self) -> List['Instrument']:
+        """A type or str corresponding to the instruments of the `action_space`."""
+        return self._instruments
+
+    @instruments.setter
+    def instruments(self, instruments: Union[List['Instrument'], 'Instrument']):
+        self._instruments = instruments if isinstance(instruments, list) else [instruments]
+
+        self.reset()
 
     @property
-    def dtype(self) -> DTypeString:
-        """A type or str corresponding to the dtype of the `action_space`."""
-        return self._dtype
+    def amount_splits(self) -> List[float]:
+        """A type or str corresponding to the amount_splits of the `action_space`."""
+        return self._amount_splits
 
-    @dtype.setter
-    def dtype(self, dtype: DTypeString):
-        self._dtype = dtype
+    @amount_splits.setter
+    def amount_splits(self, amount_splits: Union[List[float], int]):
+        if isinstance(amount_splits, int):
+            self._amount_splits = [float(1 / (x + 1)) for x in range(amount_splits)]
+        else:
+            self._amount_splits = amount_splits
+
+        self.reset()
 
     @property
-    def exchange(self) -> 'Exchange':
-        """The exchange being used by the current trading environments.
+    def trade_criteria(self) -> List['TradeCriteria']:
+        """A type or str corresponding to the trade_criteria of the `action_space`."""
+        return self._trade_criteria
 
-        This will be set by the trading environments upon initialization. Setting the exchange causes the scheme to reset.
-        """
-        return self._exchange
+    @trade_criteria.setter
+    def trade_criteria(self, trade_criteria: Union[List['TradeCriteria'], 'TradeCriteria']):
+        self._trade_criteria = trade_criteria if isinstance(
+            trade_criteria, list) else [trade_criteria]
 
-    @exchange.setter
-    def exchange(self, exchange: 'Exchange'):
-        self._exchange = exchange
         self.reset()
 
     def reset(self):
-        """Optionally implementable method for resetting stateful schemes."""
-        pass
+        self._open_orders = []
+        self._actions = product(self._instruments, self._trade_criteria, self._amount_splits)
+        self._action_space = Discrete(len(self._actions))
 
     @abstractmethod
-    def get_trade(self, current_step: int, action: TradeActionUnion) -> Trade:
+    def get_trade(self, action: int) -> Trade:
         """Get the trade to be executed on the exchange based on the action provided.
 
         Arguments:
-            current_step: The environments's current timestep.
             action: The action to be converted into a trade.
 
         Returns:
             The trade to be executed on the exchange this timestep.
         """
-        raise NotImplementedError
+        return self._actions[action]
