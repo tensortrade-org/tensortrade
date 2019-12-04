@@ -20,7 +20,7 @@ from itertools import product
 from gym.spaces import Discrete
 
 from tensortrade import Component
-from tensortrade.trades import Trade
+from tensortrade.orders import VirtualOrder
 
 
 class ActionScheme(Component):
@@ -29,21 +29,17 @@ class ActionScheme(Component):
     registered_name = "actions"
 
     @abstractmethod
-    def __init__(self,
-                 instruments: Union[List['Instrument'], 'Instrument'],
-                 trade_criteria: Union[List['TradeCriteria'], 'TradeCriteria'],
-                 amount_splits: Union[List[float], int] = 10):
+    def __init__(self, order_criteria: Union[List['OrderCriteria'], 'OrderCriteria'], tradeable_amounts: Union[List[float], int] = 10):
         """
         Arguments:
-            instruments: The valid instruments to be traded by the agent.
-            trade_criteria: The valid trade criteria required to submit an order.
-            amount_splits: The number of times to split balances to determine valid trade amounts.
-                (e.g. 4 results in splits of [1, 1/2, 1/3, 1/4], or you can pass in a custom list such as [1/3, 1/5, 1/7].)
-            dtype: A type or str corresponding to the dtype of the `action_space`. Defaults to `np.float32`.
+            order_criteria: The criteria necessary to submit an order.
+            tradeable_amounts: The list of amounts tradeable by this action scheme.
+            (E.g. '[1, 1/3]' = 100% or 33% of balance is tradeable. '4' = 25%, 50%, 75%, or 100% of balance is tradeable.)
         """
-        self._instruments = self.context.get('instruments', None) or list(instruments)
-        self._trade_criteria = self.context.get('trade_criteria', None) or list(trade_criteria)
-        self._amount_splits = self.context.get('amount_splits', None) or list(amount_splits)
+        self._order_criteria = self.context.get('order_criteria', None) or order_criteria if isinstance(
+            order_criteria, list) else[order_criteria]
+        self._tradeable_amounts = self.context.get('tradeable_amounts', None) or tradeable_amounts if isinstance(
+            tradeable_amounts, list) else [1 / (x + 1) for x in range(tradeable_amounts)]
 
         self.reset()
 
@@ -53,50 +49,29 @@ class ActionScheme(Component):
         return self._action_space
 
     @property
-    def instruments(self) -> List['Instrument']:
-        """A type or str corresponding to the instruments of the `action_space`."""
-        return self._instruments
+    def order_criteria(self) -> List['OrderCriteria']:
+        """A type or str corresponding to the order_criteria of the `action_space`."""
+        return self._order_criteria
 
-    @instruments.setter
-    def instruments(self, instruments: Union[List['Instrument'], 'Instrument']):
-        self._instruments = instruments if isinstance(instruments, list) else [instruments]
-
-        self.reset()
-
-    @property
-    def amount_splits(self) -> List[float]:
-        """A type or str corresponding to the amount_splits of the `action_space`."""
-        return self._amount_splits
-
-    @amount_splits.setter
-    def amount_splits(self, amount_splits: Union[List[float], int]):
-        if isinstance(amount_splits, int):
-            self._amount_splits = [float(1 / (x + 1)) for x in range(amount_splits)]
-        else:
-            self._amount_splits = amount_splits
-
-        self.reset()
-
-    @property
-    def trade_criteria(self) -> List['TradeCriteria']:
-        """A type or str corresponding to the trade_criteria of the `action_space`."""
-        return self._trade_criteria
-
-    @trade_criteria.setter
-    def trade_criteria(self, trade_criteria: Union[List['TradeCriteria'], 'TradeCriteria']):
-        self._trade_criteria = trade_criteria if isinstance(
-            trade_criteria, list) else [trade_criteria]
+    @order_criteria.setter
+    def order_criteria(self, order_criteria: Union[List['OrderCriteria'], 'OrderCriteria']):
+        self._order_criteria = order_criteria if isinstance(
+            order_criteria, list) else [order_criteria]
 
         self.reset()
 
     def reset(self):
         self._open_orders = []
-        self._actions = product(self._instruments, self._trade_criteria, self._amount_splits)
+        self._actions = []
+
+        for criteria, amount in product(self._order_criteria.trade_pairs, self._tradeable_amounts):
+            self._actions += [(criteria, amount)]
+
         self._action_space = Discrete(len(self._actions))
 
     @abstractmethod
-    def get_trade(self, action: int) -> Trade:
-        """Get the trade to be executed on the exchange based on the action provided.
+    def get_order(self, action: int) -> VirtualOrder:
+        """Get the order to be executed on the exchange based on the action provided.
 
         Arguments:
             action: The action to be converted into a trade.
