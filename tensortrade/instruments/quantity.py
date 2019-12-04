@@ -1,18 +1,23 @@
 
 
 class Quantity:
+    """An amount of a financial instrument for use within an Order."""
 
-    def __init__(self, amount, instrument):
+    def __init__(self, amount: float, instrument: 'Instrument'):
         self._amount = round(amount, instrument.precision)
         self._instrument = instrument
         self.order = None
 
     @property
-    def amount(self):
+    def amount(self) -> float:
         return self._amount
 
+    @amount.setter
+    def amount(self, amount: float):
+        self._amount = amount
+
     @property
-    def instrument(self):
+    def instrument(self) -> 'Instrument':
         return self._instrument
 
     def lock_on(self, order):
@@ -25,18 +30,22 @@ class Quantity:
         if isinstance(other, Quantity):
             if self.instrument != other.instrument:
                 raise Exception("Instruments are not of the same type.")
+
             return Quantity(self.amount + other.amount, self.instrument)
 
         if not str(other).isnumeric():
             raise Exception("Can't add with non-numeric quantity.")
 
         other = float(other)
+
         return Quantity(self.amount + other, self.instrument)
 
     def __mul__(self, other):
         if not str(other).isnumeric():
-            raise Exception("Can't mulitply with non-numeric quantity.")
+            raise Exception("Can't multiply with non-numeric quantity.")
+
         other = float(other)
+
         return Quantity(self.amount * other, self.instrument)
 
     def __str__(self):

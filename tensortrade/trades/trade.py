@@ -25,60 +25,15 @@ class Trade(object):
             amount: The amount of the instrument in the trade (shares, satoshis, contracts, etc).
             price: The price paid per instrument in terms of the base instrument (e.g. 10000 represents $10,000.00 if the `base_instrument` is "USD").
         """
-        self._step = step
-        self._symbol = symbol
-        self._trade_type = trade_type
-        self._amount = amount
-        self._price = price
+        self.step = step
+        self.symbol = symbol
+        self.trade_type = trade_type
+        self.amount = amount
+        self.price = price
 
     def copy(self) -> 'Trade':
         """Return a copy of the current trade object."""
-        return Trade(step=self._step, symbol=self._symbol, trade_type=self._trade_type, amount=self._amount, price=self._price)
-
-    @property
-    def step(self) -> str:
-        """The timestep the trade was made during the trading episode."""
-        return self._step
-
-    @step.setter
-    def step(self, step: str):
-        self._step = step
-
-    @property
-    def symbol(self) -> str:
-        """The exchange symbol of the instrument in the trade (AAPL, ETH/USD, NQ1!, etc)."""
-        return self._symbol
-
-    @symbol.setter
-    def symbol(self, symbol: str):
-        self._symbol = symbol
-
-    @property
-    def trade_type(self) -> 'TradeType':
-        """The type of trade ("buy", "sell", "hold", etc)."""
-        return self._trade_type
-
-    @trade_type.setter
-    def trade_type(self, trade_type: 'TradeType'):
-        self._trade_type = trade_type
-
-    @property
-    def amount(self) -> float:
-        """The amount of the instrument in the trade (shares, satoshis, contracts, etc)."""
-        return self._amount
-
-    @amount.setter
-    def amount(self, amount: float):
-        self._amount = amount
-
-    @property
-    def price(self) -> float:
-        """The price paid per instrument in terms of the base instrument (e.g. 10000 represents $10,000.00 if the `base_instrument` is "USD")."""
-        return self._price
-
-    @price.setter
-    def price(self, price: float):
-        self._price = price
+        return Trade(step=self.step, symbol=self.symbol, trade_type=self.trade_type, amount=self.amount, price=self.price)
 
     @property
     def is_hold(self) -> bool:
@@ -86,7 +41,7 @@ class Trade(object):
         Returns:
             Whether the trade type is non-existent (i.e. hold).
         """
-        return self._trade_type.is_hold
+        return self.trade_type.is_hold
 
     @property
     def is_buy(self) -> bool:
@@ -94,7 +49,7 @@ class Trade(object):
         Returns:
             Whether the trade type is a buy offer.
         """
-        return self._trade_type.is_buy
+        return self.trade_type.is_buy
 
     @property
     def is_sell(self) -> bool:
@@ -102,4 +57,4 @@ class Trade(object):
         Returns:
             Whether the trade type is a sell offer.
         """
-        return self._trade_type.is_sell
+        return self.trade_type.is_sell

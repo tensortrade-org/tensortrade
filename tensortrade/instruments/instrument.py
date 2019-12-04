@@ -2,30 +2,27 @@ registry = {}
 
 
 class Instrument:
+    """A financial instrument to be traded on a specific exchange."""
 
-    def __init__(self,
-                 symbol: str,
-                 precision: int,
-                 name: str):
+    def __init__(self, symbol: str, exchange: str, precision: int, name: str):
         self.symbol = symbol
+        self.exchange = exchange
         self.precision = precision
         self.name = name
 
         registry[symbol] = self
 
 
-# Cryptocurrencies
-BTC = Instrument('BTC', 8, 'bitcoin')
-ETH = Instrument('ETH', 8, 'ethereum')
-BCH = Instrument('BTH', 8, 'bitcoin cash')
-LTC = Instrument('LTC', 2, 'litecoin')
-XRP = Instrument('XRP', 2, 'XRP')
+BINANCE_USDT = Instrument('USDT', 'Binance', 8, 'tether')
+BINANCE_BTC = Instrument('BTC', 'Binance', 8, 'bitcoin')
+BINANCE_ETH = Instrument('ETH', 'Binance', 8, 'ethereum')
+BINANCE_BCH = Instrument('BTH', 'Binance', 8, 'bitcoin cash')
+BINANCE_LTC = Instrument('LTC', 'Binance', 2, 'litecoin')
+BINANCE_XRP = Instrument('XRP', 'Binance', 2, 'XRP')
 
-
-# Fiat Currency
-USD = Instrument('USD', 2, 'U.S. dollar')
-EUR = Instrument('EUR', 2, 'euro')
-
-
-# Hard Currency
-GOLD = Instrument('XAU', 1, 'Gold')
+COINBASE_PRO_USD = Instrument('BTC', 'Coinbase Pro', 8, 'U.S. dollar')
+COINBASE_PRO_BTC = Instrument('BTC', 'Coinbase Pro', 8, 'bitcoin')
+COINBASE_PRO_ETH = Instrument('ETH', 'Coinbase Pro', 8, 'ethereum')
+COINBASE_PRO_BCH = Instrument('BTH', 'Coinbase Pro', 8, 'bitcoin cash')
+COINBASE_PRO_LTC = Instrument('LTC', 'Coinbase Pro', 2, 'litecoin')
+COINBASE_PRO_XRP = Instrument('XRP', 'Coinbase Pro', 2, 'XRP')
