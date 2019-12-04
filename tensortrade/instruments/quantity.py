@@ -1,12 +1,9 @@
-
-
 class Quantity:
-    """An amount of a financial instrument for use within an Order."""
+    """An amount of a financial instrument for use trading."""
 
     def __init__(self, amount: float, instrument: 'Instrument'):
         self._amount = round(amount, instrument.precision)
         self._instrument = instrument
-        self.order = None
 
     @property
     def amount(self) -> float:
@@ -19,12 +16,6 @@ class Quantity:
     @property
     def instrument(self) -> 'Instrument':
         return self._instrument
-
-    def lock_on(self, order):
-        self.order = order
-
-    def locked_by(self) -> 'Order':
-        return self.order
 
     def __add__(self, other):
         if isinstance(other, Quantity):
