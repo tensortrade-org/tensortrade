@@ -34,12 +34,14 @@ def trade_context():
 def create_exchange(trade_context):
     with trade_context:
         exchange = FBMExchange()
+        exchange.reset()
         return exchange
 
 def test_create_new_exchange(trade_context):
     """ Here we create an entirely new exchange """
     with trade_context:
         exchange = FBMExchange()
+        exchange.reset()
         assert hasattr(exchange.context, 'credentials')
         assert exchange.context.credentials == {
             'api_key': '48hg34wydghi7ef', 'api_secret_key': '0984hgoe8d7htg'}

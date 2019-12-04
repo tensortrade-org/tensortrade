@@ -10,13 +10,4 @@ def get_act():
 
 def test_action_is_discrete(get_act):
     assert type(get_act.action_space) == Discrete
-    
-
-
-def test_correct_bounds(get_act):
-    """ We test that the action_space is within the correct bounds default 20"""
-    assert True == True
-
-def test_is_correct_sample(get_act):
-    """ We test that the action_space is returning the correct output. 0 - 20"""
-    assert True == True
+    assert get_act.action_space.n == 20

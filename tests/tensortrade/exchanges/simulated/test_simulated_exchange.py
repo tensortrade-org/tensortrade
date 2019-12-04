@@ -34,6 +34,7 @@ def test_create_injected_simulated_exchange(trade_context):
 
     with trade_context:
         exchange = SimulatedExchange()
-
+        exchange.reset()
         assert exchange.base_instrument == 'EURO'
         assert exchange.initial_balance == 1e4
+        assert exchange._current_step == 0

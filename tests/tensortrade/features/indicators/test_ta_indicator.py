@@ -11,27 +11,32 @@ def data_frame():
     return df
 
 
-# class TestTAIndicator:
-#     indicators_to_test = ['rsi', 'macd', 'ema_indicator']
+class TestTAIndicator:
+    indicators_to_test = ['rsi', 'macd', 'ema']
 
-#     def test_ta_indicator(self):
-        
-#         test_feature = TAIndicator(TestTAIndicator.indicators_to_test)
-#         assert len(test_feature._indicator_names) == 3
 
-#     def test_transform(self, data_frame):
-#         test_feature = TAIndicator(TestTAIndicator.indicators_to_test)
-#         test_feature.transform(data_frame)
-#         assert set(TestTAIndicator.indicators_to_test).issubset(data_frame.columns)
+    @pytest.mark.xfail
+    def test_ta_indicator(self):
+        print(dir(ta))
+        test_feature = TAIndicator(TestTAIndicator.indicators_to_test)
+        assert len(test_feature._indicator_names) == 3
 
-#     def test_transform_single_indicator(self, data_frame):
-#         test_feature = TAIndicator('rsi')
-#         test_feature.transform(data_frame)
-#         assert 'rsi' in data_frame.columns
+    @pytest.mark.xfail
+    def test_transform(self, data_frame):
+        test_feature = TAIndicator(TestTAIndicator.indicators_to_test)
+        test_feature.transform(data_frame)
+        assert set(TestTAIndicator.indicators_to_test).issubset(data_frame.columns)
 
-    # def test_add_volatility_ta(self, data_frame):
-    #     test_feature = TAIndicator('add_volatility_ta')
-    #     print(test_feature._indicator_names)
-    #     test_feature.transform(data_frame, None)
-    #     print(data_frame.columns)
-    #     print(data_frame.dtypes)
+    @pytest.mark.xfail
+    def test_transform_single_indicator(self, data_frame):
+        test_feature = TAIndicator('rsi')
+        test_feature.transform(data_frame)
+        assert 'rsi' in data_frame.columns
+
+    @pytest.mark.xfail
+    def test_add_volatility_ta(self, data_frame):
+        test_feature = TAIndicator('add_volatility_ta')
+        print(test_feature._indicator_names)
+        test_feature.transform(data_frame, None)
+        print(data_frame.columns)
+        print(data_frame.dtypes)
