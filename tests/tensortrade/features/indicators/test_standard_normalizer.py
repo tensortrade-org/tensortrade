@@ -2,8 +2,7 @@ import pytest
 import ta
 import numpy as np
 import pandas as pd
-from gym.spaces import Box
-from tensortrade.features.indicators import TAlibIndicator
+from tensortrade.features.scalers import StandardNormalizer
 
 @pytest.fixture
 def data_frame():
@@ -11,15 +10,22 @@ def data_frame():
     return df
 
 
-class TestTAIndicator:
-    price_columns = ["Open", "High", "Low", "Close"]
-    indicators = ["EMA", "RSI", "BBANDS"]
+class TestStandardNormalizer:
+    price_columns = ["open", "high", "low", "close"]
+    indicators = ["EMA", "RSI"]
 
 
-    def test_ta_indicator(self, data_frame):
-        test_feature = TAlibIndicator(indicators=TestTAIndicator.indicators)
-        test_feature.transform(data_frame)
-        assert len(test_feature._indicator_names) == 3
+    def test_standard_normalizer(self, data_frame):
+        standard = StandardNormalizer(TestStandardNormalizer.price_columns)
+        # standard.transform(data_frame)
+        # assert True == False
+
+    # @pytest.mark.xfail
+    # def test_transform(self, data_frame):
+    #     test_feature = TAlibIndicator(TestTAIndicator.indicators)
+    #     test_feature.transform(data_frame)
+    #     assert set(TestTAIndicator.indicators).issubset(data_frame.columns)
+
 
 
 

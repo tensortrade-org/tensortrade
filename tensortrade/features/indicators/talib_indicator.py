@@ -1,25 +1,12 @@
-# Copyright 2019 The TensorTrade Authors.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 import talib
+from talib.abstract import Function
 import numpy as np
 import pandas as pd
 
 from gym import Space
 from copy import copy
 from abc import abstractmethod
-from typing import Union, List, Callable
+from typing import Union, List, Callable, Dict
 
 from tensortrade.features import FeatureTransformer
 
@@ -28,17 +15,62 @@ class TAlibIndicator(FeatureTransformer):
     """Adds one or more TAlib indicators to a data frame, based on existing open, high, low, and close column values."""
 
     def __init__(self, indicators: List[str], lows: Union[List[float], List[int]] = None, highs: Union[List[float], List[int]] = None, **kwargs):
-        self._indicator_names = [indicator[0].upper() for indicator in indicators]
-        self._indicator_args = {indicator[0]:indicator[1]['args'] for indicator in indicators}
-        self._indicator_params = {indicator[0]: indicator[1]['params'] for indicator in indicators}
+        indicators = self._error_check(indicators)
+        self._indicator_names = [indicator.upper() for indicator in indicators]
         self._indicators = [getattr(talib, name.split('-')[0]) for name in self._indicator_names]
+        # Here we get the stats for each indicator for TA-Lib
+        self._stats = {indicator:self._get_info(indicator) for indicator in self._indicator_names}
+        
+    def _error_check(self, a:List[str])->List[str]:
+        """ Check for errors common errors"""
+        err_indexes = []
+        for n, i in enumerate(a):
+            if i == "BBAND":
+                a[n] = "BBANDS"
+            elif i == "BB":
+                a[n] = "BBANDS"
+            elif i == "RIS":
+                a[n] = "RSI"
+            elif i == "":
+                err_indexes.append(n)
+            elif i == None:
+                err_indexes.append(n)
+        for n in sorted(err_indexes, reverse=True):
+            del a[n]
+        return a
+    
+
+    def _get_info(self, indicator_name:str) -> Dict:
+        """ Get the relavent indicator parameters and inputs """
+        if indicator_name is None:
+            print("Usage: help_indicator(symbol), symbol is indicator name")
+            return {
+                "parameters": {},
+                "inputs": []
+            }
+        else:
+            upper_code = indicator_name.upper()
+            if upper_code not in talib.get_functions():
+                print(f"ERROR: indicator {upper_code} not in list")
+                return {
+                    "parameters": {},
+                    "inputs": []
+                }
+            else:
+                func = Function(upper_code)
+                parameters = dict(func.parameters)
+                inputs = list(func.input_names.values())
+                return {
+                    "parameters": parameters,
+                    "inputs": inputs
+                }
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         for idx, indicator in enumerate(self._indicators):
             indicator_name = self._indicator_names[idx]
-            indicator_args = [X[arg].values for arg in self._indicator_args[indicator_name]]
-            indicator_params = self._indicator_params[indicator_name]
-
+            indicator_params = self._stats[indicator_name]['parameters']
+            indicator_args = [X[arg].values for arg in self._stats[indicator_name]["inputs"]]
+            
             if indicator_name == 'BBANDS':
                 upper, middle, lower = indicator(*indicator_args,**indicator_params)
 
