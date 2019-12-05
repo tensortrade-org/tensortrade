@@ -58,6 +58,8 @@ def test_get_next_observation(create_exchange):
     assert create_exchange.has_next_observation == True
     assert create_exchange._next_observation is not None
 
+
 def test_get_current_price(create_exchange):
+    """ Test that we're able to get the current price?"""
     assert create_exchange.has_next_observation == True
     assert create_exchange.current_price(symbol="ETH")

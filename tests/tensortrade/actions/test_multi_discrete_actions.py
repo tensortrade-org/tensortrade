@@ -6,6 +6,14 @@ from tensortrade.actions import MultiDiscreteActions
 
 
 """ Since the multi-discrete is also dependent on the context it needs to have that. Get that from test_injection.py"""
+config = {
+    'base_instrument': 'USD',
+    'instruments': 'ETH',
+    'actions': {
+        'n_actions': 50
+    }
+}
+
 
 
 @pytest.fixture()
@@ -25,11 +33,11 @@ def get_act_multi(context):
 def test_action_is_discrete(get_act):
     """ Test that the action_space is still discrete """
     assert type(get_act.action_space) == Discrete
-    
-def test_correct_bounds(get_act):
-    """ We test that the action_space is within the correct bounds default 20"""
-    assert True == True
 
-def test_is_correct_sample(get_act):
-    """ We test that the action_space is returning the correct output. 0 - 20"""
-    assert True == True
+
+def test_injects_instruments_into_multi_discrete_scheme():
+
+    with TradingContext(**config) as tc:
+        action_scheme = MultiDiscreteActions(actions_per_instrument=25)
+
+        assert action_scheme._instruments == tc.shared['instruments']
