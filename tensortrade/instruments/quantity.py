@@ -1,9 +1,21 @@
-class Quantity:
-    """An amount of a financial instrument for use trading."""
+import operator
 
-    def __init__(self, amount: float, instrument: 'Instrument'):
+
+class Quantity:
+    """An amount of a financial instrument for use in trading."""
+
+    def __init__(self,
+                 amount: float,
+                 instrument: 'Instrument',
+                 order_id: str = None,
+                 wallet_id: str = None):
+
+        if amount < 0:
+            raise Exception("Invalid quantity amount. Quantities can't be negative.")
         self._amount = round(amount, instrument.precision)
         self._instrument = instrument
+        self._order_id = None
+        self._wallet_id = None
 
     @property
     def amount(self) -> float:
@@ -17,30 +29,64 @@ class Quantity:
     def instrument(self) -> 'Instrument':
         return self._instrument
 
-    def __add__(self, other):
-        if isinstance(other, Quantity):
-            if self.instrument != other.instrument:
+    @property
+    def order_id(self) -> str:
+        return self._order_id
+
+    @order_id.setter
+    def order_id(self, order_id: str):
+        self._order_id = order_id
+
+    @property
+    def wallet_id(self) -> str:
+        return self._wallet_id
+
+    @wallet_id.setter
+    def wallet_id(self, wallet_id: str):
+        self._wallet_id = wallet_id
+
+    def is_locked(self) -> bool:
+        return bool(self._order_id)
+
+    @staticmethod
+    def _quantity_op(left, right, op):
+        if isinstance(right, Quantity):
+            if left.instrument != right.instrument:
                 raise Exception("Instruments are not of the same type.")
 
-            return Quantity(self.amount + other.amount, self.instrument)
+            amount = round(op(left.amount, right.amount), left.instrument.precision)
 
-        if not str(other).isnumeric():
-            raise Exception("Can't add with non-numeric quantity.")
+            if amount < 0:
+                raise Exception("Quantities must be non-negative.")
 
-        other = float(other)
+            return Quantity(amount, left.instrument)
 
-        return Quantity(self.amount + other, self.instrument)
+        if not str(right).isnumeric():
+            raise Exception("Can't perform operation with non-numeric quantity.")
+
+        amount = round(op(left.amount, right), left.instrument.precision)
+
+        if amount < 0:
+            raise Exception("Quantities must be non-negative.")
+
+        return Quantity(amount, left.instrument)
+
+    def __add__(self, other):
+        return Quantity._quantity_op(self, other, operator.add)
+
+    def __sub__(self, other):
+        return Quantity._quantity_op(self, other, operator.sub)
 
     def __mul__(self, other):
-        if not str(other).isnumeric():
-            raise Exception("Can't multiply with non-numeric quantity.")
+        return Quantity._quantity_op(self, other, operator.add)
 
-        other = float(other)
-
-        return Quantity(self.amount * other, self.instrument)
+    def __truediv__(self, other):
+        return Quantity._quantity_op(self, other, operator.truediv)
 
     def __str__(self):
-        return '{} {}'.format(self.amount, self.instrument.symbol)
+        s = "{0:." + str(self.instrument.precision) + "f}" + " {1}"
+        s = s.format(self.amount, self.instrument.symbol)
+        return s
 
     def __repr__(self):
         return str(self)

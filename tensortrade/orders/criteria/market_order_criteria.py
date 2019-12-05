@@ -11,4 +11,4 @@ class MarketOrderCriteria(OrderCriteria):
         super().__init__(enabled_pairs=enabled_pairs)
 
     def is_executable(self, pair: 'TradingPair', exchange: 'Exchange') -> bool:
-        return self.is_pair_enabled(pair) and exchange.is_pair_tradeable(pair)
+        return self.is_pair_enabled(pair) and exchange.is_pair_tradable(pair)

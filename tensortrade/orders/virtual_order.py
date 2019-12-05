@@ -37,6 +37,8 @@ class VirtualOrder:
         self.id = uuid.uuid4()
         self.status = OrderStatus.PENDING
 
+        self.quantity
+
     def is_executable(self, exchange: 'Exchange'):
         return self.criteria.is_executable(self.pair, exchange)
 
