@@ -1,7 +1,14 @@
 import talib
+import sys
 from talib.abstract import Function
-import numpy as np
+# import numpy as np
 import pandas as pd
+from loguru import logger
+config = {
+    "handlers": [
+        {"sink": sys.stdout},
+    ]
+}
 
 from gym import Space
 from copy import copy
@@ -65,12 +72,47 @@ class TAlibIndicator(FeatureTransformer):
                     "inputs": inputs
                 }
 
+    def _match_inputs(self, x_column:list, inputs:list):
+        """ Search through inputs to match outputs. It only goes through common inputs """
+        real_inputs = []
+        for inp in inputs:
+            if inp == "close":
+                if inp in x_column:
+                    real_inputs.append(inp)
+                if "Close" in x_column:
+                    real_inputs.append("Close")
+            elif inp == "open":
+                if inp in x_column:
+                    real_inputs.append(inp)
+                elif "Open" in x_column:
+                    real_inputs.append("Open")
+            elif inp == "high":
+                if inp in x_column:
+                    real_inputs.append(inp)
+                elif "High" in x_column:
+                    real_inputs.append("High")
+            elif inp == "low":
+                if inp in x_column:
+                    real_inputs.append(inp)
+                elif "Low" in x_column:
+                    real_inputs.append("Low")
+            elif inp == "volume":
+                if inp in x_column:
+                    real_inputs.append(inp)
+                elif "VolumeTo" in x_column:
+                    real_inputs.append("VolumeTo")
+        return real_inputs
+
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         for idx, indicator in enumerate(self._indicators):
-            indicator_name = self._indicator_names[idx]
-            indicator_params = self._stats[indicator_name]['parameters']
-            indicator_args = [X[arg].values for arg in self._stats[indicator_name]["inputs"]]
             
+            indicator_name = self._indicator_names[idx]
+            logger.debug(indicator_name)
+            indicator_params = self._stats[indicator_name]['parameters']
+            indicator_inputs = self._stats[indicator_name]["inputs"]
+            # Convert inputs into something that we'd commonly run to
+            matched_inputs = self._match_inputs(list(X.columns), indicator_inputs)
+            indicator_args = [X[arg].values for arg in matched_inputs]
             if indicator_name == 'BBANDS':
                 upper, middle, lower = indicator(*indicator_args,**indicator_params)
 

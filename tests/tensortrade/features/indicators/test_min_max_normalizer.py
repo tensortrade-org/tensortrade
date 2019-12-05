@@ -23,6 +23,7 @@ class TestMinMaxNormalizer:
         assert transformed is not None
     
     def test_ta_indicator_inplace_false(self, data_frame):
+        """ Test that not setting inplace rules equates to more columns after the transformation"""
         test_feature = MinMaxNormalizer(columns=TestMinMaxNormalizer.price_columns, inplace=False)
         test_feature.reset()
         transformed = test_feature.transform(data_frame)

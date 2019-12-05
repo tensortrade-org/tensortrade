@@ -1,8 +1,5 @@
 import pytest
-import ta
-import numpy as np
 import pandas as pd
-from gym.spaces import Box
 from tensortrade.features.indicators import TAlibIndicator
 
 @pytest.fixture
@@ -12,7 +9,7 @@ def data_frame():
 
 
 class TestTAIndicator:
-    price_columns = ["Open", "High", "Low", "Close"]
+    price_columns = ["open", "high", "low", "close"]
     indicators = ["EMA", "RSI", "BBANDS"]
 
 
