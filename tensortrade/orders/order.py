@@ -28,8 +28,28 @@ class Order:
 
         self._listeners = []
 
+    @property
+    def is_buy(self) -> bool:
+        return self.side == TradeSide.BUY
+
+    @property
+    def is_sell(self) -> bool:
+        return self.side == TradeSide.SELL
+
+    @property
+    def base_instrument(self) -> 'Instrument':
+        return self.pair.base_instrument
+
+    @property
+    def quote_instrument(self) -> 'Instrument':
+        return self.pair.quote_instrument
+
+    @property
+    def amount(self) -> float:
+        return self.quantity.amount
+
     def is_executable(self, exchange: 'Exchange'):
-        return self.criteria is None or self.criteria.is_executable(self, exchange)
+        return self.criteria is None or self.criteria.is_satisfied(self, exchange)
 
     def add_listener(self, listener: 'OrderListener'):
         self._listeners += [listener]

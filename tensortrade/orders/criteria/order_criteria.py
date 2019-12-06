@@ -10,5 +10,5 @@ class OrderCriteria(object, metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def is_executable(self, order: 'Order', exchange: 'Exchange') -> bool:
+    def is_satisfied(self, order: 'Order', exchange: 'Exchange') -> bool:
         raise NotImplementedError()

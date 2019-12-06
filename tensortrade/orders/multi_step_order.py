@@ -5,7 +5,7 @@ from typing import Callable, List
 from . import Order, OrderListener, OrderStatus
 
 
-class MultiStepOrder(Order, OrderListener):
+class MultiStepOrder(OrderListener):
     def __init__(self, steps: List['Order'], listener: 'OrderListener' = None):
         self.steps = steps
 
@@ -17,7 +17,7 @@ class MultiStepOrder(Order, OrderListener):
         self._listeners = []
 
     def is_executable(self, exchange: 'Exchange'):
-        return self._active_order.criteria.is_executable(self._active_order, exchange)
+        return self._active_order.criteria.is_satisfied(self._active_order, exchange)
 
     def add_listener(self, listener: 'OrderListener'):
         self._listeners += [listener]

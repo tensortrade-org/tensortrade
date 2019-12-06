@@ -11,7 +11,7 @@ class LimitOrderCriteria(OrderCriteria):
     def __init__(self, limit_price: float):
         self.limit_price = limit_price
 
-    def is_executable(self, order: 'Order', exchange: 'Exchange') -> bool:
+    def is_satisfied(self, order: 'Order', exchange: 'Exchange') -> bool:
         if not exchange.is_pair_tradable(order.pair):
             return False
 
