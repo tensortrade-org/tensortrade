@@ -11,7 +11,8 @@ class Quantity:
                  wallet_id: str = None):
 
         if amount < 0:
-            raise Exception("Invalid quantity amount. Quantities can't be negative.")
+            raise Exception("Invalid Quantity. Amounts cannot be negative.")
+
         self._amount = round(amount, instrument.precision)
         self._instrument = instrument
         self._order_id = None
@@ -28,6 +29,10 @@ class Quantity:
     @property
     def instrument(self) -> 'Instrument':
         return self._instrument
+
+    @instrument.setter
+    def instrument(self, instrument: 'Exchange'):
+        raise ValueError("You cannot change a Quantity's Instrument after initialization.")
 
     @property
     def order_id(self) -> str:
@@ -50,21 +55,18 @@ class Quantity:
 
     @staticmethod
     def _quantity_op(left, right, op):
+        right_amount = right
+
         if isinstance(right, Quantity):
             if left.instrument != right.instrument:
                 raise Exception("Instruments are not of the same type.")
 
-            amount = round(op(left.amount, right.amount), left.instrument.precision)
+            right_amount = right.amount
 
-            if amount < 0:
-                raise Exception("Quantities must be non-negative.")
-
-            return Quantity(amount, left.instrument)
-
-        if not str(right).isnumeric():
+        if not str(right_amount).isnumeric():
             raise Exception("Can't perform operation with non-numeric quantity.")
 
-        amount = round(op(left.amount, right), left.instrument.precision)
+        amount = round(op(left.amount, right_amount), left.instrument.precision)
 
         if amount < 0:
             raise Exception("Quantities must be non-negative.")
