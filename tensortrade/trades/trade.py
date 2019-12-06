@@ -23,10 +23,11 @@ class TradeSide(Enum):
 class Trade(object):
     """A trade object for use within trading environments."""
 
-    def __init__(self, order_id: str, step: int, pair: 'TradingPair', side: TradeSide, amount: float, price: float):
+    def __init__(self, order_id: str, exchange_id: str, step: int, pair: 'TradingPair', side: TradeSide, amount: float, price: float):
         """
         Arguments:
-            order_id: The id of the order that executed the trade.
+            order_id: The id of the order that created the trade.
+            order_id: The id of the exchange the trade was executed on.
             step: The timestep the trade was made during the trading episode.
             pair: The trading pair of the instruments in the trade.
             (e.g. BTC/USDT, ETH/BTC, ADA/BTC, AAPL/USD, NQ1!/USD, CAD/USD, etc)
@@ -38,6 +39,7 @@ class Trade(object):
             (e.g. 10000 represents $10,000.00 if the `base_instrument` is "USD").
         """
         self.order_id = order_id
+        self.exchange_id = exchange_id
         self.step = step
         self.pair = pair
         self.side = side
@@ -46,7 +48,7 @@ class Trade(object):
 
     def copy(self) -> 'Trade':
         """Return a copy of the current trade object."""
-        return Trade(self.order_id, self.step, self.pair, self.side, self.amount, self.price)
+        return Trade(self.order_id, self.exchange_id, self.step, self.pair, self.side, self.amount, self.price)
 
     @property
     def is_buy(self) -> bool:

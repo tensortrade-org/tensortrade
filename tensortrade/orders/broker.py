@@ -61,10 +61,22 @@ class Broker:
         for exchange in self.exchanges:
             for trade in exchange.trades:
                 if trade.order_id in self._executed_orders.keys() and trade not in self._trades:
-                    self._trades += [trade]
-                    self._executed_orders[trade.order_id].on_fill(exchange, trade.amount)
+                    order = self._executed_orders[trade.order_id]
+
+                    order.on_fill(exchange, trade.amount)
+
+                    self._trades[trade.order_id] = self._trades[trade.order_id] or []
+                    self._trades[trade.order_id] += [trade]
+
+                    trades_on_exchange = filter(lambda t: t.exchange_id ==
+                                                exchange.id, self._trades[trade.order_id])
+
+                    total_traded = sum([t.amount for t in trades_on_exchange])
+
+                    if total_traded >= order.amount:
+                        order.on_complete(exchange)
 
     def reset(self):
-        self._trades = []
         self._unexecuted_orders = []
         self._executed_orders = {}
+        self._trades = {}
