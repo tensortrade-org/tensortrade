@@ -2,15 +2,19 @@
 from typing import List, Union
 
 from .order_criteria import OrderCriteria
+from ...trades import TradeSide
 
 
 class LimitOrderCriteria(OrderCriteria):
     """An order criteria that allows execution when the quote price for a trading pair is at or below a specific price."""
 
-    def __init__(self, pairs: Union[List['TradingPair'], 'TradingPair'], limit_price: float):
-        super().__init__(pairs=pairs)
-
+    def __init__(self, limit_price: float):
         self.limit_price = limit_price
 
-    def is_executable(self, pair: 'TradingPair', exchange: 'Exchange') -> bool:
-        return self.is_pair_enabled(pair) and exchange.is_pair_tradable(pair) and exchange.quote_price(pair) <= self.limit_price
+    def is_executable(self, order: 'Order', exchange: 'Exchange') -> bool:
+        if not exchange.is_pair_tradable(order.pair):
+            return False
+
+        price = exchange.quote_price(order.pair)
+
+        return (order.side == TradeSide.BUY and price <= self.limit_price) or (order.side == TradeSide.SELL and price >= self.limit_price)
