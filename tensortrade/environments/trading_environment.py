@@ -26,11 +26,11 @@ import tensortrade.features as features
 from gym import spaces
 from typing import Union, Tuple, List, Dict
 
-from tensortrade.actions import ActionScheme, TradeActionUnion
+from tensortrade.actions import ActionScheme
 from tensortrade.rewards import RewardScheme
 from tensortrade.exchanges import Exchange
 from tensortrade.features import FeaturePipeline
-from tensortrade.trades import Trade
+from tensortrade.orders import Broker, Order
 
 if importlib.util.find_spec("matplotlib") is not None:
     from tensortrade.environments.render import MatplotlibTradingChart
@@ -48,7 +48,7 @@ class TradingEnvironment(gym.Env):
         """
         Arguments:
             exchange: The `Exchange` that will be used to feed data from and execute trades within.
-            action_scheme:  The component for transforming an action into a `Trade` at each timestep.
+            action_scheme:  The component for transforming an action into an `Order` at each timestep.
             reward_scheme: The component for determining the reward at each timestep.
             feature_pipeline (optional): The pipeline of features to pass the observations through.
             kwargs (optional): Additional arguments for tuning the environments, logging, etc.
@@ -68,6 +68,8 @@ class TradingEnvironment(gym.Env):
 
         self._action_scheme.exchange = self._exchange
         self._reward_scheme.exchange = self._exchange
+
+        self._broker = Broker(self._exchange)
 
         self.observation_space = self._exchange.observation_space
         self.action_space = self._action_scheme.action_space
@@ -97,7 +99,7 @@ class TradingEnvironment(gym.Env):
 
     @property
     def action_scheme(self) -> ActionScheme:
-        """The component for transforming an action into a `Trade` at each time step."""
+        """The component for transforming an action into an `Order` at each time step."""
         return self._action_scheme
 
     @action_scheme.setter
@@ -122,19 +124,26 @@ class TradingEnvironment(gym.Env):
     def feature_pipeline(self, feature_pipeline: FeaturePipeline):
         self._exchange.feature_pipeline = feature_pipeline
 
-    def _take_action(self, action: TradeActionUnion) -> Trade:
+    @property
+    def broker(self) -> Broker:
+        """The broker used to execute orders on the connected exchange."""
+        return self._broker
+
+    def _take_action(self, action: int) -> Order:
         """Determines a specific trade to be taken and executes it within the exchange.
 
         Arguments:
-            action: The trade action provided by the agent for this timestep.
+            action: The int provided by the agent to map to a trade action for this timestep.
 
         Returns:
-            A tuple containing the (fill_amount, fill_price) of the executed trade.
+            The order created by the agent this timestep, if any.
         """
-        executed_trade = self._action_scheme.get_trade(current_step=self._current_step,
-                                                       action=action)
-        filled_trade = self._exchange.execute_trade(executed_trade)
-        return executed_trade, filled_trade
+        order = self._action_scheme.get_order(action)
+
+        if order is not None:
+            self._broker.create_order(order)
+
+        return order
 
     def _next_observation(self) -> np.ndarray:
         """Returns the next observation from the exchange.
@@ -151,14 +160,13 @@ class TradingEnvironment(gym.Env):
 
         return observation
 
-    def _get_reward(self, trade: Trade) -> float:
+    def _get_reward(self) -> float:
         """Returns the reward for the current timestep.
 
         Returns:
             A float corresponding to the benefit earned by the action taken this step.
         """
-        reward = self._reward_scheme.get_reward(current_step=self._current_step,
-                                                trade=trade)
+        reward = self._reward_scheme.get_reward(current_step=self._current_step)
         reward = np.nan_to_num(reward)
 
         if np.bitwise_not(np.isfinite(reward)):
@@ -175,20 +183,20 @@ class TradingEnvironment(gym.Env):
         lost_90_percent_net_worth = self._exchange.profit_loss_percent < 0.1
         return lost_90_percent_net_worth or not self._exchange.has_next_observation
 
-    def _info(self, executed_trade: Trade, filled_trade: Trade, reward: int) -> dict:
+    def _info(self, order: Order) -> dict:
         """Returns any auxiliary, diagnostic, or debugging information for the current timestep.
+
+        Args:
+            order: The order created during the currente timestep.
 
         Returns:
             info: A dictionary containing the exchange used, the current timestep, and the filled trade, if any.
         """
-        assert filled_trade.step == executed_trade.step
-
         return {
-            'current_step': executed_trade.step,
-            'executed_trade': executed_trade,
-            'filled_trade': filled_trade,
-            'reward': reward,
+            'current_step': self._current_step,
             'exchange': self._exchange,
+            'broker': self._broker,
+            'order': order,
         }
 
     def step(self, action) -> Tuple[pd.DataFrame, float, bool, dict]:
@@ -203,12 +211,14 @@ class TradingEnvironment(gym.Env):
             done (bool): If `True`, the environments is complete and should be restarted.
             info (dict): Any auxiliary, diagnostic, or debugging information to output.
         """
-        executed_trade, filled_trade = self._take_action(action)
+        order = self._take_action(action)
 
         observation = self._next_observation()
-        reward = self._get_reward(filled_trade)
+        reward = self._get_reward()
         done = self._done()
-        info = self._info(executed_trade, filled_trade, reward)
+        info = self._info(order)
+
+        self._broker.update()
 
         self._current_step += 1
 
