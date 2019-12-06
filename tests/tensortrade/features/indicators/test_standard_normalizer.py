@@ -11,13 +11,23 @@ def data_frame():
 
 
 class TestStandardNormalizer:
-    price_columns = ["open", "high", "low", "close"]
+    price_columns = ["Open", "High", "Low", "Close"]
     indicators = ["EMA", "RSI"]
 
 
-    @pytest.mark.xfail(raises=NotImplementedError)
     def test_standard_normalizer(self, data_frame):
-        """ Run a standard scaler transform and expect it to fail with a NotImplementedError"""
-        standard = StandardNormalizer(TestStandardNormalizer.price_columns)
+        """ Here we check to """
+        standard = StandardNormalizer(columns=TestStandardNormalizer.price_columns)
         transformed = standard.transform(data_frame)
         assert transformed is not None
+        assert len(data_frame) == len(transformed)
+        assert len(data_frame.columns) == len(transformed.columns)
+    
+
+    def test_standard_normalizer_inplace(self, data_frame):
+        """ Run a standard scaler transform and expect it to fail with a NotImplementedError"""
+        standard = StandardNormalizer(columns=TestStandardNormalizer.price_columns, inplace=False)
+        transformed = standard.transform(data_frame)
+        assert transformed is not None
+        assert len(data_frame) == len(transformed)
+        assert len(data_frame.columns) != len(transformed.columns)

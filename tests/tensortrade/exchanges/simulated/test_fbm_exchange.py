@@ -62,4 +62,6 @@ def test_get_next_observation(create_exchange):
 def test_get_current_price(create_exchange):
     """ Test that we're able to get the current price?"""
     assert create_exchange.has_next_observation == True
+    assert len(create_exchange.data_frame) != 0
     assert create_exchange.current_price(symbol="ETH")
+    # Check that there are enough price observations
