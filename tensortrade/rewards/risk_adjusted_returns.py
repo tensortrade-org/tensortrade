@@ -18,7 +18,6 @@ import numpy as np
 from typing import Callable
 
 from tensortrade.rewards import RewardScheme
-from tensortrade.trades import TradeType, Trade
 
 
 class RiskAdjustedReturns(RewardScheme):
@@ -63,7 +62,7 @@ class RiskAdjustedReturns(RewardScheme):
 
         return (expected_return - self._risk_free_rate) / (downside_std + 1E-9)
 
-    def get_reward(self, current_step: int, trade: Trade) -> float:
+    def get_reward(self, current_step: int) -> float:
         """Return the reward corresponding to the selected risk-adjusted return metric."""
         returns = self._exchange.performance['net_worth'].diff()
 

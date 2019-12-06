@@ -17,15 +17,14 @@ import pandas as pd
 from abc import abstractmethod
 
 from tensortrade import Component
-from tensortrade.trades import Trade
 
 
 class RewardScheme(Component):
 
     registered_name = "rewards"
 
-    def __init__(self):
-        pass
+    def __init__(self, exchange: 'Exchange' = None):
+        self._exchange = exchange
 
     @property
     def exchange(self) -> 'Exchange':
@@ -35,6 +34,7 @@ class RewardScheme(Component):
     @exchange.setter
     def exchange(self, exchange: 'Exchange'):
         self._exchange = exchange
+
         self.reset()
 
     def reset(self):
@@ -42,11 +42,10 @@ class RewardScheme(Component):
         pass
 
     @abstractmethod
-    def get_reward(self, current_step: int, trade: Trade) -> float:
+    def get_reward(self, current_step: int) -> float:
         """
         Arguments:
             current_step: The environments's current timestep.
-            trade: The trade executed and filled this timestep.
 
         Returns:
             A float corresponding to the benefit earned by the action taken this timestep.
