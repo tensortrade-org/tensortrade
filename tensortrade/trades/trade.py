@@ -12,49 +12,46 @@
 # See the License for the specific language governing permissions and
 # limitations under the License
 
+from enum import Enum
+
+
+class TradeSide(Enum):
+    BUY = 'buy'
+    SELL = 'sell'
+
 
 class Trade(object):
     """A trade object for use within trading environments."""
 
-    def __init__(self, step: int, symbol: str, trade_type: 'TradeType', amount: float, price: float):
+    def __init__(self, order_id: str, step: int, pair: 'TradingPair', side: TradeSide, amount: float, price: float):
         """
         Arguments:
+            order_id: The id of the order that executed the trade.
             step: The timestep the trade was made during the trading episode.
-            symbol: The exchange symbol of the instrument in the trade (AAPL, ETH/USD, NQ1!, etc).
-            trade_type: The type of trade executed (0 = HOLD, 1=LIMIT_BUY, 2=MARKET_BUY, 3=LIMIT_SELL, 4=MARKET_SELL).
-            amount: The amount of the instrument in the trade (shares, satoshis, contracts, etc).
-            price: The price paid per instrument in terms of the base instrument (e.g. 10000 represents $10,000.00 if the `base_instrument` is "USD").
+            pair: The trading pair of the instruments in the trade.
+            (e.g. BTC/USDT, ETH/BTC, ADA/BTC, AAPL/USD, NQ1!/USD, CAD/USD, etc)
+            side: Whether the quote instrument is being bought or sold.
+            (e.g. BUY = trade the `base_instrument` for the `quote_instrument` in the pair. SELL = trade the `quote_instrument` for the `base_instrument`)
+            amount: The amount of the base instrument in the trade.
+            (e.g. 1000 shares, 6.50 satoshis, 2.3 contracts, etc).
+            price: The price paid per quote instrument in terms of the base instrument.
+            (e.g. 10000 represents $10,000.00 if the `base_instrument` is "USD").
         """
+        self.order_id = order_id
         self.step = step
-        self.symbol = symbol
-        self.trade_type = trade_type
+        self.pair = pair
+        self.side = side
         self.amount = amount
         self.price = price
 
     def copy(self) -> 'Trade':
         """Return a copy of the current trade object."""
-        return Trade(step=self.step, symbol=self.symbol, trade_type=self.trade_type, amount=self.amount, price=self.price)
-
-    @property
-    def is_hold(self) -> bool:
-        """
-        Returns:
-            Whether the trade type is non-existent (i.e. hold).
-        """
-        return self.trade_type.is_hold
+        return Trade(self.order_id, self.step, self.pair, self.side, self.amount, self.price)
 
     @property
     def is_buy(self) -> bool:
-        """
-        Returns:
-            Whether the trade type is a buy offer.
-        """
-        return self.trade_type.is_buy
+        return self.side == TradeSide.BUY
 
     @property
     def is_sell(self) -> bool:
-        """
-        Returns:
-            Whether the trade type is a sell offer.
-        """
-        return self.trade_type.is_sell
+        return self.side == TradeSide.SELL
