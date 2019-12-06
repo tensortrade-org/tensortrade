@@ -1,4 +1,4 @@
-from . import Quantity
+from tensortrade.instruments import Quantity
 
 
 class Wallet:

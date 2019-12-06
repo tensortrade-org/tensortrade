@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import uuid
 import pandas as pd
 import numpy as np
 
@@ -22,6 +23,7 @@ from gym.spaces import Box
 from tensortrade import Component
 from tensortrade.trades import Trade
 from tensortrade.features import FeaturePipeline
+from tensortrade.portfolio import Portfolio
 
 TypeString = Union[type, str]
 
@@ -36,8 +38,7 @@ class Exchange(Component):
     """
     registered_name = "exchanges"
 
-    def __init__(self, dtype: TypeString = np.float32, feature_pipeline: FeaturePipeline = None, **kwargs):
-        self._base_instrument = self.context.base_instrument
+    def __init__(self, dtype: TypeString = np.float32, feature_pipeline: FeaturePipeline = None, portfolio: Portfolio = None, **kwargs):
         self._dtype = self.default('dtype', dtype)
         self._feature_pipeline = self.default('feature_pipeline', feature_pipeline)
         self._window_size = self.default('window_size', 1, kwargs)
@@ -46,14 +47,10 @@ class Exchange(Component):
         self._min_trade_price = self.default('min_trade_price', 1e-8, kwargs)
         self._max_trade_price = self.default('max_trade_price', 1e8, kwargs)
 
-    @property
-    def base_instrument(self) -> str:
-        """The exchange symbol of the instrument to store/measure value in."""
-        return self._base_instrument
+        self._portfolio = self.default('portfolio', portfolio)
+        self._observe_portfolio = self.default('observe_portfolio', True, kwargs)
 
-    @base_instrument.setter
-    def base_instrument(self, base_instrument: str):
-        self._base_instrument = base_instrument
+        self.id = uuid.uuid4()
 
     @property
     def window_size(self) -> int:
@@ -83,51 +80,18 @@ class Exchange(Component):
         self._feature_pipeline = feature_pipeline
 
     @property
-    def base_precision(self) -> float:
-        """The floating point precision of the base instrument."""
-        return self._base_precision
+    def portfolio(self) -> Portfolio:
+        """The portfolio of instruments currently held on this exchange."""
+        return self._portfolio
 
-    @base_precision.setter
-    def base_precision(self, base_precision: float):
-        self._base_precision = base_precision
-
-    @property
-    def instrument_precision(self) -> float:
-        """The floating point precision of the instrument to be traded."""
-        return self._instrument_precision
-
-    @instrument_precision.setter
-    def instrument_precision(self, instrument_precision: float):
-        self._instrument_precision = instrument_precision
-
-    @property
-    @abstractmethod
-    def initial_balance(self) -> float:
-        """The initial balance of the base symbol on the exchange."""
-        raise NotImplementedError
-
-    @property
-    @abstractmethod
-    def balance(self) -> float:
-        """The current balance of the base symbol on the exchange."""
-        raise NotImplementedError
-
-    @property
-    @abstractmethod
-    def portfolio(self) -> Dict[str, float]:
-        """The current balance of each symbol on the exchange (non-positive balances excluded)."""
-        raise NotImplementedError
+    @portfolio.setter
+    def portfolio(self, portfolio: Portfolio):
+        self._portfolio = portfolio
 
     @property
     @abstractmethod
     def trades(self) -> List[Trade]:
         """A list of trades made on the exchange since the last reset."""
-        raise NotImplementedError
-
-    @property
-    @abstractmethod
-    def performance(self) -> pd.DataFrame:
-        """The performance of the active account on the exchange since the last reset."""
         raise NotImplementedError
 
     @property
@@ -151,37 +115,6 @@ class Exchange(Component):
         return Box(low=low, high=high, dtype=self._dtype)
 
     @property
-    def net_worth(self) -> float:
-        """Calculate the net worth of the active account on the exchange.
-
-        Returns:
-            The total portfolio value of the active account on the exchange.
-        """
-        net_worth = self.balance
-        portfolio = self.portfolio
-
-        if not portfolio:
-            return net_worth
-
-        for symbol, amount in portfolio.items():
-            if symbol == self._base_instrument:
-                continue
-
-            current_price = self.current_price(symbol=symbol)
-            net_worth += current_price * amount
-
-        return net_worth
-
-    @property
-    def profit_loss_percent(self) -> float:
-        """Calculate the percentage change in net worth since the last reset.
-
-        Returns:
-            The percentage change in net worth since the last reset.
-        """
-        return float(self.net_worth / self.initial_balance) * 100
-
-    @property
     @abstractmethod
     def has_next_observation(self) -> bool:
         """If `False`, the exchange's data source has run out of observations.
@@ -193,6 +126,7 @@ class Exchange(Component):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def _next_observation(self) -> Union[pd.DataFrame, np.ndarray]:
         raise NotImplementedError()
 
@@ -209,22 +143,6 @@ class Exchange(Component):
 
         return observation
 
-    def instrument_balance(self, symbol: str) -> float:
-        """The current balance of the specified symbol on the exchange, denoted in the base instrument.
-
-        Arguments:
-            symbol: The symbol to retrieve the balance of.
-
-        Returns:
-            The balance of the specified exchange symbol, denoted in the base instrument.
-        """
-        portfolio = self.portfolio
-
-        if symbol in portfolio.keys():
-            return portfolio[symbol]
-
-        return 0
-
     @abstractmethod
     def current_price(self, symbol: str) -> float:
         """The current price of an instrument on the exchange, denoted in the base instrument.
@@ -234,6 +152,18 @@ class Exchange(Component):
 
         Returns:
             The current price of the specified instrument, denoted in the base instrument.
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def quote_price(self, trading_pair: 'TradingPair') -> float:
+        """The quote price of a trading pair on the exchange, denoted in the base instrument.
+
+        Arguments:
+            trading_pair: The `TradingPair` to get the quote price for.
+
+        Returns:
+            The quote price of the specified trading pair, denoted in the base instrument.
         """
         raise NotImplementedError
 
