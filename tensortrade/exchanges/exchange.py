@@ -23,7 +23,7 @@ from gym.spaces import Box
 from tensortrade import Component
 from tensortrade.trades import Trade
 from tensortrade.features import FeaturePipeline
-from tensortrade.portfolio import Portfolio
+from tensortrade.wallets import Portfolio
 
 TypeString = Union[type, str]
 
@@ -48,7 +48,14 @@ class Exchange(Component):
         self._max_trade_price = self.default('max_trade_price', 1e8, kwargs)
 
         self._portfolio = self.default('portfolio', portfolio)
-        self._observe_portfolio = self.default('observe_portfolio', True, kwargs)
+        self._observe_wallets = self.default('observe_wallets', None, kwargs)
+
+        if isinstance(self._observe_wallets, list):
+            self._observe_balances = self._observe_wallets
+            self._observe_locked_balances = self._observe_wallets
+        else:
+            self._observe_balances = self.default('observe_balances', None, kwargs)
+            self._observe_locked_balances = self.default('observe_locked_balances', None, kwargs)
 
         self.id = uuid.uuid4()
 
@@ -166,6 +173,18 @@ class Exchange(Component):
             The quote price of the specified trading pair, denoted in the base instrument.
         """
         raise NotImplementedError
+
+    @abstractmethod
+    def is_pair_tradeable(self, trading_pair: 'TradingPair') -> bool:
+        """Whether or not the specified trading pair is tradeable on this exchange.
+
+        Args:
+            trading_pair: The `TradingPair` to test the tradeability of.
+
+        Returns:
+            A bool designating whether or not the pair is tradeable.
+        """
+        raise NotImplementedError()
 
     @abstractmethod
     def execute_trade(self, trade: Trade) -> Trade:
