@@ -18,6 +18,7 @@ class LimitOrderCriteria(OrderCriteria):
 
         price = exchange.quote_price(order.pair)
 
-        limit_buy = (order.side == TradeSide.BUY and price <= self.limit_price)
-        limit_sell = (order.side == TradeSide.SELL and price >= self.limit_price)
-        return limit_buy or limit_sell
+        buy_satisfied = (order.side == TradeSide.BUY and price <= self.limit_price)
+        sell_satisfied = (order.side == TradeSide.SELL and price >= self.limit_price)
+
+        return buy_satisfied or sell_satisfied

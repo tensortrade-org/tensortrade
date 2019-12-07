@@ -140,8 +140,8 @@ class TradingEnvironment(gym.Env):
         """
         order = self._action_scheme.get_order(action)
 
-        if order:
-            self._broker.submit(order)
+        if order is not None:
+            self._broker.create_order(order)
 
         return order
 

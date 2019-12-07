@@ -1,7 +1,3 @@
-
-from .quantity import Quantity
-from typing import Union
-
 registry = {}
 
 
@@ -14,9 +10,6 @@ class Instrument:
         self.name = name
 
         registry[symbol] = self
-
-    def __rmul__(self, other):
-        return Quantity(other, self)
 
     def __str__(self):
         return self.symbol
