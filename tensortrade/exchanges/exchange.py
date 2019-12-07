@@ -206,18 +206,6 @@ class Exchange(Component):
         return observation
 
     @abstractmethod
-    def current_price(self, symbol: str) -> float:
-        """The current price of an instrument on the exchange, denoted in the base instrument.
-
-        Arguments:
-            symbol: The exchange symbol of the instrument to get the price for.
-
-        Returns:
-            The current price of the specified instrument, denoted in the base instrument.
-        """
-        raise NotImplementedError
-
-    @abstractmethod
     def quote_price(self, trading_pair: 'TradingPair') -> float:
         """The quote price of a trading pair on the exchange, denoted in the base instrument.
 
@@ -258,3 +246,6 @@ class Exchange(Component):
         """Reset the feature pipeline, initial balance, trades, performance, and any other temporary stateful data."""
         if self._feature_pipeline is not None:
             self.feature_pipeline.reset()
+
+        if self._portfolio is not None:
+            self._portfolio.reset()

@@ -34,18 +34,8 @@ class TradingContext(UserDict):
     """
     contexts = threading.local()
 
-    def __init__(self,
-                 base: str = 'USD',
-                 instruments: Union[str, List[str]] = 'BTC',
-                 **config):
-        super().__init__(
-            base=base,
-            instruments=instruments,
-            **config
-        )
-
-        if type(instruments) == str:
-            instruments = [instruments]
+    def __init__(self, base_instrument: str = 'USD', **config):
+        super().__init__(base_instrument=base_instrument, **config)
 
         for name in registered_names():
             if name not in get_major_component_names():
@@ -62,8 +52,7 @@ class TradingContext(UserDict):
         self._slippage = config.get('slippage', {})
 
         self._shared = {
-            'base': base,
-            'instruments': instruments,
+            'base_instrument': base_instrument,
             **self._shared,
             **config_items
         }
@@ -138,30 +127,17 @@ class Context(UserDict):
 
     Arguments:
         base_instrument: The exchange symbol of the instrument to store/measure value in.
-        instruments: The exchange symbols of the instruments being traded.
     """
 
-    def __init__(self,
-                 base_instrument: str = 'USD',
-                 instruments: Union[str, List[str]] = 'BTC',
-                 **kwargs):
-        super(Context, self).__init__(
-            base_instrument=base_instrument,
-            instruments=instruments,
-            **kwargs
-        )
+    def __init__(self, base_instrument: str = 'USD', instruments: Union[str, List[str]] = 'BTC', **kwargs):
+        super(Context, self).__init__(base_instrument=base_instrument, **kwargs)
 
         self._base_instrument = base_instrument
-        self._instruments = instruments
         self.__dict__ = {**self.__dict__, **self.data}
 
     @property
-    def base(self):
-        return self._base
-
-    @property
-    def instruments(self):
-        return self._instruments
+    def base_instrument(self):
+        return self._base_instrument
 
     def __str__(self):
         data = ['{}={}'.format(k, getattr(self, k)) for k in self.__slots__]

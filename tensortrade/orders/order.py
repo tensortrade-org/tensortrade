@@ -39,11 +39,11 @@ class Order:
 
     @property
     def base_instrument(self) -> 'Instrument':
-        return self.pair.base_instrument
+        return self.pair.base
 
     @property
     def quote_instrument(self) -> 'Instrument':
-        return self.pair.quote_instrument
+        return self.pair.quote
 
     @property
     def amount(self) -> float:
