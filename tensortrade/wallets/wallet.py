@@ -36,6 +36,10 @@ class Wallet:
         self._balance = balance
 
     @property
+    def locked_balance(self):
+        return sum(self.locked.values)
+
+    @property
     def locked(self):
         return self._locked
 
