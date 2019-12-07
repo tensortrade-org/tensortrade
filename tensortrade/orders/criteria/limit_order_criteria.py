@@ -6,7 +6,8 @@ from ...trades import TradeSide
 
 
 class LimitOrderCriteria(OrderCriteria):
-    """An order criteria that allows execution when the quote price for a trading pair is at or below a specific price."""
+    """An order criteria that allows execution when the quote price for a
+    trading pair is at or below a specific price."""
 
     def __init__(self, limit_price: float):
         self.limit_price = limit_price
@@ -17,4 +18,6 @@ class LimitOrderCriteria(OrderCriteria):
 
         price = exchange.quote_price(order.pair)
 
-        return (order.side == TradeSide.BUY and price <= self.limit_price) or (order.side == TradeSide.SELL and price >= self.limit_price)
+        limit_buy = (order.side == TradeSide.BUY and price <= self.limit_price)
+        limit_sell = (order.side == TradeSide.SELL and price >= self.limit_price)
+        return limit_buy or limit_sell

@@ -2,14 +2,15 @@ from abc import ABCMeta, abstractmethod
 
 
 class OrderListener(object, metaclass=ABCMeta):
-    def order_executed(self, order: 'Order', exchange: 'Exchange'):
+
+    def on_execute(self, order: 'Order', exchange: 'Exchange'):
         pass
 
-    def order_cancelled(self, order: 'Order'):
+    def on_cancel(self, order: 'Order'):
         pass
 
-    def order_filled(self, order: 'Order', exchange: 'Exchange', amount: float):
+    def on_fill(self, order: 'Order', exchange: 'Exchange', amount: float):
         pass
 
-    def order_completed(self, order: 'Order', exchange: 'Exchange'):
+    def on_complete(self, order: 'Order', exchange: 'Exchange'):
         pass

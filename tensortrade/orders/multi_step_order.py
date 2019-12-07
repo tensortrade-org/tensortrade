@@ -19,10 +19,10 @@ class MultiStepOrder(OrderListener):
     def is_executable(self, exchange: 'Exchange'):
         return self._active_order.criteria.is_satisfied(self._active_order, exchange)
 
-    def add_listener(self, listener: 'OrderListener'):
+    def attach(self, listener: 'OrderListener'):
         self._listeners += [listener]
 
-    def remove_listener(self, listener: 'OrderListener'):
+    def detach(self, listener: 'OrderListener'):
         self._listeners.remove(listener)
 
     def execute(self, exchange: 'Exchange'):
@@ -33,37 +33,37 @@ class MultiStepOrder(OrderListener):
 
         return self._active_order.execute(exchange)
 
-    def on_fill(self, exchange: 'Exchange', amount: float):
+    def fill(self, exchange: 'Exchange', amount: float):
         self.status = OrderStatus.PARTIALLY_FILLED
 
-        if self._listeners:
-            [listener.order_filled(self, exchange, amount) for listener in self._listeners]
+        for listener in self._listeners or []:
+            listener.on_fill(self, exchange, amount)
 
-    def on_complete(self, exchange: 'Exchange'):
+    def complete(self, exchange: 'Exchange'):
         self.status = OrderStatus.FILLED
 
-        if self._listeners:
-            [listener.order_completed(self, exchange) for listener in self._listeners]
+        for listener in self._listeners or []:
+            listener.on_complete(self, exchange)
 
         self._listeners = []
 
-    def on_cancel(self):
+    def cancel(self):
         self.status = OrderStatus.CANCELLED
 
-        if self._listeners:
-            [listener.order_cancelled(self) for listener in self._listeners]
+        for listener in self._listeners or []:
+            listener.on_cancel(self)
 
         self._listeners = []
 
-    def order_cancelled(self, order: 'Order'):
-        self.on_cancel()
+    def on_cancel(self, order: 'Order'):
+        self.cancel()
 
-    def order_filled(self, order: 'Order', exchange: 'Exchange', amount: float):
-        self.on_fill(exchange, amount)
+    def on_fill(self, order: 'Order', exchange: 'Exchange', amount: float):
+        self.fill(exchange, amount)
 
-    def order_completed(self, order: 'Order', exchange: 'Exchange'):
+    def on_complete(self, order: 'Order', exchange: 'Exchange'):
         self._active_step += 1
         self._active_order = self.steps[self._active_step]
 
         if self._active_step == len(self.steps):
-            self.on_complete(exchange)
+            self.complete(exchange)

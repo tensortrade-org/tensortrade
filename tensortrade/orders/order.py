@@ -15,6 +15,7 @@ class OrderStatus(Enum):
 
 
 class Order:
+
     def __init__(self, side: TradeSide, pair: 'TradingPair', quantity: 'Quantity', criteria: 'OrderCriteria' = None):
         self.side = side
         self.pair = pair
@@ -51,38 +52,38 @@ class Order:
     def is_executable(self, exchange: 'Exchange'):
         return self.criteria is None or self.criteria.is_satisfied(self, exchange)
 
-    def add_listener(self, listener: 'OrderListener'):
+    def attach(self, listener: 'OrderListener'):
         self._listeners += [listener]
 
-    def remove_listener(self, listener: 'OrderListener'):
+    def detach(self, listener: 'OrderListener'):
         self._listeners.remove(listener)
 
     def execute(self, exchange: 'Exchange'):
         self.status = OrderStatus.OPEN
 
         if self._listeners:
-            [listener.order_executed(self, exchange) for listener in self._listeners]
+            [listener.on_execute(self, exchange) for listener in self._listeners]
 
         return exchange.execute_order(self)
 
-    def on_fill(self, exchange: 'Exchange', amount: float):
+    def fill(self, exchange: 'Exchange', amount: float):
         self.status = OrderStatus.PARTIALLY_FILLED
 
-        if self._listeners:
-            [listener.order_filled(self, exchange, amount) for listener in self._listeners]
+        for listener in self._listeners or []:
+            listener.on_fill(self, exchange, amount)
 
-    def on_complete(self, exchange: 'Exchange'):
+    def complete(self, exchange: 'Exchange'):
         self.status = OrderStatus.FILLED
 
-        if self._listeners:
-            [listener.order_completed(self, exchange) for listener in self._listeners]
+        for listener in self._listeners or []:
+            listener.on_complete(self, exchange)
 
         self._listeners = []
 
-    def on_cancel(self):
+    def cancel(self):
         self.status = OrderStatus.CANCELLED
 
-        if self._listeners:
-            [listener.order_cancelled(self) for listener in self._listeners]
+        for listener in self._listeners or []:
+            listener.on_cancel(self)
 
         self._listeners = []
