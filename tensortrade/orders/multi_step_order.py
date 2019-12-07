@@ -6,6 +6,7 @@ from . import Order, OrderListener, OrderStatus
 
 
 class MultiStepOrder(OrderListener):
+
     def __init__(self, steps: List['Order'], listener: 'OrderListener' = None):
         self.steps = steps
 
