@@ -15,7 +15,7 @@ The beginning of the code in [Exchange](https://github.com/notadamking/tensortra
 class Exchange(object, metaclass=ABCMeta):
     """An abstract exchange for use within a trading environment."""
 
-    def __init__(self, base_instrument: str = 'USD', dtype: TypeString = np.float32, feature_pipeline: FeaturePipeline = None):
+    def __init__(self, base_instrument: str = 'USD', dtype: Union[type, str] = np.float32, feature_pipeline: FeaturePipeline = None):
         """
         Arguments:
             base_instrument: The exchange symbol of the instrument to store/measure value in.

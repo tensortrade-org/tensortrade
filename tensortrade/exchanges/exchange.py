@@ -21,61 +21,48 @@ from typing import Dict, Union, List
 from gym.spaces import Box
 
 from tensortrade import Component
-from tensortrade.trades import Trade
-from tensortrade.features import FeaturePipeline
+from tensortrade.orders import Order
 from tensortrade.wallets import Portfolio
-
-TypeString = Union[type, str]
+from tensortrade.instruments import Instrument
+from tensortrade.features import FeaturePipeline
 
 
 class Exchange(Component):
     """An abstract exchange for use within a trading environments.
 
     Arguments:
-        base_instrument: The exchange symbol of the instrument to store/measure value in.
-        dtype: A type or str corresponding to the dtype of the `observation_space`.
         feature_pipeline: A pipeline of feature transformations for transforming observations.
+        portfolio (optional): A wallet `Portfolio` for use on the exchange.
+        kwargs (optional): Optional arguments to augment the functionality of the exchange.
     """
     registered_name = "exchanges"
 
-    def __init__(self, dtype: TypeString = np.float32, feature_pipeline: FeaturePipeline = None, portfolio: Portfolio = None, **kwargs):
-        self._dtype = self.default('dtype', dtype)
+    def __init__(self, feature_pipeline: FeaturePipeline = None, portfolio: Portfolio = None, **kwargs):
         self._feature_pipeline = self.default('feature_pipeline', feature_pipeline)
-        self._window_size = self.default('window_size', 1, kwargs)
-        self._min_trade_amount = self.default('min_trade_amount', 1e-6, kwargs)
-        self._max_trade_amount = self.default('max_trade_amount', 1e6, kwargs)
-        self._min_trade_price = self.default('min_trade_price', 1e-8, kwargs)
-        self._max_trade_price = self.default('max_trade_price', 1e8, kwargs)
-
         self._portfolio = self.default('portfolio', portfolio)
+
+        self._dtype = self.default('dtype', np.float32, kwargs)
+        self._window_size = self.default('window_size', 1, kwargs)
+        self._observation_space_lows = self.default('observation_space_lows', None, kwargs)
+        self._observation_space_highs = self.default('observation_space_highs', None, kwargs)
         self._observe_wallets = self.default('observe_wallets', None, kwargs)
 
         if isinstance(self._observe_wallets, list):
-            self._observe_balances = self._observe_wallets
+            self._observe_unlocked_balances = self._observe_wallets
             self._observe_locked_balances = self._observe_wallets
         else:
-            self._observe_balances = self.default('observe_balances', None, kwargs)
-            self._observe_locked_balances = self.default('observe_locked_balances', None, kwargs)
+            self._observe_unlocked_balances = self.default('observe_unlocked_balances', [], kwargs)
+            self._observe_locked_balances = self.default('observe_locked_balances', [], kwargs)
+
+        if not isinstance(self._observe_unlocked_balances, list) or not isinstance(self._observe_unlocked_balances[0], Instrument):
+            raise ValueError(
+                'If used, the `self._observe_wallets` or `self._observe_unlocked_balances` parameter must be of type: List[Instrument]')
+
+        if not isinstance(self._observe_locked_balances, list) or not isinstance(self._observe_locked_balances[0], Instrument):
+            raise ValueError(
+                'If used, the `self._observe_wallets` or `self._observe_locked_balances` parameter must be of type: List[Instrument]')
 
         self.id = uuid.uuid4()
-
-    @property
-    def window_size(self) -> int:
-        """The window size of observations."""
-        return self._window_size
-
-    @window_size.setter
-    def window_size(self, window_size: int):
-        self._window_size = window_size
-
-    @property
-    def dtype(self) -> TypeString:
-        """A type or str corresponding to the dtype of the `observation_space`."""
-        return self._dtype
-
-    @dtype.setter
-    def dtype(self, dtype: TypeString):
-        self._dtype = dtype
 
     @property
     def feature_pipeline(self) -> FeaturePipeline:
@@ -96,24 +83,63 @@ class Exchange(Component):
         self._portfolio = portfolio
 
     @property
+    def window_size(self) -> int:
+        """The length of the observation window in the `observation_space`."""
+        return self._window_size
+
+    @window_size.setter
+    def window_size(self, window_size: int):
+        self._window_size = window_size
+
+    @property
+    def dtype(self) -> Union[type, str]:
+        """A type or str corresponding to the dtype of the `observation_space`."""
+        return self._dtype
+
+    @dtype.setter
+    def dtype(self, dtype: Union[type, str]):
+        self._dtype = dtype
+
+    @property
     @abstractmethod
-    def trades(self) -> List[Trade]:
+    def trades(self) -> List['Trade']:
         """A list of trades made on the exchange since the last reset."""
         raise NotImplementedError
 
     @property
     @abstractmethod
-    def observation_columns(self) -> List[str]:
-        """The final columns provided by the observation space, after any feature transformations."""
+    def generated_columns(self) -> List[str]:
+        """The list of generated columns provided by the exchange, after any feature transformations."""
         raise NotImplementedError
+
+    @property
+    def wallet_columns(self) -> List[str]:
+        """The list of wallet columns provided by the portfolio."""
+        unlocked_columns = [instrument.symbol for instrument in self._observe_unlocked_balances]
+        locked_columns = ['{}_locked'.format(instrument.symbol)
+                          for instrument in self._observe_locked_balances]
+        return unlocked_columns + locked_columns
+
+    @property
+    def observation_columns(self) -> List[str]:
+        """The final list of columns in the observation space."""
+        return self.generated_columns + self.wallet_columns
 
     @property
     def observation_space(self) -> Box:
         """The final shape of the observations generated by the exchange, after any feature transformations."""
         n_features = len(self.observation_columns)
 
-        low = np.tile(self._min_trade_price, n_features)
-        high = np.tile(self._max_trade_price, n_features)
+        if self._observation_space_lows and len(self._observation_space_lows) != n_features:
+            raise ValueError(
+                'The length of `observation_space_lows` provided to the exchange must match the length of `observation_columns`.')
+
+        if self._observation_space_highs and len(self._observation_space_highs) != n_features:
+            raise ValueError(
+                'The length of `observation_space_highs` provided to the exchange must match the length of `observation_columns`.')
+
+        low = self._observation_space_lows or np.tile(0, n_features)
+        high = self._observation_space_highs or np.tile(1e8, n_features)
 
         if self._window_size > 1:
             low = np.tile(low, self._window_size).reshape((self._window_size, n_features))
@@ -134,19 +160,48 @@ class Exchange(Component):
         raise NotImplementedError
 
     @abstractmethod
-    def _next_observation(self) -> Union[pd.DataFrame, np.ndarray]:
+    def _generate_next_observation(self) -> Union[pd.DataFrame, np.ndarray]:
+        """Utility method to generate the next observation from the exchange,
+        including any feature transformations, but excluding wallet balances.
+
+        Returns:
+            A `pandas.DataFrame` or `numpy.ndarray` of feature observations.
+        """
         raise NotImplementedError()
+
+    def balance(self, instrument: Instrument) -> 'Quantity':
+        wallet = self._portfolio.get_wallet(self.id, instrument)
+        return wallet.balance
+
+    def locked_balance(self, instrument: Instrument) -> 'Quantity':
+        wallet = self._portfolio.get_wallet(self.id, instrument)
+        return wallet.locked_balance
+
+    def observe_balances(self) -> np.ndarray:
+        wallets = np.array([])
+
+        for instrument in self._observe_unlocked_balances:
+            wallets += [self.balance(instrument).amount]
+
+        for instrument in self._observe_locked_balances:
+            wallets += [self.locked_balance(instrument).amount]
+
+        return wallets
 
     def next_observation(self) -> np.ndarray:
         """Generate the next observation from the exchange.
         Returns:
             The next multi-dimensional list of observations.
         """
-        observation = self._next_observation()
+        observation = self._generate_next_observation()
 
         if isinstance(observation, pd.DataFrame):
             observation = observation.fillna(0, axis=1)
-            return observation.values
+            observation = observation.values
+
+        if self._observe_locked_balances or self._observe_unlocked_balances:
+            wallet_balances = self.observe_balances()
+            observation = observation + wallet_balances
 
         return observation
 
@@ -187,14 +242,14 @@ class Exchange(Component):
         raise NotImplementedError()
 
     @abstractmethod
-    def execute_trade(self, trade: Trade) -> Trade:
-        """Execute a trade on the exchange, accounting for slippage.
+    def execute_order(self, order: Order) -> Order:
+        """Execute an order on the exchange.
 
         Arguments:
-            trade: The trade to execute.
+            order: The order to execute.
 
         Returns:
-            The filled trade.
+            The executed order.
         """
         raise NotImplementedError
 
