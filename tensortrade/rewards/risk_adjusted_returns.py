@@ -56,10 +56,10 @@ class RiskAdjustedReturns(RewardScheme):
         """
         downside_returns = pd.Series([0])
 
-        returns[returns < self._target_returns] = returns ** 2
+        downside_returns[returns < self._target_returns] = returns ** 2
 
         expected_return = returns.mean()
-        downside_std = np.sqrt(downside_returns.mean())
+        downside_std = np.sqrt(downside_returns.std())
 
         return (expected_return - self._risk_free_rate) / (downside_std + 1E-9)
 
