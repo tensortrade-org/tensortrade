@@ -1,12 +1,22 @@
-class TradingPair():
+
+
+class TradingPair:
     """A pair of financial instruments to be traded on a specific exchange."""
 
-    def __init__(self, base_instrument: 'Instrument', quote_instrument: 'Instrument'):
-        self.base_instrument = base_instrument
-        self.quote_instrument = quote_instrument
+    def __init__(self, base: 'Instrument', quote: 'Instrument'):
+        self._base = base
+        self._quote = quote
+
+    @property
+    def base(self):
+        return self._base
+
+    @property
+    def quote(self):
+        return self._quote
 
     def __str__(self):
-        return '{}/{}'.format(self.base_instrument.symbol, self.quote_instrument.symbol)
+        return '{}/{}'.format(self.base.symbol, self.quote.symbol)
 
     def __repr__(self):
         return str(self)

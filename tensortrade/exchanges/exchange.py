@@ -47,7 +47,7 @@ class Exchange(Component):
         self._min_trade_price = self.default('min_trade_price', 1e-8, kwargs)
         self._max_trade_price = self.default('max_trade_price', 1e8, kwargs)
 
-        self._portfolio = self.default('account', portfolio)
+        self._portfolio = self.default('portfolio', portfolio)
         self._observe_portfolio = self.default('observe_portfolio', True, kwargs)
 
         self.id = uuid.uuid4()

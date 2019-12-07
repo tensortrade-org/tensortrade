@@ -23,7 +23,7 @@ class TradeSide(Enum):
 class Trade(object):
     """A trade object for use within trading environments."""
 
-    def __init__(self, order_id: str, exchange_id: str, step: int, pair: 'TradingPair', side: TradeSide, amount: float, price: float):
+    def __init__(self, order_id: str, exchange_id: str, step: int, pair: 'TradingPair', side: TradeSide, size: 'Quantity', price: float):
         """
         Arguments:
             order_id: The id of the order that created the trade.
@@ -43,12 +43,12 @@ class Trade(object):
         self.step = step
         self.pair = pair
         self.side = side
-        self.amount = amount
+        self.size = size
         self.price = price
 
     def copy(self) -> 'Trade':
         """Return a copy of the current trade object."""
-        return Trade(self.order_id, self.exchange_id, self.step, self.pair, self.side, self.amount, self.price)
+        return Trade(self.order_id, self.exchange_id, self.step, self.pair, self.side, self.size, self.price)
 
     @property
     def is_buy(self) -> bool:
@@ -57,3 +57,12 @@ class Trade(object):
     @property
     def is_sell(self) -> bool:
         return self.side == TradeSide.SELL
+
+    def to_dict(self):
+        return {
+                'step': self.step,
+                'symbol': self.pair,
+                'side': self.side,
+                'amount': self.size.amount,
+                'price': self.price
+        }

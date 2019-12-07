@@ -10,10 +10,8 @@ class Portfolio(Component):
 
     registered_name = "account"
 
-    def __init__(self, exchange: 'Exchange', base_instrument: 'Instrument'):
-        self._exchange = exchange
+    def __init__(self):
         self._base_instrument = self.context.base_instrument
-
         self._wallets = {}
 
     @property
@@ -22,7 +20,7 @@ class Portfolio(Component):
         return self._base_instrument
 
     @base_instrument.setter
-    def base_instrument(self, base_instrument: str):
+    def base_instrument(self, base_instrument: 'Instrument'):
         self._base_instrument = base_instrument
 
     @property
@@ -31,7 +29,7 @@ class Portfolio(Component):
         raise NotImplementedError
 
     @property
-    def current_balance(self) -> float:
+    def balance(self) -> float:
         """The current balance of the base instrument on the exchange."""
         raise NotImplementedError
 
@@ -62,6 +60,9 @@ class Portfolio(Component):
 
         return 0
 
+    def group_by_exchange(self):
+        pass
+
     @property
     def net_worth(self) -> float:
         """Calculate the net worth of the active account on the exchange.
@@ -69,7 +70,7 @@ class Portfolio(Component):
         Returns:
             The total account value of the active account on the exchange.
         """
-        net_worth = self.current_balance
+        net_worth = self.balance
         wallets = self._wallets
 
         if not wallets:
@@ -91,4 +92,14 @@ class Portfolio(Component):
         Returns:
             The percentage change in net worth since the last reset.
         """
-        return float(self.net_worth / self.initial_balance) * 100
+        return 100 * float(self.net_worth / self.initial_balance)
+
+    def get_wallet(self, exchange_id: str, instrument: 'Instrument'):
+        return self._wallets[(exchange_id, instrument)]
+
+    def add(self, wallet: 'Wallet'):
+        k = (str(wallet.exchange.id), wallet.instrument)
+        self._wallets[k] = wallet
+
+    def remove(self, wallet: 'Wallet'):
+        del self._wallets[(str(wallet.exchange.id), wallet.instrument)]
