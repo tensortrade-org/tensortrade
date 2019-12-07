@@ -35,11 +35,11 @@ class TradingContext(UserDict):
     contexts = threading.local()
 
     def __init__(self,
-                 base_instrument: str = 'USD',
+                 base: str = 'USD',
                  instruments: Union[str, List[str]] = 'BTC',
                  **config):
         super().__init__(
-            base_instrument=base_instrument,
+            base=base,
             instruments=instruments,
             **config
         )
@@ -62,7 +62,7 @@ class TradingContext(UserDict):
         self._slippage = config.get('slippage', {})
 
         self._shared = {
-            'base_instrument': base_instrument,
+            'base': base,
             'instruments': instruments,
             **self._shared,
             **config_items
@@ -156,8 +156,8 @@ class Context(UserDict):
         self.__dict__ = {**self.__dict__, **self.data}
 
     @property
-    def base_instrument(self):
-        return self._base_instrument
+    def base(self):
+        return self._base
 
     @property
     def instruments(self):

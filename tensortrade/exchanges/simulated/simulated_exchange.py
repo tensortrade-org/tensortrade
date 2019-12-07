@@ -174,7 +174,7 @@ class SimulatedExchange(Exchange):
         if not trade.is_hold:
             self._trades = self._trades.append({
                 'step': trade.step,
-                'symbol': trade.symbol,
+                'symbol': trade.pair,
                 'type': trade.trade_type,
                 'amount': trade.amount,
                 'price': trade.price
@@ -183,9 +183,22 @@ class SimulatedExchange(Exchange):
         if trade.is_buy:
             self._balance -= trade.amount * trade.price
             self._portfolio[trade.symbol] = self._portfolio.get(trade.symbol, 0) + trade.amount
+
         elif trade.is_sell:
             self._balance += trade.amount * trade.price
             self._portfolio[trade.symbol] = self._portfolio.get(trade.symbol, 0) - trade.amount
+
+    def _new_make_trade(self, trade: Trade):
+        self._trades.append(trade.to_dict(), ignore_index=True)
+
+        w1 = self.portfolio.get_wallet(str(self.id), trade.pair.base)
+        w2 = self.portfolio.get_wallet(str(self.id), trade.pair.quote)
+        if trade.is_buy:
+            w1 -= trade.size * trade.price
+            w2 += trade.size
+        if trade.is_sell:
+            w1 += trade.size * trade.price
+            w2 -= trade.size
 
     def _update_account(self, trade: Trade):
         if self._is_valid_trade(trade):
@@ -209,7 +222,7 @@ class SimulatedExchange(Exchange):
 
         if filled_trade.is_buy:
             price_adjustment = (1 + commission)
-            filled_trade.price = round(current_price * price_adjustment, self._base_precision)
+            filled_trade.price = round(current_price * price_adjustment, trade.pair.base.precision)
             filled_trade.amount = round((filled_trade.price * filled_trade.amount) / filled_trade.price,
                                         self._instrument_precision)
         elif filled_trade.is_sell:

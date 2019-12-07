@@ -1,6 +1,7 @@
 
 from .quantity import Quantity
 from typing import Union
+from sympy import Symbol
 
 registry = {}
 
@@ -8,8 +9,8 @@ registry = {}
 class Instrument:
     """A financial instrument for use in trading."""
 
-    def __init__(self, symbol: str, precision: int, name: str):
-        self.symbol = symbol
+    def __init__(self, symbol: Union[Symbol, str], precision: int, name: str):
+        self.symbol = Symbol(symbol) if isinstance(symbol, str) else symbol
         self.precision = precision
         self.name = name
 
@@ -19,7 +20,7 @@ class Instrument:
         return Quantity(other, self)
 
     def __str__(self):
-        return self.symbol
+        return str(self.symbol)
 
     def __repr__(self):
         return str(self)

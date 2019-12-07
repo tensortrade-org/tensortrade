@@ -1,3 +1,5 @@
+import uuid
+
 from tensortrade.instruments import Quantity
 
 
@@ -5,11 +7,16 @@ class Wallet:
     """A wallet stores the balance of a specific instrument on a specific exchange."""
 
     def __init__(self, exchange: 'Exchange', instrument: 'Instrument', balance: float = 0):
+        self._id = uuid.uuid4()
         self._exchange = exchange
         self._instrument = instrument
 
-        self._balance = Quantity(balance, instrument)
+        self._balance = Quantity(balance, instrument, wallet_id=str(self.id))
         self._locked = {}
+
+    @property
+    def id(self):
+        return self._id
 
     @property
     def exchange(self):

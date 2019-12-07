@@ -71,7 +71,7 @@ class Quantity:
         if amount < 0:
             raise Exception("Quantities must be non-negative.")
 
-        return Quantity(amount, left.instrument)
+        return Quantity(amount, left.instrument, left.order_id, left.wallet_id)
 
     def __add__(self, other):
         return Quantity._quantity_op(self, other, operator.add)

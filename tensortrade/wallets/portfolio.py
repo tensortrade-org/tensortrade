@@ -6,43 +6,46 @@ from tensortrade import Component
 
 
 class Portfolio(Component):
-    """A portfolio of wallets for use on an Exchange."""
+    """A portfolio of wallets for use on any ."""
 
-    registered_name = "account"
+    registered_name = "portfolio"
 
-    def __init__(self, exchange: 'Exchange', base_instrument: 'Instrument'):
-        self._exchange = exchange
-        self._base_instrument = self.context.base_instrument
-
+    def __init__(self):
+        self._base = self.context.base
         self._wallets = {}
 
     @property
-    def base_instrument(self) -> 'Instrument':
+    def base(self) -> 'Instrument':
         """The exchange instrument used to measure value and performance statistics."""
-        return self._base_instrument
+        return self._base
 
-    @base_instrument.setter
-    def base_instrument(self, base_instrument: str):
-        self._base_instrument = base_instrument
+    @base.setter
+    def base(self, base: 'Instrument'):
+        self._base = base
 
     @property
     def initial_balance(self) -> float:
-        """The initial balance of the base instrument on the exchange."""
+        """The initial balance of the base instrument over all wallets."""
         raise NotImplementedError
 
     @property
-    def current_balance(self) -> float:
-        """The current balance of the base instrument on the exchange."""
+    def balance(self) -> float:
+        """The current balance of the base instrument over all wallets."""
         raise NotImplementedError
 
     @property
     def balances(self) -> Dict['Instrument', float]:
-        """The current balance of each instrument on the exchange (non-positive balances excluded)."""
+        """The current balance of each instrument over all exchanges (non-positive balances excluded)."""
         raise NotImplementedError
 
     @property
     def performance(self) -> pd.DataFrame:
-        """The performance of the active account on the exchange since the last reset."""
+        """The performance of the active account on the exchange since the last reset.
+
+        A pandas dataframe with the following columns:
+
+            | step | balance | net_worth |
+        """
         raise NotImplementedError
 
     @property
@@ -62,6 +65,12 @@ class Portfolio(Component):
 
         return 0
 
+    def group_by_exchange(self):
+        pass
+
+    def filter_by(self, function):
+        return list(filter(self._wallets, function))
+
     @property
     def net_worth(self) -> float:
         """Calculate the net worth of the active account on the exchange.
@@ -69,17 +78,18 @@ class Portfolio(Component):
         Returns:
             The total portfolio value of the active account on the exchange.
         """
-        net_worth = self.current_balance
+        # %%TODO: Change this method to compute over all exchanges and instruments.
+        net_worth = self.balance
         wallets = self._wallets
 
         if not wallets:
             return net_worth
 
-        for symbol, wallet in wallets.items():
-            if symbol == self._base_instrument:
-                continue
+        for (exchange, instrument), wallet in wallets.items():
+            if instrument == self._base:
+                net_worth += wallet.balance
 
-            current_price = self._exchange.current_price(symbol=symbol)
+            current_price = self._exchange.quote_price(instrument=instrument)
             net_worth += current_price * wallet.balance
 
         return net_worth
@@ -91,4 +101,14 @@ class Portfolio(Component):
         Returns:
             The percentage change in net worth since the last reset.
         """
-        return float(self.net_worth / self.initial_balance) * 100
+        raise NotImplemented()
+
+    def get_wallet(self, exchange_id: str, instrument: 'Instrument'):
+        return self._wallets[(exchange_id, instrument)]
+
+    def add(self, wallet: 'Wallet'):
+        k = (str(wallet.exchange.id), wallet.instrument)
+        self._wallets[k] = wallet
+
+    def remove(self, wallet: 'Wallet'):
+        del self._wallets[(str(wallet.exchange.id), wallet.instrument)]
