@@ -88,7 +88,7 @@ class Exchange(Component):
 
     @property
     def portfolio(self) -> Portfolio:
-        """The account of instruments currently held on this exchange."""
+        """The portfolio of instruments currently held on this exchange."""
         return self._portfolio
 
     @portfolio.setter
