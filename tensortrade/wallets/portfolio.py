@@ -6,7 +6,7 @@ from tensortrade import Component
 
 
 class Portfolio(Component):
-    """A account of wallets for use on an Exchange."""
+    """A portfolio of wallets for use on an Exchange."""
 
     registered_name = "account"
 
@@ -68,7 +68,7 @@ class Portfolio(Component):
         """Calculate the net worth of the active account on the exchange.
 
         Returns:
-            The total account value of the active account on the exchange.
+            The total portfolio value of the active account on the exchange.
         """
         net_worth = self.balance
         wallets = self._wallets

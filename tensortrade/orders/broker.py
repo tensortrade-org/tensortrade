@@ -26,13 +26,18 @@ class Broker:
 
     @property
     def unexecuted(self) -> List['Order']:
-        """The list of orders the broker is waiting to execute, when their criteria passes."""
+        """The list of orders the broker is waiting to execute, when their criteria is satisfied."""
         return self._unexecuted
 
     @property
     def executed(self) -> Dict[str, 'Order']:
-        """The list of orders the broker has executed since resetting."""
+        """The dictionary of orders the broker has executed since resetting."""
         return self._executed
+
+    @property
+    def trades(self) -> Dict[str, 'Trade']:
+        """The dictionary of trades the broker has executed since resetting."""
+        return self._trades
 
     def submit(self, order: 'Order'):
         self._unexecuted += [order]
