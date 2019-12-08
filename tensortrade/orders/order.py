@@ -95,6 +95,7 @@ class Order(Identifiable):
             listener.on_complete(self, exchange)
 
         self._listeners = []
+        self.release()
 
     def cancel(self):
         self.status = OrderStatus.CANCELLED
@@ -103,3 +104,8 @@ class Order(Identifiable):
             listener.on_cancel(self)
 
         self._listeners = []
+        self.release()
+
+    def release(self):
+        for wallet in self.portfolio.wallets:
+            wallet.unlock(self.id)

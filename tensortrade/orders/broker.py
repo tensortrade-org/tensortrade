@@ -66,16 +66,8 @@ class Broker(OrderListener):
                 self._unexecuted.remove(order)
                 self._executed[order.id] = order
 
-    def reset(self):
-        self._unexecuted = []
-        self._executed = {}
-        self._trades = {}
-
     def on_fill(self, order: Order, exchange: 'Exchange', trade: 'Trade'):
         if trade.order_id in self._executed.keys() and trade not in self._trades:
-            order = self._executed[trade.order_id]
-
-            order.fill(exchange, trade)
 
             self._trades[trade.order_id] = self._trades[trade.order_id] or []
             self._trades[trade.order_id] += [trade]
@@ -87,3 +79,8 @@ class Broker(OrderListener):
 
             if total_traded >= order.size:
                 order.complete(exchange)
+
+    def reset(self):
+        self._unexecuted = []
+        self._executed = {}
+        self._trades = {}

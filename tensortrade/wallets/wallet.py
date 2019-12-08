@@ -69,25 +69,11 @@ class Wallet(Identifiable):
     def locked(self) -> Dict[str, 'Quantity']:
         return self._locked
 
-    def lock_for_order(self, amount: float) -> 'Quantity':
-        if self._balance < amount:
-            raise InsufficientFunds(self._balance, amount)
-
-        locked_quantity = Quantity(self.instrument, amount)
-
-        self -= locked_quantity
-
-        locked_quantity.lock_for('pending_order_id')
-
-        self += locked_quantity
-
-        return locked_quantity
-
-    def clean(self):
-        for quantity in self._locked.values():
-            if not quantity.is_locked:
-                self._locked.pop(quantity.order_id, None)
-                self += quantity
+    def unlock(self, order_id: str):
+        if order_id in self.locked.keys():
+            q = self.locked[order_id]
+            self += q.amount*self.instrument
+            del self.locked[order_id]
 
     def __iadd__(self, quantity: 'Quantity') -> 'Wallet':
         if quantity.is_locked:
