@@ -3,6 +3,7 @@ from typing import Union
 from sympy import Symbol
 
 from .quantity import Quantity
+from .trading_pair import TradingPair
 
 registry = {}
 
@@ -25,6 +26,10 @@ class Instrument:
 
     def __rmul__(self, other: float) -> Quantity:
         return Quantity(instrument=self, amount=other)
+
+    def __truediv__(self, other):
+        if isinstance(other, Instrument):
+            return TradingPair(self, other)
 
     def __str__(self):
         return str(self.symbol)

@@ -53,20 +53,18 @@ class RiskAdjustedReturns(RewardScheme):
 
         https://en.wikipedia.org/wiki/Sortino_ratio
         """
-        downside_returns = pd.Series([0])
+        downside_returns = returns.copy()
 
-        returns[returns < self._target_returns] = returns ** 2
+        downside_returns[returns < self._target_returns] = returns ** 2
 
         expected_return = returns.mean()
-        downside_std = np.sqrt(downside_returns.mean())
+        downside_std = np.sqrt(downside_returns.std())
 
         return (expected_return - self._risk_free_rate) / (downside_std + 1E-9)
 
-    def get_reward(self, current_step: int) -> float:
+    def get_reward(self, portfolio: 'Portfolio', current_step: int) -> float:
         """Return the reward corresponding to the selected risk-adjusted return metric."""
-        print('performance', self._exchange.performance)
-
-        returns = self._exchange.performance['net_worth'].diff()
+        returns = portfolio.performance['net_worth'].diff()
 
         risk_adjusted_return = self._return_algorithm(returns)
 

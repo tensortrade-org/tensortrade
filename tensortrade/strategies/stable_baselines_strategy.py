@@ -109,8 +109,8 @@ class StableBaselinesTradingStrategy(TradingStrategy):
             average_reward -= average_reward / steps_completed
             average_reward += rewards[0] / (steps_completed + 1)
 
-            exchange_performance = info[0].get('exchange').performance
-            performance = exchange_performance if len(exchange_performance) > 0 else performance
+            portfolio_performance = info[0].get('portfolio').performance
+            performance = portfolio_performance if len(portfolio_performance) > 0 else performance
 
             if render_mode is not None:
                 self._environment.render(mode=render_mode)

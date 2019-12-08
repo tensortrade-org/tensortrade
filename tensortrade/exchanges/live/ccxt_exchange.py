@@ -47,31 +47,16 @@ class CCXTExchange(Exchange):
         self._max_trade_wait_in_sec = self.default('max_trade_wait_in_sec', 15, kwargs)
         self._exchange.enableRateLimit = self.default('enable_rate_limit', True, kwargs)
 
-        self._markets = self._exchange.load_markets()
         self._observation_symbols = [self.pair_to_symbol(pair) for pair in self._observation_pairs]
+
+        self._exchange.load_markets()
 
     @property
     def data_frame(self) -> pd.DataFrame:
         return self._data_frame
 
-    @data_frame.setter
-    def data_frame(self, data_frame: pd.DataFrame):
-        self._data_frame = data_frame
-
-        if len(self._data_frame) >= self._window_size:
-            self._data_frame = self._data_frame.iloc[-(self._window_size - 1):]
-
     @property
-    def trades(self) -> List[Trade]:
-        trades = {}
-
-        for key in self._markets.keys():
-            trades[key] = self._exchange.fetch_my_trades()[key]
-
-        return trades
-
-    @property
-    def pre_transformation_columns(self) -> List[str]:
+    def observation_columns(self) -> List[str]:
         if self._observation_type == 'ohlcv':
             return np.array([['{}_open'.format(symbol),
                               '{}_high'.format(symbol),
@@ -85,21 +70,14 @@ class CCXTExchange(Exchange):
                           '{}_cost'.format(symbol)] for symbol in self._observation_symbols]).flatten()
 
     @property
-    def generated_columns(self) -> List[str]:
-        if self.has_next_observation:
-            self._generate_next_observation().columns
-
-        return self.pre_transformation_columns
-
-    @property
     def has_next_observation(self) -> bool:
         if self._observation_type == 'ohlcv':
             return self._exchange.has['fetchOHLCV']
 
         return self._exchange.has['fetchTrades']
 
-    def _generate_next_observation(self) -> pd.DataFrame:
-        observations = pd.DataFrame([], columns=self.pre_transformation_columns)
+    def next_observation(self, window_size: int = 1) -> pd.DataFrame:
+        observations = pd.DataFrame([], columns=self.observation_columns)
 
         for symbol in self._observation_symbols:
             if self._observation_type == 'ohlcv':
@@ -121,17 +99,12 @@ class CCXTExchange(Exchange):
 
         observations = pd.concat([self._data_frame, observations], ignore_index=True, sort=False)
 
-        self.data_frame = observations
+        self._data_frame = observations
 
-        if self._feature_pipeline is not None:
-            obs = self._feature_pipeline.transform(obs)
+        if len(self._data_frame) >= window_size:
+            self._data_frame = self._data_frame.iloc[-(window_size - 1):]
 
-        if len(obs) < self._window_size:
-            padding = np.zeros((self._window_size - len(obs), len(self.observation_columns)))
-            padding = pd.DataFrame(padding, columns=self.observation_columns)
-            obs = pd.concat([padding, obs], ignore_index=True, sort=False)
-
-        return obs
+        return self.data_frame
 
     def pair_to_symbol(self, pair: 'TradingPair') -> str:
         return '{}/{}'.format(pair.quote.symbol, pair.base.symbol)
@@ -144,7 +117,7 @@ class CCXTExchange(Exchange):
         except BadRequest:
             return np.inf
 
-    def execute_order(self, order: 'Order'):
+    def execute_order(self, order: 'Order', portfolio: 'Portfolio'):
         if order.type == TradeType.LIMIT and order.side == TradeSide.BUY:
             executed_order = self._exchange.create_limit_buy_order(
                 order.symbol, order.size, order.price)
@@ -165,6 +138,7 @@ class CCXTExchange(Exchange):
 
         if order['status'] == 'open':
             self._exchange.cancel_order(order.id)
+            order.cancel()
 
         trade = Trade(order_id=order.id,
                       exchange_id=self.id,
@@ -180,5 +154,4 @@ class CCXTExchange(Exchange):
     def reset(self):
         super().reset()
 
-        self._markets = self._exchange.load_markets()
-        self._data_frame = pd.DataFrame([], columns=self.generated_columns)
+        self._data_frame = pd.DataFrame([], columns=self.observation_columns)
