@@ -20,9 +20,9 @@ from itertools import product
 from gym.spaces import Discrete
 
 from tensortrade.actions import ActionScheme
-from tensortrade.orders import Order
+from tensortrade.trades import TradeSide, TradeType
 from tensortrade.instruments import Quantity
-from tensortrade.trades import TradeSide
+from tensortrade.orders import Order
 
 
 class MultiActionScheme(ActionScheme):
@@ -123,9 +123,13 @@ class MultiActionScheme(ActionScheme):
         (side, trading_pair, criteria, amount) = self._actions[action]
 
         quantity = Quantity(instrument=trading_pair.base_instrument, amount=amount)
-        order = Order(side=side, pair=trading_pair, quantity=quantity, criteria=criteria)
+        order = Order(side=side,
+                      trade_type=TradeType.MARKET,
+                      pair=trading_pair,
+                      quantity=quantity,
+                      criteria=criteria)
 
         if self._order_listener is not None:
-            order.add_listener(self._order_listener)
+            order.attach(self._order_listener)
 
         return order
