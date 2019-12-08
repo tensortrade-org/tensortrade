@@ -3,17 +3,18 @@ import pandas as pd
 from typing import Callable, Tuple, Union, List, Dict
 
 from tensortrade import Component
-from tensortrade.instruments import TradingPair, Instrument, Quantity
+from tensortrade.instruments import *
+
+from .wallet import Wallet
 
 
 class Portfolio(Component):
-    """A portfolio of wallets for use on any ."""
+    """A portfolio of wallets."""
 
     registered_name = "portfolio"
 
     def __init__(self, base_instrument: Instrument):
         self._base_instrument = self.default(self.context.base_instrument, base_instrument)
-
         self._wallets = {}
 
     @property
@@ -24,6 +25,10 @@ class Portfolio(Component):
     @base_instrument.setter
     def base_instrument(self, base_instrument: Instrument):
         self._base_instrument = base_instrument
+
+    @property
+    def wallets(self) -> List[Wallet]:
+        return list(self._wallets.values())
 
     @property
     def initial_balance(self) -> Quantity:
@@ -105,18 +110,6 @@ class Portfolio(Component):
 
         return balance
 
-    def group_by_exchange(self, exchange_id: str):
-        # TODO
-        return list(filter(self._wallets), exchange_id)
-
-    def group_by_instrument(self, instrument: Instrument):
-        # TODO
-        return list(filter(self._wallets), instrument.symbol)
-
-    def filter_by(self, function: Callable):
-        # TODO
-        return list(filter(self._wallets, function))
-
     def get_wallet(self, exchange_id: str, instrument: Instrument):
         return self._wallets[(exchange_id, instrument.symbol)]
 
@@ -130,17 +123,32 @@ class Portfolio(Component):
         self._wallets.pop(self._wallet_key(wallet), None)
 
     def update(self):
-        performance_update = pd.DataFrame([[self._current_step, self.net_worth] + [quantity.amount for quantity in self.balances]],
-                                          index=['step'],
-                                          columns=['step', 'net_worth'] + [quantity.instrument for quantity in self.balances])
+        performance_update = pd.DataFrame(
+            [[self._current_step, self.net_worth] + [quantity.amount for quantity in self.balances]],
+            index=['step'],
+            columns=['step', 'net_worth'] + [quantity.instrument for quantity in self.balances]
+        )
 
         self._performance = pd.concat([self._performance, performance_update], axis=0, sort=True)
-
         self._current_step += 1
+        self.clean()
+
+    def clean(self):
+        for wallet in self._wallets.values():
+            for q in wallet.locked.values():
+                if not q.is_locked:
+                    wallet += q
+                    del wallet.locked[q.order_id]
 
     def reset(self):
-        self._initial_balance = self.base_balance
-        self._initial_net_worth = self.net_worth
+        for wallet in self._wallets.values():
+            wallet.reset()
         self._performance = pd.DataFrame([], columns=['step', 'net_worth'], index=['step'])
-
         self._current_step = 0
+
+    @classmethod
+    def from_tuples(cls, tuples):
+        portfolio = Portfolio()
+        for exchange, instrument, balance in tuples:
+            portfolio.add(Wallet(exchange, Quantity(instrument, balance)))
+        return portfolio

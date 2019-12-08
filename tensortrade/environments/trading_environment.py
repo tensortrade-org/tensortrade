@@ -22,6 +22,7 @@ import tensortrade.exchanges as exchanges
 import tensortrade.actions as actions
 import tensortrade.rewards as rewards
 import tensortrade.features as features
+import tensortrade.wallets as wallets
 
 from gym import spaces
 from typing import Union, Tuple, List, Dict
@@ -31,6 +32,7 @@ from tensortrade.rewards import RewardScheme
 from tensortrade.exchanges import Exchange
 from tensortrade.features import FeaturePipeline
 from tensortrade.orders import Broker, Order
+from tensortrade.wallets import Portfolio
 
 if importlib.util.find_spec("matplotlib") is not None:
     from tensortrade.environments.render import MatplotlibTradingChart
@@ -40,7 +42,7 @@ class TradingEnvironment(gym.Env):
     """A trading environments made for use with Gym-compatible reinforcement learning algorithms."""
 
     def __init__(self,
-                 exchange: Union[Exchange, str],
+                 portfolio: Union[Portfolio, str],
                  action_scheme: Union[ActionScheme, str],
                  reward_scheme: Union[RewardScheme, str],
                  feature_pipeline: Union[FeaturePipeline, str] = None,
@@ -55,7 +57,18 @@ class TradingEnvironment(gym.Env):
         """
         super().__init__()
 
-        self._exchange = exchanges.get(exchange) if isinstance(exchange, str) else exchange
+        self._portfolio = wallets.get(portfolio) if isinstance(portfolio, str) else portfolio
+        self._exchange = self.portfolio.wallets[0].exchange
+
+        # Code to be inserted later on after supporting
+        # multiple exchanges
+        self._exchanges = []
+        for wallet in self._portfolio.wallets:
+            if wallet.exchange not in self._exchanges:
+                self._exchanges += [wallet.exchange]
+
+        self._broker = Broker(self._exchanges) # Should be only one exchange for now.
+
         self._action_scheme = actions.get(action_scheme) if isinstance(
             action_scheme, str) else action_scheme
         self._reward_scheme = rewards.get(reward_scheme) if isinstance(
@@ -63,6 +76,7 @@ class TradingEnvironment(gym.Env):
         self._feature_pipeline = features.get(feature_pipeline) if isinstance(
             feature_pipeline, str) else feature_pipeline
 
+        # Assume there is only one exchange
         if feature_pipeline is not None:
             self._exchange.feature_pipeline = feature_pipeline
 
@@ -82,18 +96,30 @@ class TradingEnvironment(gym.Env):
         self.reset()
 
     @property
+    def portfolio(self) -> Portfolio:
+        return self._portfolio
+
+    @portfolio.setter
+    def portfolio(self, portfolio: Portfolio):
+       self._portfolio = portfolio
+
+    @property
     def exchange(self) -> Exchange:
         """The `Exchange` that will be used to feed data from and execute trades within."""
         return self._exchange
 
+    # Don't allow to set exchanges because it would interfere with
+    # the portfolio and the exchanges being used with the set of wallets.
+    """
     @exchange.setter
     def exchange(self, exchange: Exchange):
         self._exchange = exchange
+    """
 
     @property
     def episode_trades(self) -> pd.DataFrame:
         """A `pandas.DataFrame` of trades made this episode."""
-        return self.exchange.trades
+        return self._broker.trades
 
     @property
     def action_scheme(self) -> ActionScheme:
@@ -129,12 +155,15 @@ class TradingEnvironment(gym.Env):
             action: The int provided by the agent to map to a trade action for this timestep.
 
         Returns:
-            The order created by the agent this timestep, if any.
+            The order created by the agent this time step, if any.
         """
         order = self._action_scheme.get_order(action, self._exchange)
 
         if order:
-            self._exchange.submit_to_broker(order)
+            self._broker.submit(order)
+
+        self._broker.update()
+        self.portfolio.update()
 
         return order
 

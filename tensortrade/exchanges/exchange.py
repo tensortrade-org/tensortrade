@@ -184,8 +184,6 @@ class Exchange(Component, Identifiable):
         Returns:
             The next multi-dimensional list of observations.
         """
-        self._broker.update()
-        self._portfolio.update()
 
         observation = self._generate_next_observation()
 

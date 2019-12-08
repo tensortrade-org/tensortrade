@@ -3,6 +3,8 @@ import operator
 from typing import Union
 from numbers import Number
 
+from tensortrade.base.exceptions import *
+
 
 class Quantity:
     """An amount of a financial instrument for use in trading."""
@@ -13,7 +15,7 @@ class Quantity:
                  order_id: str = None):
 
         if amount < 0:
-            raise Exception("Invalid Quantity, amounts cannot be negative.")
+            raise NegativeQuantityException(amount)
 
         self._instrument = instrument
         self._amount = round(amount, instrument.precision)
@@ -51,13 +53,14 @@ class Quantity:
         self._order_id = order_id
 
     @staticmethod
-    def _bool_operation(left: 'Quantity', right: Union['Quantity', float, int], bool_op: operator) -> bool:
+    def _bool_operation(left: Union['Quantity', float, int],
+                        right: Union['Quantity', float, int],
+                        bool_op: operator) -> bool:
         right_amount = right
 
         if isinstance(right, Quantity):
             if left.instrument != right.instrument:
-                raise Exception(
-                    "Instruments are not of the same type ({} and {}).".format(left, right))
+                raise IncompatibleInstrumentOperation(left, right)
 
             right_amount = right.amount
 
@@ -73,13 +76,14 @@ class Quantity:
         return boolean
 
     @staticmethod
-    def _math_operation(left: 'Quantity', right: Union['Quantity', float, int], op: operator) -> 'Quantity':
+    def _math_operation(left: Union['Quantity', float, int],
+                        right: Union['Quantity', float, int],
+                        op: operator) -> 'Quantity':
         right_amount = right
 
         if isinstance(right, Quantity):
             if left.instrument != right.instrument:
-                raise Exception(
-                    "Instruments are not of the same type ({} and {}).".format(left, right))
+                raise IncompatibleInstrumentOperation(left, right)
 
             right_amount = right.amount
 

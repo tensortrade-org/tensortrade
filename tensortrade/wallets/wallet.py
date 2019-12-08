@@ -1,4 +1,8 @@
+
+from typing import Dict
+
 from tensortrade.base import Identifiable
+from tensortrade.base.exceptions import *
 from tensortrade.instruments import Quantity
 
 
@@ -8,7 +12,7 @@ class Wallet(Identifiable):
     def __init__(self, exchange: 'Exchange', quantity: 'Quantity'):
         self._exchange = exchange
         self._instrument = quantity.instrument
-
+        self._initial_balance = quantity
         self._balance = quantity
         self._locked = {}
 
@@ -29,6 +33,10 @@ class Wallet(Identifiable):
         raise ValueError("You cannot change a Wallet's Instrument after initialization.")
 
     @property
+    def initial_balance(self) -> 'Quantity':
+        return self._initial_balance
+
+    @property
     def balance(self) -> 'Quantity':
         return self._balance
 
@@ -41,19 +49,17 @@ class Wallet(Identifiable):
         return sum(self.locked.values)
 
     @property
-    def locked(self) -> bool:
+    def locked(self) -> Dict[str, 'Quantity']:
         return self._locked
 
     def lock_for_order(self, amount: float) -> 'Quantity':
         if self._balance < amount:
-            return False
+            raise InsufficientFunds(self._balance, amount)
 
         locked_quantity = Quantity(self.instrument, amount)
 
-        self._balance -= locked_quantity
-
+        self -= locked_quantity
         locked_quantity.lock_for('pending_order_id')
-
         self += locked_quantity
 
         return locked_quantity
@@ -76,3 +82,6 @@ class Wallet(Identifiable):
             self._balance -= quantity
 
         return self
+
+    def reset(self):
+        self._balance = self._initial_balance

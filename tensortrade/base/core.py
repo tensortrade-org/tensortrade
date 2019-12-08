@@ -19,4 +19,5 @@ class Identifiable(object, metaclass=ABCMeta):
 
     @id.setter
     def id(self, identifier: str):
+        objects[identifier] = self
         self._id = identifier
