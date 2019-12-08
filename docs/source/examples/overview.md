@@ -50,8 +50,8 @@ class SimulatedExchange(Exchange):
         self._commission_percent = self.default('commission_percent', 0.3, kwargs)
         self._base_precision = self.default('base_precision', 2, kwargs)
         self._instrument_precision = self.default('instrument_precision', 8, kwargs)
-        self._min_trade_amount = self.default('min_trade_amount', 1e-6, kwargs)
-        self._max_trade_amount = self.default('max_trade_amount', 1e6, kwargs)
+        self._min_trade_size = self.default('min_trade_size', 1e-6, kwargs)
+        self._max_trade_size = self.default('max_trade_size', 1e6, kwargs)
 
         self._initial_balance = self.default('initial_balance', 1e4, kwargs)
         self._observation_columns = self.default(

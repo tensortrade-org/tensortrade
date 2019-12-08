@@ -41,8 +41,8 @@ class SimulatedExchange(Exchange):
         self._base_instrument = self.default('base_instrument', USD, kwargs)
         self._quote_instrument = self.default('quote_instrument', BTC, kwargs)
         self._initial_balance = self.default('initial_balance', 10000, kwargs)
-        self._min_trade_amount = self.default('min_trade_amount', 1e-6, kwargs)
-        self._max_trade_amount = self.default('max_trade_amount', 1e6, kwargs)
+        self._min_trade_size = self.default('min_trade_size', 1e-6, kwargs)
+        self._max_trade_size = self.default('max_trade_size', 1e6, kwargs)
         self._min_trade_price = self.default('min_trade_price', 1e-8, kwargs)
         self._max_trade_price = self.default('max_trade_price', 1e8, kwargs)
 
@@ -143,16 +143,30 @@ class SimulatedExchange(Exchange):
 
         return obs
 
+    def is_pair_tradeable(self, pair: 'TradingPair') -> bool:
+        return pair.base == self._base_instrument and pair.quote == self._quote_instrument
+
     def quote_price(self, trading_pair: 'TradingPair') -> float:
         if self._price_history is not None:
             return float(self._price_history.iloc[self._current_step])
 
         return np.inf
 
-    def _execute_buy_order(self, order: 'Order', base_wallet: 'Wallet', quote_wallet: 'Wallet', current_price: float):
+    def _contain_price(self, price: float, precision: int) -> float:
+        return round(max(min(price, self._max_trade_price), self._min_trade_price), precision)
+
+    def _contain_size(self, size: float, precision: int) -> float:
+        return round(max(min(size, self._max_trade_size), self._min_trade_size), precision)
+
+    def _execute_buy_order(self, order: 'Order', base_wallet: 'Wallet', quote_wallet: 'Wallet', current_price: float) -> Trade:
         price_adjustment = (1 + self._commission)
-        price = round(current_price * price_adjustment, order.pair.base.precision)
-        size = round(order.price * order.size / order.price, order.pair.base.precision)
+        price = self._contain_price(current_price * price_adjustment, order.pair.base.precision)
+        size = self._contain_size(order.size, order.pair.base.precision)
+
+        if order.type == TradeType.MARKET:
+            size = order.price * order.size / price
+        elif order.price < current_price:
+            return None
 
         trade = Trade(order.id, self.id, self._current_step,
                       order.pair, TradeSide.BUY, order.type, size, price)
@@ -162,10 +176,13 @@ class SimulatedExchange(Exchange):
 
         return trade
 
-    def _execute_sell_order(self, order: 'Order', base_wallet: 'Wallet', quote_wallet: 'Wallet', current_price: float):
+    def _execute_sell_order(self, order: 'Order', base_wallet: 'Wallet', quote_wallet: 'Wallet', current_price: float) -> Trade:
         price_adjustment = (1 - self._commission)
-        price = round(current_price * price_adjustment, order.pair.base.precision)
-        size = round(order.size, order.pair.base.precision)
+        price = self._contain_price(current_price * price_adjustment, order.pair.base.precision)
+        size = self._contain_size(order.size, order.pair.base.precision)
+
+        if order.type == TradeType.LIMIT and order.price > current_price:
+            return None
 
         trade = Trade(order.id, self.id, self._current_step,
                       order.pair, TradeSide.SELL, order.type, size, price)
@@ -176,9 +193,9 @@ class SimulatedExchange(Exchange):
         return trade
 
     def execute_order(self, order: 'Order'):
-        current_price = self.quote_price(order.pair)
         base_wallet = self._portfolio.get_wallet(str(self.id), order.pair.base)
         quote_wallet = self._portfolio.get_wallet(str(self.id), order.pair.quote)
+        current_price = self.quote_price(order.pair)
 
         if order.is_buy:
             trade = self._execute_buy_order(order, base_wallet, quote_wallet, current_price)
