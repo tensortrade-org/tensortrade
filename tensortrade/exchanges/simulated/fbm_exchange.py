@@ -14,6 +14,7 @@
 
 import pandas as pd
 import numpy as np
+import re
 
 from math import pi
 from gym import spaces
@@ -39,12 +40,23 @@ class FBMExchange(SimulatedExchange):
         self._start_date = self.default('start_date', '2010-01-01', kwargs)
         self._start_date_format = self.default('start_date_format', '%Y-%m-%d', kwargs)
         self._times_to_generate = self.default('times_to_generate', 100000, kwargs)
+        self._init_times_to_generate = self._times_to_generate
+        self._maintain_data_frame_len = self.default('maintain_data_frame_len', False, kwargs)        
         self._hurst = self.default('hurst', 0.61, kwargs)
         self._timeframe = self.default('timeframe', '1h', kwargs)
 
         self._generate_price_history()
 
     def _generate_price_history(self):
+        if self._maintain_data_frame_len:
+            if 'min' in self._timeframe:                
+                self._times_to_generate = self._init_times_to_generate * int(re.findall('\d+', self._timeframe)[0])
+            elif 'H' in self._timeframe:
+                self._times_to_generate = self._init_times_to_generate * int(re.findall('\d+', self._timeframe)[0]) * 60
+            elif 'D' in self._timeframe:
+                self._times_to_generate = self._init_times_to_generate * int(re.findall('\d+', self._timeframe)[0]) * 60 * 24
+            else:
+                raise ValueError('If using maintain_data_frame_len than Timeframe must be either in minutes (min), Hours (H) or Days (D)')
         try:
             price_fbm = FractionalBrownianMotion(t=self._times_to_generate, hurst=self._hurst)
             volume_gen = GaussianNoise(t=self._times_to_generate)
@@ -75,8 +87,12 @@ class FBMExchange(SimulatedExchange):
         volume_frame.set_index('date')
         volume_frame.index = pd.to_datetime(volume_frame.index, unit='m', origin=start_date)
 
-        data_frame = price_frame['price'].resample(self._timeframe).ohlc()
-        data_frame['volume'] = volume_frame['volume'].resample(self._timeframe).sum()
+        if self._timeframe != '1min':
+            data_frame = price_frame['price'].resample(self._timeframe).ohlc()
+            data_frame['volume'] = volume_frame['volume'].resample(self._timeframe).sum()
+        else:
+            data_frame = price_frame['price']
+            data_frame['volume'] = volume_frame['volume']
 
         self.data_frame = data_frame.astype(self._dtype)
 
