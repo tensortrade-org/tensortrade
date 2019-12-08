@@ -1,8 +1,9 @@
 from .action_scheme import ActionScheme
+from .pair_criteria_size_actions import PairCriteriaSizeActions
 
 
 _registry = {
-    'simple': ActionScheme,
+    'pair_criteria_size': PairCriteriaSizeActions,
 }
 
 

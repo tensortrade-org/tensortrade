@@ -1,7 +1,8 @@
 
-from .quantity import Quantity
 from typing import Union
 from sympy import Symbol
+
+from .quantity import Quantity
 
 registry = {}
 
@@ -16,8 +17,8 @@ class Instrument:
 
         registry[symbol] = self
 
-    def __rmul__(self, other):
-        return Quantity(other, self)
+    def __rmul__(self, other: float) -> Quantity:
+        return Quantity(instrument=self, amount=other)
 
     def __str__(self):
         return str(self.symbol)

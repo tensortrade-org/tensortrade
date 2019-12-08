@@ -1,8 +1,8 @@
 
 from typing import List, Union
 
-from .order_criteria import OrderCriteria
-from ...trades import TradeSide
+from tensortrade.orders.criteria import OrderCriteria
+from tensortrade.trades import TradeSide
 
 
 class LimitOrderCriteria(OrderCriteria):

@@ -31,12 +31,12 @@ class Broker:
 
     @property
     def executed(self) -> Dict[str, 'Order']:
-        """The dictionary of orders the broker has executed since resetting."""
+        """The dictionary of orders the broker has executed since resetting, organized by order id"""
         return self._executed
 
     @property
     def trades(self) -> Dict[str, 'Trade']:
-        """The dictionary of trades the broker has executed since resetting."""
+        """The dictionary of trades the broker has executed since resetting, organized by order id."""
         return self._trades
 
     def submit(self, order: 'Order'):
@@ -68,7 +68,7 @@ class Broker:
                 if trade.order_id in self._executed.keys() and trade not in self._trades:
                     order = self._executed[trade.order_id]
 
-                    order.fill(exchange, trade.amount)
+                    order.fill(exchange, trade)
 
                     self._trades[trade.order_id] = self._trades[trade.order_id] or []
                     self._trades[trade.order_id] += [trade]
@@ -76,9 +76,9 @@ class Broker:
                     trades_on_exchange = filter(lambda t: t.exchange_id ==
                                                 exchange.id, self._trades[trade.order_id])
 
-                    total_traded = sum([t.amount for t in trades_on_exchange])
+                    total_traded = sum([trade.size for trade in trades_on_exchange])
 
-                    if total_traded >= order.amount:
+                    if total_traded >= order.size:
                         order.complete(exchange)
 
     def reset(self):

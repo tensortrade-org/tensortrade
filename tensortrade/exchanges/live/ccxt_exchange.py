@@ -147,14 +147,14 @@ class CCXTExchange(Exchange):
     def execute_order(self, order: 'Order'):
         if order.type == TradeType.LIMIT and order.side == TradeSide.BUY:
             executed_order = self._exchange.create_limit_buy_order(
-                order.symbol, order.amount, order.price)
+                order.symbol, order.size, order.price)
         elif order.type == TradeType.MARKET and order.side == TradeSide.BUY:
-            executed_order = self._exchange.create_market_buy_order(order.symbol, order.amount)
+            executed_order = self._exchange.create_market_buy_order(order.symbol, order.size)
         elif order.type == TradeType.LIMIT and order.side == TradeSide.SELL:
             executed_order = self._exchange.create_limit_sell_order(
-                order.symbol, order.amount, order.price)
+                order.symbol, order.size, order.price)
         elif order.type == TradeType.MARKET and order.side == TradeSide.SELL:
-            executed_order = self._exchange.create_market_sell_order(order.symbol, order.amount)
+            executed_order = self._exchange.create_market_sell_order(order.symbol, order.size)
         else:
             return order.copy()
 
@@ -175,11 +175,10 @@ class CCXTExchange(Exchange):
                       size=executed_order['filled'],
                       price=executed_order['price'])
 
-        self._trades += [trade]
+        order.fill(self, trade)
 
     def reset(self):
         super().reset()
 
         self._markets = self._exchange.load_markets()
         self._data_frame = pd.DataFrame([], columns=self.generated_columns)
-        self._trades = []

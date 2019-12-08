@@ -1,22 +1,23 @@
 import operator
 
+from typing import Union
+from numbers import Number
+
 
 class Quantity:
     """An amount of a financial instrument for use in trading."""
 
     def __init__(self,
-                 amount: float,
                  instrument: 'Instrument',
-                 order_id: str = None,
-                 wallet_id: str = None):
+                 amount: float = 0,
+                 order_id: str = None):
 
         if amount < 0:
-            raise Exception("Invalid Quantity. Amounts cannot be negative.")
+            raise Exception("Invalid Quantity, amounts cannot be negative.")
 
-        self._amount = round(amount, instrument.precision)
         self._instrument = instrument
+        self._amount = round(amount, instrument.precision)
         self._order_id = None
-        self._wallet_id = None
 
     @property
     def amount(self) -> float:
@@ -43,14 +44,6 @@ class Quantity:
         self._order_id = order_id
 
     @property
-    def wallet_id(self) -> str:
-        return self._wallet_id
-
-    @wallet_id.setter
-    def wallet_id(self, wallet_id: str):
-        self._wallet_id = wallet_id
-
-    @property
     def is_locked(self) -> bool:
         return bool(self._order_id)
 
@@ -58,36 +51,84 @@ class Quantity:
         self._order_id = order_id
 
     @staticmethod
-    def _quantity_op(left, right, op):
+    def _bool_operation(left: 'Quantity', right: Union['Quantity', float, int], bool_op: operator) -> bool:
         right_amount = right
 
         if isinstance(right, Quantity):
             if left.instrument != right.instrument:
-                raise Exception("Instruments are not of the same type.")
+                raise Exception(
+                    "Instruments are not of the same type ({} and {}).".format(left, right))
 
             right_amount = right.amount
 
-        if not str(right_amount).isnumeric():
-            raise Exception("Can't perform operation with non-numeric quantity.")
+        if not isinstance(right_amount, Number):
+            raise Exception(
+                "Can't perform operation with non-numeric quantity ({}).".format(right_amount))
+
+        boolean = bool_op(left.amount, right_amount)
+
+        if not isinstance(boolean, bool):
+            raise Exception("`bool_op` cannot return a non-bool type ({}).".format(boolean))
+
+        return boolean
+
+    @staticmethod
+    def _math_operation(left: 'Quantity', right: Union['Quantity', float, int], op: operator) -> 'Quantity':
+        right_amount = right
+
+        if isinstance(right, Quantity):
+            if left.instrument != right.instrument:
+                raise Exception(
+                    "Instruments are not of the same type ({} and {}).".format(left, right))
+
+            right_amount = right.amount
+
+        if not isinstance(right_amount, Number):
+            raise Exception(
+                "Can't perform operation with non-numeric quantity ({}).".format(right_amount))
 
         amount = round(op(left.amount, right_amount), left.instrument.precision)
 
         if amount < 0:
-            raise Exception("Quantities must be non-negative.")
+            raise Exception("Quantities must be non-negative ({}).".format(amount))
 
-        return Quantity(amount, left.instrument, left.order_id, left.wallet_id)
+        return Quantity(instrument=left.instrument, amount=amount, order_id=left.order_id)
 
-    def __add__(self, other):
-        return Quantity._quantity_op(self, other, operator.add)
+    def __add__(self, other: Union['Quantity', float, int]) -> 'Quantity':
+        return Quantity._math_operation(self, other, operator.add)
 
-    def __sub__(self, other):
-        return Quantity._quantity_op(self, other, operator.sub)
+    def __sub__(self, other: Union['Quantity', float, int]) -> 'Quantity':
+        return Quantity._math_operation(self, other, operator.sub)
 
-    def __mul__(self, other):
-        return Quantity._quantity_op(self, other, operator.add)
+    def __iadd__(self, other: Union['Quantity', float, int]) -> 'Quantity':
+        return Quantity._math_operation(self, other, operator.iadd)
 
-    def __truediv__(self, other):
-        return Quantity._quantity_op(self, other, operator.truediv)
+    def __isub__(self, other: Union['Quantity', float, int]) -> 'Quantity':
+        return Quantity._math_operation(self, other, operator.isub)
+
+    def __mul__(self, other: Union['Quantity', float, int]) -> 'Quantity':
+        return Quantity._math_operation(self, other, operator.mul)
+
+    def __rmul__(self, other: Union['Quantity', float, int]) -> 'Quantity':
+        return Quantity._math_operation(self, other, operator.mul)
+
+    def __truediv__(self, other: Union['Quantity', float, int]) -> 'Quantity':
+        return Quantity._math_operation(self, other, operator.truediv)
+
+    def __lt__(self, other: Union['Quantity', float, int]) -> bool:
+        return Quantity._bool_operation(self, other, operator.lt)
+
+    def __gt__(self, other: Union['Quantity', float, int]) -> bool:
+        return Quantity._bool_operation(self, other, operator.gt)
+
+    def __eq__(self, other: Union['Quantity', float, int]) -> bool:
+        return Quantity._bool_operation(self, other, operator.eq)
+
+    def __ne__(self, other: Union['Quantity', float, int]) -> bool:
+        return Quantity._bool_operation(self, other, operator.ne)
+
+    def __neg__(self) -> bool:
+        return operator.neg(self.amount)
 
     def __str__(self):
         s = "{0:." + str(self.instrument.precision) + "f}" + " {1}"

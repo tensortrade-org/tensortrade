@@ -21,24 +21,24 @@ from tensortrade.trades import Trade, TradeType, TradeSide
 class RandomUniformSlippageModel(SlippageModel):
     """A uniform random slippage model."""
 
-    def __init__(self, max_price_slippage_percent: float = 3.0, max_amount_slippage_percent: float = 0.0):
+    def __init__(self, max_price_slippage_percent: float = 3.0, max_size_slippage_percent: float = 0.0):
         """
         Arguments:
             max_price_slippage_percent: The maximum random slippage to be applied to the fill price. Defaults to 3.0 (i.e. 3%).
-            max_amount_slippage_percent: The maximum random slippage to be applied to the fill amount. Defaults to 0.
+            max_size_slippage_percent: The maximum random slippage to be applied to the fill size. Defaults to 0.
         """
         self.max_price_slippage_percent = self.default('max_price_slippage_percent',
                                                        max_price_slippage_percent)
-        self.max_amount_slippage_percent = self.default('max_amount_slippage_percent',
-                                                        max_amount_slippage_percent)
+        self.max_size_slippage_percent = self.default('max_size_slippage_percent',
+                                                      max_size_slippage_percent)
 
     def adjust_trade(self, trade: Trade) -> Trade:
-        amount_slippage = np.random.uniform(0, self.max_amount_slippage_percent / 100)
+        size_slippage = np.random.uniform(0, self.max_size_slippage_percent / 100)
         price_slippage = np.random.uniform(0, self.max_price_slippage_percent / 100)
 
         initial_price = trade.price
 
-        trade.amount = trade.amount * (1 - amount_slippage)
+        trade.size = trade.size * (1 - size_slippage)
 
         if trade.type == TradeType.MARKET and trade.side == TradeSide.BUY:
             trade.price = max(initial_price * (1 + price_slippage), 1e-3)
@@ -46,7 +46,7 @@ class RandomUniformSlippageModel(SlippageModel):
             trade.price = max(initial_price * (1 + price_slippage), 1e-3)
 
             if trade.price > initial_price:
-                trade.amount *= min(trade.price / initial_price, 1)
+                trade.size *= min(trade.price / initial_price, 1)
 
         elif trade.type == TradeType.MARKET and trade.side == TradeSide.SELL:
             trade.price = max(initial_price * (1 - price_slippage), 1e-3)
@@ -54,6 +54,6 @@ class RandomUniformSlippageModel(SlippageModel):
             trade.price = max(initial_price * (1 - price_slippage), 1e-3)
 
             if trade.price < initial_price:
-                trade.amount *= min(trade.price / initial_price, 1)
+                trade.size *= min(trade.price / initial_price, 1)
 
         return trade

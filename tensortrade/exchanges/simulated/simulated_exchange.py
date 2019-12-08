@@ -21,6 +21,7 @@ from gym.spaces import Space, Box
 from typing import List, Dict
 
 from tensortrade.trades import Trade, TradeType, TradeSide
+from tensortrade.instruments import TradingPair, Quantity
 from tensortrade.exchanges import Exchange
 from tensortrade.features import FeaturePipeline
 from tensortrade.instruments import USD, BTC
@@ -104,10 +105,6 @@ class SimulatedExchange(Exchange):
         return self._feature_pipeline
 
     @property
-    def trades(self) -> List[Trade]:
-        return self._trades
-
-    @property
     def generated_columns(self) -> List[str]:
         if self._data_frame is None:
             return None
@@ -143,10 +140,10 @@ class SimulatedExchange(Exchange):
 
         return obs
 
-    def is_pair_tradeable(self, pair: 'TradingPair') -> bool:
+    def is_pair_tradeable(self, pair: TradingPair) -> bool:
         return pair.base == self._base_instrument and pair.quote == self._quote_instrument
 
-    def quote_price(self, trading_pair: 'TradingPair') -> float:
+    def quote_price(self, trading_pair: TradingPair) -> float:
         if self._price_history is not None:
             return float(self._price_history.iloc[self._current_step])
 
@@ -164,15 +161,15 @@ class SimulatedExchange(Exchange):
         size = self._contain_size(order.size, order.pair.base.precision)
 
         if order.type == TradeType.MARKET:
-            size = order.price * order.size / price
+            size = current_price * order.size / price
         elif order.price < current_price:
             return None
 
         trade = Trade(order.id, self.id, self._current_step,
                       order.pair, TradeSide.BUY, order.type, size, price)
 
-        base_wallet -= trade.size
-        quote_wallet += trade.size / trade.price
+        base_wallet -= Quantity(base_wallet.instrument, trade.size)
+        quote_wallet += Quantity(quote_wallet.instrument, trade.size / trade.price)
 
         return trade
 
@@ -187,14 +184,14 @@ class SimulatedExchange(Exchange):
         trade = Trade(order.id, self.id, self._current_step,
                       order.pair, TradeSide.SELL, order.type, size, price)
 
-        base_wallet += trade.size
-        quote_wallet -= trade.size / trade.price
+        base_wallet += Quantity(base_wallet.instrument, trade.size)
+        quote_wallet -= Quantity(quote_wallet.instrument, trade.size / trade.price)
 
         return trade
 
     def execute_order(self, order: 'Order'):
-        base_wallet = self._portfolio.get_wallet(str(self.id), order.pair.base)
-        quote_wallet = self._portfolio.get_wallet(str(self.id), order.pair.quote)
+        base_wallet = self._portfolio.get_wallet(self.id, order.pair.base)
+        quote_wallet = self._portfolio.get_wallet(self.id, order.pair.quote)
         current_price = self.quote_price(order.pair)
 
         if order.is_buy:
@@ -204,7 +201,6 @@ class SimulatedExchange(Exchange):
 
         if isinstance(trade, Trade):
             self._slippage_model.adjust_trade(trade)
-            self._trades += [trade]
 
             order.fill(self, trade)
 
@@ -212,4 +208,3 @@ class SimulatedExchange(Exchange):
         super().reset()
 
         self._current_step = 0
-        self._trades = []

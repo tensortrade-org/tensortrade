@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import uuid
 import pandas as pd
 import numpy as np
 
@@ -20,26 +19,27 @@ from abc import abstractmethod
 from typing import Dict, Union, List
 from gym.spaces import Box
 
-from tensortrade import Component
-from tensortrade.orders import Order
+from tensortrade.base import Component, Identifiable
+from tensortrade.orders import Order, Broker
 from tensortrade.wallets import Portfolio
 from tensortrade.instruments import Instrument
 from tensortrade.features import FeaturePipeline
 
 
-class Exchange(Component):
+class Exchange(Component, Identifiable):
     """An abstract exchange for use within a trading environments.
 
     Arguments:
-        feature_pipeline: A pipeline of feature transformations for transforming observations.
-        portfolio (optional): A wallet `Portfolio` for use on the exchange.
+        portfolio: The `Portfolio` of tradeable instruments for use on the exchange.
+        feature_pipeline (optional): A pipeline of feature transformations for transforming observations.
         kwargs (optional): Optional arguments to augment the functionality of the exchange.
     """
     registered_name = "exchanges"
 
-    def __init__(self, feature_pipeline: FeaturePipeline = None, portfolio: Portfolio = None, **kwargs):
-        self._feature_pipeline = self.default('feature_pipeline', feature_pipeline)
+    def __init__(self, portfolio: Portfolio = None, broker: Broker = None, feature_pipeline: FeaturePipeline = None, **kwargs):
         self._portfolio = self.default('portfolio', portfolio)
+        self._broker = self.default('broker', broker) or Broker(self)
+        self._feature_pipeline = self.default('feature_pipeline', feature_pipeline)
 
         self._dtype = self.default('dtype', np.float32, kwargs)
         self._window_size = self.default('window_size', 1, kwargs)
@@ -54,15 +54,13 @@ class Exchange(Component):
             self._observe_unlocked_balances = self.default('observe_unlocked_balances', [], kwargs)
             self._observe_locked_balances = self.default('observe_locked_balances', [], kwargs)
 
-        if not isinstance(self._observe_unlocked_balances, list) or not isinstance(self._observe_unlocked_balances[0], Instrument):
+        if not isinstance(self._observe_unlocked_balances, list) or not all(isinstance(balance, Instrument) for balance in self._observe_unlocked_balances):
             raise ValueError(
                 'If used, the `self._observe_wallets` or `self._observe_unlocked_balances` parameter must be of type: List[Instrument]')
 
-        if not isinstance(self._observe_locked_balances, list) or not isinstance(self._observe_locked_balances[0], Instrument):
+        if not isinstance(self._observe_locked_balances, list) or not all(isinstance(balance, Instrument) for balance in self._observe_locked_balances):
             raise ValueError(
                 'If used, the `self._observe_wallets` or `self._observe_locked_balances` parameter must be of type: List[Instrument]')
-
-        self.id = uuid.uuid4()
 
     @property
     def feature_pipeline(self) -> FeaturePipeline:
@@ -81,6 +79,15 @@ class Exchange(Component):
     @portfolio.setter
     def portfolio(self, portfolio: Portfolio):
         self._portfolio = portfolio
+
+    @property
+    def broker(self) -> Broker:
+        """The broker used to execute orders on the exchange."""
+        return self._broker
+
+    @broker.setter
+    def broker(self, broker: Broker):
+        self._broker = broker
 
     @property
     def window_size(self) -> int:
@@ -111,6 +118,9 @@ class Exchange(Component):
     @property
     def observation_columns(self) -> List[str]:
         """The final list of columns in the observation space."""
+        if not self.wallet_columns:
+            return self.generated_columns
+
         return self.generated_columns + self.wallet_columns
 
     @property
@@ -135,12 +145,26 @@ class Exchange(Component):
 
         return Box(low=low, high=high, dtype=self._dtype)
 
-    def balance(self, instrument: Instrument) -> 'Quantity':
+    @property
+    def trades(self) -> Dict[str, 'Trade']:
+        """A dictionary of trades made on the exchange since the last reset, organized by order id."""
+        return self._broker.trades
+
+    @property
+    def performance(self) -> pd.DataFrame:
+        """The performance of the active account on the exchange since the last reset."""
+        return self._portfolio.performance
+
+    def wallet(self, instrument: Instrument) -> 'Wallet':
         wallet = self._portfolio.get_wallet(self.id, instrument)
+        return wallet
+
+    def balance(self, instrument: Instrument) -> 'Quantity':
+        wallet = self.wallet(instrument=instrument)
         return wallet.balance
 
     def locked_balance(self, instrument: Instrument) -> 'Quantity':
-        wallet = self._portfolio.get_wallet(self.id, instrument)
+        wallet = self.wallet(instrument=instrument)
         return wallet.locked_balance
 
     def observe_balances(self) -> np.ndarray:
@@ -160,6 +184,9 @@ class Exchange(Component):
         Returns:
             The next multi-dimensional list of observations.
         """
+        self._broker.update()
+        self._portfolio.update()
+
         observation = self._generate_next_observation()
 
         if isinstance(observation, pd.DataFrame):
@@ -172,11 +199,13 @@ class Exchange(Component):
 
         return observation
 
-    @property
-    @abstractmethod
-    def trades(self) -> List['Trade']:
-        """A list of trades made on the exchange since the last reset."""
-        raise NotImplementedError
+    def submit_to_broker(self, order: Order):
+        """Submits an order to the exchange's active broker.
+
+        Arguments:
+            order: The order to execute.
+        """
+        return self._broker.submit(order)
 
     @property
     @abstractmethod
@@ -231,22 +260,22 @@ class Exchange(Component):
         raise NotImplementedError()
 
     @abstractmethod
-    def execute_order(self, order: Order) -> Order:
+    def execute_order(self, order: Order):
         """Execute an order on the exchange.
 
         Arguments:
             order: The order to execute.
-
-        Returns:
-            The executed order.
         """
         raise NotImplementedError
 
     @abstractmethod
     def reset(self):
         """Reset the feature pipeline, initial balance, trades, performance, and any other temporary stateful data."""
+        if self._portfolio is not None:
+            self._portfolio.reset()
+
         if self._feature_pipeline is not None:
             self.feature_pipeline.reset()
 
-        if self._portfolio is not None:
-            self._portfolio.reset()
+        if self._broker is not None:
+            self.broker.reset()

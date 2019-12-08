@@ -1,11 +1,10 @@
-import uuid
-
 from typing import Callable, List
 
-from . import Order, OrderListener, OrderStatus
+from tensortrade.base import Identifiable
+from tensortrade.orders import Order, OrderListener, OrderStatus
 
 
-class MultiStepOrder(OrderListener):
+class MultiStepOrder(Identifiable, OrderListener):
     """An order that will be executed in multiple steps.
     The next step will execute each time the prior step is completed.
     """
@@ -18,7 +17,6 @@ class MultiStepOrder(OrderListener):
         """
         self.steps = steps
 
-        self.id = uuid.uuid4()
         self.status = OrderStatus.PENDING
 
         self._active_step = 0

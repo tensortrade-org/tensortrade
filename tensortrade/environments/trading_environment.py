@@ -69,8 +69,6 @@ class TradingEnvironment(gym.Env):
         self._action_scheme.exchange = self._exchange
         self._reward_scheme.exchange = self._exchange
 
-        self._broker = Broker(self._exchange)
-
         self.observation_space = self._exchange.observation_space
         self.action_space = self._action_scheme.action_space
 
@@ -124,11 +122,6 @@ class TradingEnvironment(gym.Env):
     def feature_pipeline(self, feature_pipeline: FeaturePipeline):
         self._exchange.feature_pipeline = feature_pipeline
 
-    @property
-    def broker(self) -> Broker:
-        """The broker used to execute orders on the connected exchange."""
-        return self._broker
-
     def _take_action(self, action: int) -> Order:
         """Determines a specific trade to be taken and executes it within the exchange.
 
@@ -138,10 +131,10 @@ class TradingEnvironment(gym.Env):
         Returns:
             The order created by the agent this timestep, if any.
         """
-        order = self._action_scheme.get_order(action)
+        order = self._action_scheme.get_order(action, self._exchange)
 
         if order:
-            self._broker.submit(order)
+            self._exchange.submit_to_broker(order)
 
         return order
 
@@ -167,6 +160,9 @@ class TradingEnvironment(gym.Env):
             A float corresponding to the benefit earned by the action taken this step.
         """
         reward = self._reward_scheme.get_reward(current_step=self._current_step)
+
+        print('Reward: ', reward)
+
         reward = np.nan_to_num(reward)
 
         if np.bitwise_not(np.isfinite(reward)):
@@ -180,7 +176,7 @@ class TradingEnvironment(gym.Env):
         Returns:
             A boolean signaling whether the environments is done and should be restarted.
         """
-        lost_90_percent_net_worth = self._exchange.profit_loss_percent < 0.1
+        lost_90_percent_net_worth = self._exchange.portfolio.profit_loss < 0.1
         return lost_90_percent_net_worth or not self._exchange.has_next_observation
 
     def _info(self, order: Order) -> dict:
@@ -195,7 +191,6 @@ class TradingEnvironment(gym.Env):
         return {
             'current_step': self._current_step,
             'exchange': self._exchange,
-            'broker': self._broker,
             'order': order,
         }
 
@@ -217,8 +212,6 @@ class TradingEnvironment(gym.Env):
         reward = self._get_reward()
         done = self._done()
         info = self._info(order)
-
-        self._broker.update()
 
         self._current_step += 1
 

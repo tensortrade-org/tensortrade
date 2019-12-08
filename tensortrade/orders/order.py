@@ -1,9 +1,8 @@
 
-import uuid
-
 from enum import Enum
 
-from ..trades import Trade, TradeSide, TradeType
+from tensortrade.base import Identifiable
+from tensortrade.trades import Trade, TradeSide, TradeType
 
 
 class OrderStatus(Enum):
@@ -14,16 +13,22 @@ class OrderStatus(Enum):
     FILLED = 4
 
 
-class Order:
+class Order(Identifiable):
 
-    def __init__(self, side: TradeSide, trade_type: TradeType, pair: 'TradingPair', quantity: 'Quantity', criteria: 'OrderCriteria' = None):
+    def __init__(self,
+                 side: TradeSide,
+                 trade_type: TradeType,
+                 pair: 'TradingPair',
+                 quantity: 'Quantity',
+                 price: float = None,
+                 criteria: 'OrderCriteria' = None):
         self.side = side
         self.type = trade_type
         self.pair = pair
         self.quantity = quantity
+        self.price = price
         self.criteria = criteria
 
-        self.id = uuid.uuid4()
         self.status = OrderStatus.PENDING
 
         self.quantity.lock_for(self.id)

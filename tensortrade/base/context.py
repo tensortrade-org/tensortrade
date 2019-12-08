@@ -4,7 +4,9 @@ import yaml
 
 from typing import Union, List
 from collections import UserDict
+
 from .registry import registered_names, get_major_component_names
+from tensortrade.instruments import Instrument, USD
 
 
 class TradingContext(UserDict):
@@ -34,7 +36,7 @@ class TradingContext(UserDict):
     """
     contexts = threading.local()
 
-    def __init__(self, base_instrument: str = 'USD', **config):
+    def __init__(self, base_instrument: Instrument = USD, **config):
         super().__init__(base_instrument=base_instrument, **config)
 
         for name in registered_names():
@@ -129,14 +131,14 @@ class Context(UserDict):
         base_instrument: The exchange symbol of the instrument to store/measure value in.
     """
 
-    def __init__(self, base_instrument: str = 'USD', instruments: Union[str, List[str]] = 'BTC', **kwargs):
+    def __init__(self, base_instrument: Instrument = USD, instruments: Union[str, List[str]] = 'BTC', **kwargs):
         super(Context, self).__init__(base_instrument=base_instrument, **kwargs)
 
         self._base_instrument = base_instrument
         self.__dict__ = {**self.__dict__, **self.data}
 
     @property
-    def base_instrument(self):
+    def base_instrument(self) -> Instrument:
         return self._base_instrument
 
     def __str__(self):
