@@ -16,6 +16,10 @@ def test_reward_not_holding_a_position():
 def test_reward_holding_a_position():
     reward = SimpleProfit()
     trade = mock.Mock()
+    # Setup purchase price and hold instrument
+    trade.configure_mock(is_hold=False, is_buy=True, is_sell=False, amount=1000, price=100)
+    reward.get_reward(0, trade)
+
     trade.configure_mock(is_hold=True, is_buy=False, is_sell=False, amount=0, price=0)
     assert reward.get_reward(0, trade) == 1
 

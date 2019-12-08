@@ -15,9 +15,14 @@ config = {
 }
 
 
+class ConstantRewardScheme(RewardScheme):
+    def get_reward(self, current_step, trade):
+        return 0
+
+
 def test_exchange_setup():
     with TradingContext(**config):
-        reward_scheme = RewardScheme()
+        reward_scheme = ConstantRewardScheme()
         exchange = Exchange(0.0)
         reward_scheme.exchange = exchange
 
@@ -25,5 +30,10 @@ def test_exchange_setup():
 
 
 def test_reset_state_scheme():
-    reward_scheme = RewardScheme()
+    reward_scheme = ConstantRewardScheme()
     assert reward_scheme.reset() is None
+
+
+def test_constant_reward():
+    reward_scheme = ConstantRewardScheme()
+    assert reward_scheme.get_reward(0, None) == 0
