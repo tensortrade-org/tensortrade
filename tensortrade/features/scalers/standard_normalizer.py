@@ -36,13 +36,14 @@ class StandardNormalizer(FeatureTransformer):
         self._history = {}
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        X_copy = copy(X)
         if self.columns is None:
-            self.columns = list(X.select_dtypes('number').columns)
+            self.columns = list(X_copy.select_dtypes('number').columns)
         
         for column in self.columns:
             if self._inplace == True:
-                X[column] = (X[column] - X[column].mean())/X[column].std()
+                X_copy[column] = (X_copy[column] - X_copy[column].mean())/X_copy[column].std()
             else:
-                X[f"{column}_scaled"] = (X[column] - X[column].mean())/X[column].std()
+                X_copy[f"{column}_scaled"] = (X_copy[column] - X_copy[column].mean())/X_copy[column].std()
             
-        return X.dropna()
+        return X_copy.dropna()

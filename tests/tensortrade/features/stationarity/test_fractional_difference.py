@@ -1,3 +1,4 @@
+from sys import exec_prefix
 import pytest
 import numpy as np
 import pandas as pd
@@ -29,8 +30,12 @@ class TestFractionalDifference():
         assert transformed_frame is not None
 
     def test_incremental_difference_inplace_false(self, data_frame):
+        
+        frame_tail = data_frame.tail(300)
+
         transformer = FractionalDifference(
             difference_order=0.5, inplace=False)
 
-        transformed_frame = transformer.transform(data_frame)
+        transformed_frame = transformer.transform(frame_tail)
         assert transformed_frame is not None
+        assert isinstance(frame_tail, pd.DataFrame)

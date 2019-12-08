@@ -32,7 +32,7 @@ class RandomUniformSlippageModel(SlippageModel):
         self.max_amount_slippage_percent = self.default('max_amount_slippage_percent',
                                                         max_amount_slippage_percent)
 
-    def fill_order(self, trade: Trade, current_price: float) -> Trade:
+    def fill_order(self, trade: Trade, current_price: float) -> 'Trade':
         amount_slippage = np.random.uniform(0, self.max_amount_slippage_percent / 100)
         price_slippage = np.random.uniform(0, self.max_price_slippage_percent / 100)
 
