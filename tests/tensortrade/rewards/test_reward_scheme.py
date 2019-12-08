@@ -23,7 +23,7 @@ class ConstantRewardScheme(RewardScheme):
 def test_exchange_setup():
     with TradingContext(**config):
         reward_scheme = ConstantRewardScheme()
-        exchange = Exchange(0.0)
+        exchange = ConstantRewardScheme()
         reward_scheme.exchange = exchange
 
         assert reward_scheme.exchange is exchange
