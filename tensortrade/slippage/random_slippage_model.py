@@ -15,7 +15,7 @@
 import numpy as np
 
 from tensortrade.slippage import SlippageModel
-from tensortrade.trades import Trade, TradeType
+from tensortrade.trades import Trade, TradeType, TradeSide
 
 
 class RandomUniformSlippageModel(SlippageModel):
@@ -32,29 +32,28 @@ class RandomUniformSlippageModel(SlippageModel):
         self.max_amount_slippage_percent = self.default('max_amount_slippage_percent',
                                                         max_amount_slippage_percent)
 
-    def fill_order(self, trade: Trade, current_price: float) -> Trade:
+    def adjust_trade(self, trade: Trade) -> Trade:
         amount_slippage = np.random.uniform(0, self.max_amount_slippage_percent / 100)
         price_slippage = np.random.uniform(0, self.max_price_slippage_percent / 100)
 
-        fill_amount = trade.amount * (1 - amount_slippage)
-        fill_price = current_price
+        initial_price = trade.price
 
-        if trade.trade_type is TradeType.MARKET_BUY:
-            fill_price = current_price * (1 + price_slippage)
-        elif trade.trade_type is TradeType.LIMIT_BUY:
-            fill_price = max(current_price * (1 + price_slippage), 1e-3)
+        trade.amount = trade.amount * (1 - amount_slippage)
 
-            if fill_price > trade.price:
-                fill_price = trade.price
-                fill_amount *= trade.price / fill_price
+        if trade.type == TradeType.MARKET and trade.side == TradeSide.BUY:
+            trade.price = max(initial_price * (1 + price_slippage), 1e-3)
+        elif trade.type == TradeType.LIMIT and trade.side == TradeSide.BUY:
+            trade.price = max(initial_price * (1 + price_slippage), 1e-3)
 
-        elif trade.trade_type is TradeType.MARKET_SELL:
-            fill_price = current_price * (1 - price_slippage)
-        elif trade.trade_type is TradeType.LIMIT_SELL:
-            fill_price = max(current_price * (1 - price_slippage), 1e-3)
+            if trade.price > initial_price:
+                trade.amount *= min(trade.price / initial_price, 1)
 
-            if fill_price < trade.price:
-                fill_price = trade.price
-                fill_amount *= fill_price / trade.price
+        elif trade.type == TradeType.MARKET and trade.side == TradeSide.SELL:
+            trade.price = max(initial_price * (1 - price_slippage), 1e-3)
+        elif trade.type == TradeType.LIMIT and trade.side == TradeSide.SELL:
+            trade.price = max(initial_price * (1 - price_slippage), 1e-3)
 
-        return Trade(trade.step, trade.symbol, trade.trade_type, amount=fill_amount, price=fill_price)
+            if trade.price < initial_price:
+                trade.amount *= min(trade.price / initial_price, 1)
+
+        return trade

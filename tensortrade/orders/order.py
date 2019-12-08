@@ -3,7 +3,7 @@ import uuid
 
 from enum import Enum
 
-from ..trades import TradeSide
+from ..trades import Trade, TradeSide, TradeType
 
 
 class OrderStatus(Enum):
@@ -16,8 +16,9 @@ class OrderStatus(Enum):
 
 class Order:
 
-    def __init__(self, side: TradeSide, pair: 'TradingPair', quantity: 'Quantity', criteria: 'OrderCriteria' = None):
+    def __init__(self, side: TradeSide, trade_type: TradeType, pair: 'TradingPair', quantity: 'Quantity', criteria: 'OrderCriteria' = None):
         self.side = side
+        self.type = trade_type
         self.pair = pair
         self.quantity = quantity
         self.criteria = criteria
@@ -25,17 +26,9 @@ class Order:
         self.id = uuid.uuid4()
         self.status = OrderStatus.PENDING
 
-        self.quantity.order_id = self.id
+        self.quantity.lock_for(self.id)
 
         self._listeners = []
-
-    @property
-    def is_buy(self) -> bool:
-        return self.side == TradeSide.BUY
-
-    @property
-    def is_sell(self) -> bool:
-        return self.side == TradeSide.SELL
 
     @property
     def base_instrument(self) -> 'Instrument':
@@ -46,8 +39,24 @@ class Order:
         return self.pair.quote
 
     @property
-    def amount(self) -> float:
+    def size(self) -> float:
         return self.quantity.amount
+
+    @property
+    def is_buy(self) -> bool:
+        return self.side == TradeSide.BUY
+
+    @property
+    def is_sell(self) -> bool:
+        return self.side == TradeSide.SELL
+
+    @property
+    def is_limit_order(self) -> bool:
+        return self.type == TradeType.LIMIT
+
+    @property
+    def is_market_order(self) -> bool:
+        return self.type == TradeType.MARKET
 
     def is_executable(self, exchange: 'Exchange'):
         return self.criteria is None or self.criteria.is_satisfied(self, exchange)
@@ -66,11 +75,11 @@ class Order:
 
         return exchange.execute_order(self)
 
-    def fill(self, exchange: 'Exchange', amount: float):
+    def fill(self, exchange: 'Exchange', trade: Trade):
         self.status = OrderStatus.PARTIALLY_FILLED
 
         for listener in self._listeners or []:
-            listener.on_fill(self, exchange, amount)
+            listener.on_fill(self, exchange, trade)
 
     def complete(self, exchange: 'Exchange'):
         self.status = OrderStatus.FILLED

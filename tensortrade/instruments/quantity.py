@@ -50,8 +50,12 @@ class Quantity:
     def wallet_id(self, wallet_id: str):
         self._wallet_id = wallet_id
 
+    @property
     def is_locked(self) -> bool:
         return bool(self._order_id)
+
+    def lock_for(self, order_id: str):
+        self._order_id = order_id
 
     @staticmethod
     def _quantity_op(left, right, op):

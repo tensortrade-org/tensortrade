@@ -15,6 +15,11 @@
 from enum import Enum
 
 
+class TradeType(Enum):
+    LIMIT = 'limit'
+    MARKET = 'market'
+
+
 class TradeSide(Enum):
     BUY = 'buy'
     SELL = 'sell'
@@ -23,7 +28,7 @@ class TradeSide(Enum):
 class Trade(object):
     """A trade object for use within trading environments."""
 
-    def __init__(self, order_id: str, exchange_id: str, step: int, pair: 'TradingPair', side: TradeSide, size: 'Quantity', price: float):
+    def __init__(self, order_id: str, exchange_id: str, step: int, pair: 'TradingPair', side: TradeSide, trade_type: TradeType, size: float, price: float):
         """
         Arguments:
             order_id: The id of the order that created the trade.
@@ -33,7 +38,7 @@ class Trade(object):
             (e.g. BTC/USDT, ETH/BTC, ADA/BTC, AAPL/USD, NQ1!/USD, CAD/USD, etc)
             side: Whether the quote instrument is being bought or sold.
             (e.g. BUY = trade the `base_instrument` for the `quote_instrument` in the pair. SELL = trade the `quote_instrument` for the `base_instrument`)
-            amount: The amount of the base instrument in the trade.
+            size: The amount of the base instrument in the trade.
             (e.g. 1000 shares, 6.50 satoshis, 2.3 contracts, etc).
             price: The price paid per quote instrument in terms of the base instrument.
             (e.g. 10000 represents $10,000.00 if the `base_instrument` is "USD").
@@ -43,12 +48,21 @@ class Trade(object):
         self.step = step
         self.pair = pair
         self.side = side
+        self.type = trade_type
         self.size = size
         self.price = price
 
     def copy(self) -> 'Trade':
         """Return a copy of the current trade object."""
-        return Trade(self.order_id, self.exchange_id, self.step, self.pair, self.side, self.size, self.price)
+        return Trade(self.order_id, self.exchange_id, self.step, self.pair, self.side, self.type, self.size, self.price)
+
+    @property
+    def base_instrument(self) -> 'Instrument':
+        return self.pair.base
+
+    @property
+    def quote_instrument(self) -> 'Instrument':
+        return self.pair.quote
 
     @property
     def is_buy(self) -> bool:
@@ -58,11 +72,20 @@ class Trade(object):
     def is_sell(self) -> bool:
         return self.side == TradeSide.SELL
 
+    @property
+    def is_limit_order(self) -> bool:
+        return self.type == TradeType.LIMIT
+
+    @property
+    def is_market_order(self) -> bool:
+        return self.type == TradeType.MARKET
+
     def to_dict(self):
-        return {
-                'step': self.step,
-                'symbol': self.pair,
+        return {'step': self.step,
+                'base_symbol': self.pair.base.symbol,
+                'quote_symbol': self.pair.quote.symbol,
                 'side': self.side,
-                'amount': self.size.amount,
+                'type': self.type,
+                'size': self.size,
                 'price': self.price
-        }
+                }

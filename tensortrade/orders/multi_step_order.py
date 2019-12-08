@@ -6,8 +6,16 @@ from . import Order, OrderListener, OrderStatus
 
 
 class MultiStepOrder(OrderListener):
+    """An order that will be executed in multiple steps.
+    The next step will execute each time the prior step is completed.
+    """
 
-    def __init__(self, steps: List['Order'], listener: 'OrderListener' = None):
+    def __init__(self, steps: List[Order], listener: OrderListener = None):
+        """
+        Args:
+            steps: A list of `Order`s to be executed in order of the list.
+            listener (optional): An optional listener for order events.
+        """
         self.steps = steps
 
         self.id = uuid.uuid4()
@@ -20,10 +28,10 @@ class MultiStepOrder(OrderListener):
     def is_executable(self, exchange: 'Exchange'):
         return self._active_order.criteria.is_satisfied(self._active_order, exchange)
 
-    def attach(self, listener: 'OrderListener'):
+    def attach(self, listener: OrderListener):
         self._listeners += [listener]
 
-    def detach(self, listener: 'OrderListener'):
+    def detach(self, listener: OrderListener):
         self._listeners.remove(listener)
 
     def execute(self, exchange: 'Exchange'):
@@ -34,11 +42,11 @@ class MultiStepOrder(OrderListener):
 
         return self._active_order.execute(exchange)
 
-    def fill(self, exchange: 'Exchange', amount: float):
+    def fill(self, exchange: 'Exchange', trade: 'Trade'):
         self.status = OrderStatus.PARTIALLY_FILLED
 
         for listener in self._listeners or []:
-            listener.on_fill(self, exchange, amount)
+            listener.on_fill(self, exchange, trade)
 
     def complete(self, exchange: 'Exchange'):
         self.status = OrderStatus.FILLED
@@ -56,13 +64,13 @@ class MultiStepOrder(OrderListener):
 
         self._listeners = []
 
-    def on_cancel(self, order: 'Order'):
+    def on_cancel(self, order: Order):
         self.cancel()
 
-    def on_fill(self, order: 'Order', exchange: 'Exchange', amount: float):
-        self.fill(exchange, amount)
+    def on_fill(self, order: Order, exchange: 'Exchange', trade: 'Trade'):
+        self.fill(exchange, trade)
 
-    def on_complete(self, order: 'Order', exchange: 'Exchange'):
+    def on_complete(self, order: Order, exchange: 'Exchange'):
         self._active_step += 1
         self._active_order = self.steps[self._active_step]
 
