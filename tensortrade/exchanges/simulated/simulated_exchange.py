@@ -19,8 +19,10 @@ import tensortrade.slippage as slippage
 
 from gym.spaces import Space, Box
 from typing import List, Dict
+from copy import deepcopy
 
 from tensortrade.trades import Trade, TradeType, TradeSide
+from tensortrade.orders import OrderStatus
 from tensortrade.instruments import TradingPair, Quantity
 from tensortrade.exchanges import Exchange
 from tensortrade.features import FeaturePipeline
@@ -50,6 +52,8 @@ class SimulatedExchange(Exchange):
         self._price_column = self.default('price_column', 'close', kwargs)
         self._pretransform = self.default('pretransform', True, kwargs)
         self.data_frame = self.default('data_frame', data_frame)
+
+        self._initial_wallets = None
 
         slippage_model = self.default('slippage_model', 'uniform', kwargs)
         self._slippage_model = slippage.get(slippage_model) if isinstance(
@@ -165,6 +169,8 @@ class SimulatedExchange(Exchange):
         elif order.price < current_price:
             return None
 
+        size = min(size, base_wallet.balance.amount)
+
         trade = Trade(order.id, self.id, self._current_step,
                       order.pair, TradeSide.BUY, order.type, size, price)
 
@@ -181,11 +187,13 @@ class SimulatedExchange(Exchange):
         if order.type == TradeType.LIMIT and order.price > current_price:
             return None
 
+        size = min(size / price, quote_wallet.balance.amount / price)
+
         trade = Trade(order.id, self.id, self._current_step,
                       order.pair, TradeSide.SELL, order.type, size, price)
 
-        base_wallet += Quantity(base_wallet.instrument, trade.size)
-        quote_wallet -= Quantity(quote_wallet.instrument, trade.size / trade.price)
+        base_wallet += Quantity(base_wallet.instrument, trade.size * trade.price)
+        quote_wallet -= Quantity(quote_wallet.instrument, trade.size)
 
         return trade
 
@@ -204,7 +212,22 @@ class SimulatedExchange(Exchange):
 
             order.fill(self, trade)
 
+        if order.status != OrderStatus.FILLED:
+            order.cancel()
+
     def reset(self):
-        super().reset()
+        if self._portfolio is not None:
+            if self._initial_wallets is not None:
+                self._portfolio._wallets = deepcopy(self._initial_wallets)
+            else:
+                self._initial_wallets = deepcopy(self._portfolio._wallets)
+
+            self._portfolio.reset()
+
+        if self._feature_pipeline is not None:
+            self.feature_pipeline.reset()
+
+        if self._broker is not None:
+            self.broker.reset()
 
         self._current_step = 0
