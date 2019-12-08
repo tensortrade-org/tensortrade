@@ -12,11 +12,23 @@ class Instrument:
     """A financial instrument for use in trading."""
 
     def __init__(self, symbol: Union[Symbol, str], precision: int, name: str):
-        self.symbol = Symbol(symbol) if isinstance(symbol, str) else symbol
-        self.precision = precision
-        self.name = name
+        self._symbol = Symbol(symbol) if isinstance(symbol, str) else symbol
+        self._precision = precision
+        self._name = name
 
         registry[symbol] = self
+
+    @property
+    def symbol(self) -> str:
+        return str(self._symbol)
+
+    @property
+    def precision(self) -> int:
+        return self._precision
+
+    @property
+    def name(self) -> str:
+        return self._name
 
     def __rmul__(self, other: float) -> Quantity:
         return Quantity(instrument=self, amount=other)
@@ -32,7 +44,7 @@ class Instrument:
         return str(self)
 
 
-# Cryptocurrencies
+# Crypto-currency
 BTC = Instrument('BTC', 8, 'Bitcoin')
 ETH = Instrument('ETH', 8, 'Ethereum')
 BCH = Instrument('BTH', 8, 'Bitcoin Cash')

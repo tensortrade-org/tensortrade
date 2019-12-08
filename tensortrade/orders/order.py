@@ -75,8 +75,8 @@ class Order(Identifiable):
     def execute(self, exchange: 'Exchange'):
         self.status = OrderStatus.OPEN
 
-        if self._listeners:
-            [listener.on_execute(self, exchange) for listener in self._listeners]
+        for listener in self._listeners or []:
+            listener.on_execute(self, exchange)
 
         return exchange.execute_order(self)
 

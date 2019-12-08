@@ -184,8 +184,13 @@ class SimulatedExchange(Exchange):
         trade = Trade(order.id, self.id, self._current_step,
                       order.pair, TradeSide.SELL, order.type, size, price)
 
-        base_wallet += Quantity(base_wallet.instrument, trade.size)
-        quote_wallet -= Quantity(quote_wallet.instrument, trade.size / trade.price)
+        q1 = trade.size*base_wallet.instrument
+        q1.order_id = order.id
+        base_wallet += q1
+
+        q2 = (trade.size / trade.price)*quote_wallet.instrument
+        q2.order_id = order.id
+        quote_wallet -= q2
 
         return trade
 

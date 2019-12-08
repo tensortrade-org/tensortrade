@@ -5,7 +5,7 @@ from tensortrade.orders.criteria import OrderCriteria
 from tensortrade.trades import TradeSide
 
 
-class LimitOrderCriteria(OrderCriteria):
+class Limit(OrderCriteria):
     """An order criteria that allows execution when the quote price for a
     trading pair is at or below a specific price."""
 
