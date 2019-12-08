@@ -20,12 +20,14 @@ class Order(Identifiable):
                  trade_type: TradeType,
                  pair: 'TradingPair',
                  quantity: 'Quantity',
+                 portfolio: 'Portfolio',
                  price: float = None,
                  criteria: 'OrderCriteria' = None):
         self.side = side
         self.type = trade_type
         self.pair = pair
         self.quantity = quantity
+        self.portfolio = portfolio
         self.price = price
         self.criteria = criteria
 
@@ -78,7 +80,7 @@ class Order(Identifiable):
         for listener in self._listeners or []:
             listener.on_execute(self, exchange)
 
-        return exchange.execute_order(self)
+        return exchange.execute_order(self, self.portfolio)
 
     def fill(self, exchange: 'Exchange', trade: Trade):
         self.status = OrderStatus.PARTIALLY_FILLED

@@ -3,19 +3,40 @@ import pandas as pd
 from typing import Callable, Tuple, Union, List, Dict
 
 from tensortrade import Component
-from tensortrade.instruments import *
+from tensortrade.instruments import Instrument, Quantity, TradingPair
 
 from .wallet import Wallet
 
 
 class Portfolio(Component):
-    """A portfolio of wallets."""
+    """A portfolio of wallets on exchanges."""
 
     registered_name = "portfolio"
 
-    def __init__(self, base_instrument: Instrument):
-        self._base_instrument = self.default(self.context.base_instrument, base_instrument)
+    def __init__(self,
+                 base_instrument: Instrument,
+                 wallets: List['Wallet'] = [],
+                 wallet_tuples: List[Tuple['Exchange', Instrument, float]] = []):
+        self._base_instrument = self.default('base_instrument', base_instrument)
+
         self._wallets = {}
+
+        for wallet in wallets:
+            self.add(wallet)
+
+        for wallet_tuple in wallet_tuples:
+            self.add_tuple(wallet_tuple)
+
+    @classmethod
+    def from_tuples(cls, tuples: List[Tuple['Exchange', Instrument, float]]):
+        _, base_instrument, __ = tuples[0]
+
+        portfolio = cls(base_instrument=base_instrument)
+
+        for wallet_tuple in tuples:
+            portfolio.add_tuple(wallet_tuple)
+
+        return portfolio
 
     @property
     def base_instrument(self) -> Instrument:
@@ -51,6 +72,11 @@ class Portfolio(Component):
         return [wallet.locked_balance for wallet in self._wallets.values()]
 
     @property
+    def total_balances(self) -> List[Quantity]:
+        """The current total balance of each instrument over all wallets."""
+        return [wallet.total_balance for wallet in self._wallets.values()]
+
+    @property
     def net_worth(self) -> float:
         """Calculate the net worth of the active account on the exchange.
 
@@ -69,7 +95,8 @@ class Portfolio(Component):
                 pair = TradingPair(self._base_instrument, wallet.instrument)
                 current_price = wallet.exchange.quote_price(pair)
 
-            net_worth += current_price * wallet.balance.amount
+            wallet_balance = wallet.total_balance.amount
+            net_worth += current_price * wallet_balance
 
         return net_worth
 
@@ -93,6 +120,7 @@ class Portfolio(Component):
         return self._performance
 
     def balance(self, instrument: Instrument) -> Quantity:
+        """The total balance of the portfolio in a specific instrument available for use."""
         balance = Quantity(instrument, 0)
 
         for (_, symbol), wallet in self._wallets.items():
@@ -102,6 +130,7 @@ class Portfolio(Component):
         return balance
 
     def locked_balance(self, instrument: Instrument) -> Quantity:
+        """The total balance of the portfolio in a specific instrument locked in orders."""
         balance = Quantity(instrument, 0)
 
         for (_, symbol), wallet in self._wallets.items():
@@ -109,6 +138,10 @@ class Portfolio(Component):
                 balance += wallet.locked_balance
 
         return balance
+
+    def total_balance(self, instrument: Instrument) -> Quantity:
+        """The total balance of the portfolio in a specific instrument, both available for use and locked in orders."""
+        return self.balance(instrument) + self.locked_balance(instrument)
 
     def get_wallet(self, exchange_id: str, instrument: Instrument):
         return self._wallets[(exchange_id, instrument.symbol)]
@@ -119,36 +152,36 @@ class Portfolio(Component):
     def add(self, wallet: 'Wallet'):
         self._wallets[self._wallet_key(wallet)] = wallet
 
+    def add_tuple(self, wallet_tuple: Tuple['Exchange', Instrument, float]):
+        self.add(Wallet.from_tuple(wallet_tuple))
+
     def remove(self, wallet: 'Wallet'):
         self._wallets.pop(self._wallet_key(wallet), None)
 
+    def remove_pair(self, exchange: 'Exchange', instrument: Instrument):
+        self._wallets.pop((exchange.id, instrument.symbol), None)
+
     def update(self):
         performance_update = pd.DataFrame(
-            [[self._current_step, self.net_worth] + [quantity.amount for quantity in self.balances]],
+            [[self._current_step, self.net_worth] + [quantity.amount for quantity in self.total_balances]],
             index=['step'],
-            columns=['step', 'net_worth'] + [quantity.instrument for quantity in self.balances]
+            columns=['step', 'net_worth'] +
+            [quantity.instrument.symbol for quantity in self.balances]
         )
 
-        self._performance = pd.concat([self._performance, performance_update], axis=0, sort=True)
-        self._current_step += 1
-        self.clean()
+        self._performance = pd.concat(
+            [self._performance, performance_update], axis=0, sort=True).dropna()
 
-    def clean(self):
+        self.clean_wallets()
+
+        self._current_step += 1
+
+    def clean_wallets(self):
         for wallet in self._wallets.values():
-            for q in wallet.locked.values():
-                if not q.is_locked:
-                    wallet += q
-                    del wallet.locked[q.order_id]
+            wallet.clean()
 
     def reset(self):
-        for wallet in self._wallets.values():
-            wallet.reset()
+        self._initial_balance = self.base_balance
+        self._initial_net_worth = self.net_worth
         self._performance = pd.DataFrame([], columns=['step', 'net_worth'], index=['step'])
         self._current_step = 0
-
-    @classmethod
-    def from_tuples(cls, tuples):
-        portfolio = Portfolio()
-        for exchange, instrument, balance in tuples:
-            portfolio.add(Wallet(exchange, Quantity(instrument, balance)))
-        return portfolio

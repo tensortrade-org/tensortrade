@@ -30,6 +30,12 @@ class Instrument:
     def name(self) -> str:
         return self._name
 
+    def __eq__(self, other: 'Instrument') -> bool:
+        return self.symbol == other.symbol and self.precision == other.precision and self.name == other.name
+
+    def __ne__(self, other: 'Instrument') -> bool:
+        return self.symbol != other.symbol or self.precision != other.precision or self.name != other.name
+
     def __rmul__(self, other: float) -> Quantity:
         return Quantity(instrument=self, amount=other)
 

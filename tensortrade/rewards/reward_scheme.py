@@ -23,28 +23,15 @@ class RewardScheme(Component):
 
     registered_name = "rewards"
 
-    def __init__(self, exchange: 'Exchange' = None):
-        self._exchange = exchange
-
-    @property
-    def exchange(self) -> 'Exchange':
-        """The exchange being used by the current trading environments. Setting the exchange causes the scheme to reset."""
-        return self._exchange
-
-    @exchange.setter
-    def exchange(self, exchange: 'Exchange'):
-        self._exchange = exchange
-
-        self.reset()
-
     def reset(self):
         """Optionally implementable method for resetting stateful schemes."""
         pass
 
     @abstractmethod
-    def get_reward(self, current_step: int) -> float:
+    def get_reward(self, portfolio: 'Portfolio', current_step: int) -> float:
         """
         Arguments:
+            portfolio: The portfolio being used by the environment.
             current_step: The environments's current timestep.
 
         Returns:

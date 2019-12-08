@@ -42,12 +42,13 @@ class ActionScheme(Component, metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def get_order(self, action: int, exchange: 'Exchange') -> Order:
+    def get_order(self, action: int, exchange: 'Exchange', portfolio: 'Portfolio') -> Order:
         """Get the order to be executed on the exchange based on the action provided.
 
         Arguments:
             action: The action to be converted into an order.
             exchange: The exchange the action will be executed on.
+            portfolio: The portfolio of wallets used to execute the action.
 
         Returns:
             The order to be executed on the exchange this timestep.

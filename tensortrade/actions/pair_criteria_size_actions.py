@@ -103,20 +103,21 @@ class PairCriteriaSizeActions(ActionScheme):
 
         self.reset()
 
-    def get_order(self, action: int, exchange: 'Exchange') -> Order:
+    def get_order(self, action: int, exchange: 'Exchange', portfolio: 'Portfolio') -> Order:
         (side, trading_pair, criteria, size) = self._actions[action]
 
         if side == TradeSide.BUY:
-            wallet = exchange.wallet(instrument=trading_pair.base)
+            wallet = portfolio.get_wallet(exchange.id, instrument=trading_pair.base)
             quantity = wallet.lock_for_order(wallet.balance.amount * size)
         else:
-            wallet = exchange.wallet(instrument=trading_pair.quote)
+            wallet = portfolio.get_wallet(exchange.id, instrument=trading_pair.quote)
             quantity = wallet.lock_for_order(wallet.balance.amount * size)
 
         order = Order(side=side,
                       trade_type=TradeType.MARKET,
                       pair=trading_pair,
                       quantity=quantity,
+                      portfolio=portfolio,
                       criteria=criteria)
 
         if self._order_listener is not None:

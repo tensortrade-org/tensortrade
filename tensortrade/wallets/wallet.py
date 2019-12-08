@@ -1,8 +1,8 @@
 
-from typing import Dict
+from typing import Dict, Tuple
 
 from tensortrade.base import Identifiable
-from tensortrade.base.exceptions import *
+from tensortrade.base.exceptions import InsufficientFunds
 from tensortrade.instruments import Quantity
 
 
@@ -12,9 +12,13 @@ class Wallet(Identifiable):
     def __init__(self, exchange: 'Exchange', quantity: 'Quantity'):
         self._exchange = exchange
         self._instrument = quantity.instrument
-        self._initial_balance = quantity
         self._balance = quantity
         self._locked = {}
+
+    @classmethod
+    def from_tuple(cls, wallet_tuple: Tuple['Exchange', 'Instrument', float]):
+        exchange, instrument, balance = wallet_tuple
+        return cls(exchange, Quantity(instrument, balance))
 
     @property
     def exchange(self) -> 'Exchange':
@@ -33,11 +37,8 @@ class Wallet(Identifiable):
         raise ValueError("You cannot change a Wallet's Instrument after initialization.")
 
     @property
-    def initial_balance(self) -> 'Quantity':
-        return self._initial_balance
-
-    @property
     def balance(self) -> 'Quantity':
+        """The total balance of the wallet available for use."""
         return self._balance
 
     @balance.setter
@@ -46,7 +47,23 @@ class Wallet(Identifiable):
 
     @property
     def locked_balance(self) -> 'Quantity':
-        return sum(self.locked.values)
+        """The total balance of the wallet locked in orders."""
+        locked_balance = Quantity(self.instrument, 0)
+
+        for quantity in self.locked.values():
+            locked_balance += quantity
+
+        return locked_balance
+
+    @property
+    def total_balance(self) -> 'Quantity':
+        """The total balance of the wallet, both available for use and locked in orders."""
+        total_balance = self._balance
+
+        for quantity in self.locked.values():
+            total_balance += quantity
+
+        return total_balance
 
     @property
     def locked(self) -> Dict[str, 'Quantity']:
@@ -59,10 +76,18 @@ class Wallet(Identifiable):
         locked_quantity = Quantity(self.instrument, amount)
 
         self -= locked_quantity
+
         locked_quantity.lock_for('pending_order_id')
+
         self += locked_quantity
 
         return locked_quantity
+
+    def clean(self):
+        for quantity in self._locked.values():
+            if not quantity.is_locked:
+                self._locked.pop(quantity.order_id, None)
+                self += quantity
 
     def __iadd__(self, quantity: 'Quantity') -> 'Wallet':
         if quantity.is_locked:
@@ -82,6 +107,3 @@ class Wallet(Identifiable):
             self._balance -= quantity
 
         return self
-
-    def reset(self):
-        self._balance = self._initial_balance

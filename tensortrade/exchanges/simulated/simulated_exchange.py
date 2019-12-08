@@ -19,8 +19,10 @@ import tensortrade.slippage as slippage
 
 from gym.spaces import Space, Box
 from typing import List, Dict
+from copy import deepcopy
 
 from tensortrade.trades import Trade, TradeType, TradeSide
+from tensortrade.orders import OrderStatus
 from tensortrade.instruments import TradingPair, Quantity
 from tensortrade.exchanges import Exchange
 from tensortrade.features import FeaturePipeline
@@ -36,8 +38,6 @@ class SimulatedExchange(Exchange):
     """
 
     def __init__(self, data_frame: pd.DataFrame = None, **kwargs):
-        super().__init__(**kwargs)
-
         self._commission = self.default('commission_percent', 0.3, kwargs) / 100
         self._base_instrument = self.default('base_instrument', USD, kwargs)
         self._quote_instrument = self.default('quote_instrument', BTC, kwargs)
@@ -48,28 +48,11 @@ class SimulatedExchange(Exchange):
         self._max_trade_price = self.default('max_trade_price', 1e8, kwargs)
 
         self._price_column = self.default('price_column', 'close', kwargs)
-        self._pretransform = self.default('pretransform', True, kwargs)
         self.data_frame = self.default('data_frame', data_frame)
 
         slippage_model = self.default('slippage_model', 'uniform', kwargs)
         self._slippage_model = slippage.get(slippage_model) if isinstance(
             slippage_model, str) else slippage_model()
-
-    def transform_data_frame(self) -> bool:
-        if self._feature_pipeline is not None:
-            self._data_frame = self._feature_pipeline.transform(self._pre_transformed_data)
-
-    @property
-    def window_size(self) -> int:
-        """The window size of observations."""
-        return self._window_size
-
-    @window_size.setter
-    def window_size(self, window_size: int):
-        self._window_size = window_size
-
-        if isinstance(self.data_frame, pd.DataFrame) and self._pretransform:
-            self.transform_data_frame()
 
     @property
     def data_frame(self) -> pd.DataFrame:
@@ -77,7 +60,7 @@ class SimulatedExchange(Exchange):
         return getattr(self, '_data_frame', None)
 
     @data_frame.setter
-    def data_frame(self, data_frame: pd.DataFrame):
+    def data_frame(self, data_frame: pd.DataFrame = None):
         if not isinstance(data_frame, pd.DataFrame):
             self._data_frame = data_frame
             self._price_history = None
@@ -88,31 +71,12 @@ class SimulatedExchange(Exchange):
         self._price_history = self._pre_transformed_data[self._price_column]
         self._pre_transformed_columns = self._pre_transformed_data.columns
 
-        if self._pretransform:
-            self.transform_data_frame()
-
     @property
-    def feature_pipeline(self) -> FeaturePipeline:
-        return self._feature_pipeline
-
-    @feature_pipeline.setter
-    def feature_pipeline(self, feature_pipeline=FeaturePipeline):
-        self._feature_pipeline = feature_pipeline
-
-        if isinstance(self.data_frame, pd.DataFrame) and self._pretransform:
-            self.transform_data_frame()
-
-        return self._feature_pipeline
-
-    @property
-    def generated_columns(self) -> List[str]:
+    def observation_columns(self) -> List[str]:
         if self._data_frame is None:
             return None
 
         data_frame = self._data_frame.iloc[0:10]
-
-        if self._feature_pipeline is not None:
-            data_frame = self._feature_pipeline.transform(data_frame)
 
         return data_frame.select_dtypes(include=[np.float, np.number]).columns
 
@@ -120,21 +84,11 @@ class SimulatedExchange(Exchange):
     def has_next_observation(self) -> bool:
         return self._current_step < len(self._data_frame) - 1
 
-    def _generate_next_observation(self) -> pd.DataFrame:
-        lower_range = max(self._current_step - self._window_size, 0)
+    def next_observation(self, window_size: int = 1) -> pd.DataFrame:
+        lower_range = max(self._current_step - window_size, 0)
         upper_range = min(self._current_step + 1, len(self._data_frame))
 
         obs = self._data_frame.iloc[lower_range:upper_range]
-
-        if not self._pretransform and self._feature_pipeline is not None:
-            obs = self._feature_pipeline.transform(obs)
-
-        if len(obs) < self._window_size:
-            padding = np.zeros((self._window_size - len(obs), len(self.observation_columns)))
-            padding = pd.DataFrame(padding, columns=self.observation_columns)
-            obs = pd.concat([padding, obs], ignore_index=True, sort=False)
-
-        obs = obs.select_dtypes(include='number')
 
         self._current_step += 1
 
@@ -165,6 +119,8 @@ class SimulatedExchange(Exchange):
         elif order.price < current_price:
             return None
 
+        size = min(size, base_wallet.balance.amount)
+
         trade = Trade(order.id, self.id, self._current_step,
                       order.pair, TradeSide.BUY, order.type, size, price)
 
@@ -181,22 +137,19 @@ class SimulatedExchange(Exchange):
         if order.type == TradeType.LIMIT and order.price > current_price:
             return None
 
+        size = min(size / price, quote_wallet.balance.amount / price)
+
         trade = Trade(order.id, self.id, self._current_step,
                       order.pair, TradeSide.SELL, order.type, size, price)
 
-        q1 = trade.size*base_wallet.instrument
-        q1.order_id = order.id
-        base_wallet += q1
-
-        q2 = (trade.size / trade.price)*quote_wallet.instrument
-        q2.order_id = order.id
-        quote_wallet -= q2
+        base_wallet += Quantity(base_wallet.instrument, trade.size * trade.price)
+        quote_wallet -= Quantity(quote_wallet.instrument, trade.size)
 
         return trade
 
-    def execute_order(self, order: 'Order'):
-        base_wallet = self._portfolio.get_wallet(self.id, order.pair.base)
-        quote_wallet = self._portfolio.get_wallet(self.id, order.pair.quote)
+    def execute_order(self, order: 'Order', portfolio: 'Portfolio'):
+        base_wallet = portfolio.get_wallet(self.id, order.pair.base)
+        quote_wallet = portfolio.get_wallet(self.id, order.pair.quote)
         current_price = self.quote_price(order.pair)
 
         if order.is_buy:
@@ -209,7 +162,8 @@ class SimulatedExchange(Exchange):
 
             order.fill(self, trade)
 
-    def reset(self):
-        super().reset()
+        if order.status != OrderStatus.FILLED:
+            order.cancel()
 
+    def reset(self):
         self._current_step = 0
