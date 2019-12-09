@@ -249,15 +249,11 @@ class TradingEnvironment(gym.Env):
         """
         order = self._action_scheme.get_order(action, self._exchange, self._portfolio)
 
-        print('Order: ', order)
-
         if order is not None:
             self._broker.submit(order)
 
         self._broker.update()
         self._portfolio.update()
-
-        print('Portfolio: ', self._portfolio.performance.tail())
 
         return order
 
@@ -304,8 +300,6 @@ class TradingEnvironment(gym.Env):
         reward = self._reward_scheme.get_reward(self._portfolio, self._current_step)
         reward = np.nan_to_num(reward)
 
-        print('Reward: ', reward)
-
         if np.bitwise_not(np.isfinite(reward)):
             raise ValueError('Reward returned by the reward scheme must by a finite float.')
 
@@ -317,8 +311,6 @@ class TradingEnvironment(gym.Env):
         Returns:
             A boolean signaling whether the environments is done and should be restarted.
         """
-        print('Profit loss: ', self._portfolio.profit_loss)
-
         lost_90_percent_net_worth = self._portfolio.profit_loss < 0.1
         return lost_90_percent_net_worth or not self._exchange.has_next_observation
 

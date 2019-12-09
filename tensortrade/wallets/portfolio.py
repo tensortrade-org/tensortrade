@@ -95,8 +95,6 @@ class Portfolio(Component):
                 pair = TradingPair(self._base_instrument, wallet.instrument)
                 current_price = wallet.exchange.quote_price(pair)
 
-                print('Current price:', current_price)
-
             wallet_balance = wallet.total_balance.amount
             net_worth += current_price * wallet_balance
 

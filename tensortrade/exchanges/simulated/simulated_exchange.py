@@ -126,12 +126,8 @@ class SimulatedExchange(Exchange):
         trade = Trade(order.id, self.id, self._current_step,
                       order.pair, TradeSide.BUY, order.type, size, price)
 
-        print('Before: {} | {}'.format(str(base_wallet), str(quote_wallet)))
-
         base_wallet -= Quantity(order.pair.base, trade.size, order.id)
         quote_wallet += Quantity(order.pair.quote, trade.size / trade.price, order.id)
-
-        print('After: {} | {}'.format(str(base_wallet), str(quote_wallet)))
 
         return trade
 
@@ -146,12 +142,8 @@ class SimulatedExchange(Exchange):
         trade = Trade(order.id, self.id, self._current_step,
                       order.pair, TradeSide.SELL, order.type, size, price)
 
-        print('Before: {} | {}'.format(str(base_wallet), str(quote_wallet)))
-
         quote_wallet -= Quantity(order.pair.quote, trade.size, order.id)
         base_wallet += Quantity(order.pair.base, trade.size * trade.price, order.id)
-
-        print('After: {} | {}'.format(str(base_wallet), str(quote_wallet)))
 
         return trade
 
