@@ -35,6 +35,7 @@ class PairCriteriaSizeActions(ActionScheme):
                  pairs: Union[List['TradingPair'], 'TradingPair'],
                  criteria: Union[List['OrderCriteria'], 'OrderCriteria'] = None,
                  trade_sizes: Union[List[float], int] = 10,
+                 trade_type: TradeType = TradeType.MARKET,
                  order_listener: 'OrderListener' = None):
         """
         Arguments:
@@ -46,13 +47,11 @@ class PairCriteriaSizeActions(ActionScheme):
             (e.g. '[1, 1/3]' = 100% or 33% of balance is tradeable. '4' = 25%, 50%, 75%, or 100% of balance is tradeable.)
             order_listener (optional): An optional listener for order events executed by this action scheme.
         """
-        self._pairs = self.context.get('pairs', None) or pairs if isinstance(
-            pairs, list) else [pairs]
-        self._criteria = self.context.get('criteria', None) or criteria if isinstance(
-            criteria, list) else [criteria]
-        self._trade_sizes = self.context.get('trade_sizes', None) or trade_sizes if isinstance(
-            trade_sizes, list) else [1 / (x + 1) for x in range(trade_sizes)]
-        self._order_listener = self.context.get('order_listener', None) or order_listener
+        self.pairs = self.default('pairs', pairs)
+        self.criteria = self.default('criteria', criteria)
+        self.trade_sizes = self.default('trade_sizes', trade_sizes)
+        self._trade_type = self.default('trade_type', trade_type)
+        self._order_listener = self.default('order_listener', order_listener)
 
         self.reset()
 
@@ -70,10 +69,7 @@ class PairCriteriaSizeActions(ActionScheme):
 
     @pairs.setter
     def pairs(self, pairs: Union[List['TradingPair'], 'TradingPair']):
-        self._pairs = pairs if isinstance(
-            pairs, list) else [pairs]
-
-        self.reset()
+        self._pairs = pairs if isinstance(pairs, list) else [pairs]
 
     @property
     def criteria(self) -> List['OrderCriteria']:
@@ -84,10 +80,7 @@ class PairCriteriaSizeActions(ActionScheme):
 
     @criteria.setter
     def criteria(self, criteria: Union[List['OrderCriteria'], 'OrderCriteria']):
-        self._criteria = criteria if isinstance(
-            criteria, list) else [criteria]
-
-        self.reset()
+        self._criteria = criteria if isinstance(criteria, list) else [criteria]
 
     @property
     def trade_sizes(self) -> List[float]:
@@ -101,8 +94,6 @@ class PairCriteriaSizeActions(ActionScheme):
         self._trade_sizes = trade_sizes if isinstance(trade_sizes, list) else [
             1 / (x + 1) for x in range(trade_sizes)]
 
-        self.reset()
-
     def get_order(self, action: int, exchange: 'Exchange', portfolio: 'Portfolio') -> Order:
         if action == 0:
             return None
@@ -113,6 +104,7 @@ class PairCriteriaSizeActions(ActionScheme):
 
         instrument = pair.base if side == TradeSide.BUY else pair.quote
         wallet = portfolio.get_wallet(exchange.id, instrument=instrument)
+        price = exchange.quote_price(instrument)
         amount = min(wallet.balance.amount, (wallet.balance.amount * size))
 
         print('Balance Wallet:', wallet)
@@ -125,8 +117,9 @@ class PairCriteriaSizeActions(ActionScheme):
         wallet -= quantity
 
         order = Order(side=side,
-                      trade_type=TradeType.MARKET,
+                      trade_type=self._trade_type,
                       pair=pair,
+                      price=price,
                       quantity=quantity,
                       portfolio=portfolio,
                       criteria=criteria)

@@ -1,4 +1,5 @@
 import operator
+import warnings
 
 from typing import Union
 from numbers import Number
@@ -88,7 +89,10 @@ class Quantity:
         amount = round(op(left.amount, right_amount), left.instrument.precision)
 
         if amount < 0:
-            raise InvalidNegativeQuantity(amount)
+            warnings.warn(
+                'Quantity created with negative amount {}. Replacing amount with 0.'.format(amount), Warning)
+
+            amount = 0
 
         return Quantity(instrument=left.instrument, amount=amount, order_id=left.order_id)
 

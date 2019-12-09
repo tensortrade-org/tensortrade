@@ -54,7 +54,7 @@ class StableBaselinesTradingStrategy(TradingStrategy):
         self._model_kwargs = model_kwargs
 
         self.environment = environment
-        self._agent = self._model(policy, self._environment, **self._model_kwargs)
+        self._agent = self._model(policy, self._vectorized_environment, **self._model_kwargs)
 
     @property
     def environment(self) -> 'TradingEnvironment':
@@ -63,7 +63,8 @@ class StableBaselinesTradingStrategy(TradingStrategy):
 
     @environment.setter
     def environment(self, environment: 'TradingEnvironment'):
-        self._environment = DummyVecEnv([lambda: environment])
+        self._environment = environment
+        self._vectorized_environment = DummyVecEnv([lambda: environment])
 
     def restore_agent(self, path: str):
         """Deserialize the strategy's learning agent from a file.
@@ -71,7 +72,7 @@ class StableBaselinesTradingStrategy(TradingStrategy):
         Arguments:
             path: The `str` path of the file the agent specification is stored in.
         """
-        self._agent = self._model.load(path, self._environment, self._model_kwargs)
+        self._agent = self._model.load(path, self._vectorized_environment, self._model_kwargs)
 
     def save_agent(self, path: str):
         """Serialize the learning agent to a file for restoring later.
@@ -84,26 +85,22 @@ class StableBaselinesTradingStrategy(TradingStrategy):
     def tune(self, steps: int = None, episodes: int = None, callback: Callable[[pd.DataFrame], bool] = None) -> pd.DataFrame:
         raise NotImplementedError
 
-    def run(self,
-            steps: int = None,
-            episodes: int = None,
-            render_mode: str = None,
-            episode_callback: Callable[[pd.DataFrame], bool] = None) -> pd.DataFrame:
+    def evaluate(self,
+                 steps: int = None,
+                 episodes=None,
+                 render_mode: str = None,
+                 episode_callback: Callable[[pd.DataFrame], bool] = None) -> pd.DataFrame:
         if steps is None and episodes is None:
             raise ValueError(
-                'You must set the number of `steps` or `episodes` to run the strategy.')
+                'You must set the number of `steps` or `episodes` to evalaute the strategy.')
 
-        steps_completed = 0
-        episodes_completed = 0
-        average_reward = 0
-
-        obs, state, dones = self._environment.reset(), None, [False]
-
+        steps_completed, episodes_completed, average_reward = 0, 0, 0
+        obs, state, dones = self._vectorized_environment.reset(), None, [False]
         performance = {}
 
         while (steps is not None and (steps == 0 or steps_completed < steps)) or (episodes is not None and episodes_completed < episodes):
             actions, state = self._agent.predict(obs, state=state, mask=dones)
-            obs, rewards, dones, info = self._environment.step(actions)
+            obs, rewards, dones, info = self._vectorized_environment.step(actions)
 
             steps_completed += 1
             average_reward -= average_reward / steps_completed
@@ -113,17 +110,44 @@ class StableBaselinesTradingStrategy(TradingStrategy):
             performance = portfolio_performance if len(portfolio_performance) > 0 else performance
 
             if render_mode is not None:
-                self._environment.render(mode=render_mode)
+                self._vectorized_environment.render(mode=render_mode)
 
             if dones[0]:
                 if episode_callback is not None and not episode_callback(performance):
                     break
 
                 episodes_completed += 1
-                obs = self._environment.reset()
+                obs = self._vectorized_environment.reset()
 
         print("Finished running strategy.")
         print("Total episodes: {} ({} timesteps).".format(episodes_completed, steps_completed))
         print("Average reward: {}.".format(average_reward))
 
         return performance
+
+    def _train_callback(self, _locals, _globals):
+        self._performance = self._environment.portfolio.performance
+
+        if self._episode_callback and self._environment.done():
+            self._episode_callback(self._performance)
+
+        return True
+
+    def run(self,
+            steps: int = None,
+            episodes: int = None,
+            render_mode: str = None,
+            evaluation: bool = False,
+            episode_callback: Callable[[pd.DataFrame], bool] = None) -> pd.DataFrame:
+        if steps is None and not evaluation:
+            raise ValueError(
+                'You must set the number of `steps` to train the strategy.')
+
+        if evaluation:
+            return self.evaluate(steps, episodes, render_mode, episode_callback)
+
+        self._episode_callback = episode_callback
+
+        self._agent.learn(steps, callback=self._train_callback)
+
+        return self._performance

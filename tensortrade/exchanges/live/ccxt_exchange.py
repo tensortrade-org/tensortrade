@@ -52,6 +52,10 @@ class CCXTExchange(Exchange):
         self._exchange.load_markets()
 
     @property
+    def is_live(self):
+        return True
+
+    @property
     def data_frame(self) -> pd.DataFrame:
         return self._data_frame
 

@@ -26,6 +26,11 @@ class Exchange(Component, Identifiable):
 
     @property
     @abstractmethod
+    def is_live(self):
+        raise NotImplementedError()
+
+    @property
+    @abstractmethod
     def observation_columns(self) -> List[str]:
         """The list of observation columns provided by the exchange each time step."""
         raise NotImplementedError

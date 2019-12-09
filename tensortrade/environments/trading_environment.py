@@ -18,14 +18,15 @@ import importlib
 import pandas as pd
 import numpy as np
 
+from copy import deepcopy
+from gym.spaces import Box, Discrete
+from typing import Union, Tuple, List, Dict
+
 import tensortrade.exchanges as exchanges
 import tensortrade.actions as actions
 import tensortrade.rewards as rewards
 import tensortrade.features as features
 import tensortrade.wallets as wallets
-
-from gym.spaces import Box, Discrete
-from typing import Union, Tuple, List, Dict
 
 from tensortrade.actions import ActionScheme
 from tensortrade.rewards import RewardScheme
@@ -87,6 +88,8 @@ class TradingEnvironment(gym.Env):
         self.logger = logging.getLogger(kwargs.get('logger_name', __name__))
         self.logger.setLevel(kwargs.get('log_level', logging.DEBUG))
         logging.getLogger('tensorflow').disabled = kwargs.get('disable_tensorflow_logger', True)
+
+        self._initial_balances = None
 
         self.reset()
 
@@ -301,6 +304,8 @@ class TradingEnvironment(gym.Env):
         reward = self._reward_scheme.get_reward(self._portfolio, self._current_step)
         reward = np.nan_to_num(reward)
 
+        print('Reward: ', reward)
+
         if np.bitwise_not(np.isfinite(reward)):
             raise ValueError('Reward returned by the reward scheme must by a finite float.')
 
@@ -312,6 +317,8 @@ class TradingEnvironment(gym.Env):
         Returns:
             A boolean signaling whether the environments is done and should be restarted.
         """
+        print('Profit loss: ', self._portfolio.profit_loss)
+
         lost_90_percent_net_worth = self._portfolio.profit_loss < 0.1
         return lost_90_percent_net_worth or not self._exchange.has_next_observation
 
@@ -362,6 +369,15 @@ class TradingEnvironment(gym.Env):
         Returns:
             The episode's initial observation.
         """
+        if not self._exchange.is_live:
+            if self._initial_balances is not None:
+                self._portfolio._wallets = {}
+
+                for balance in self._initial_balances:
+                    self._portfolio.add_tuple((self._exchange, balance.instrument, balance.amount))
+            else:
+                self._initial_balances = self._portfolio.total_balances
+
         self._action_scheme.reset()
         self._reward_scheme.reset()
         self._exchange.reset()
