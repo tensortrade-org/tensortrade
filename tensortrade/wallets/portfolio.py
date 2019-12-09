@@ -163,22 +163,19 @@ class Portfolio(Component):
 
     def update(self):
         performance_update = pd.DataFrame(
-            [[self._current_step, self.net_worth] + [quantity.amount for quantity in self.total_balances]],
+            [[self._current_step, self.net_worth] +
+             [quantity.amount for quantity in self.balances] +
+             [quantity.amount for quantity in self.locked_balances]],
             index=['step'],
             columns=['step', 'net_worth'] +
-            [quantity.instrument.symbol for quantity in self.balances]
+            [quantity.instrument.symbol for quantity in self.balances] +
+            ['{}_locked'.format(quantity.instrument.symbol) for quantity in self.locked_balances]
         )
 
         self._performance = pd.concat(
             [self._performance, performance_update], axis=0, sort=True).dropna()
 
-        self.clean_wallets()
-
         self._current_step += 1
-
-    def clean_wallets(self):
-        for wallet in self._wallets.values():
-            wallet.clean()
 
     def reset(self):
         self._initial_balance = self.base_balance

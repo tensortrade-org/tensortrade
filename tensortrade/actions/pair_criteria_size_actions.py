@@ -59,7 +59,7 @@ class PairCriteriaSizeActions(ActionScheme):
     @property
     def action_space(self) -> Discrete:
         """The discrete action space produced by the action scheme."""
-        return self._action_space
+        return Discrete(len(self._actions))
 
     @property
     def pairs(self) -> List['TradingPair']:
@@ -104,14 +104,22 @@ class PairCriteriaSizeActions(ActionScheme):
         self.reset()
 
     def get_order(self, action: int, exchange: 'Exchange', portfolio: 'Portfolio') -> Order:
+        if action == 0:
+            return None
+
         (side, pair, criteria, size) = self._actions[action]
 
         instrument = pair.base if side == TradeSide.BUY else pair.quote
         wallet = portfolio.get_wallet(exchange.id, instrument=instrument)
-        quantity = (wallet.balance.amount * size)*instrument
+        amount = min(wallet.balance.amount, (wallet.balance.amount * size))
 
-        # Remove quantity from wallet's free balance
+        if amount < 10 ** -instrument.precision:
+            return None
+
+        quantity = amount * instrument
+
         wallet -= quantity
+
         order = Order(side=side,
                       trade_type=TradeType.MARKET,
                       pair=pair,
@@ -119,9 +127,8 @@ class PairCriteriaSizeActions(ActionScheme):
                       portfolio=portfolio,
                       criteria=criteria)
 
-        # Lock the quantity for use by the order and then add it back to wallet
-        # as a locked quantity.
         quantity.lock_for(order.id)
+
         wallet += quantity
 
         if self._order_listener is not None:
@@ -130,10 +137,8 @@ class PairCriteriaSizeActions(ActionScheme):
         return order
 
     def reset(self):
-        self._actions = []
+        self._actions = [None]
 
         for trading_pair, criteria, size in product(self._pairs, self._criteria, self._trade_sizes):
             self._actions += [(TradeSide.BUY, trading_pair, criteria, size)]
             self._actions += [(TradeSide.SELL, trading_pair, criteria, size)]
-
-        self._action_space = Discrete(len(self._actions))

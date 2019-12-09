@@ -71,9 +71,10 @@ class Wallet(Identifiable):
 
     def unlock(self, order_id: str):
         if order_id in self.locked.keys():
-            q = self.locked[order_id]
-            self += q.amount*self.instrument
-            del self.locked[order_id]
+            quantity = self.locked.pop(order_id, None)
+
+            if quantity is not None:
+                self += quantity.amount * self.instrument
 
     def __iadd__(self, quantity: 'Quantity') -> 'Wallet':
         if quantity.is_locked:
@@ -93,3 +94,9 @@ class Wallet(Identifiable):
             self._balance -= quantity
 
         return self
+
+    def __str__(self):
+        return 'Balance: {} | Locked: {}'.format(self.balance, self.locked_balance)
+
+    def __repr__(self):
+        return str(self)

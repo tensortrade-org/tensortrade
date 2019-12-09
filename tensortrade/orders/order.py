@@ -2,6 +2,7 @@
 from enum import Enum
 
 from tensortrade.base import Identifiable
+from tensortrade.base.exceptions import InvalidOrderQuantity
 from tensortrade.trades import Trade, TradeSide, TradeType
 
 
@@ -23,6 +24,9 @@ class Order(Identifiable):
                  portfolio: 'Portfolio',
                  price: float = None,
                  criteria: 'OrderCriteria' = None):
+        if quantity.amount == 0:
+            raise InvalidOrderQuantity(quantity)
+
         self.side = side
         self.type = trade_type
         self.pair = pair
@@ -109,3 +113,15 @@ class Order(Identifiable):
     def release(self):
         for wallet in self.portfolio.wallets:
             wallet.unlock(self.id)
+
+    def __str__(self):
+        return '{} | {} | {} | {} | {} | {} | {}'.format(self.status,
+                                                         self.side,
+                                                         self.type,
+                                                         self.pair,
+                                                         self.quantity,
+                                                         self.price,
+                                                         self.criteria)
+
+    def __repr__(self):
+        return str(self)

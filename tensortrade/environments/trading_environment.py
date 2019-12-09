@@ -61,11 +61,11 @@ class TradingEnvironment(gym.Env):
         """
         super().__init__()
 
+        self.portfolio = portfolio
+        self.exchange = exchange
         self.action_scheme = action_scheme
         self.reward_scheme = reward_scheme
         self.feature_pipeline = feature_pipeline
-        self.portfolio = portfolio
-        self.exchange = exchange
 
         self._window_size = window_size
         self._dtype = kwargs.get('dtype', np.float32)
@@ -118,7 +118,6 @@ class TradingEnvironment(gym.Env):
         self._exchange = exchanges.get(exchange) if isinstance(exchange, str) else exchange
 
         self._broker = Broker(self._exchange)
-        self._action_scheme.exchange = self._exchange
 
     @property
     def broker(self) -> Broker:
@@ -247,7 +246,7 @@ class TradingEnvironment(gym.Env):
         """
         order = self._action_scheme.get_order(action, self._exchange, self._portfolio)
 
-        if order:
+        if order is not None:
             self._broker.submit(order)
 
         self._broker.update()
@@ -350,6 +349,9 @@ class TradingEnvironment(gym.Env):
         info = self._info(order)
 
         self._current_step += 1
+
+        print('Portfolio: ', self._portfolio.performance.head())
+        print('Order: ', order)
 
         return observation, reward, done, info
 

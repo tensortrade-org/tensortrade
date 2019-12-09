@@ -3,23 +3,19 @@ import operator
 from typing import Union
 from numbers import Number
 
-from tensortrade.base.exceptions import *
+from tensortrade.base.exceptions import InvalidNegativeQuantity, IncompatibleInstrumentOperation, InvalidNonNumericQuantity
 
 
 class Quantity:
     """An amount of a financial instrument for use in trading."""
 
-    def __init__(self,
-                 instrument: 'Instrument',
-                 amount: float = 0,
-                 order_id: str = None):
-
+    def __init__(self, instrument: 'Instrument', amount: float = 0, order_id: str = None):
         if amount < 0:
-            raise NegativeQuantityException(amount)
+            raise InvalidNegativeQuantity(amount)
 
-        self._instrument = instrument
         self._amount = round(amount, instrument.precision)
-        self._order_id = None
+        self._instrument = instrument
+        self._order_id = order_id
 
     @property
     def amount(self) -> float:
@@ -65,8 +61,7 @@ class Quantity:
             right_amount = right.amount
 
         if not isinstance(right_amount, Number):
-            raise Exception(
-                "Can't perform operation with non-numeric quantity ({}).".format(right_amount))
+            raise InvalidNonNumericQuantity(right_amount)
 
         boolean = bool_op(left.amount, right_amount)
 
@@ -88,13 +83,12 @@ class Quantity:
             right_amount = right.amount
 
         if not isinstance(right_amount, Number):
-            raise Exception(
-                "Can't perform operation with non-numeric quantity ({}).".format(right_amount))
+            raise InvalidNonNumericQuantity(right_amount)
 
         amount = round(op(left.amount, right_amount), left.instrument.precision)
 
         if amount < 0:
-            raise Exception("Quantities must be non-negative ({}).".format(amount))
+            raise InvalidNegativeQuantity(amount)
 
         return Quantity(instrument=left.instrument, amount=amount, order_id=left.order_id)
 

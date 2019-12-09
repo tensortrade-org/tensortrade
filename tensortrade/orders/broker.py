@@ -68,7 +68,6 @@ class Broker(OrderListener):
 
     def on_fill(self, order: Order, exchange: 'Exchange', trade: 'Trade'):
         if trade.order_id in self._executed.keys() and trade not in self._trades:
-
             self._trades[trade.order_id] = self._trades[trade.order_id] or []
             self._trades[trade.order_id] += [trade]
 

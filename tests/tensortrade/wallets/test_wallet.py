@@ -5,16 +5,16 @@ from tensortrade.wallets import Wallet
 from tensortrade.instruments import *
 from tensortrade.orders import Order
 from tensortrade.trades import TradeSide, TradeType
-from tensortrade.orders.criteria import LimitOrderCriteria
+from tensortrade.orders.criteria import Limit
 
 
 exchange = SimulatedExchange()
 
 
-criteria = LimitOrderCriteria(limit_price=10000)
+criteria = Limit(limit_price=10000)
 order1 = Order(TradeSide.SELL, TradeType.LIMIT, USD/BTC, 765*USD, criteria=criteria)
 
-criteria = LimitOrderCriteria(limit_price=12000)
+criteria = Limit(limit_price=12000)
 order2 = Order(BTC/USD, 334*USD, criteria)
 
 
