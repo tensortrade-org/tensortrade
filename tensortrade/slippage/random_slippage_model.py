@@ -40,20 +40,21 @@ class RandomUniformSlippageModel(SlippageModel):
 
         trade.size = trade.size * (1 - size_slippage)
 
-        if trade.type == TradeType.MARKET and trade.side == TradeSide.BUY:
-            trade.price = max(initial_price * (1 + price_slippage), 1e-3)
-        elif trade.type == TradeType.LIMIT and trade.side == TradeSide.BUY:
-            trade.price = max(initial_price * (1 + price_slippage), 1e-3)
+        if trade.type == TradeType.MARKET:
+            if trade.side == TradeSide.BUY:
+                trade.price = max(initial_price * (1 + price_slippage), 1e-3)
+            else:
+                trade.price = max(initial_price * (1 - price_slippage), 1e-3)
+        else:
+            if trade.side == TradeSide.BUY:
+                trade.price = max(initial_price * (1 + price_slippage), 1e-3)
 
-            if trade.price > initial_price:
-                trade.size *= min(trade.price / initial_price, 1)
+                if trade.price > initial_price:
+                    trade.size *= min(initial_price / trade.price, 1)
+            else:
+                trade.price = max(initial_price * (1 - price_slippage), 1e-3)
 
-        elif trade.type == TradeType.MARKET and trade.side == TradeSide.SELL:
-            trade.price = max(initial_price * (1 - price_slippage), 1e-3)
-        elif trade.type == TradeType.LIMIT and trade.side == TradeSide.SELL:
-            trade.price = max(initial_price * (1 - price_slippage), 1e-3)
-
-            if trade.price < initial_price:
-                trade.size *= min(trade.price / initial_price, 1)
+                if trade.price < initial_price:
+                    trade.size *= min(trade.price / initial_price, 1)
 
         return trade

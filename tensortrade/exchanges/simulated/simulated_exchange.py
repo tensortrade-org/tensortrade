@@ -119,8 +119,6 @@ class SimulatedExchange(Exchange):
         elif order.price < current_price:
             return None
 
-        size = min(size, base_wallet.balance.amount)
-
         trade = Trade(order.id, self.id, self._current_step,
                       order.pair, TradeSide.BUY, order.type, size, price)
 
@@ -138,12 +136,10 @@ class SimulatedExchange(Exchange):
     def _execute_sell_order(self, order: 'Order', base_wallet: 'Wallet', quote_wallet: 'Wallet', current_price: float) -> Trade:
         price_adjustment = (1 - self._commission)
         price = self._contain_price(current_price * price_adjustment, order.pair.base.precision)
-        size = self._contain_size(order.size, order.pair.base.precision)
+        size = self._contain_size(order.size, order.pair.quote.precision)
 
         if order.type == TradeType.LIMIT and order.price > current_price:
             return None
-
-        size = min(size / price, quote_wallet.balance.amount / price)
 
         trade = Trade(order.id, self.id, self._current_step,
                       order.pair, TradeSide.SELL, order.type, size, price)
@@ -151,8 +147,8 @@ class SimulatedExchange(Exchange):
         print('Before base wallet:', str(base_wallet))
         print('Before quote wallet:', str(quote_wallet))
 
-        base_wallet += Quantity(order.pair.base, trade.size * trade.price, order.id)
         quote_wallet -= Quantity(order.pair.quote, trade.size, order.id)
+        base_wallet += Quantity(order.pair.base, trade.size * trade.price, order.id)
 
         print('After base wallet:', str(base_wallet))
         print('After quote wallet:', str(quote_wallet))
