@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License
 
+import re
 import pandas as pd
 import numpy as np
 
@@ -42,7 +43,28 @@ class FBMExchange(SimulatedExchange):
         self._hurst = self.default('hurst', 0.61, kwargs)
         self._timeframe = self.default('timeframe', '1h', kwargs)
 
+        self._scale_times_to_generate()
         self._generate_price_history()
+
+    def _scale_times_to_generate(self):
+        if 'min' in self._timeframe:
+            self._times_to_generate = self._times_to_generate * \
+                int(re.findall(r'\d+', self._timeframe)[0])
+        elif 'H' in self._timeframe:
+            self._times_to_generate = self._times_to_generate * \
+                int(re.findall(r'\d+', self._timeframe)[0]) * 60
+        elif 'D' in self._timeframe:
+            self._times_to_generate = self._times_to_generate * \
+                int(re.findall(r'\d+', self._timeframe)[0]) * 60 * 24
+        elif 'W' in self._timeframe:
+            self._times_to_generate = self._times_to_generate * \
+                int(re.findall(r'\d+', self._timeframe)[0]) * 60 * 24 * 7
+        elif 'M' in self._timeframe:
+            self._times_to_generate = self._times_to_generate * \
+                int(re.findall(r'\d+', self._timeframe)[0]) * 60 * 24 * 7 * 30
+        else:
+            raise ValueError(
+                'Timeframe must be either in minutes (min), hours (H), days (D), weeks (W), or months (M)')
 
     def _generate_price_history(self):
         try:
