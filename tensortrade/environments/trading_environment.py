@@ -185,7 +185,7 @@ class TradingEnvironment(gym.Env):
         if not self.wallet_columns:
             return self._exchange.observation_columns
 
-        return self._exchange.observation_columns + self.wallet_columns
+        return np.concatenate([self._exchange.observation_columns, self.wallet_columns])
 
     @property
     def action_space(self) -> Discrete:
@@ -227,14 +227,15 @@ class TradingEnvironment(gym.Env):
         wallet = self.wallet(instrument=instrument)
         return wallet.locked_balance
 
-    def observe_balances(self) -> np.ndarray:
-        wallets = np.array([])
+    def observe_balances(self) -> pd.DataFrame:
+        wallets = pd.DataFrame([], columns=self.wallet_columns)
 
         for instrument in self._observe_unlocked_balances:
-            wallets += [self.balance(instrument).amount]
+            wallets[instrument.symbol] = [self.balance(instrument).amount]
 
         for instrument in self._observe_locked_balances:
-            wallets += [self.locked_balance(instrument).amount]
+            wallets['{}_locked'.format(instrument.symbol)] = [
+                self.locked_balance(instrument).amount]
 
         return wallets
 
@@ -248,6 +249,8 @@ class TradingEnvironment(gym.Env):
             The order created by the agent this time step, if any.
         """
         order = self._action_scheme.get_order(action, self._exchange, self._portfolio)
+
+        self.logger.debug('Order: {}'.format(order))
 
         if order is not None:
             self._broker.submit(order)
@@ -267,10 +270,12 @@ class TradingEnvironment(gym.Env):
 
         if self._observe_locked_balances or self._observe_unlocked_balances:
             wallet_balances = self.observe_balances()
-            observation = observation + wallet_balances
 
-        if self._feature_pipeline is not None:
-            observation = self._feature_pipeline.transform(observation)
+            for column in list(wallet_balances.columns):
+                observation.loc[observation.index[0], column] = wallet_balances[column].values
+
+        # if self._feature_pipeline is not None:
+        #     observation = self._feature_pipeline.transform(observation)
 
         if len(observation) < self._window_size:
             padding = np.zeros((self._window_size - len(observation),
@@ -350,6 +355,11 @@ class TradingEnvironment(gym.Env):
         reward = self._get_reward()
         done = self._done()
         info = self._info(order)
+
+        self.logger.debug('Observation: {}'.format(observation))
+        self.logger.debug('P/L: {}'.format(self._portfolio.profit_loss))
+        self.logger.debug('Reward ({}): {}'.format(self._current_step, reward))
+        self.logger.debug('Performance: {}'.format(self._portfolio.performance.tail(1)))
 
         self._current_step += 1
 
