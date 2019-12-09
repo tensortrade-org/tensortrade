@@ -246,11 +246,15 @@ class TradingEnvironment(gym.Env):
         """
         order = self._action_scheme.get_order(action, self._exchange, self._portfolio)
 
+        print('Order: ', order)
+
         if order is not None:
             self._broker.submit(order)
 
         self._broker.update()
         self._portfolio.update()
+
+        print('Portfolio: ', self._portfolio.performance.tail())
 
         return order
 
@@ -349,9 +353,6 @@ class TradingEnvironment(gym.Env):
         info = self._info(order)
 
         self._current_step += 1
-
-        print('Portfolio: ', self._portfolio.performance.head())
-        print('Order: ', order)
 
         return observation, reward, done, info
 

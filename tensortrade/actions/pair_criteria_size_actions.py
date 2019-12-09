@@ -109,9 +109,13 @@ class PairCriteriaSizeActions(ActionScheme):
 
         (side, pair, criteria, size) = self._actions[action]
 
+        print('Action: {} | {} | {} | {}'.format(side, pair, size, criteria))
+
         instrument = pair.base if side == TradeSide.BUY else pair.quote
         wallet = portfolio.get_wallet(exchange.id, instrument=instrument)
         amount = min(wallet.balance.amount, (wallet.balance.amount * size))
+
+        print('Balance Wallet:', wallet)
 
         if amount < 10 ** -instrument.precision:
             return None

@@ -166,7 +166,6 @@ class Portfolio(Component):
             [[self._current_step, self.net_worth] +
              [quantity.amount for quantity in self.balances] +
              [quantity.amount for quantity in self.locked_balances]],
-            index=['step'],
             columns=['step', 'net_worth'] +
             [quantity.instrument.symbol for quantity in self.balances] +
             ['{}_locked'.format(quantity.instrument.symbol) for quantity in self.locked_balances]
