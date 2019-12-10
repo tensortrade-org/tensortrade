@@ -32,7 +32,7 @@ class Broker(OrderListener):
 
     @property
     def unexecuted(self) -> List[Order]:
-        """The list of orders the broker is waiting to execute, when their criteria is satisfied."""
+        """The list of orders the broker is waiting to execute, when their criterias is satisfied."""
         return self._unexecuted
 
     @property

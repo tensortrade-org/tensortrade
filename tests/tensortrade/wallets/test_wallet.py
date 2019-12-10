@@ -5,7 +5,7 @@ from tensortrade.wallets import Wallet
 from tensortrade.instruments import *
 from tensortrade.orders import Order
 from tensortrade.trades import TradeSide, TradeType
-from tensortrade.orders.criteria import Limit
+from tensortrade.orders.criterias import Limit
 
 
 exchange = SimulatedExchange()

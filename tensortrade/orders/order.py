@@ -1,5 +1,6 @@
 
 from enum import Enum
+from typing import Callable, Tuple
 
 from tensortrade.base import Identifiable
 from tensortrade.base.exceptions import InvalidOrderQuantity
@@ -25,7 +26,7 @@ class Order(Identifiable):
                  quantity: 'Quantity',
                  portfolio: 'Portfolio',
                  price: float = None,
-                 criteria: 'OrderCriteria' = None,
+                 criteria: Callable[['Order','Exchange'], bool] = None,
                  path_id: str = None):
         if quantity.amount == 0:
             raise InvalidOrderQuantity(quantity)
@@ -76,7 +77,7 @@ class Order(Identifiable):
         return self.type == TradeType.MARKET
 
     def is_executable(self, exchange: 'Exchange'):
-        return self.criteria is None or self.criteria.is_satisfied(self, exchange)
+        return self.criteria is None or self.criteria.__call__(self, exchange)
 
     def attach(self, listener: 'OrderListener'):
         self._listeners += [listener]

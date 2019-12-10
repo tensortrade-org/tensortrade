@@ -1,18 +1,18 @@
 
 from typing import List, Union
 
-from tensortrade.orders.criteria import OrderCriteria
+from tensortrade.orders.criterias import Criteria
 from tensortrade.trades import TradeSide
 
 
-class HiddenLimitCriteria(OrderCriteria):
-    """An order criteria that allows execution when the quote price for a
+class HiddenLimitCriteria(Criteria):
+    """An order criterias that allows execution when the quote price for a
     trading pair is at or below a specific price, hidden from the public order book."""
 
     def __init__(self, limit_price: float):
         self.limit_price = limit_price
 
-    def is_satisfied(self, order: 'Order', exchange: 'Exchange') -> bool:
+    def __call__(self, order: 'Order', exchange: 'Exchange') -> bool:
         if not exchange.is_pair_tradeable(order.pair):
             return False
 
