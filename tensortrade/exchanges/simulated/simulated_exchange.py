@@ -46,6 +46,8 @@ class SimulatedExchange(Exchange):
         self._max_trade_size = self.default('max_trade_size', 1e6, kwargs)
         self._min_trade_price = self.default('min_trade_price', 1e-8, kwargs)
         self._max_trade_price = self.default('max_trade_price', 1e8, kwargs)
+        self._random_periods = self.default('random_periods', False, kwargs)
+        self._min_period_size = self.default('min_period_size', 128, kwargs)
 
         self._price_column = self.default('price_column', 'close', kwargs)
         self.data_frame = self.default('data_frame', data_frame)
@@ -53,6 +55,8 @@ class SimulatedExchange(Exchange):
         slippage_model = self.default('slippage_model', 'uniform', kwargs)
         self._slippage_model = slippage.get(slippage_model) if isinstance(
             slippage_model, str) else slippage_model()
+
+        self.reset()
 
     @property
     def is_live(self):
@@ -86,11 +90,11 @@ class SimulatedExchange(Exchange):
 
     @property
     def has_next_observation(self) -> bool:
-        return self._current_step < len(self._data_frame) - 1
+        return self._initial_step + self._current_step < self._final_step
 
     def next_observation(self, window_size: int = 1) -> pd.DataFrame:
-        lower_range = max(self._current_step - window_size, 0)
-        upper_range = min(self._current_step + 1, len(self._data_frame))
+        lower_range = max(self._current_step + self._initial_step - window_size, self._initial_step)
+        upper_range = min(self._current_step + self._initial_step + 1, self._final_step)
 
         obs = self._data_frame.iloc[lower_range:upper_range]
 
@@ -169,3 +173,11 @@ class SimulatedExchange(Exchange):
 
     def reset(self):
         self._current_step = 0
+        self._initial_step = 0
+        self._final_step = len(self._data_frame) - 1
+
+        if self._random_periods:
+            self._initial_step = np.random.randint(
+                0, len(self._data_frame) - self._min_period_size - 2)
+            self._final_step = np.random.randint(
+                self._initial_step + self._min_period_size, len(self._data_frame) - 1)
