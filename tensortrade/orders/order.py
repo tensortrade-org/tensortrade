@@ -5,6 +5,8 @@ from tensortrade.base import Identifiable
 from tensortrade.base.exceptions import InvalidOrderQuantity
 from tensortrade.trades import Trade, TradeSide, TradeType
 
+from .path_order import PathOrder
+
 
 class OrderStatus(Enum):
     PENDING = 0
@@ -23,7 +25,8 @@ class Order(Identifiable):
                  quantity: 'Quantity',
                  portfolio: 'Portfolio',
                  price: float = None,
-                 criteria: 'OrderCriteria' = None):
+                 criteria: 'OrderCriteria' = None,
+                 path_id: str = None):
         if quantity.amount == 0:
             raise InvalidOrderQuantity(quantity)
 
@@ -34,12 +37,15 @@ class Order(Identifiable):
         self.portfolio = portfolio
         self.price = price
         self.criteria = criteria
-
+        self.path_id = path_id
         self.status = OrderStatus.PENDING
 
         self.quantity.lock_for(self.id)
 
         self._listeners = []
+
+    def assign(self, path_id: str):
+        self.path_id = path_id
 
     @property
     def base_instrument(self) -> 'Instrument':
@@ -113,6 +119,9 @@ class Order(Identifiable):
     def release(self):
         for wallet in self.portfolio.wallets:
             wallet.unlock(self.id)
+
+    def as_path(self):
+        return PathOrder(steps=[self])
 
     def __str__(self):
         return '{} | {} | {} | {} | {} | {} | {}'.format(self.status,

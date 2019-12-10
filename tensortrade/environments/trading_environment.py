@@ -252,7 +252,7 @@ class TradingEnvironment(gym.Env):
 
         self.logger.debug('Order: {}'.format(order))
 
-        if order is not None:
+        if order:
             self._broker.submit(order)
 
         self._broker.update()

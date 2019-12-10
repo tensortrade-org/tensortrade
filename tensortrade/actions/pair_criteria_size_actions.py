@@ -29,8 +29,6 @@ class PairCriteriaSizeActions(ActionScheme):
     """A discrete action scheme that determines actions based on a list of
     trading pairs, order criteria, and trade sizes."""
 
-    registered_name = "actions"
-
     def __init__(self,
                  pairs: Union[List['TradingPair'], 'TradingPair'],
                  criteria: Union[List['OrderCriteria'], 'OrderCriteria'] = None,
