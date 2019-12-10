@@ -26,10 +26,6 @@ class Broker(OrderListener):
         self._exchanges = exchanges if isinstance(exchanges, list) else [exchanges]
 
     @property
-    def pending(self):
-        return self._pending
-
-    @property
     def unexecuted(self) -> List[Order]:
         """The list of orders the broker is waiting to execute, when their criteria is satisfied."""
         return self._unexecuted
@@ -46,9 +42,6 @@ class Broker(OrderListener):
 
     def submit(self, order: Order):
         self._unexecuted += [order]
-
-        if isinstance(order.following_order, Order):
-            self._pending[order.id] = order.following_order
 
     def cancel(self, order: Order):
         if order.status == OrderStatus.CANCELLED:
@@ -84,13 +77,10 @@ class Broker(OrderListener):
             if total_traded >= order.size:
                 order.complete(exchange)
 
-                next_order = self._pending.pop(order.id, None)
-
-                if next_order:
-                    self.submit(next_order)
+                if order.following_order:
+                    self.submit(order.following_order)
 
     def reset(self):
-        self._pending = {}
         self._unexecuted = []
         self._executed = {}
         self._trades = {}
