@@ -151,7 +151,8 @@ class CCXTExchange(Exchange):
                       side=order.side,
                       trade_type=order.type,
                       size=executed_order['filled'],
-                      price=executed_order['price'])
+                      price=executed_order['price'],
+                      commission=executed_order['commission'])
 
         order.fill(self, trade)
 

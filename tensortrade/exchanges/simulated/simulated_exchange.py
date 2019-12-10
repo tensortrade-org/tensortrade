@@ -46,8 +46,8 @@ class SimulatedExchange(Exchange):
         self._max_trade_size = self.default('max_trade_size', 1e6, kwargs)
         self._min_trade_price = self.default('min_trade_price', 1e-8, kwargs)
         self._max_trade_price = self.default('max_trade_price', 1e8, kwargs)
-        self._random_periods = self.default('random_periods', False, kwargs)
-        self._min_period_size = self.default('min_period_size', 128, kwargs)
+        self._randomize_time_slices = self.default('randomize_time_slices', False, kwargs)
+        self._min_time_slice = self.default('min_time_slice', 128, kwargs)
 
         self._price_column = self.default('price_column', 'close', kwargs)
         self.data_frame = self.default('data_frame', data_frame)
@@ -118,9 +118,9 @@ class SimulatedExchange(Exchange):
         return round(max(min(size, self._max_trade_size), self._min_trade_size), precision)
 
     def _execute_buy_order(self, order: 'Order', base_wallet: 'Wallet', quote_wallet: 'Wallet', current_price: float) -> Trade:
-        price_adjustment = (1 + self._commission)
-        price = self._contain_price(current_price * price_adjustment, order.pair.base.precision)
-        size = self._contain_size(order.size, order.pair.base.precision)
+        commission = order.size * self._commission
+        price = self._contain_price(current_price, order.pair.base.precision)
+        size = self._contain_size(order.size - commission, order.pair.base.precision)
 
         if order.type == TradeType.MARKET:
             size = current_price * order.size / price
@@ -128,28 +128,30 @@ class SimulatedExchange(Exchange):
             return None
 
         trade = Trade(order.id, self.id, self._current_step,
-                      order.pair, TradeSide.BUY, order.type, size, price)
+                      order.pair, TradeSide.BUY, order.type, size, price, commission)
 
         self._slippage_model.adjust_trade(trade)
 
+        base_wallet -= Quantity(order.pair.base, commission, order.id)
         base_wallet -= Quantity(order.pair.base, trade.size, order.id)
         quote_wallet += Quantity(order.pair.quote, trade.size / trade.price, order.id)
 
         return trade
 
     def _execute_sell_order(self, order: 'Order', base_wallet: 'Wallet', quote_wallet: 'Wallet', current_price: float) -> Trade:
-        price_adjustment = (1 - self._commission)
-        price = self._contain_price(current_price * price_adjustment, order.pair.base.precision)
-        size = self._contain_size(order.size, order.pair.quote.precision)
+        commission = order.size * self._commission
+        price = self._contain_price(current_price, order.pair.base.precision)
+        size = self._contain_size(order.size - commission, order.pair.quote.precision)
 
         if order.type == TradeType.LIMIT and order.price > current_price:
             return None
 
         trade = Trade(order.id, self.id, self._current_step,
-                      order.pair, TradeSide.SELL, order.type, size, price)
+                      order.pair, TradeSide.SELL, order.type, size, price, commission)
 
         self._slippage_model.adjust_trade(trade)
 
+        quote_wallet -= Quantity(order.pair.quote, commission, order.id)
         quote_wallet -= Quantity(order.pair.quote, trade.size, order.id)
         base_wallet += Quantity(order.pair.base, trade.size * trade.price, order.id)
 
@@ -176,8 +178,8 @@ class SimulatedExchange(Exchange):
         self._initial_step = 0
         self._final_step = len(self._data_frame) - 1
 
-        if self._random_periods:
+        if self._randomize_time_slices:
             self._initial_step = np.random.randint(
-                0, len(self._data_frame) - self._min_period_size - 2)
+                0, len(self._data_frame) - self._min_time_slice - 2)
             self._final_step = np.random.randint(
-                self._initial_step + self._min_period_size, len(self._data_frame) - 1)
+                self._initial_step + self._min_time_slice, len(self._data_frame) - 1)

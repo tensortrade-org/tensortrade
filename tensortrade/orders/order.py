@@ -75,7 +75,7 @@ class Order(Identifiable):
     def is_market_order(self) -> bool:
         return self.type == TradeType.MARKET
 
-    def is_executable(self, exchange: 'Exchange'):
+    def is_executable_on(self, exchange: 'Exchange'):
         return self.criteria is None or self.criteria(self, exchange)
 
     def follow_by(self, order: 'Order' = None):
@@ -134,14 +134,15 @@ class Order(Identifiable):
             wallet.unlock(self.id)
 
     def __str__(self):
-        return '{} | {} | {} | {} | {} | {} | {} -> {}'.format(self.status,
-                                                               self.side,
-                                                               self.type,
-                                                               self.pair,
-                                                               self.quantity,
-                                                               self.price,
-                                                               self.criteria,
-                                                               self.followed_by)
+        return '{} | {} | {} | {} | {} | {} | {} | {} -> {}'.format(self.id,
+                                                                    self.status,
+                                                                    self.side,
+                                                                    self.type,
+                                                                    self.pair,
+                                                                    self.quantity,
+                                                                    self.price,
+                                                                    self.criteria,
+                                                                    self.followed_by)
 
     def __repr__(self):
         return str(self)

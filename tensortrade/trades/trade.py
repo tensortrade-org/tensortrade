@@ -28,7 +28,16 @@ class TradeSide(Enum):
 class Trade(object):
     """A trade object for use within trading environments."""
 
-    def __init__(self, order_id: str, exchange_id: str, step: int, pair: 'TradingPair', side: TradeSide, trade_type: TradeType, size: float, price: float):
+    def __init__(self,
+                 order_id: str,
+                 exchange_id: str,
+                 step: int,
+                 pair: 'TradingPair',
+                 side: TradeSide,
+                 trade_type: TradeType,
+                 size: float,
+                 price: float,
+                 commission: float):
         """
         Arguments:
             order_id: The id of the order that created the trade.
@@ -42,6 +51,8 @@ class Trade(object):
             (e.g. 1000 shares, 6.50 satoshis, 2.3 contracts, etc).
             price: The price paid per quote instrument in terms of the base instrument.
             (e.g. 10000 represents $10,000.00 if the `base_instrument` is "USD").
+            commission: The commission paid for the trade in terms of the base instrument.
+            (e.g. 10000 represents $10,000.00 if the `base_instrument` is "USD").
         """
         self.order_id = order_id
         self.exchange_id = exchange_id
@@ -51,10 +62,7 @@ class Trade(object):
         self.type = trade_type
         self.size = size
         self.price = price
-
-    def copy(self) -> 'Trade':
-        """Return a copy of the current trade object."""
-        return Trade(self.order_id, self.exchange_id, self.step, self.pair, self.side, self.type, self.size, self.price)
+        self.commission = commission
 
     @property
     def base_instrument(self) -> 'Instrument':
@@ -87,5 +95,19 @@ class Trade(object):
                 'side': self.side,
                 'type': self.type,
                 'size': self.size,
-                'price': self.price
+                'price': self.price,
+                'commission': self.commission
                 }
+
+    def __str__(self):
+        return '{} -> {} | {} | {} | {} | Size: {} | Price: {} | Commission: {}'.format(self.order_id,
+                                                                                        self.step,
+                                                                                        self.side,
+                                                                                        self.type,
+                                                                                        self.pair,
+                                                                                        self.size,
+                                                                                        self.price,
+                                                                                        self.commission)
+
+    def __repr__(self):
+        return str(self)

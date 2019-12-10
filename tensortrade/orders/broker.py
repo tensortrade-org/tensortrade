@@ -58,21 +58,25 @@ class Broker(OrderListener):
 
     def update(self):
         for order, exchange in product(self._unexecuted, self._exchanges):
-            if order.is_executable(exchange):
-                order.attach(self)
-                order.execute(exchange)
-
+            if order.is_executable_on(exchange):
                 self._unexecuted.remove(order)
                 self._executed[order.id] = order
 
+                order.attach(self)
+                order.execute(exchange)
+
     def on_fill(self, order: Order, exchange: 'Exchange', trade: 'Trade'):
+        print('Fill: ', trade)
+
         if trade.order_id in self._executed.keys() and trade not in self._trades:
-            self._trades[trade.order_id] = self._trades[trade.order_id] or []
+            self._trades[trade.order_id] = self._trades.get(trade.order_id, [])
             self._trades[trade.order_id] += [trade]
 
             trades_on_exchange = filter(lambda x: x.exchange_id ==
                                         exchange.id, self._trades[trade.order_id])
-            total_traded = sum([trade.size for trade in trades_on_exchange])
+            total_traded = sum([trade.size + trade.commission for trade in trades_on_exchange])
+
+            print('Total traded: ', total_traded, order.size)
 
             if total_traded >= order.size:
                 order.complete(exchange)
@@ -80,6 +84,13 @@ class Broker(OrderListener):
                 if order.followed_by:
                     order.quantity.lock_for(order.followed_by)
                     self.submit(order.followed_by)
+
+    def on_cancel(self, order: Order):
+        print('Cancel: ', order)
+
+        if order.status == OrderStatus.PARTIALLY_FILLED and order.followed_by:
+            order.quantity.lock_for(order.followed_by)
+            self.submit(order.followed_by)
 
     def reset(self):
         self._unexecuted = []

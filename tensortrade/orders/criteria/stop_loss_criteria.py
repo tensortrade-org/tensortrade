@@ -38,6 +38,12 @@ class StopLossCriteria(Criteria):
         stop_loss_satisfied = self.direction in [
             StopDirection.DOWN, StopDirection.EITHER] and price <= order.price and percent >= self.down_percent
 
+        if self.direction in [StopDirection.UP, StopDirection.EITHER]:
+            print('Take profit waiting: ({}/{})'.format(percent, self.up_percent))
+
+        if self.direction in [StopDirection.DOWN, StopDirection.EITHER]:
+            print('Stop loss waiting: ({}/{})'.format(percent, self.down_percent))
+
         return take_profit_satisfied or stop_loss_satisfied
 
     def __str__(self):
