@@ -77,8 +77,9 @@ class Broker(OrderListener):
             if total_traded >= order.size:
                 order.complete(exchange)
 
-                for following_order in order.followed_by:
-                    self.submit(following_order)
+                if order.followed_by:
+                    order.quantity.lock_for(order.followed_by)
+                    self.submit(order.followed_by)
 
     def reset(self):
         self._unexecuted = []

@@ -98,9 +98,6 @@ class PredefinedOrders(ActionScheme):
                       criteria=order.criteria,
                       followed_by=order.followed_by)
 
-        for following_order in order.followed_by:
-            following_order.path_id = order.id
-
         quantity.lock_for(order.id)
 
         wallet += quantity

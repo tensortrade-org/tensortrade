@@ -53,9 +53,6 @@ class FeaturePipeline(Component):
         for transformer in self._steps:
             observations = transformer.transform(observations)
 
-            print('Transformer: ', transformer)
-            print('Transformed: ', observations)
-
         return observations
 
     def transform(self, observation: pd.DataFrame) -> pd.DataFrame:

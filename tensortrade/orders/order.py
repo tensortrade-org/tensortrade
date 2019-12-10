@@ -25,7 +25,7 @@ class Order(Identifiable):
                  portfolio: 'Portfolio',
                  price: float = None,
                  criteria: Callable[['Order', 'Exchange'], bool] = None,
-                 followed_by: List['Order'] = []):
+                 followed_by: 'Order' = None):
         if quantity.amount == 0:
             raise InvalidOrderQuantity(quantity)
 
@@ -39,6 +39,9 @@ class Order(Identifiable):
         self.followed_by = followed_by
         self.status = OrderStatus.PENDING
         self.path_id = self.id
+
+        if followed_by:
+            self.follow_by(followed_by)
 
         self.quantity.lock_for(self.id)
 
@@ -76,7 +79,7 @@ class Order(Identifiable):
         return self.criteria is None or self.criteria(self, exchange)
 
     def follow_by(self, order: 'Order' = None):
-        self.followed_by += [order]
+        self.followed_by = order
         order.path_id = self.id
 
     def begin_path(self, orders: Union[List['Order'], 'Order'] = None):
@@ -131,13 +134,14 @@ class Order(Identifiable):
             wallet.unlock(self.id)
 
     def __str__(self):
-        return '{} | {} | {} | {} | {} | {} | {}'.format(self.status,
-                                                         self.side,
-                                                         self.type,
-                                                         self.pair,
-                                                         self.quantity,
-                                                         self.price,
-                                                         self.criteria)
+        return '{} | {} | {} | {} | {} | {} | {} -> {}'.format(self.status,
+                                                               self.side,
+                                                               self.type,
+                                                               self.pair,
+                                                               self.quantity,
+                                                               self.price,
+                                                               self.criteria,
+                                                               self.followed_by)
 
     def __repr__(self):
         return str(self)

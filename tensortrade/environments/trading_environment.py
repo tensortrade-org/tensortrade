@@ -250,8 +250,6 @@ class TradingEnvironment(gym.Env):
         """
         order = self._action_scheme.get_order(action, self._exchange, self._portfolio)
 
-        self.logger.debug('Order: {}'.format(order))
-
         if order:
             self._broker.submit(order)
 
@@ -276,8 +274,6 @@ class TradingEnvironment(gym.Env):
 
         if self._feature_pipeline is not None:
             observation = self._feature_pipeline.transform(observation)
-
-        print('After transform: ', observation)
 
         if len(observation) < self._window_size:
             padding = np.zeros((self._window_size - len(observation),
@@ -358,6 +354,7 @@ class TradingEnvironment(gym.Env):
         done = self._done()
         info = self._info(order)
 
+        self.logger.debug('Order: {}'.format(order))
         self.logger.debug('Observation: {}'.format(observation))
         self.logger.debug('P/L: {}'.format(self._portfolio.profit_loss))
         self.logger.debug('Reward ({}): {}'.format(self._current_step, reward))
