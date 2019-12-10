@@ -24,8 +24,8 @@ class Order(Identifiable):
                  quantity: 'Quantity',
                  portfolio: 'Portfolio',
                  price: float = None,
-                 following_order: 'Order' = None,
-                 criteria: Callable[['Order', 'Exchange'], bool] = None):
+                 criteria: Callable[['Order', 'Exchange'], bool] = None,
+                 followed_by: List['Order'] = []):
         if quantity.amount == 0:
             raise InvalidOrderQuantity(quantity)
 
@@ -36,8 +36,9 @@ class Order(Identifiable):
         self.portfolio = portfolio
         self.price = price
         self.criteria = criteria
-        self.following_order = following_order
+        self.followed_by = followed_by
         self.status = OrderStatus.PENDING
+        self.path_id = self.id
 
         self.quantity.lock_for(self.id)
 
@@ -75,14 +76,15 @@ class Order(Identifiable):
         return self.criteria is None or self.criteria(self, exchange)
 
     def follow_by(self, order: 'Order' = None):
-        self.following_order = order
+        self.followed_by += [order]
+        order.path_id = self.id
 
     def begin_path(self, orders: Union[List['Order'], 'Order'] = None):
-        path = orders if isinstance(orders, list) else [orders]
-
-        self.following_order = path[0]
+        path = [self, *orders] if isinstance(orders, list) else [self, orders]
 
         for idx, order in enumerate(path):
+            order.path_id = self.id
+
             if len(path) > idx:
                 order.follow_by(path[idx + 1])
 

@@ -1,9 +1,11 @@
 from .action_scheme import ActionScheme
-from .pair_criteria_size_actions import PairCriteriaSizeActions
+from .dynamic_orders import DynamicOrders
+from .predefined_orders import PredefinedOrders
 
 
 _registry = {
-    'pair_criteria_size': PairCriteriaSizeActions,
+    'dynamic': DynamicOrders,
+    'predefined': PredefinedOrders,
 }
 
 
