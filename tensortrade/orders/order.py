@@ -1,12 +1,10 @@
 
 from enum import Enum
-from typing import Callable, Tuple
+from typing import Callable, Union, Tuple, List
 
 from tensortrade.base import Identifiable
 from tensortrade.base.exceptions import InvalidOrderQuantity
 from tensortrade.trades import Trade, TradeSide, TradeType
-
-from .path_order import PathOrder
 
 
 class OrderStatus(Enum):
@@ -26,8 +24,8 @@ class Order(Identifiable):
                  quantity: 'Quantity',
                  portfolio: 'Portfolio',
                  price: float = None,
-                 criteria: Callable[['Order','Exchange'], bool] = None,
-                 path_id: str = None):
+                 following_order: 'Order' = None,
+                 criteria: Callable[['Order', 'Exchange'], bool] = None):
         if quantity.amount == 0:
             raise InvalidOrderQuantity(quantity)
 
@@ -38,15 +36,12 @@ class Order(Identifiable):
         self.portfolio = portfolio
         self.price = price
         self.criteria = criteria
-        self.path_id = path_id
+        self.following_order = following_order
         self.status = OrderStatus.PENDING
 
         self.quantity.lock_for(self.id)
 
         self._listeners = []
-
-    def assign(self, path_id: str):
-        self.path_id = path_id
 
     @property
     def base_instrument(self) -> 'Instrument':
@@ -77,7 +72,19 @@ class Order(Identifiable):
         return self.type == TradeType.MARKET
 
     def is_executable(self, exchange: 'Exchange'):
-        return self.criteria is None or self.criteria.__call__(self, exchange)
+        return self.criteria is None or self.criteria(self, exchange)
+
+    def follow_by(self, order: 'Order' = None):
+        self.following_order = order
+
+    def begin_path(self, orders: Union[List['Order'], 'Order'] = None):
+        path = orders if isinstance(orders, list) else [orders]
+
+        self.following_order = path[0]
+
+        for idx, order in enumerate(path):
+            if len(path) > idx:
+                order.follow_by(path[idx + 1])
 
     def attach(self, listener: 'OrderListener'):
         self._listeners += [listener]
@@ -120,9 +127,6 @@ class Order(Identifiable):
     def release(self):
         for wallet in self.portfolio.wallets:
             wallet.unlock(self.id)
-
-    def as_path(self):
-        return PathOrder(steps=[self])
 
     def __str__(self):
         return '{} | {} | {} | {} | {} | {} | {}'.format(self.status,

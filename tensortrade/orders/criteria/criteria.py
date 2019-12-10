@@ -4,7 +4,7 @@ from typing import List, Union
 
 
 class Criteria(object, metaclass=ABCMeta):
-    """A criterias to be satisfied before an order will be executed."""
+    """A criteria to be satisfied before an order will be executed."""
 
     @abstractmethod
     def __call__(self, order: 'Order', exchange: 'Exchange') -> bool:

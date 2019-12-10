@@ -1,12 +1,12 @@
 
 from typing import List, Union
 
-from tensortrade.orders.criterias import Criteria
+from tensortrade.orders.criteria import Criteria
 from tensortrade.trades import TradeSide
 
 
 class HiddenLimitCriteria(Criteria):
-    """An order criterias that allows execution when the quote price for a
+    """An order criteria that allows execution when the quote price for a
     trading pair is at or below a specific price, hidden from the public order book."""
 
     def __init__(self, limit_price: float):

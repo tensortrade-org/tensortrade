@@ -4,7 +4,6 @@ from typing import Union, List, Dict
 
 from .order import Order, OrderStatus
 from .order_listener import OrderListener
-from .path_order import PathOrder
 
 
 class Broker(OrderListener):
@@ -32,7 +31,7 @@ class Broker(OrderListener):
 
     @property
     def unexecuted(self) -> List[Order]:
-        """The list of orders the broker is waiting to execute, when their criterias is satisfied."""
+        """The list of orders the broker is waiting to execute, when their criteria is satisfied."""
         return self._unexecuted
 
     @property
@@ -45,12 +44,11 @@ class Broker(OrderListener):
         """The dictionary of trades the broker has executed since resetting, organized by order id."""
         return self._trades
 
-    def submit(self, order: Union[Order, PathOrder]):
-        path_order = order.as_path() if isinstance(order, Order) else order
-        order = next(path_order)
-        if order:
-            self._unexecuted += [order]
-        self._pending[path_order.id] = path_order
+    def submit(self, order: Order):
+        self._unexecuted += [order]
+
+        if isinstance(order.following_order, Order):
+            self._pending[order.id] = order.following_order
 
     def cancel(self, order: Order):
         if order.status == OrderStatus.CANCELLED:
@@ -79,25 +77,17 @@ class Broker(OrderListener):
             self._trades[trade.order_id] = self._trades[trade.order_id] or []
             self._trades[trade.order_id] += [trade]
 
-            condition = lambda x: x.exchange_id == exchange.id
-            trades_on_exchange = filter(condition, self._trades[trade.order_id])
-
+            trades_on_exchange = filter(lambda x: x.exchange_id ==
+                                        exchange.id, self._trades[trade.order_id])
             total_traded = sum([trade.size for trade in trades_on_exchange])
 
             if total_traded >= order.size:
                 order.complete(exchange)
 
-                # Generate next order or delete the path order
-                # if all orders have been generated.
-                path_order = self._pending[order.path_id]
-                order = next(path_order)
-                if order:
-                    self._unexecuted += [order]
-                else:
-                    self._pending.pop(path_order.id)
+                next_order = self._pending.pop(order.id, None)
 
-
-
+                if next_order:
+                    self.submit(next_order)
 
     def reset(self):
         self._pending = {}

@@ -3,7 +3,7 @@
 from typing import List, Union
 from enum import Enum
 
-from tensortrade.orders.criterias import Criteria
+from tensortrade.orders.criteria import Criteria
 from tensortrade.trades import TradeSide
 
 
@@ -13,7 +13,7 @@ class StopDirection(Enum):
 
 
 class StopLossCriteria(Criteria):
-    """An order criterias that allows execution when the quote price for a
+    """An order criteria that allows execution when the quote price for a
     trading pair is at or below a specific price."""
 
     def __init__(self, direction: StopDirection = StopDirection.DOWN, percent: float = 0.02):

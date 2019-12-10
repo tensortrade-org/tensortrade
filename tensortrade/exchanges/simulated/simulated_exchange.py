@@ -125,7 +125,9 @@ class SimulatedExchange(Exchange):
 
         trade = Trade(order.id, self.id, self._current_step,
                       order.pair, TradeSide.BUY, order.type, size, price)
+
         self._slippage_model.adjust_trade(trade)
+
         base_wallet -= Quantity(order.pair.base, trade.size, order.id)
         quote_wallet += Quantity(order.pair.quote, trade.size / trade.price, order.id)
 
@@ -141,7 +143,9 @@ class SimulatedExchange(Exchange):
 
         trade = Trade(order.id, self.id, self._current_step,
                       order.pair, TradeSide.SELL, order.type, size, price)
+
         self._slippage_model.adjust_trade(trade)
+
         quote_wallet -= Quantity(order.pair.quote, trade.size, order.id)
         base_wallet += Quantity(order.pair.base, trade.size * trade.price, order.id)
 
@@ -157,7 +161,8 @@ class SimulatedExchange(Exchange):
         elif order.is_sell:
             trade = self._execute_sell_order(order, base_wallet, quote_wallet, current_price)
 
-        order.fill(self, trade)
+        if trade:
+            order.fill(self, trade)
 
         if order.status != OrderStatus.FILLED:
             order.cancel()

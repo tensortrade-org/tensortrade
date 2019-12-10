@@ -27,7 +27,7 @@ from tensortrade.orders import Order
 
 class PairCriteriaSizeActions(ActionScheme):
     """A discrete action scheme that determines actions based on a list of
-    trading pairs, order criterias, and trade sizes."""
+    trading pairs, order criteria, and trade sizes."""
 
     def __init__(self,
                  pairs: Union[List['TradingPair'], 'TradingPair'],
@@ -39,14 +39,14 @@ class PairCriteriaSizeActions(ActionScheme):
         Arguments:
             pairs: A list of trading pairs to select from when submitting an order.
             (e.g. TradingPair(BTC, USD), TradingPair(ETH, BTC), etc.)
-            criteria: A list of order criterias to select from when submitting an order.
+            criteria: A list of order criteria to select from when submitting an order.
             (e.g. MarketOrder, LimitOrder w/ price, StopLoss, etc.)
             trade_sizes: A list of trade sizes to select from when submitting an order.
             (e.g. '[1, 1/3]' = 100% or 33% of balance is tradeable. '4' = 25%, 50%, 75%, or 100% of balance is tradeable.)
             order_listener (optional): An optional listener for order events executed by this action scheme.
         """
         self.pairs = self.default('pairs', pairs)
-        self.criteria = self.default('criterias', criteria)
+        self.criteria = self.default('criteria', criteria)
         self.trade_sizes = self.default('trade_sizes', trade_sizes)
         self._trade_type = self.default('trade_type', trade_type)
         self._order_listener = self.default('order_listener', order_listener)
@@ -71,7 +71,7 @@ class PairCriteriaSizeActions(ActionScheme):
 
     @property
     def criteria(self) -> List['OrderCriteria']:
-        """A list of order criterias to select from when submitting an order.
+        """A list of order criteria to select from when submitting an order.
         (e.g. MarketOrderCriteria, LimitOrderCriteria, StopLossCriteria, CustomCriteria, etc.)
         """
         return self._criteria

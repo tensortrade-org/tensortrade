@@ -274,8 +274,10 @@ class TradingEnvironment(gym.Env):
             for column in list(wallet_balances.columns):
                 observation.loc[observation.index[0], column] = wallet_balances[column].values
 
-        # if self._feature_pipeline is not None:
-        #     observation = self._feature_pipeline.transform(observation)
+        if self._feature_pipeline is not None:
+            observation = self._feature_pipeline.transform(observation)
+
+        print('After transform: ', observation)
 
         if len(observation) < self._window_size:
             padding = np.zeros((self._window_size - len(observation),
