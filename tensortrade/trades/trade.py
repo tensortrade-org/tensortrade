@@ -73,6 +73,30 @@ class Trade(object):
         return self.pair.quote
 
     @property
+    def size(self) -> float:
+        return self._size
+
+    @size.setter
+    def size(self, size: float):
+        self._size = round(size, self.pair.base.precision)
+
+    @property
+    def price(self) -> float:
+        return self._price
+
+    @price.setter
+    def price(self, price: float):
+        self._price = round(price, self.pair.base.precision)
+
+    @property
+    def commission(self) -> float:
+        return self._commission
+
+    @commission.setter
+    def commission(self, commission: float):
+        self._commission = round(commission, self.pair.base.precision)
+
+    @property
     def is_buy(self) -> bool:
         return self.side == TradeSide.BUY
 

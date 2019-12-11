@@ -38,7 +38,7 @@ class SimulatedExchange(Exchange):
     """
 
     def __init__(self, data_frame: pd.DataFrame = None, **kwargs):
-        self._commission = self.default('commission_percent', 0.3, kwargs) / 100
+        self._commission = self.default('commission', 0.003, kwargs)
         self._base_instrument = self.default('base_instrument', USD, kwargs)
         self._quote_instrument = self.default('quote_instrument', BTC, kwargs)
         self._initial_balance = self.default('initial_balance', 10000, kwargs)
@@ -112,13 +112,19 @@ class SimulatedExchange(Exchange):
         return np.inf
 
     def _execute_buy_order(self, order: 'Order', base_wallet: 'Wallet', quote_wallet: 'Wallet', current_price: float) -> Trade:
+        price = self._contain_price(current_price)
         commission = order.size * self._commission
         price = max(min(current_price, self._max_trade_price), self._min_trade_price)
         size = max(min(order.size - commission, self._max_trade_size), self._min_trade_size)
 
         if order.type == TradeType.MARKET:
-            size = current_price * order.size / price
+            size = self._contain_size(order.price * order.size / price - commission)
         elif order.price < current_price:
+            return None
+
+        balance = base_wallet.locked.get(order.id, Quantity(base_wallet.instrument, 0))
+
+        if balance < size:
             return None
 
         trade = Trade(order.id, self.id, self._current_step,
@@ -126,8 +132,8 @@ class SimulatedExchange(Exchange):
 
         self._slippage_model.adjust_trade(trade)
 
-        base_wallet -= commission
         base_wallet -= trade.size
+        base_wallet -= commission
         quote_wallet += Quantity(order.pair.quote, trade.size.amount / trade.price, order.path_id)
 
         return trade
@@ -137,6 +143,11 @@ class SimulatedExchange(Exchange):
         price = max(min(current_price, self._max_trade_price), self._min_trade_price)
         size = max(min(order.size - commission, self._max_trade_size), self._min_trade_size)
 
+        balance = quote_wallet.locked.get(order.id, Quantity(quote_wallet.instrument, 0))
+
+        if balance < size:
+            return None
+
         if order.type == TradeType.LIMIT and order.price > current_price:
             return None
 
@@ -145,8 +156,8 @@ class SimulatedExchange(Exchange):
 
         self._slippage_model.adjust_trade(trade)
 
-        quote_wallet -= commission
         quote_wallet -= trade.size
+        base_wallet -= commission
         base_wallet += Quantity(order.pair.base, trade.size.amount * trade.price, order.id)
 
         return trade

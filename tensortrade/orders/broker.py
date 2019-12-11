@@ -43,7 +43,7 @@ class Broker(OrderListener):
     def submit(self, order: Order):
         self._unexecuted += [order]
 
-    def cancel(self, order: Order):
+    def cancel(self, order: Order, exchange: 'Exchange'):
         if order.status == OrderStatus.CANCELLED:
             raise Warning(
                 'Cannot cancel order {} - order has already been cancelled.'.format(order.id))
@@ -54,7 +54,7 @@ class Broker(OrderListener):
 
         self._unexecuted.remove(order)
 
-        order.cancel()
+        order.cancel(exchange)
 
     def update(self):
         for order, exchange in product(self._unexecuted, self._exchanges):

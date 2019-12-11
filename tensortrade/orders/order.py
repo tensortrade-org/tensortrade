@@ -76,6 +76,14 @@ class Order(Identifiable):
             self.size.lock_for(self._path_id)
 
     @property
+    def price(self) -> float:
+        return self._price
+
+    @price.setter
+    def price(self, price: float):
+        self._price = round(price, self.quantity.instrument.precision)
+
+    @property
     def base_instrument(self) -> 'Instrument':
         return self.pair.base
 
@@ -155,11 +163,11 @@ class Order(Identifiable):
 
         return order or self.release()
 
-    def cancel(self):
+    def cancel(self, exchange: 'Exchange'):
         self.status = OrderStatus.CANCELLED
 
         for listener in self._listeners or []:
-            listener.on_cancel(self)
+            listener.on_cancel(self, exchange)
 
         self._listeners = []
         self.release()

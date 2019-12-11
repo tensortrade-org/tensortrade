@@ -91,8 +91,6 @@ class FractionalDifference(FeatureTransformer):
         for column in self.columns:
             diffed_series = self._fractional_difference(X[column])
 
-            print('Diffed series: ', diffed_series)
-
             if not self._inplace:
                 column = '{}_diff_{}'.format(column, self._difference_order)
 

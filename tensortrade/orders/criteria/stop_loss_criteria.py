@@ -34,16 +34,11 @@ class StopLoss(Criteria):
         price = exchange.quote_price(order.pair)
         percent = abs(price - order.price) / price
 
-        take_profit_satisfied = self.direction in [
-            StopDirection.UP, StopDirection.EITHER] and price >= order.price and percent >= self.up_percent
-        stop_loss_satisfied = self.direction in [
-            StopDirection.DOWN, StopDirection.EITHER] and price <= order.price and percent >= self.down_percent
+        is_take_profit = self.direction in [StopDirection.UP, StopDirection.EITHER]
+        is_stop_loss = self.direction in [StopDirection.DOWN, StopDirection.EITHER]
 
-        if self.direction in [StopDirection.UP, StopDirection.EITHER]:
-            print('Take profit waiting: ({}/{})'.format(percent, self.up_percent))
-
-        if self.direction in [StopDirection.DOWN, StopDirection.EITHER]:
-            print('Stop loss waiting: ({}/{})'.format(percent, self.down_percent))
+        take_profit_satisfied = is_take_profit and price >= order.price and percent >= self.up_percent
+        stop_loss_satisfied = is_stop_loss and price <= order.price and percent >= self.down_percent
 
         return take_profit_satisfied or stop_loss_satisfied
 

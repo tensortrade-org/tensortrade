@@ -23,7 +23,7 @@ from tensortrade.actions import ActionScheme
 from tensortrade.trades import TradeSide, TradeType
 from tensortrade.instruments import Quantity
 from tensortrade.orders.criteria import StopLoss
-from tensortrade.orders import Order, OrderListener
+from tensortrade.orders import Recipe, Order, OrderListener
 
 
 class ManagedRiskOrders(ActionScheme):
@@ -36,15 +36,15 @@ class ManagedRiskOrders(ActionScheme):
                  stop_loss_percentages: Union[List[float], float] = [0.05, 0.10],
                  take_profit_percentages: Union[List[float], float] = [0.025, 0.05, 0.10],
                  trade_sizes: Union[List[float], int] = 10,
-                 trade_side: TradeSide = TradeSide.BUY,
+                 trade_side: TradeType = TradeSide.BUY,
                  trade_type: TradeType = TradeType.MARKET,
                  order_listener: OrderListener = None):
         """
         Arguments:
             pairs: A list of trading pairs to select from when submitting an order.
             (e.g. TradingPair(BTC, USD), TradingPair(ETH, BTC), etc.)
-            criteria: A list of order criteria to select from when submitting an order.
-            (e.g. MarketOrder, LimitOrder w/ price, StopLoss, etc.)
+            stop_loss_percentages: A list of possible stop loss percentages for each order.
+            take_profit_percentages: A list of possible take profit percentages for each order.
             trade_sizes: A list of trade sizes to select from when submitting an order.
             (e.g. '[1, 1/3]' = 100% or 33% of balance is tradeable. '4' = 25%, 50%, 75%, or 100% of balance is tradeable.)
             order_listener (optional): An optional listener for order events executed by this action scheme.
@@ -118,41 +118,34 @@ class ManagedRiskOrders(ActionScheme):
 
         (pair, stop_loss, take_profit, size) = self._actions[action]
 
-        instrument = pair.base if self._trade_side == TradeSide.BUY else pair.quote
-        wallet = portfolio.get_wallet(exchange.id, instrument=instrument)
-        price = exchange.quote_price(instrument)
-        amount = min(wallet.balance.amount, (wallet.balance.amount * size))
+        base_instrument = pair.base if self._trade_side == TradeSide.BUY else pair.quote
+        base_wallet = portfolio.get_wallet(exchange.id, instrument=base_instrument)
 
-        if amount < 10 ** -instrument.precision:
+        price = exchange.quote_price(pair)
+        size = min(base_wallet.balance.amount, (base_wallet.balance.amount * size))
+
+        if size < 10 ** -base_instrument.precision:
             return None
 
-        quantity = amount * instrument
-
-        # wallet -= quantity | No need for this anymore.
-
-        risk_criteria = StopLoss(direction='either',
-                                 up_percent=take_profit,
-                                 down_percent=stop_loss)
-
-        risk_management_order = Order(side=TradeSide.SELL if self._trade_side == TradeSide.BUY else TradeSide.BUY,
-                                      trade_type=TradeType.MARKET,
-                                      pair=pair,
-                                      price=price,
-                                      size=size,
-                                      portfolio=portfolio,
-                                      criteria=risk_criteria)
+        buy_quantity = size * base_instrument
 
         order = Order(side=self._trade_side,
                       trade_type=self._trade_type,
                       pair=pair,
                       price=price,
-                      quantity=quantity,
-                      portfolio=portfolio,
-                      followed_by=risk_management_order)
+                      quantity=buy_quantity,
+                      portfolio=portfolio)
 
-        # quantity.lock_for(order.id) | No need for this anymore.
+        risk_criteria = StopLoss(direction='either',
+                                 up_percent=take_profit,
+                                 down_percent=stop_loss)
 
-        # wallet += quantity | No need for this anymore.
+        risk_management = Recipe(side=TradeSide.SELL if self._trade_side == TradeSide.BUY else TradeSide.BUY,
+                                 trade_type=TradeType.MARKET,
+                                 pair=pair,
+                                 criteria=risk_criteria)
+
+        order.add_recipe(risk_management)
 
         if self._order_listener is not None:
             order.attach(self._order_listener)
@@ -160,5 +153,6 @@ class ManagedRiskOrders(ActionScheme):
         return order
 
     def reset(self):
-        generator = product(self._pairs, self.stop_loss_percentages, self.take_profit_percentages, self.trade_sizes)
+        generator = product(self._pairs, self.stop_loss_percentages,
+                            self.take_profit_percentages, self.trade_sizes)
         self._actions = [None] + list(generator)

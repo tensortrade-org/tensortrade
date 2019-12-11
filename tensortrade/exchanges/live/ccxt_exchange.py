@@ -142,7 +142,7 @@ class CCXTExchange(Exchange):
 
         if order['status'] == 'open':
             self._exchange.cancel_order(order.id)
-            order.cancel()
+            order.cancel(self._exchange)
 
         trade = Trade(order_id=order.id,
                       exchange_id=self.id,
