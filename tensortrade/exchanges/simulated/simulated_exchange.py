@@ -111,54 +111,70 @@ class SimulatedExchange(Exchange):
 
         return np.inf
 
+    def _contain_price(self, price: float) -> float:
+        return max(min(price, self._max_trade_price), self._min_trade_price)
+
+    def _contain_size(self, size: float) -> float:
+        return max(min(size, self._max_trade_size), self._min_trade_size)
+
     def _execute_buy_order(self, order: 'Order', base_wallet: 'Wallet', quote_wallet: 'Wallet', current_price: float) -> Trade:
         price = self._contain_price(current_price)
-        commission = order.size * self._commission
-        price = max(min(current_price, self._max_trade_price), self._min_trade_price)
-        size = max(min(order.size - commission, self._max_trade_size), self._min_trade_size)
+
+        if order.type == TradeType.LIMIT and order.price < current_price:
+            return None
+
+        commission = Quantity(order.pair.base, order.size * self._commission, order.path_id)
+        size = self._contain_size(order.size - commission.size)
 
         if order.type == TradeType.MARKET:
-            size = self._contain_size(order.price * order.size / price - commission)
-        elif order.price < current_price:
-            return None
+            size = self._contain_size(order.price / price * order.size - commission.size)
 
-        balance = base_wallet.locked.get(order.id, Quantity(base_wallet.instrument, 0))
+        quantity = Quantity(order.pair.base, size, order.path_id)
 
-        if balance < size:
-            return None
+        trade = Trade(order_id=order.id,
+                      exchange_id=self.id,
+                      step=self._current_step,
+                      pair=order.pair,
+                      side=TradeSide.BUY,
+                      trade_type=order.type,
+                      quantity=quantity,
+                      price=price,
+                      commission=commission)
 
-        trade = Trade(order.id, self.id, self._current_step,
-                      order.pair, TradeSide.BUY, order.type, size, price, commission)
+        # self._slippage_model.adjust_trade(trade)
 
-        self._slippage_model.adjust_trade(trade)
-
-        base_wallet -= trade.size
+        base_wallet -= quantity
         base_wallet -= commission
-        quote_wallet += Quantity(order.pair.quote, trade.size.amount / trade.price, order.path_id)
+        quote_wallet += Quantity(order.pair.quote, trade.size / trade.price, order.path_id)
 
         return trade
 
     def _execute_sell_order(self, order: 'Order', base_wallet: 'Wallet', quote_wallet: 'Wallet', current_price: float) -> Trade:
-        commission = order.size * self._commission
-        price = max(min(current_price, self._max_trade_price), self._min_trade_price)
-        size = max(min(order.size - commission, self._max_trade_size), self._min_trade_size)
-
-        balance = quote_wallet.locked.get(order.id, Quantity(quote_wallet.instrument, 0))
-
-        if balance < size:
-            return None
+        price = self._contain_price(current_price)
 
         if order.type == TradeType.LIMIT and order.price > current_price:
             return None
 
-        trade = Trade(order.id, self.id, self._current_step,
-                      order.pair, TradeSide.SELL, order.type, size, price, commission)
+        commission = Quantity(order.pair.base, order.size * order.price *
+                              self._commission, order.path_id)
+        size = self._contain_size(order.size * order.price - commission.size)
+        quantity = Quantity(order.pair.base, size, order.path_id)
 
-        self._slippage_model.adjust_trade(trade)
+        trade = Trade(order_id=order.id,
+                      exchange_id=self.id,
+                      step=self._current_step,
+                      pair=order.pair,
+                      side=TradeSide.SELL,
+                      trade_type=order.type,
+                      quantity=quantity,
+                      price=price,
+                      commission=commission)
 
-        quote_wallet -= trade.size
+        # self._slippage_model.adjust_trade(trade)
+
+        quote_wallet -= Quantity(order.pair.quote, trade.size * trade.price, order.path_id)
         base_wallet -= commission
-        base_wallet += Quantity(order.pair.base, trade.size.amount * trade.price, order.id)
+        base_wallet += quantity
 
         return trade
 

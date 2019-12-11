@@ -2,18 +2,18 @@
 
 class InvalidNegativeQuantity(Exception):
 
-    def __init__(self, amount, *args):
+    def __init__(self, size, *args):
         super().__init__(
-            "Invalid Quantity: {}. Amounts cannot be negative.".format(amount),
+            "Invalid Quantity: {}. Amounts cannot be negative.".format(size),
             *args
         )
 
 
 class InvalidNonNumericQuantity(Exception):
 
-    def __init(self, amount, *args):
+    def __init(self, size, *args):
         super().__init__(
-            "Invalid Quantity: {}. Amounts cannot be non-numeric.".format(amount),
+            "Invalid Quantity: {}. Amounts cannot be non-numeric.".format(size),
             *args
         )
 
@@ -29,18 +29,18 @@ class IncompatibleInstrumentOperation(Exception):
 
 class InvalidOrderQuantity(Exception):
 
-    def __init__(self, amount, *args):
+    def __init__(self, size, *args):
         super().__init__(
-            "Invalid Quantity: {}. Order amounts must be positive.".format(amount),
+            "Invalid Quantity: {}. Order sizes must be positive.".format(size),
             *args
         )
 
 
 class InsufficientFunds(Exception):
 
-    def __init__(self, balance, amount, *args):
+    def __init__(self, balance, size, *args):
         super().__init__(
-            "Insufficient funds for amount {} with balance {}.".format(amount, balance),
+            "Insufficient funds for size {} with balance {}.".format(size, balance),
             *args
         )
 

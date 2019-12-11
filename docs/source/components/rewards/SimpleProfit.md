@@ -37,7 +37,7 @@ When the bot says buy, it sets the variable `_is_holding_instrument` to `True`, 
 We see that inside of this line of code here. This allows us to check to see if we've made a profit later.
 
 ```py
-elif trade.is_buy and trade.amount > 0:
+elif trade.is_buy and trade.size > 0:
     self._purchase_price = trade.price
     self._is_holding_instrument = True
 
@@ -48,10 +48,10 @@ elif trade.is_buy and trade.amount > 0:
 We then sell afterward using the original trade price as a reference. Which is suggested in the lines below:
 
 ```py
-if trade.is_sell and trade.amount > 0:
+if trade.is_sell and trade.size > 0:
     self._is_holding_instrument = False
     profit_per_instrument = trade.price - self._purchase_price
-    profit = trade.amount * profit_per_instrument
+    profit = trade.size * profit_per_instrument
     profit_sign = np.sign(profit)
 
     return profit_sign * (1 + (5 ** np.log10(abs(profit))))

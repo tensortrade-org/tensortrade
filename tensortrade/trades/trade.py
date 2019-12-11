@@ -35,7 +35,7 @@ class Trade(object):
                  pair: 'TradingPair',
                  side: TradeSide,
                  trade_type: TradeType,
-                 size: float,
+                 quantity: 'Quantity',
                  price: float,
                  commission: float):
         """
@@ -47,7 +47,7 @@ class Trade(object):
             (e.g. BTC/USDT, ETH/BTC, ADA/BTC, AAPL/USD, NQ1!/USD, CAD/USD, etc)
             side: Whether the quote instrument is being bought or sold.
             (e.g. BUY = trade the `base_instrument` for the `quote_instrument` in the pair. SELL = trade the `quote_instrument` for the `base_instrument`)
-            size: The amount of the base instrument in the trade.
+            size: The size of the base instrument in the trade.
             (e.g. 1000 shares, 6.50 satoshis, 2.3 contracts, etc).
             price: The price paid per quote instrument in terms of the base instrument.
             (e.g. 10000 represents $10,000.00 if the `base_instrument` is "USD").
@@ -60,7 +60,7 @@ class Trade(object):
         self.pair = pair
         self.side = side
         self.type = trade_type
-        self.size = size
+        self.quantity = quantity
         self.price = price
         self.commission = commission
 
@@ -74,11 +74,7 @@ class Trade(object):
 
     @property
     def size(self) -> float:
-        return self._size
-
-    @size.setter
-    def size(self, size: float):
-        self._size = round(size, self.pair.base.precision)
+        return self.quantity.size
 
     @property
     def price(self) -> float:
@@ -89,12 +85,12 @@ class Trade(object):
         self._price = round(price, self.pair.base.precision)
 
     @property
-    def commission(self) -> float:
+    def commission(self) -> 'Quantity':
         return self._commission
 
     @commission.setter
     def commission(self, commission: float):
-        self._commission = round(commission, self.pair.base.precision)
+        self._commission = commission.size * self.pair.base
 
     @property
     def is_buy(self) -> bool:
@@ -119,7 +115,7 @@ class Trade(object):
                 'quote_symbol': self.pair.quote.symbol,
                 'side': self.side,
                 'type': self.type,
-                'size': self.size,
+                'quantity': self.quantity,
                 'price': self.price,
                 'commission': self.commission
                 }

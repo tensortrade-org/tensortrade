@@ -174,7 +174,7 @@ class TradingEnvironment(gym.Env):
                 'If used, the `self._observe_wallets` or `self._observe_locked_balances` parameter must be of type: List[Instrument]')
 
         unlocked_columns = [instrument.symbol for instrument in self._observe_unlocked_balances]
-        locked_columns = ['{}_locked'.format(instrument.symbol)
+        locked_columns = ['{}_pending'.format(instrument.symbol)
                           for instrument in self._observe_locked_balances]
 
         return unlocked_columns + locked_columns
@@ -231,11 +231,11 @@ class TradingEnvironment(gym.Env):
         wallets = pd.DataFrame([], columns=self.wallet_columns)
 
         for instrument in self._observe_unlocked_balances:
-            wallets[instrument.symbol] = [self.balance(instrument).amount]
+            wallets[instrument.symbol] = [self.balance(instrument).size]
 
         for instrument in self._observe_locked_balances:
-            wallets['{}_locked'.format(instrument.symbol)] = [
-                self.locked_balance(instrument).amount]
+            wallets['{}_pending'.format(instrument.symbol)] = [
+                self.locked_balance(instrument).size]
 
         return wallets
 
@@ -343,7 +343,7 @@ class TradingEnvironment(gym.Env):
 
         Returns:
             observation (pandas.DataFrame): Provided by the environments's exchange, often OHLCV or tick trade history data points.
-            reward (float): An amount corresponding to the benefit earned by the action taken this timestep.
+            reward (float): An size corresponding to the benefit earned by the action taken this timestep.
             done (bool): If `True`, the environments is complete and should be restarted.
             info (dict): Any auxiliary, diagnostic, or debugging information to output.
         """
@@ -375,7 +375,7 @@ class TradingEnvironment(gym.Env):
                 self._portfolio._wallets = {}
 
                 for balance in self._initial_balances:
-                    self._portfolio.add_tuple((self._exchange, balance.instrument, balance.amount))
+                    self._portfolio.add_tuple((self._exchange, balance.instrument, balance.size))
             else:
                 self._initial_balances = self._portfolio.total_balances
 

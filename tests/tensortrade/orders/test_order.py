@@ -16,7 +16,8 @@ data_frame = pd.read_csv("tests/data/input/coinbase-1h-btc-usd.csv")
 data_frame.columns = map(str.lower, data_frame.columns)
 data_frame = data_frame.rename(columns={'volume btc': 'volume'})
 
-exchange = SimulatedExchange(data_frame=data_frame, price_column=PRICE_COLUMN, randomize_time_slices=True)
+exchange = SimulatedExchange(
+    data_frame=data_frame, price_column=PRICE_COLUMN, randomize_time_slices=True)
 broker = Broker(exchange)
 broker.reset()
 
@@ -29,18 +30,18 @@ def test_order_initialization():
     portfolio = Portfolio(base_instrument=USD, wallets=wallets)
     base_wallet = portfolio.get_wallet(exchange.id, USD)
 
-    size = (1 / 10) * base_wallet.balance
+    quantity = (1 / 10) * base_wallet.balance
     order = Order(side=TradeSide.BUY,
                   trade_type=TradeType.MARKET,
                   pair=USD/BTC,
-                  size=size,
+                  quantity=quantity,
                   portfolio=portfolio)
     assert order
     assert order.id
     assert order.path_id
-    assert order.size.instrument == USD
+    assert order.quantity.instrument == USD
     assert order.filled_size == 0
-    assert order.remaining_size == order.size
+    assert order.remaining_size == order.quantity
     assert isinstance(order.pair, TradingPair)
     assert order.pair.base == USD
     assert order.pair.quote == BTC
@@ -54,11 +55,11 @@ def test_adding_recipe():
     portfolio = Portfolio(base_instrument=USD, wallets=wallets)
     base_wallet = portfolio.get_wallet(exchange.id, USD)
 
-    size = (1 / 10) * base_wallet.balance
+    quantity = (1 / 10) * base_wallet.balance
     order = Order(side=TradeSide.BUY,
                   trade_type=TradeType.MARKET,
                   pair=USD/BTC,
-                  size=size,
+                  quantity=quantity,
                   portfolio=portfolio)
 
     order += Recipe(
@@ -80,17 +81,17 @@ def test_buy_on_exchange():
     base_wallet = portfolio.get_wallet(exchange.id, USD)
     quote_wallet = portfolio.get_wallet(exchange.id, BTC)
 
-    size = (1 / 10) * base_wallet.balance
+    quantity = (1 / 10) * base_wallet.balance
     order = Order(side=TradeSide.BUY,
                   trade_type=TradeType.MARKET,
                   pair=USD/BTC,
-                  size=size,
+                  quantity=quantity,
                   portfolio=portfolio)
 
     current_price = 12390.90
 
-    base_wallet -= size.amount * order.pair.base
-    base_wallet += order.size
+    base_wallet -= quantity.size * order.pair.base
+    base_wallet += order.quantity
 
     trade = exchange._execute_buy_order(order, base_wallet, quote_wallet, current_price)
 
@@ -109,17 +110,17 @@ def test_sell_on_exchange():
     base_wallet = portfolio.get_wallet(exchange.id, USD)
     quote_wallet = portfolio.get_wallet(exchange.id, BTC)
 
-    size = (1 / 10) * quote_wallet.balance
+    quantity = (1 / 10) * quote_wallet.balance
     order = Order(side=TradeSide.SELL,
                   trade_type=TradeType.MARKET,
                   pair=USD / BTC,
-                  size=size,
+                  quantity=quantity,
                   portfolio=portfolio)
 
     current_price = 12390.90
 
-    quote_wallet -= size.amount * order.pair.quote
-    quote_wallet += order.size
+    quote_wallet -= quantity.size * order.pair.quote
+    quote_wallet += order.quantity
 
     trade = exchange._execute_sell_order(order, base_wallet, quote_wallet, current_price)
 
@@ -139,17 +140,16 @@ def test_order_runs_through_broker():
     broker.reset()
 
     base_wallet = portfolio.get_wallet(exchange.id, USD)
-    quote_wallet = portfolio.get_wallet(exchange.id, BTC)
 
-    size = (1 / 10) * base_wallet.balance
+    quantity = (1 / 10) * base_wallet.balance
     order = Order(side=TradeSide.BUY,
                   trade_type=TradeType.MARKET,
                   pair=USD / BTC,
-                  size=size,
+                  quantity=quantity,
                   portfolio=portfolio)
 
-    base_wallet -= size.amount * order.pair.base
-    base_wallet += order.size
+    base_wallet -= quantity.size * order.pair.base
+    base_wallet += order.quantity
 
     broker.submit(order)
 
@@ -170,11 +170,11 @@ def test_path_order_runs_though_broker():
 
     base_wallet = portfolio.get_wallet(exchange.id, USD)
 
-    size = (1 / 10) * base_wallet.balance
+    quantity = (1 / 10) * base_wallet.balance
     order = Order(side=TradeSide.BUY,
                   trade_type=TradeType.MARKET,
                   pair=USD / BTC,
-                  size=size,
+                  quantity=quantity,
                   portfolio=portfolio)
 
     order += Recipe(

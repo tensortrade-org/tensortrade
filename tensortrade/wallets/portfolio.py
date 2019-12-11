@@ -95,7 +95,7 @@ class Portfolio(Component):
                 pair = TradingPair(self._base_instrument, wallet.instrument)
                 current_price = wallet.exchange.quote_price(pair)
 
-            wallet_balance = wallet.total_balance.amount
+            wallet_balance = wallet.total_balance.size
             net_worth += current_price * wallet_balance
 
         return net_worth
@@ -164,11 +164,11 @@ class Portfolio(Component):
     def update(self):
         performance_update = pd.DataFrame(
             [[self._current_step, self.net_worth] +
-             [quantity.amount for quantity in self.balances] +
-             [quantity.amount for quantity in self.locked_balances]],
+             [quantity.size for quantity in self.balances] +
+             [quantity.size for quantity in self.locked_balances]],
             columns=['step', 'net_worth'] +
             [quantity.instrument.symbol for quantity in self.balances] +
-            ['{}_locked'.format(quantity.instrument.symbol) for quantity in self.locked_balances]
+            ['{}_pending'.format(quantity.instrument.symbol) for quantity in self.locked_balances]
         )
 
         self._performance = pd.concat(

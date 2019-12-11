@@ -5,7 +5,7 @@ from tensortrade.orders.criteria import Criteria
 from tensortrade.trades import TradeSide
 
 
-class HiddenLimitCriteria(Criteria):
+class HiddenLimit(Criteria):
     """An order criteria that allows execution when the quote price for a
     trading pair is at or below a specific price, hidden from the public order book."""
 

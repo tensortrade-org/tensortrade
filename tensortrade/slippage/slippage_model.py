@@ -35,7 +35,7 @@ class SlippageModel(Component):
             **kwargs: Any other arguments necessary for the model.
 
         Returns:
-            A filled `Trade` with the `price` and `amount` adjusted for slippage.
+            A filled `Trade` with the `price` and `size` adjusted for slippage.
         """
 
         raise NotImplementedError()

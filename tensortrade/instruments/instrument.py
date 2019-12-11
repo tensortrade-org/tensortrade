@@ -37,7 +37,7 @@ class Instrument:
         return self.symbol != other.symbol or self.precision != other.precision or self.name != other.name
 
     def __rmul__(self, other: float) -> Quantity:
-        return Quantity(instrument=self, amount=other)
+        return Quantity(instrument=self, size=other)
 
     def __truediv__(self, other):
         if isinstance(other, Instrument):

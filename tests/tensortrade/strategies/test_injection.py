@@ -42,7 +42,7 @@ config = {
         'n_actions': 24
     },
     'rewards': {
-        'amount': 100
+        'size': 100
     },
     'features': {
         'shape': (50, 70)
@@ -69,5 +69,5 @@ def test_injects_trading_strategy_with_context():
         assert strategy.environment.action_scheme.context.n_actions == 24
 
         print(strategy.environment.reward_scheme.context.data)
-        assert hasattr(strategy.environment.reward_scheme.context, 'amount')
-        assert strategy.environment.reward_scheme.context.amount == 100
+        assert hasattr(strategy.environment.reward_scheme.context, 'size')
+        assert strategy.environment.reward_scheme.context.size == 100

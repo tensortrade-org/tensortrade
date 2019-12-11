@@ -59,6 +59,8 @@ class Broker(OrderListener):
     def update(self):
         for order, exchange in product(self._unexecuted, self._exchanges):
             if order.is_executable_on(exchange):
+                print('Execute: ', order)
+
                 self._unexecuted.remove(order)
                 self._executed[order.id] = order
 
@@ -74,7 +76,7 @@ class Broker(OrderListener):
 
             print('Total traded: ', order.filled_size)
 
-            if order.is_done():
+            if order.is_complete():
                 next_order = order.complete(exchange)
 
                 if next_order:

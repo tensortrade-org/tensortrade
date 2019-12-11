@@ -13,7 +13,7 @@ config = {
     'base_instrument': 'USD',
     'instruments': 'ETH',
     'rewards': {
-        'amount': 0
+        'size': 0
     }
 }
 
@@ -24,9 +24,9 @@ def test_injects_reward_scheme_with_context():
 
         reward_scheme = ConcreteRewardScheme()
 
-        assert hasattr(reward_scheme.context, 'amount')
-        assert reward_scheme.context.amount == 0
-        assert reward_scheme.context['amount'] == 0
+        assert hasattr(reward_scheme.context, 'size')
+        assert reward_scheme.context.size == 0
+        assert reward_scheme.context['size'] == 0
 
 
 def test_injects_string_intialized_reward_scheme():
@@ -36,6 +36,6 @@ def test_injects_string_intialized_reward_scheme():
         reward_scheme = get('simple')
 
         assert reward_scheme.registered_name == "rewards"
-        assert hasattr(reward_scheme.context, 'amount')
-        assert reward_scheme.context.amount == 0
-        assert reward_scheme.context['amount'] == 0
+        assert hasattr(reward_scheme.context, 'size')
+        assert reward_scheme.context.size == 0
+        assert reward_scheme.context['size'] == 0

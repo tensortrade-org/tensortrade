@@ -9,7 +9,7 @@ from tensortrade.trades import Trade, TradeSide, TradeType
 from .order import Order
 
 
-class Recipe:
+class Recipe(Identifiable):
     def __init__(self,
                  side: TradeSide,
                  trade_type: TradeType,
@@ -20,18 +20,31 @@ class Recipe:
         self.pair = pair
         self.criteria = criteria
 
-    def create(self, order: 'Order', exchange: 'Exchange') -> 'Order':
-        instrument = self.pair.base if self.side == TradeSide.BUY else self.pair.quote
-        wallet = order.portfolio.get_wallet(exchange.id, instrument=instrument)
-        size = wallet.locked[order.path_id]
+    def create_order(self, order: 'Order', exchange: 'Exchange') -> 'Order':
+        base_instrument = self.pair.base if self.side == TradeSide.BUY else self.pair.quote
+        wallet = order.portfolio.get_wallet(exchange.id, instrument=base_instrument)
+        quantity = wallet.locked[order.path_id]
 
         return Order(side=self.side,
                      trade_type=self.type,
                      pair=self.pair,
-                     size=size,
+                     quantity=quantity,
                      portfolio=order.portfolio,
-                     criteria=self.criteria)
+                     price=order.price,
+                     criteria=self.criteria,
+                     path_id=order.id)
 
-    @staticmethod
-    def validate(order: 'Order', recipe: 'Recipe'):
-        pass
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "type": self.type,
+            "pair": self.pair,
+            "criteria": self.criteria
+        }
+
+    def __str__(self):
+        data = ['{}={}'.format(k, v) for k, v in self.to_dict().items()]
+        return '<{}: {}>'.format(self.__class__.__name__, ', '.join(data))
+
+    def __repr__(self):
+        return str(self)

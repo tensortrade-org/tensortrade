@@ -18,7 +18,7 @@ class StopLoss(Criteria):
     trading pair is above or below a specific price."""
 
     def __init__(self, direction: StopDirection = StopDirection.DOWN, up_percent: float = 0.02, down_percent: float = 0.02, percent: float = None):
-        self.direction = direction
+        self.direction = StopDirection(direction)
 
         if percent:
             self.up_percent = percent

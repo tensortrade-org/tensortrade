@@ -32,56 +32,45 @@ class Order(Identifiable):
                  side: TradeSide,
                  trade_type: TradeType,
                  pair: 'TradingPair',
-                 size: 'Quantity',
+                 quantity: 'Quantity',
                  portfolio: 'Portfolio',
                  price: float = None,
                  criteria: Callable[['Order', 'Exchange'], bool] = None,
                  path_id: str = None):
-        if size.amount == 0:
-            raise InvalidOrderQuantity(size)
+        if quantity.size == 0:
+            raise InvalidOrderQuantity(quantity)
 
         self.side = side
         self.type = trade_type
         self.pair = pair
-        self.size = size
+        self.quantity = quantity
         self.portfolio = portfolio
         self.price = price
         self.criteria = criteria
+        self.path_id = path_id or self.id
         self.status = OrderStatus.PENDING
 
         self.filled_size = 0
-        self.remaining_size = self.size.amount
-        self.path_id = path_id
+        self.remaining_size = self.size
 
         self._recipes = []
         self._listeners = []
         self._trades = []
 
-    @property
-    def path_id(self) -> str:
-        return self._path_id
+        self.quantity.lock_for(self.path_id)
 
-    @path_id.setter
-    def path_id(self, path_id: str = None):
-        if path_id and self.size.is_locked and path_id != self.size.path_id:
-            raise Exception("Path ID Mismatch: Size {} and Order {}".format(self.size.path_id,
-                                                                            path_id))
-        elif path_id and not self.size.is_locked:
-            self._path_id = path_id
-            self.size.lock_for(self._path_id)
-        elif not path_id and self.size.is_locked:
-            self._path_id = self.size.path_id
-        else:
-            self._path_id = str(uuid.uuid4())
-            self.size.lock_for(self._path_id)
+    @property
+    def size(self) -> float:
+        return self.quantity.size
 
     @property
     def price(self) -> float:
         return self._price
 
     @price.setter
-    def price(self, price: float):
-        self._price = round(price, self.quantity.instrument.precision)
+    def price(self, price: float = None):
+        self._price = round(price, self.quantity.instrument.precision) if isinstance(
+            price, float) else price
 
     @property
     def base_instrument(self) -> 'Instrument':
@@ -114,8 +103,12 @@ class Order(Identifiable):
     def is_executable_on(self, exchange: 'Exchange'):
         return self.criteria is None or self.criteria(self, exchange)
 
-    def is_done(self):
+    def is_complete(self):
         return self.remaining_size == 0
+
+    def add_recipe(self, recipe: 'Recipe') -> 'Order':
+        self._recipes = [recipe] + self._recipes
+        return self
 
     def attach(self, listener: 'OrderListener'):
         self._listeners += [listener]
@@ -130,8 +123,8 @@ class Order(Identifiable):
         wallet = self.portfolio.get_wallet(exchange.id, instrument=instrument)
 
         if self.path_id not in wallet.locked.keys():
-            wallet -= self.size.amount * instrument
-            wallet += self.size
+            wallet -= self.size * instrument
+            wallet += self.quantity
 
         for listener in self._listeners or []:
             listener.on_execute(self, exchange)
@@ -141,8 +134,10 @@ class Order(Identifiable):
     def fill(self, exchange: 'Exchange', trade: Trade):
         self.status = OrderStatus.PARTIALLY_FILLED
 
-        self.filled_size += trade.size.amount
-        self.remaining_size -= trade.size.amount
+        fill_size = trade.size + trade.commission.size
+
+        self.filled_size += fill_size
+        self.remaining_size -= fill_size
 
         for listener in self._listeners or []:
             listener.on_fill(self, exchange, trade)
@@ -154,7 +149,7 @@ class Order(Identifiable):
 
         if self._recipes:
             recipe = self._recipes.pop()
-            order = recipe.create(self, exchange)
+            order = recipe.create_order(self, exchange)
 
         for listener in self._listeners or []:
             listener.on_complete(self, exchange)
@@ -181,19 +176,21 @@ class Order(Identifiable):
             "id": self.id,
             "status": self.status,
             "type": self.type,
+            "side": self.side,
             "pair": self.pair,
-            "size": self.size,
+            "quantity": self.quantity,
             "price": self.price,
-            "criteria": self.criteria
+            "criteria": self.criteria,
+            "path_id": self.path_id
         }
 
     def __iadd__(self, recipe: 'Recipe') -> 'Order':
-        self._recipes = [recipe] + self._recipes
-        return self
+        return self.add_recipe(recipe)
 
     def __str__(self):
         data = ['{}={}'.format(k, v) for k, v in self.to_dict().items()]
-        return '<{}: {}>'.format(self.__class__.__name__, ', '.join(data))
+        recipes = [str(recipe) for recipe in self._recipes]
+        return '<{}: {} | Recipes: {}>'.format(self.__class__.__name__, ', '.join(data), ', '.join(recipes))
 
     def __repr__(self):
         return str(self)

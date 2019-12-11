@@ -9,7 +9,7 @@ class OrderListener(object, metaclass=ABCMeta):
     def on_cancel(self, order: 'Order', exchange: 'Exchange'):
         pass
 
-    def on_fill(self, order: 'Order', exchange: 'Exchange', amount: float):
+    def on_fill(self, order: 'Order', exchange: 'Exchange', size: float):
         pass
 
     def on_complete(self, order: 'Order', exchange: 'Exchange'):

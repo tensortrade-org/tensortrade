@@ -70,7 +70,7 @@ class CCXTExchange(Exchange):
 
         return np.array([['{}_side'.format(symbol),
                           '{}_price'.format(symbol),
-                          '{}_amount'.format(symbol),
+                          '{}_size'.format(symbol),
                           '{}_cost'.format(symbol)] for symbol in self._observation_symbols]).flatten()
 
     @property
@@ -98,7 +98,7 @@ class CCXTExchange(Exchange):
                 observations['{}_side'.format(symbol)] = [
                     0 if trade['side'] == 'buy' else 1 for trade in trades]
                 observations['{}_price'.format(symbol)] = [trade['price'] for trade in trades]
-                observations['{}_amount'.format(symbol)] = [trade['amount'] for trade in trades]
+                observations['{}_size'.format(symbol)] = [trade['size'] for trade in trades]
                 observations['{}_cost'.format(symbol)] = [trade['cost'] for trade in trades]
 
         observations = pd.concat([self._data_frame, observations], ignore_index=True, sort=False)
@@ -150,9 +150,9 @@ class CCXTExchange(Exchange):
                       pair=order.pair,
                       side=order.side,
                       trade_type=order.type,
-                      size=executed_order['filled'],
+                      quantity=executed_order['filled'] * order.pair.base,
                       price=executed_order['price'],
-                      commission=executed_order['commission'])
+                      commission=executed_order['commission'] * order.pair.base)
 
         order.fill(self, trade)
 

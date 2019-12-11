@@ -74,7 +74,7 @@ class Wallet(Identifiable):
             quantity = self.locked.pop(path_id, None)
 
             if quantity is not None:
-                self += quantity.amount * self.instrument
+                self += quantity.size * self.instrument
 
     def __iadd__(self, quantity: 'Quantity') -> 'Wallet':
         if quantity.is_locked:
@@ -90,7 +90,7 @@ class Wallet(Identifiable):
     def __isub__(self, quantity: 'Quantity') -> 'Wallet':
         if quantity.is_locked and self.locked[quantity.path_id]:
             self._locked[quantity.path_id] -= quantity
-        else:
+        elif not quantity.is_locked:
             self._balance -= quantity
 
         return self

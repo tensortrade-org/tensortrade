@@ -33,8 +33,8 @@ class ManagedRiskOrders(ActionScheme):
 
     def __init__(self,
                  pairs: Union[List['TradingPair'], 'TradingPair'],
-                 stop_loss_percentages: Union[List[float], float] = [0.05, 0.10],
-                 take_profit_percentages: Union[List[float], float] = [0.025, 0.05, 0.10],
+                 stop_loss_percentages: Union[List[float], float] = [0.02, 0.04, 0.06],
+                 take_profit_percentages: Union[List[float], float] = [0.01, 0.02, 0.03],
                  trade_sizes: Union[List[float], int] = 10,
                  trade_side: TradeType = TradeSide.BUY,
                  trade_type: TradeType = TradeType.MARKET,
@@ -122,7 +122,7 @@ class ManagedRiskOrders(ActionScheme):
         base_wallet = portfolio.get_wallet(exchange.id, instrument=base_instrument)
 
         price = exchange.quote_price(pair)
-        size = min(base_wallet.balance.amount, (base_wallet.balance.amount * size))
+        size = min(base_wallet.balance.size, (base_wallet.balance.size * size))
 
         if size < 10 ** -base_instrument.precision:
             return None
