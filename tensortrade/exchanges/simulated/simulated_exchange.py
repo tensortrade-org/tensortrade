@@ -155,9 +155,8 @@ class SimulatedExchange(Exchange):
         if order.type == TradeType.LIMIT and order.price > current_price:
             return None
 
-        commission = Quantity(order.pair.base, order.size * order.price *
-                              self._commission, order.path_id)
-        size = self._contain_size(order.size * order.price - commission.size)
+        commission = Quantity(order.pair.base, order.size * self._commission, order.path_id)
+        size = self._contain_size(order.size - commission.size)
         quantity = Quantity(order.pair.base, size, order.path_id)
 
         trade = Trade(order_id=order.id,

@@ -34,7 +34,7 @@ class Order(Identifiable):
                  pair: 'TradingPair',
                  quantity: 'Quantity',
                  portfolio: 'Portfolio',
-                 price: float = None,
+                 price: float,
                  criteria: Callable[['Order', 'Exchange'], bool] = None,
                  path_id: str = None):
         if quantity.size == 0:
@@ -61,16 +61,16 @@ class Order(Identifiable):
 
     @property
     def size(self) -> float:
-        return self.quantity.size
+        size = self.quantity.size if self.pair.base is self.quantity.instrument else self.quantity.size * self.price
+        return round(size, self.pair.base.precision)
 
     @property
     def price(self) -> float:
         return self._price
 
     @price.setter
-    def price(self, price: float = None):
-        self._price = round(price, self.quantity.instrument.precision) if isinstance(
-            price, float) else price
+    def price(self, price: float):
+        self._price = round(price, self.pair.base.precision)
 
     @property
     def base_instrument(self) -> 'Instrument':
@@ -134,7 +134,7 @@ class Order(Identifiable):
     def fill(self, exchange: 'Exchange', trade: Trade):
         self.status = OrderStatus.PARTIALLY_FILLED
 
-        fill_size = trade.size + trade.commission.size
+        fill_size = round(trade.size + trade.commission.size, self.pair.base.precision)
 
         self.filled_size += fill_size
         self.remaining_size -= fill_size
@@ -155,6 +155,8 @@ class Order(Identifiable):
             listener.on_complete(self, exchange)
 
         self._listeners = []
+
+        print('Completed: ', self.id, order)
 
         return order or self.release()
 
@@ -179,6 +181,7 @@ class Order(Identifiable):
             "side": self.side,
             "pair": self.pair,
             "quantity": self.quantity,
+            "size": self.size,
             "price": self.price,
             "criteria": self.criteria,
             "path_id": self.path_id
