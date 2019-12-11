@@ -13,6 +13,7 @@
 # limitations under the License
 
 from enum import Enum
+from tensortrade.base.core import Basic
 
 
 class TradeType(Enum):
@@ -25,7 +26,7 @@ class TradeSide(Enum):
     SELL = 'sell'
 
 
-class Trade(object):
+class Trade(Basic):
     """A trade object for use within trading environments."""
 
     def __init__(self,
@@ -56,7 +57,7 @@ class Trade(object):
         """
         self.order_id = order_id
         self.exchange_id = exchange_id
-        self.step = step
+        self.step = self.clock.now()
         self.pair = pair
         self.side = side
         self.type = trade_type

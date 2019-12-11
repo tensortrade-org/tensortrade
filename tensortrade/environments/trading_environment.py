@@ -27,6 +27,7 @@ import tensortrade.actions as actions
 import tensortrade.rewards as rewards
 import tensortrade.features as features
 import tensortrade.wallets as wallets
+import tensortrade.base.clock as clock
 
 from tensortrade.actions import ActionScheme
 from tensortrade.rewards import RewardScheme

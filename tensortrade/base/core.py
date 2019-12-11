@@ -1,6 +1,7 @@
 import uuid
 
 from abc import ABCMeta
+from .clock import TimeIndexed
 
 
 objects = {}
@@ -21,3 +22,7 @@ class Identifiable(object, metaclass=ABCMeta):
     def id(self, identifier: str):
         objects[identifier] = self
         self._id = identifier
+
+
+class Basic(Identifiable, TimeIndexed):
+    pass
