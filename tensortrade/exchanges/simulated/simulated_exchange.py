@@ -111,12 +111,6 @@ class SimulatedExchange(Exchange):
 
         return np.inf
 
-    def _contain_price(self, price: float, precision: int) -> float:
-        return round(max(min(price, self._max_trade_price), self._min_trade_price), precision)
-
-    def _contain_size(self, size: float, precision: int) -> float:
-        return round(max(min(size, self._max_trade_size), self._min_trade_size), precision)
-
     def _execute_buy_order(self, order: 'Order', base_wallet: 'Wallet', quote_wallet: 'Wallet', current_price: float) -> Trade:
         commission = order.size * self._commission
         price = max(min(current_price, self._max_trade_price), self._min_trade_price)
@@ -135,6 +129,7 @@ class SimulatedExchange(Exchange):
         base_wallet -= commission
         base_wallet -= trade.size
         quote_wallet += Quantity(order.pair.quote, trade.size.amount / trade.price, order.path_id)
+
         return trade
 
     def _execute_sell_order(self, order: 'Order', base_wallet: 'Wallet', quote_wallet: 'Wallet', current_price: float) -> Trade:
@@ -153,6 +148,7 @@ class SimulatedExchange(Exchange):
         quote_wallet -= commission
         quote_wallet -= trade.size
         base_wallet += Quantity(order.pair.base, trade.size.amount * trade.price, order.id)
+
         return trade
 
     def execute_order(self, order: 'Order', portfolio: 'Portfolio'):
@@ -168,11 +164,7 @@ class SimulatedExchange(Exchange):
             trade = None
 
         if trade:
-            print(trade)
             order.fill(self, trade)
-
-        if order.status != OrderStatus.FILLED:
-            order.cancel()
 
     def reset(self):
         self._current_step = 0

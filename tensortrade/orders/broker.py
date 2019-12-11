@@ -75,18 +75,10 @@ class Broker(OrderListener):
             print('Total traded: ', order.filled_size)
 
             if order.is_done():
-                print("Order is done")
                 next_order = order.complete(exchange)
-                print(next_order)
+
                 if next_order:
                     self.submit(next_order)
-
-    def on_cancel(self, order: Order):
-        print('Cancel: ', order)
-
-        if order.status == OrderStatus.PARTIALLY_FILLED and order.followed_by:
-
-            self.submit(order.followed_by)
 
     def reset(self):
         self._unexecuted = []

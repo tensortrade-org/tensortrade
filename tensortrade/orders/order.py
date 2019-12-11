@@ -47,27 +47,33 @@ class Order(Identifiable):
         self.portfolio = portfolio
         self.price = price
         self.criteria = criteria
-        self.recipes = []
         self.status = OrderStatus.PENDING
 
-        if path_id and size.is_locked:
-            if path_id != size.path_id:
-                raise Exception("Path ID Mismatch: Size {} and Order".format(path_id, size.path_id))
-        elif path_id and not size.is_locked:
-            self.path_id = path_id
-            self.size.lock_for(self.path_id)
-        elif not path_id and size.is_locked:
-            self.path_id = size.path_id
-        else:
-            self.path_id = str(uuid.uuid4())
-            self.size.lock_for(self.path_id)
-
-        self._listeners = []
-
-        # Keep track of whether the order is filled or not.
         self.filled_size = 0
         self.remaining_size = self.size.amount
+        self.path_id = path_id
+
+        self._recipes = []
+        self._listeners = []
         self._trades = []
+
+    @property
+    def path_id(self) -> str:
+        return self._path_id
+
+    @path_id.setter
+    def path_id(self, path_id: str = None):
+        if path_id and self.size.is_locked and path_id != self.size.path_id:
+            raise Exception("Path ID Mismatch: Size {} and Order {}".format(self.size.path_id,
+                                                                            path_id))
+        elif path_id and not self.size.is_locked:
+            self._path_id = path_id
+            self.size.lock_for(self._path_id)
+        elif not path_id and self.size.is_locked:
+            self._path_id = self.size.path_id
+        else:
+            self._path_id = str(uuid.uuid4())
+            self.size.lock_for(self._path_id)
 
     @property
     def base_instrument(self) -> 'Instrument':
@@ -103,10 +109,6 @@ class Order(Identifiable):
     def is_done(self):
         return self.remaining_size == 0
 
-    def __iadd__(self, other):
-        self.recipes = [other] + self.recipes
-        return self
-
     def attach(self, listener: 'OrderListener'):
         self._listeners += [listener]
 
@@ -120,7 +122,6 @@ class Order(Identifiable):
         wallet = self.portfolio.get_wallet(exchange.id, instrument=instrument)
 
         if self.path_id not in wallet.locked.keys():
-            print("Getting initial amounts form wallet.")
             wallet -= self.size.amount * instrument
             wallet += self.size
 
@@ -141,13 +142,10 @@ class Order(Identifiable):
     def complete(self, exchange: 'Exchange') -> 'Order':
         self.status = OrderStatus.FILLED
 
-        # Create the next order to be returned if there is one.
-        # The order created by this method should automatically
-        # lock the quantity to be associated with the path_id that
-        # it is currently on.
         order = None
-        if len(self.recipes) > 0:
-            recipe = self.recipes.pop()
+
+        if self._recipes:
+            recipe = self._recipes.pop()
             order = recipe.create(self, exchange)
 
         for listener in self._listeners or []:
@@ -180,6 +178,10 @@ class Order(Identifiable):
             "price": self.price,
             "criteria": self.criteria
         }
+
+    def __iadd__(self, recipe: 'Recipe') -> 'Order':
+        self._recipes = [recipe] + self._recipes
+        return self
 
     def __str__(self):
         data = ['{}={}'.format(k, v) for k, v in self.to_dict().items()]
