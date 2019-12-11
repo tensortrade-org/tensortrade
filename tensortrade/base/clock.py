@@ -14,21 +14,11 @@ class BasicClock(object):
         return self._now
 
     def increment(self):
-        print("Hello")
         self._now += 1
 
     def reset(self):
         self._now = self._start
 
 
-class TimeIndexed:
-
-    clock = BasicClock()
 
 
-def increment():
-    TimeIndexed.clock.increment()
-
-
-def reset():
-    TimeIndexed.clock.reset()

@@ -70,35 +70,3 @@ def test_time_indexed_increment():
     assert example2.clock.now() == 1
 
     example1.clock.reset()
-
-
-def test_time_indexed_increment_from_module():
-
-    class FirstExample(TimeIndexed):
-
-        def __init__(self, msg):
-            self.msg = msg
-
-    class SecondExample(TimeIndexed):
-
-        def __init__(self, msg):
-            self.msg = msg
-
-    print(TimeIndexed.clock.now())
-    example1 = FirstExample("Example 1")
-    example2 = SecondExample("Example 2")
-    print(example1.clock.now())
-
-    clock.increment()
-
-    assert example1.clock.start == 0
-    assert example2.clock.start == 0
-    assert example1.clock.now() == 1
-    assert example2.clock.now() == 1
-
-    clock.reset()
-
-    assert example1.clock.start == 0
-    assert example2.clock.start == 0
-    assert example1.clock.now() == 0
-    assert example2.clock.now() == 0

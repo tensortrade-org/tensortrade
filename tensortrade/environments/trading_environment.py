@@ -27,8 +27,8 @@ import tensortrade.actions as actions
 import tensortrade.rewards as rewards
 import tensortrade.features as features
 import tensortrade.wallets as wallets
-import tensortrade.base.clock as clock
 
+from tensortrade.base.core import Basic
 from tensortrade.actions import ActionScheme
 from tensortrade.rewards import RewardScheme
 from tensortrade.exchanges import Exchange
@@ -41,7 +41,7 @@ if importlib.util.find_spec("matplotlib") is not None:
     from tensortrade.environments.render import MatplotlibTradingChart
 
 
-class TradingEnvironment(gym.Env):
+class TradingEnvironment(gym.Env, Basic):
     """A trading environments made for use with Gym-compatible reinforcement learning algorithms."""
 
     def __init__(self,
@@ -301,7 +301,7 @@ class TradingEnvironment(gym.Env):
         Returns:
             A float corresponding to the benefit earned by the action taken this step.
         """
-        reward = self._reward_scheme.get_reward(self._portfolio, self._current_step)
+        reward = self._reward_scheme.get_reward(self._portfolio, self.cl)
         reward = np.nan_to_num(reward)
 
         if np.bitwise_not(np.isfinite(reward)):
@@ -329,7 +329,7 @@ class TradingEnvironment(gym.Env):
                   the current timestep, and any order executed this time step.
         """
         return {
-            'current_step': self._current_step,
+            'current_step': self.clock.now(),
             'portfolio': self._portfolio,
             'broker': self._broker,
             'exchange': self._exchange,
@@ -358,10 +358,10 @@ class TradingEnvironment(gym.Env):
         self.logger.debug('Order: {}'.format(order))
         self.logger.debug('Observation: {}'.format(observation))
         self.logger.debug('P/L: {}'.format(self._portfolio.profit_loss))
-        self.logger.debug('Reward ({}): {}'.format(self._current_step, reward))
+        self.logger.debug('Reward ({}): {}'.format(self.clock.now(), reward))
         self.logger.debug('Performance: {}'.format(self._portfolio.performance.tail(1)))
 
-        self._current_step += 1
+        self.clock.increment()
 
         return observation, reward, done, info
 
@@ -386,11 +386,11 @@ class TradingEnvironment(gym.Env):
         self._portfolio.reset()
         self._broker.reset()
 
-        self._current_step = 0
+        self.clock.reset()
 
         observation = self._next_observation()
 
-        self._current_step = 1
+        self.clock.increment()
 
         return observation
 
@@ -403,7 +403,7 @@ class TradingEnvironment(gym.Env):
                 self.viewer = MatplotlibTradingChart(self.exchange._pre_transformed_data)
 
             if self.viewer is not None:
-                self.viewer.render(self._current_step - 1,
+                self.viewer.render(self.clock.now() - 1,
                                    self._portfolio.performance['net_worth'].values,
                                    self.render_benchmarks,
                                    self._broker.trades)

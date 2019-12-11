@@ -32,7 +32,6 @@ class Trade(Basic):
     def __init__(self,
                  order_id: str,
                  exchange_id: str,
-                 step: int,
                  pair: 'TradingPair',
                  side: TradeSide,
                  trade_type: TradeType,
@@ -57,7 +56,6 @@ class Trade(Basic):
         """
         self.order_id = order_id
         self.exchange_id = exchange_id
-        self.step = self.clock.now()
         self.pair = pair
         self.side = side
         self.type = trade_type
@@ -111,7 +109,7 @@ class Trade(Basic):
 
     def to_dict(self):
         return {'order_id': self.order_id,
-                'step': self.step,
+                'created_at': self.created_at,
                 'base_symbol': self.pair.base.symbol,
                 'quote_symbol': self.pair.quote.symbol,
                 'side': self.side,

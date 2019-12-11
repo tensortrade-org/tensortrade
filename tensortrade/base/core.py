@@ -1,7 +1,7 @@
 import uuid
 
 from abc import ABCMeta
-from .clock import TimeIndexed
+from .clock import BasicClock
 
 
 objects = {}
@@ -15,7 +15,6 @@ class Identifiable(object, metaclass=ABCMeta):
         if not hasattr(self, '_id'):
             self._id = str(uuid.uuid4())
             objects[self._id] = self
-
         return self._id
 
     @id.setter
@@ -24,5 +23,15 @@ class Identifiable(object, metaclass=ABCMeta):
         self._id = identifier
 
 
-class Basic(Identifiable, TimeIndexed):
-    pass
+class TimeIndexed:
+
+    clock = BasicClock()
+
+
+class Basic(Identifiable, TimeIndexed, metaclass=ABCMeta):
+
+    @property
+    def created_at(self):
+        if not hasattr(self, '__created_at'):
+            self.__created_at = self.clock.now()
+        return self.__created_at

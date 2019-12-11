@@ -4,7 +4,7 @@ import uuid
 from enum import Enum
 from typing import Callable, Union, Tuple, List
 
-from tensortrade.base import Identifiable
+from tensortrade.base.core import Basic
 from tensortrade.base.exceptions import InvalidOrderQuantity
 from tensortrade.trades import Trade, TradeSide, TradeType
 
@@ -17,7 +17,7 @@ class OrderStatus(Enum):
     FILLED = 4
 
 
-class Order(Identifiable):
+class Order(Basic):
     """
     Responsibilities of the Order:
         1. Confirming its own validity.
@@ -174,6 +174,7 @@ class Order(Identifiable):
     def to_dict(self):
         return {
             "id": self.id,
+            "created_at": self.created_at,
             "status": self.status,
             "type": self.type,
             "side": self.side,

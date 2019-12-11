@@ -177,11 +177,13 @@ def test_path_order_runs_though_broker():
                   quantity=quantity,
                   portfolio=portfolio)
 
-    order += Recipe(
-        side=TradeSide.SELL,
-        trade_type=TradeType.MARKET,
-        pair=USD/BTC,
-        criteria=StopLoss(direction=StopDirection.EITHER, up_percent=0.02, down_percent=0.10),
+    order = order.add_recipe(
+        Recipe(
+            side=TradeSide.SELL,
+            trade_type=TradeType.MARKET,
+            pair=USD/BTC,
+            criteria=StopLoss(direction=StopDirection.EITHER, up_percent=0.02, down_percent=0.10)
+        )
     )
 
     broker.submit(order)
