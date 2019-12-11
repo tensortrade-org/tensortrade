@@ -109,7 +109,7 @@ class MatplotlibTradingChart:
         self.volume_ax.yaxis.set_ticks([])
 
     def _render_trades(self, step_range, trades):
-        for _, trade in trades.iterrows():
+        for trade in trades.values():
             if trade['step'] in range(sys.maxsize)[step_range]:
                 date = self.df.index.values[trade['step']]
                 close = self.df['close'].values[trade['step']]
