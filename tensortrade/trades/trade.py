@@ -41,7 +41,7 @@ class Trade(object):
         """
         Arguments:
             order_id: The id of the order that created the trade.
-            order_id: The id of the exchange the trade was executed on.
+            exchange_id: The id of the exchange the trade was executed on.
             step: The timestep the trade was made during the trading episode.
             pair: The trading pair of the instruments in the trade.
             (e.g. BTC/USDT, ETH/BTC, ADA/BTC, AAPL/USD, NQ1!/USD, CAD/USD, etc)
@@ -89,7 +89,8 @@ class Trade(object):
         return self.type == TradeType.MARKET
 
     def to_dict(self):
-        return {'step': self.step,
+        return {'order_id': self.order_id,
+                'step': self.step,
                 'base_symbol': self.pair.base.symbol,
                 'quote_symbol': self.pair.quote.symbol,
                 'side': self.side,
@@ -100,14 +101,8 @@ class Trade(object):
                 }
 
     def __str__(self):
-        return '{} -> {} | {} | {} | {} | Size: {} | Price: {} | Commission: {}'.format(self.order_id,
-                                                                                        self.step,
-                                                                                        self.side,
-                                                                                        self.type,
-                                                                                        self.pair,
-                                                                                        self.size,
-                                                                                        self.price,
-                                                                                        self.commission)
+        data = ['{}={}'.format(k, v) for k, v in self.to_dict().items()]
+        return '<{}: {}>'.format(self.__class__.__name__, ', '.join(data))
 
     def __repr__(self):
         return str(self)

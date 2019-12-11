@@ -11,7 +11,7 @@ registry = {}
 class Instrument:
     """A financial instrument for use in trading."""
 
-    def __init__(self, symbol: Union[Symbol, str], precision: int, name: str):
+    def __init__(self, symbol: Union[Symbol, str], precision: int, name: str = None):
         self._symbol = Symbol(symbol) if isinstance(symbol, str) else symbol
         self._precision = precision
         self._name = name

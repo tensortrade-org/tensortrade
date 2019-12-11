@@ -119,8 +119,8 @@ class SimulatedExchange(Exchange):
 
     def _execute_buy_order(self, order: 'Order', base_wallet: 'Wallet', quote_wallet: 'Wallet', current_price: float) -> Trade:
         commission = order.size * self._commission
-        price = self._contain_price(current_price, order.pair.base.precision)
-        size = self._contain_size(order.size - commission, order.pair.base.precision)
+        price = max(min(current_price, self._max_trade_price), self._min_trade_price)
+        size = max(min(order.size - commission, self._max_trade_size), self._min_trade_size)
 
         if order.type == TradeType.MARKET:
             size = current_price * order.size / price
@@ -132,16 +132,15 @@ class SimulatedExchange(Exchange):
 
         self._slippage_model.adjust_trade(trade)
 
-        base_wallet -= Quantity(order.pair.base, commission, order.id)
-        base_wallet -= Quantity(order.pair.base, trade.size, order.id)
-        quote_wallet += Quantity(order.pair.quote, trade.size / trade.price, order.id)
-
+        base_wallet -= commission
+        base_wallet -= trade.size
+        quote_wallet += Quantity(order.pair.quote, trade.size.amount / trade.price, order.path_id)
         return trade
 
     def _execute_sell_order(self, order: 'Order', base_wallet: 'Wallet', quote_wallet: 'Wallet', current_price: float) -> Trade:
         commission = order.size * self._commission
-        price = self._contain_price(current_price, order.pair.base.precision)
-        size = self._contain_size(order.size - commission, order.pair.quote.precision)
+        price = max(min(current_price, self._max_trade_price), self._min_trade_price)
+        size = max(min(order.size - commission, self._max_trade_size), self._min_trade_size)
 
         if order.type == TradeType.LIMIT and order.price > current_price:
             return None
@@ -151,10 +150,9 @@ class SimulatedExchange(Exchange):
 
         self._slippage_model.adjust_trade(trade)
 
-        quote_wallet -= Quantity(order.pair.quote, commission, order.id)
-        quote_wallet -= Quantity(order.pair.quote, trade.size, order.id)
-        base_wallet += Quantity(order.pair.base, trade.size * trade.price, order.id)
-
+        quote_wallet -= commission
+        quote_wallet -= trade.size
+        base_wallet += Quantity(order.pair.base, trade.size.amount * trade.price, order.id)
         return trade
 
     def execute_order(self, order: 'Order', portfolio: 'Portfolio'):
@@ -166,8 +164,11 @@ class SimulatedExchange(Exchange):
             trade = self._execute_buy_order(order, base_wallet, quote_wallet, current_price)
         elif order.is_sell:
             trade = self._execute_sell_order(order, base_wallet, quote_wallet, current_price)
+        else:
+            trade = None
 
         if trade:
+            print(trade)
             order.fill(self, trade)
 
         if order.status != OrderStatus.FILLED:

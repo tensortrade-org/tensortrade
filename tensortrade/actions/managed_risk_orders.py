@@ -22,7 +22,7 @@ from gym.spaces import Discrete
 from tensortrade.actions import ActionScheme
 from tensortrade.trades import TradeSide, TradeType
 from tensortrade.instruments import Quantity
-from tensortrade.orders.criteria import StopLossCriteria
+from tensortrade.orders.criteria import StopLoss
 from tensortrade.orders import Order, OrderListener
 
 
@@ -128,17 +128,17 @@ class ManagedRiskOrders(ActionScheme):
 
         quantity = amount * instrument
 
-        wallet -= quantity
+        # wallet -= quantity | No need for this anymore.
 
-        risk_criteria = StopLossCriteria(direction='either',
-                                         up_percent=take_profit,
-                                         down_percent=stop_loss)
+        risk_criteria = StopLoss(direction='either',
+                                 up_percent=take_profit,
+                                 down_percent=stop_loss)
 
         risk_management_order = Order(side=TradeSide.SELL if self._trade_side == TradeSide.BUY else TradeSide.BUY,
                                       trade_type=TradeType.MARKET,
                                       pair=pair,
                                       price=price,
-                                      quantity=quantity,
+                                      size=size,
                                       portfolio=portfolio,
                                       criteria=risk_criteria)
 
@@ -150,9 +150,9 @@ class ManagedRiskOrders(ActionScheme):
                       portfolio=portfolio,
                       followed_by=risk_management_order)
 
-        quantity.lock_for(order.id)
+        # quantity.lock_for(order.id) | No need for this anymore.
 
-        wallet += quantity
+        # wallet += quantity | No need for this anymore.
 
         if self._order_listener is not None:
             order.attach(self._order_listener)
@@ -160,10 +160,5 @@ class ManagedRiskOrders(ActionScheme):
         return order
 
     def reset(self):
-        self._actions = [None]
-
-        for trading_pair, stop_loss, take_profit, size in product(self._pairs,
-                                                                  self._stop_loss_percentages,
-                                                                  self._take_profit_percentages,
-                                                                  self._trade_sizes):
-            self._actions += [(trading_pair, stop_loss, take_profit, size)]
+        generator = product(self._pairs, self.stop_loss_percentages, self.take_profit_percentages, self.trade_sizes)
+        self._actions = [None] + list(generator)

@@ -69,34 +69,34 @@ class Wallet(Identifiable):
     def locked(self) -> Dict[str, 'Quantity']:
         return self._locked
 
-    def unlock(self, order_id: str):
-        if order_id in self.locked.keys():
-            quantity = self.locked.pop(order_id, None)
+    def unlock(self, path_id: str):
+        if path_id in self.locked.keys():
+            quantity = self.locked.pop(path_id, None)
 
             if quantity is not None:
                 self += quantity.amount * self.instrument
 
     def __iadd__(self, quantity: 'Quantity') -> 'Wallet':
         if quantity.is_locked:
-            if quantity.order_id not in self.locked.keys():
-                self._locked[quantity.order_id] = quantity
+            if quantity.path_id not in self.locked.keys():
+                self._locked[quantity.path_id] = quantity
             else:
-                self._locked[quantity.order_id] += quantity
+                self._locked[quantity.path_id] += quantity
         else:
             self._balance += quantity
 
         return self
 
     def __isub__(self, quantity: 'Quantity') -> 'Wallet':
-        if quantity.is_locked and self.locked[quantity.order_id]:
-            self._locked[quantity.order_id] -= quantity
+        if quantity.is_locked and self.locked[quantity.path_id]:
+            self._locked[quantity.path_id] -= quantity
         else:
             self._balance -= quantity
 
         return self
 
     def __str__(self):
-        return 'Balance: {} | Locked: {}'.format(self.balance, self.locked_balance)
+        return '<Wallet: balance={}, locked={}>'.format(self.balance, self.locked_balance)
 
     def __repr__(self):
         return str(self)

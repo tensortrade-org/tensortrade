@@ -10,13 +10,13 @@ from tensortrade.base.exceptions import InvalidNegativeQuantity, IncompatibleIns
 class Quantity:
     """An amount of a financial instrument for use in trading."""
 
-    def __init__(self, instrument: 'Instrument', amount: float = 0, order_id: str = None):
+    def __init__(self, instrument: 'Instrument', amount: float = 0, path_id: str = None):
         if amount < 0:
             raise InvalidNegativeQuantity(amount)
 
         self._amount = round(amount, instrument.precision)
         self._instrument = instrument
-        self._order_id = order_id
+        self._path_id = path_id
 
     @property
     def amount(self) -> float:
@@ -35,19 +35,19 @@ class Quantity:
         raise ValueError("You cannot change a Quantity's Instrument after initialization.")
 
     @property
-    def order_id(self) -> str:
-        return self._order_id
+    def path_id(self) -> str:
+        return self._path_id
 
-    @order_id.setter
-    def order_id(self, order_id: str):
-        self._order_id = order_id
+    @path_id.setter
+    def path_id(self, path_id: str):
+        self._path_id = path_id
 
     @property
     def is_locked(self) -> bool:
-        return bool(self._order_id)
+        return bool(self._path_id)
 
-    def lock_for(self, order_id: str):
-        self._order_id = order_id
+    def lock_for(self, path_id: str):
+        self._path_id = path_id
 
     @staticmethod
     def _bool_operation(left: Union['Quantity', float, int],
@@ -86,7 +86,7 @@ class Quantity:
         if not isinstance(right_amount, Number):
             raise InvalidNonNumericQuantity(right_amount)
 
-        amount = round(op(left.amount, right_amount), left.instrument.precision)
+        amount = op(left.amount, right_amount)
 
         if amount < 0:
             warnings.warn(
@@ -94,7 +94,7 @@ class Quantity:
 
             amount = 0
 
-        return Quantity(instrument=left.instrument, amount=amount, order_id=left.order_id)
+        return Quantity(instrument=left.instrument, amount=amount, path_id=left.path_id)
 
     def __add__(self, other: Union['Quantity', float, int]) -> 'Quantity':
         return Quantity._math_operation(self, other, operator.add)

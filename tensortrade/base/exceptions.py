@@ -43,3 +43,11 @@ class InsufficientFunds(Exception):
             "Insufficient funds for amount {} with balance {}.".format(amount, balance),
             *args
         )
+
+
+class IncompatibleRecipePath:
+
+    def __init__(self, order, recipe, *args):
+        super().__init__(
+            "Incompatible {} following {}.".format(order, recipe)
+        )

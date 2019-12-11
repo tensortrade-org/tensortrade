@@ -72,24 +72,20 @@ class Broker(OrderListener):
             self._trades[trade.order_id] = self._trades.get(trade.order_id, [])
             self._trades[trade.order_id] += [trade]
 
-            trades_on_exchange = filter(lambda x: x.exchange_id ==
-                                        exchange.id, self._trades[trade.order_id])
-            total_traded = sum([trade.size + trade.commission for trade in trades_on_exchange])
+            print('Total traded: ', order.filled_size)
 
-            print('Total traded: ', total_traded, order.size)
-
-            if total_traded >= order.size:
-                order.complete(exchange)
-
-                if order.followed_by:
-                    order.quantity.lock_for(order.followed_by)
-                    self.submit(order.followed_by)
+            if order.is_done():
+                print("Order is done")
+                next_order = order.complete(exchange)
+                print(next_order)
+                if next_order:
+                    self.submit(next_order)
 
     def on_cancel(self, order: Order):
         print('Cancel: ', order)
 
         if order.status == OrderStatus.PARTIALLY_FILLED and order.followed_by:
-            order.quantity.lock_for(order.followed_by)
+
             self.submit(order.followed_by)
 
     def reset(self):
