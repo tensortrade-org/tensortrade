@@ -1,24 +1,21 @@
 
 
-class BasicClock(object):
+class Clock(object):
 
     def __init__(self):
         self._start = 0
-        self._now = self._start
+        self._step = self._start
 
     @property
     def start(self):
         return self._start
 
-    def now(self):
-        return self._now
+    @property
+    def step(self):
+        return self._step
 
     def increment(self):
-        self._now += 1
+        self._step += 1
 
     def reset(self):
-        self._now = self._start
-
-
-
-
+        self._step = self._start

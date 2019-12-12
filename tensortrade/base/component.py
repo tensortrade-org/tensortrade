@@ -4,7 +4,7 @@ from abc import ABC, ABCMeta
 
 from .context import TradingContext, Context
 from .registry import get_registry, register
-from .core import Basic
+from .core import Identifiable
 
 
 class InitContextMeta(ABCMeta):
@@ -37,7 +37,7 @@ class ContextualizedMixin(object):
         self._context = context
 
 
-class Component(ABC, ContextualizedMixin, Basic, metaclass=InitContextMeta):
+class Component(ABC, ContextualizedMixin, Identifiable, metaclass=InitContextMeta):
 
     registered_name = None
 

@@ -21,6 +21,7 @@ from gym.spaces import Space, Box
 from typing import List, Dict
 from copy import deepcopy
 
+from tensortrade.base import TimedIdentifiable
 from tensortrade.trades import Trade, TradeType, TradeSide
 from tensortrade.orders import OrderStatus
 from tensortrade.instruments import TradingPair, Quantity
@@ -29,7 +30,7 @@ from tensortrade.features import FeaturePipeline
 from tensortrade.instruments import USD, BTC
 
 
-class SimulatedExchange(Exchange):
+class SimulatedExchange(Exchange, TimedIdentifiable):
     """An exchange, in which the price history is based off the supplied data frame and
     trade execution is largely decided by the designated slippage model.
 
@@ -90,11 +91,11 @@ class SimulatedExchange(Exchange):
 
     @property
     def has_next_observation(self) -> bool:
-        return self._initial_step + self.clock.now() < self._final_step
+        return self._initial_step + self.clock.step < self._final_step
 
     def next_observation(self, window_size: int = 1) -> pd.DataFrame:
-        lower_range = max(self.clock.now() + self._initial_step - window_size, self._initial_step)
-        upper_range = min(self.clock.now() + self._initial_step + 1, self._final_step)
+        lower_range = max(self.clock.step + self._initial_step - window_size, self._initial_step)
+        upper_range = min(self.clock.step + self._initial_step + 1, self._final_step)
 
         obs = self._data_frame.iloc[lower_range:upper_range]
 
@@ -105,7 +106,7 @@ class SimulatedExchange(Exchange):
 
     def quote_price(self, trading_pair: TradingPair) -> float:
         if self._price_history is not None:
-            return float(self._price_history.iloc[self.clock.now()])
+            return float(self._price_history.iloc[self.clock.step])
 
         return np.inf
 
@@ -131,6 +132,7 @@ class SimulatedExchange(Exchange):
 
         trade = Trade(order_id=order.id,
                       exchange_id=self.id,
+                      step=self.clock.step,
                       pair=order.pair,
                       side=TradeSide.BUY,
                       trade_type=order.type,
@@ -158,7 +160,7 @@ class SimulatedExchange(Exchange):
 
         trade = Trade(order_id=order.id,
                       exchange_id=self.id,
-                      step=self._current_step,
+                      step=self.clock.step,
                       pair=order.pair,
                       side=TradeSide.SELL,
                       trade_type=order.type,

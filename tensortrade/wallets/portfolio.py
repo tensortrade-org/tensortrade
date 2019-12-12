@@ -2,13 +2,13 @@ import pandas as pd
 
 from typing import Callable, Tuple, Union, List, Dict
 
-from tensortrade import Component
+from tensortrade import Component, TimedIdentifiable
 from tensortrade.instruments import Instrument, Quantity, TradingPair
 
 from .wallet import Wallet
 
 
-class Portfolio(Component):
+class Portfolio(Component, TimedIdentifiable):
     """A portfolio of wallets on exchanges."""
 
     registered_name = "portfolio"
@@ -163,7 +163,7 @@ class Portfolio(Component):
 
     def update(self):
         performance_update = pd.DataFrame(
-            [[self._current_step, self.net_worth] +
+            [[self.clock.step, self.net_worth] +
              [quantity.size for quantity in self.balances] +
              [quantity.size for quantity in self.locked_balances]],
             columns=['step', 'net_worth'] +
@@ -174,10 +174,10 @@ class Portfolio(Component):
         self._performance = pd.concat(
             [self._performance, performance_update], axis=0, sort=True).dropna()
 
-        self._current_step += 1
+        self.clock.step += 1
 
     def reset(self):
         self._initial_balance = self.base_balance
         self._initial_net_worth = self.net_worth
         self._performance = pd.DataFrame([], columns=['step', 'net_worth'], index=['step'])
-        self._current_step = 0
+        self.clock.step = 0

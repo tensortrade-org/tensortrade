@@ -1,7 +1,7 @@
 import uuid
 
 from abc import ABCMeta
-from .clock import BasicClock
+from .clock import Clock
 
 
 objects = {}
@@ -25,13 +25,14 @@ class Identifiable(object, metaclass=ABCMeta):
 
 class TimeIndexed:
 
-    clock = BasicClock()
+    clock = Clock()
 
 
-class Basic(Identifiable, TimeIndexed, metaclass=ABCMeta):
+class TimedIdentifiable(Identifiable, TimeIndexed, metaclass=ABCMeta):
 
     @property
     def created_at(self):
         if not hasattr(self, '__created_at'):
-            self.__created_at = self.clock.now()
+            self.__created_at = self.clock.step
+
         return self.__created_at
