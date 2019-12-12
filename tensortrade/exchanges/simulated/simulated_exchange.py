@@ -192,6 +192,8 @@ class SimulatedExchange(Exchange, TimedIdentifiable):
             order.fill(self, trade)
 
     def reset(self):
+        self.clock.reset()
+
         self._initial_step = 0
         self._final_step = len(self._data_frame) - 1
 
