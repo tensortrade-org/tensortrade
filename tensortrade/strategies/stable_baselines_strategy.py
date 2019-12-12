@@ -126,10 +126,10 @@ class StableBaselinesTradingStrategy(TradingStrategy):
         return performance
 
     def _train_callback(self, _locals, _globals):
-        self._performance = self._environment.portfolio.performance
+        performance = self._environment.portfolio.performance
 
         if self._episode_callback and self._environment.done():
-            self._episode_callback(self._performance)
+            self._episode_callback(performance)
 
         return True
 
@@ -141,7 +141,11 @@ class StableBaselinesTradingStrategy(TradingStrategy):
             episode_callback: Callable[[pd.DataFrame], bool] = None) -> pd.DataFrame:
         if steps is None and not evaluation:
             raise ValueError(
-                'You must set the number of `steps` to train the strategy.')
+                "You must set the number of `steps` to train the strategy.")
+
+        if hasattr(self._environment.exchange, '_min_time_slice') and steps < self._environment.exchange._min_time_slice:
+            raise ValueError("The number of `steps` ({}) cannot be less than the environment's `_min_time_slice` ({}) ".format(
+                steps, self._environment.exchange._min_time_slice))
 
         if evaluation:
             return self.evaluate(steps, episodes, render_mode, episode_callback)
@@ -150,4 +154,4 @@ class StableBaselinesTradingStrategy(TradingStrategy):
 
         self._agent.learn(steps, callback=self._train_callback)
 
-        return self._performance
+        return self._environment.portfolio.performance
