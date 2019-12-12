@@ -41,7 +41,7 @@ class FBMExchange(SimulatedExchange):
         self._start_date_format = self.default('start_date_format', '%Y-%m-%d', kwargs)
         self._times_to_generate = self.default('times_to_generate', 100000, kwargs)
         self._hurst = self.default('hurst', 0.61, kwargs)
-        self._timeframe = self.default('timeframe', '1h', kwargs)
+        self._timeframe = self.default('timeframe', '1H', kwargs)
 
         self._scale_times_to_generate()
         self._generate_price_history()

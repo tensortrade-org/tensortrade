@@ -12,7 +12,8 @@ from . import simulated
 _registry = {
     'simulated': simulated.SimulatedExchange,
     'fbm': simulated.FBMExchange,
-    'gan': simulated.GANExchange
+    'gan': simulated.GANExchange,
+    'stochastic': simulated.StochasticExchange
 }
 
 
