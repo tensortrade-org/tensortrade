@@ -38,7 +38,7 @@ class StochasticExchange(SimulatedExchange):
         self._start_date = self.default('start_date', '2010-01-01', kwargs)
         self._start_date_format = self.default('start_date_format', '%Y-%m-%d', kwargs)
         self._times_to_generate = self.default('times_to_generate', 1000, kwargs)
-        self._model_type = self.default('model_type', "HESTON", kwargs)
+        self._model_type = self.default('model_type', "FBM", kwargs)
         self._param_type = self.default('param_type', "Default", kwargs)
         self._hurst = self.default('hurst', 0.61, kwargs)
         self._timeframe = self.default('timeframe', '1H', kwargs)
@@ -53,7 +53,7 @@ class StochasticExchange(SimulatedExchange):
         self._generate_price_history()
 
     def _scale_times_to_generate(self):
-        if 'min' in self._timeframe.upper():
+        if 'MIN' in self._timeframe.upper():
             self._times_to_generate = self._times_to_generate * \
                                       int(re.findall(r'\d+', self._timeframe)[0])
         elif 'H' in self._timeframe.upper():
