@@ -59,7 +59,6 @@ def test_valid_add():
     q1 = Quantity(BTC, 10000)
     q2 = Quantity(BTC, 500)
     q = q1 + q2
-
     assert q.size == 10500
     assert q.instrument == BTC
 
@@ -67,7 +66,6 @@ def test_valid_add():
     q1 = Quantity(BTC, 10000, path_id=path_id)
     q2 = Quantity(BTC, 500)
     q = q1 + q2
-
     assert q.size == 10500
     assert q.instrument == BTC
     assert q.path_id == path_id
@@ -76,7 +74,6 @@ def test_valid_add():
     q1 = Quantity(BTC, 10000, path_id=path_id)
     q2 = Quantity(BTC, 500, path_id=path_id)
     q = q1 + q2
-
     assert q.size == 10500
     assert q.instrument == BTC
     assert q.path_id == path_id
@@ -85,15 +82,13 @@ def test_valid_add():
     q1 = Quantity(BTC, 10000)
     q2 = 500
     q = q1 + q2
-
-    # float
     assert q.size == 10500
     assert q.instrument == BTC
 
+    # float
     q1 = Quantity(BTC, 10000)
     q2 = 500.0
     q = q1 + q2
-
     assert q.size == 10500
     assert q.instrument == BTC
 
@@ -103,7 +98,6 @@ def test_invalid_add():
     # Quantity
     q1 = Quantity(BTC, 10000)
     q2 = Quantity(ETH, 500)
-
     with pytest.raises(IncompatibleInstrumentOperation):
         q = q1 + q2
 
@@ -116,7 +110,6 @@ def test_invalid_add():
     # str
     q1 = Quantity(BTC, 10000)
     q2 = "ETH"
-
     with pytest.raises(InvalidNonNumericQuantity):
         q = q1 + q2
 
@@ -127,14 +120,12 @@ def test_valid_iadd():
     # Quantity
     q = Quantity(BTC, 10000)
     q += Quantity(BTC, 500)
-
     assert q.size == 10500
     assert q.instrument == BTC
 
     # Quantity with Path ID
     q = Quantity(BTC, 10000, path_id=path_id)
     q += Quantity(BTC, 500)
-
     assert q.size == 10500
     assert q.instrument == BTC
     assert q.path_id == path_id
@@ -142,7 +133,6 @@ def test_valid_iadd():
     # Quantity with matching Path ID
     q = Quantity(BTC, 10000, path_id=path_id)
     q += Quantity(BTC, 500, path_id=path_id)
-
     assert q.size == 10500
     assert q.instrument == BTC
     assert q.path_id == path_id
@@ -150,14 +140,12 @@ def test_valid_iadd():
     # int
     q = Quantity(BTC, 10000)
     q += 500
-
-    # float
     assert q.size == 10500
     assert q.instrument == BTC
 
+    # float
     q = Quantity(BTC, 10000)
     q += 500.0
-
     assert q.size == 10500
     assert q.instrument == BTC
 
@@ -187,7 +175,6 @@ def test_valid_sub():
     q1 = Quantity(BTC, 1000)
     q2 = Quantity(BTC, 500)
     q = q1 - q2
-
     assert q.size == 500
     assert q.instrument == BTC
 
@@ -195,7 +182,6 @@ def test_valid_sub():
     q1 = Quantity(BTC, 1000, path_id=path_id)
     q2 = Quantity(BTC, 500)
     q = q1 - q2
-
     assert q.size == 500
     assert q.instrument == BTC
     assert q.path_id == path_id
@@ -204,7 +190,6 @@ def test_valid_sub():
     q1 = Quantity(BTC, 1000, path_id=path_id)
     q2 = Quantity(BTC, 500, path_id=path_id)
     q = q1 - q2
-
     assert q.size == 500
     assert q.instrument == BTC
     assert q.path_id == path_id
@@ -212,18 +197,14 @@ def test_valid_sub():
     # int
     q1 = Quantity(BTC, 1000)
     q2 = 500
-
     q = q1 - q2
-
     assert q.size == 500
     assert q.instrument == BTC
 
     # float
     q1 = Quantity(BTC, 1000)
     q2 = 500.0
-
     q = q1 - q2
-
     assert q.size == 500
     assert q.instrument == BTC
 
@@ -273,14 +254,12 @@ def test_valid_isub():
     # Quantity
     q = Quantity(BTC, 1000)
     q -= Quantity(BTC, 500)
-
     assert q.size == 500
     assert q.instrument == BTC
 
     # Quantity with Path ID
     q = Quantity(BTC, 1000, path_id=path_id)
     q -= Quantity(BTC, 500)
-
     assert q.size == 500
     assert q.instrument == BTC
     assert q.path_id == path_id
@@ -288,7 +267,6 @@ def test_valid_isub():
     # Quantity with matching Path ID
     q = Quantity(BTC, 1000, path_id=path_id)
     q -= Quantity(BTC, 500, path_id=path_id)
-
     assert q.size == 500
     assert q.instrument == BTC
     assert q.path_id == path_id
@@ -296,14 +274,12 @@ def test_valid_isub():
     # int
     q = Quantity(BTC, 1000)
     q -= 500
-
-    # float
     assert q.size == 500
     assert q.instrument == BTC
 
+    # float
     q = Quantity(BTC, 1000)
     q -= 500.0
-
     assert q.size == 500
     assert q.instrument == BTC
 
