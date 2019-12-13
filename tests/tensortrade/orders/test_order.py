@@ -22,7 +22,7 @@ broker = Broker(exchange)
 broker.reset()
 
 
-def test_order_initialization():
+def test_init():
     wallets = [
         Wallet(exchange, 10000 * USD),
         Wallet(exchange, 0 * BTC)

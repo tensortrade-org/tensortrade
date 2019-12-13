@@ -1,11 +1,14 @@
 import pandas as pd
 
-from typing import Callable, Tuple, Union, List, Dict
+from typing import Callable, Tuple, Union, List, Dict, NewType
 
 from tensortrade import Component, TimedIdentifiable
 from tensortrade.instruments import Instrument, Quantity, TradingPair
 
 from .wallet import Wallet
+
+
+WalletType = Union['Wallet', Tuple['Exchange', Instrument, float]]
 
 
 class Portfolio(Component, TimedIdentifiable):
@@ -15,28 +18,18 @@ class Portfolio(Component, TimedIdentifiable):
 
     def __init__(self,
                  base_instrument: Instrument,
-                 wallets: List['Wallet'] = [],
-                 wallet_tuples: List[Tuple['Exchange', Instrument, float]] = []):
-        self._base_instrument = self.default('base_instrument', base_instrument)
+                 wallets: List[WalletType] = None):
+        wallets = wallets or []
 
+        self._base_instrument = self.default('base_instrument', base_instrument)
         self._wallets = {}
 
         for wallet in wallets:
             self.add(wallet)
 
-        for wallet_tuple in wallet_tuples:
-            self.add_tuple(wallet_tuple)
-
-    @classmethod
-    def from_tuples(cls, tuples: List[Tuple['Exchange', Instrument, float]]):
-        _, base_instrument, __ = tuples[0]
-
-        portfolio = cls(base_instrument=base_instrument)
-
-        for wallet_tuple in tuples:
-            portfolio.add_tuple(wallet_tuple)
-
-        return portfolio
+        self._initial_balance = self.base_balance
+        self._initial_net_worth = self.net_worth
+        self._performance = pd.DataFrame([], columns=['step', 'net_worth'], index=['step'])
 
     @property
     def base_instrument(self) -> Instrument:
@@ -146,14 +139,11 @@ class Portfolio(Component, TimedIdentifiable):
     def get_wallet(self, exchange_id: str, instrument: Instrument):
         return self._wallets[(exchange_id, instrument.symbol)]
 
-    def _wallet_key(self, wallet: 'Wallet') -> Tuple[str, str]:
-        return wallet.exchange.id, wallet.instrument.symbol
-
-    def add(self, wallet: 'Wallet'):
-        self._wallets[self._wallet_key(wallet)] = wallet
-
-    def add_tuple(self, wallet_tuple: Tuple['Exchange', Instrument, float]):
-        self.add(Wallet.from_tuple(wallet_tuple))
+    def add(self, wallet: WalletType):
+        if isinstance(wallet, tuple):
+            wallet = Wallet.from_tuple(wallet)
+        k = (wallet.exchange.id, wallet.instrument.symbol)
+        self._wallets[k] = wallet
 
     def remove(self, wallet: 'Wallet'):
         self._wallets.pop(self._wallet_key(wallet), None)
