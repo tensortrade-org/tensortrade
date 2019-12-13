@@ -16,7 +16,7 @@ import re
 
 import pandas as pd
 from stochastic.noise import GaussianNoise
-
+from stochastic.continuous import FractionalBrownianMotion
 from tensortrade.exchanges.simulated.simulated_exchange import SimulatedExchange
 from tensortrade.exchanges.simulated.stochastic.stoch_gen import *
 
@@ -40,6 +40,7 @@ class StochasticExchange(SimulatedExchange):
         self._times_to_generate = self.default('times_to_generate', 1000, kwargs)
         self._model_type = self.default('model_type', "HESTON", kwargs)
         self._param_type = self.default('param_type', "Default", kwargs)
+        self._hurst = self.default('hurst', 0.61, kwargs)
         self._timeframe = self.default('timeframe', '1H', kwargs)
         self._delta = self.default('delta', self.get_delta(self._timeframe), kwargs)
 
@@ -52,19 +53,19 @@ class StochasticExchange(SimulatedExchange):
         self._generate_price_history()
 
     def _scale_times_to_generate(self):
-        if 'min' in self._timeframe:
+        if 'min' in self._timeframe.upper():
             self._times_to_generate = self._times_to_generate * \
                                       int(re.findall(r'\d+', self._timeframe)[0])
-        elif 'H' in self._timeframe:
+        elif 'H' in self._timeframe.upper():
             self._times_to_generate = self._times_to_generate * \
                                       int(re.findall(r'\d+', self._timeframe)[0]) * 60
-        elif 'D' in self._timeframe:
+        elif 'D' in self._timeframe.upper():
             self._times_to_generate = self._times_to_generate * \
                                       int(re.findall(r'\d+', self._timeframe)[0]) * 60 * 24
-        elif 'W' in self._timeframe:
+        elif 'W' in self._timeframe.upper():
             self._times_to_generate = self._times_to_generate * \
                                       int(re.findall(r'\d+', self._timeframe)[0]) * 60 * 24 * 7
-        elif 'M' in self._timeframe:
+        elif 'M' in self._timeframe.upper():
             self._times_to_generate = self._times_to_generate * \
                                       int(re.findall(r'\d+', self._timeframe)[0]) * 60 * 24 * 7 * 30
         else:
@@ -90,13 +91,13 @@ class StochasticExchange(SimulatedExchange):
 
     @staticmethod
     def get_delta(time_frame):
-        if 'min' in time_frame:
-            return 1 / (252 * 24 * (60/int(time_frame.split('min')[0])))
-        elif 'H' in time_frame:
+        if 'MIN' in time_frame.upper():
+            return 1 / (252 * 24 * (60/int(time_frame.split('MIN')[0])))
+        elif 'H' in time_frame.upper():
             return 1 / (252 * (24/int(time_frame.split('H')[0])))
-        elif 'D' in time_frame:
+        elif 'D' in time_frame.upper():
             return 1 / 252
-        elif 'M' in time_frame:
+        elif 'M' in time_frame.upper():
             return 1 / 12
 
     @staticmethod
@@ -143,13 +144,20 @@ class StochasticExchange(SimulatedExchange):
             )
 
     def _generate_price_history(self):
-        prices = self.get_price_data(self._model_type, self._model_params)
-        volume_gen = GaussianNoise(t=self._times_to_generate)
+        if self._model_type == 'FBM':
+            price_fbm = FractionalBrownianMotion(t=self._times_to_generate, hurst=self._hurst)
+            price_volatility = price_fbm.sample(self._times_to_generate, zero=False)
+            prices = price_volatility + self._base_price
+
+            volume_gen = GaussianNoise(t=self._times_to_generate)
+            volume_volatility = volume_gen.sample(self._times_to_generate)
+            volumes = volume_volatility * price_volatility + self._base_volume
+        else:
+            prices = self.get_price_data(self._model_type, self._model_params)
+            volume_gen = GaussianNoise(t=self._times_to_generate)
+            volumes = volume_gen.sample(self._times_to_generate)
 
         start_date = pd.to_datetime(self._start_date, format=self._start_date_format)
-
-        volumes = volume_gen.sample(self._times_to_generate)
-
         price_frame = pd.DataFrame([], columns=['date', 'price'], dtype=float)
         volume_frame = pd.DataFrame(
             [], columns=['date', 'volume'], dtype=float)
