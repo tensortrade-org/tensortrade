@@ -2,11 +2,13 @@
 from itertools import product
 from typing import Union, List, Dict
 
+from tensortrade.base.core import TimeIndexed
+
 from .order import Order, OrderStatus
 from .order_listener import OrderListener
 
 
-class Broker(OrderListener):
+class Broker(OrderListener, TimeIndexed):
     """A broker for handling the execution of orders on multiple exchanges.
     Orders are kept in a virtual order book until they are ready to be executed.
     """

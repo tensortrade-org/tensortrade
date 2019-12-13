@@ -17,10 +17,10 @@ import pandas as pd
 from abc import abstractmethod
 from typing import List
 
-from tensortrade.base import Component, Identifiable
+from tensortrade.base import Component, TimedIdentifiable
 
 
-class Exchange(Component, Identifiable):
+class Exchange(Component, TimedIdentifiable):
     """An abstract exchange for use within a trading environment."""
     registered_name = "exchanges"
 

@@ -4,7 +4,7 @@ import uuid
 from enum import Enum
 from typing import Callable, Union, Tuple, List
 
-from tensortrade.base import Identifiable
+from tensortrade.base import TimedIdentifiable
 from tensortrade.base.exceptions import InvalidOrderQuantity
 from tensortrade.trades import Trade, TradeSide, TradeType
 
@@ -17,7 +17,7 @@ class OrderStatus(Enum):
     FILLED = 4
 
 
-class Order(Identifiable):
+class Order(TimedIdentifiable):
     """
     Responsibilities of the Order:
         1. Confirming its own validity.

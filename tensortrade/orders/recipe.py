@@ -32,7 +32,7 @@ class Recipe(Identifiable):
                      portfolio=order.portfolio,
                      price=order.price,
                      criteria=self.criteria,
-                     path_id=order.id)
+                     path_id=order.path_id)
 
     def to_dict(self):
         return {

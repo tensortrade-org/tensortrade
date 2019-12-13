@@ -16,10 +16,10 @@ import pandas as pd
 
 from abc import abstractmethod
 
-from tensortrade import Component
+from tensortrade import Component, TimeIndexed
 
 
-class RewardScheme(Component):
+class RewardScheme(Component, TimeIndexed):
 
     registered_name = "rewards"
 
@@ -28,11 +28,10 @@ class RewardScheme(Component):
         pass
 
     @abstractmethod
-    def get_reward(self, portfolio: 'Portfolio', current_step: int) -> float:
+    def get_reward(self, portfolio: 'Portfolio') -> float:
         """
         Arguments:
             portfolio: The portfolio being used by the environment.
-            current_step: The environments's current timestep.
 
         Returns:
             A float corresponding to the benefit earned by the action taken this timestep.

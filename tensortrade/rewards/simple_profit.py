@@ -27,11 +27,11 @@ class SimpleProfit(RewardScheme):
     def reset(self):
         pass
 
-    def get_reward(self, portfolio: 'Portfolio', current_step: int) -> float:
+    def get_reward(self, portfolio: 'Portfolio') -> float:
         """Rewards the agent for incremental increases in net worth over a sliding window.
 
         Args:
-            current_step: The current timestep of the environment.
+            portfolio: The portfolio being used by the environment.
 
         Returns:
             The incremental increase in net worth over the previous `window_size` timesteps.

@@ -28,7 +28,7 @@ import tensortrade.rewards as rewards
 import tensortrade.features as features
 import tensortrade.wallets as wallets
 
-from tensortrade.base.core import TimedIdentifiable
+from tensortrade.base.core import TimeIndexed
 from tensortrade.actions import ActionScheme
 from tensortrade.rewards import RewardScheme
 from tensortrade.exchanges import Exchange
@@ -41,7 +41,7 @@ if importlib.util.find_spec("matplotlib") is not None:
     from tensortrade.environments.render import MatplotlibTradingChart
 
 
-class TradingEnvironment(gym.Env, TimedIdentifiable):
+class TradingEnvironment(gym.Env, TimeIndexed):
     """A trading environments made for use with Gym-compatible reinforcement learning algorithms."""
 
     def __init__(self,

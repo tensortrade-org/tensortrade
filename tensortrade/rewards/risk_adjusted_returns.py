@@ -62,7 +62,7 @@ class RiskAdjustedReturns(RewardScheme):
 
         return (expected_return - self._risk_free_rate) / (downside_std + 1E-9)
 
-    def get_reward(self, portfolio: 'Portfolio', current_step: int) -> float:
+    def get_reward(self, portfolio: 'Portfolio') -> float:
         """Return the reward corresponding to the selected risk-adjusted return metric."""
         returns = portfolio.performance['net_worth'].diff()
 

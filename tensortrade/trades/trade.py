@@ -14,7 +14,7 @@
 
 from enum import Enum
 
-from tensortrade.base import Identifiable
+from tensortrade.base import TimedIdentifiable
 
 
 class TradeType(Enum):
@@ -27,7 +27,7 @@ class TradeSide(Enum):
     SELL = 'sell'
 
 
-class Trade(Identifiable):
+class Trade(TimedIdentifiable):
     """A trade object for use within trading environments."""
 
     def __init__(self,

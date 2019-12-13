@@ -21,7 +21,7 @@ from gym.spaces import Space, Box
 from typing import List, Dict
 from copy import deepcopy
 
-from tensortrade.base import TimedIdentifiable
+
 from tensortrade.trades import Trade, TradeType, TradeSide
 from tensortrade.orders import OrderStatus
 from tensortrade.instruments import TradingPair, Quantity
@@ -30,7 +30,7 @@ from tensortrade.features import FeaturePipeline
 from tensortrade.instruments import USD, BTC
 
 
-class SimulatedExchange(Exchange, TimedIdentifiable):
+class SimulatedExchange(Exchange):
     """An exchange, in which the price history is based off the supplied data frame and
     trade execution is largely decided by the designated slippage model.
 
@@ -170,7 +170,7 @@ class SimulatedExchange(Exchange, TimedIdentifiable):
 
         # self._slippage_model.adjust_trade(trade)
 
-        quote_wallet -= Quantity(order.pair.quote, trade.size * trade.price, order.path_id)
+        quote_wallet -= Quantity(order.pair.quote, trade.size / trade.price, order.path_id)
         base_wallet -= commission
         base_wallet += quantity
 
@@ -192,7 +192,6 @@ class SimulatedExchange(Exchange, TimedIdentifiable):
             order.fill(self, trade)
 
     def reset(self):
-        self.clock.reset()
 
         self._initial_step = 0
         self._final_step = len(self._data_frame) - 1
