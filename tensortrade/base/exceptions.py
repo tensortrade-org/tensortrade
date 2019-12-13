@@ -1,5 +1,8 @@
 
 
+# =============================================================================
+# Quantity Exceptions
+# =============================================================================
 class InvalidNegativeQuantity(Exception):
 
     def __init__(self, size, *args):
@@ -18,6 +21,18 @@ class InvalidNonNumericQuantity(Exception):
         )
 
 
+class QuantityOpPathMismatch(Exception):
+
+    def __init(self, left_id, right_id, *args):
+        super().__init__(
+            "Invalid operation between quantities with unequal path id: {} {}.".format(left_id, right_id),
+            *args
+        )
+
+
+# =============================================================================
+# Instrument Exceptions
+# =============================================================================
 class IncompatibleInstrumentOperation(Exception):
 
     def __init__(self, left, right, *args):
@@ -27,6 +42,9 @@ class IncompatibleInstrumentOperation(Exception):
         )
 
 
+# =============================================================================
+# Order Exceptions
+# =============================================================================
 class InvalidOrderQuantity(Exception):
 
     def __init__(self, size, *args):
@@ -36,6 +54,18 @@ class InvalidOrderQuantity(Exception):
         )
 
 
+class IncompatibleRecipePath(Exception):
+
+    def __init__(self, order, recipe, *args):
+        super().__init__(
+            "Incompatible {} following {}.".format(order, recipe),
+            *args
+        )
+
+
+# =============================================================================
+# Wallet Exceptions
+# =============================================================================
 class InsufficientFunds(Exception):
 
     def __init__(self, balance, size, *args):
@@ -45,9 +75,13 @@ class InsufficientFunds(Exception):
         )
 
 
-class IncompatibleRecipePath:
+# =============================================================================
+# Trading Pair Exceptions
+# =============================================================================
+class InvalidTradingPair(Exception):
 
-    def __init__(self, order, recipe, *args):
+    def __init__(self, base, quote,*args):
         super().__init__(
-            "Incompatible {} following {}.".format(order, recipe)
+            "Invalid instrument pair {}/{}.".format(base, quote),
+            *args
         )

@@ -1,13 +1,11 @@
 
-
-from tensortrade.instruments import *
-
 import pytest
 
-from tensortrade.instruments import *
+from tensortrade.instruments import Instrument, TradingPair, Quantity
+from tensortrade.base.exceptions import InvalidTradingPair
 
 
-def test_unit_init():
+def test_init():
     BTC = Instrument("BTC", 8, "Bitcoin")
     assert BTC
     assert BTC.symbol == "BTC"
@@ -15,63 +13,86 @@ def test_unit_init():
     assert BTC.name == "Bitcoin"
 
 
-def test_valid_addition():
+# Equals
+def test_valid_equals():
     BTC1 = Instrument("BTC", 8, "Bitcoin")
     BTC2 = Instrument("BTC", 8, "Bitcoin")
-    BTC = BTC1 + BTC2
-    assert BTC.symbol == "BTC"
-    assert BTC.precision == 8
-    assert BTC.name == "Bitcoin"
+    assert BTC1 == BTC2
+
+    BTC2 = Instrument("ETH", 8, "Bitcoin")
+    assert not BTC1 == BTC2
+
+    BTC2 = Instrument("BTC", 5, "Bitcoin")
+    assert not BTC1 == BTC2
+
+    BTC2 = Instrument("BTC", 8, "Etheruem")
+    assert not BTC1 == BTC2
 
 
-def test_invalid_addition():
-    m = Unit("m")
-    s = Unit("s")
-    with pytest.raises(Exception):
-        m_plus_s = m + s
+# Not equals
+def test_not_equals():
+    BTC1 = Instrument("BTC", 8, "Bitcoin")
+    BTC2 = Instrument("BTC", 8, "Bitcoin")
+    assert not BTC1 != BTC2
+
+    BTC2 = Instrument("ETH", 8, "Bitcoin")
+    assert BTC1 != BTC2
+
+    BTC2 = Instrument("BTC", 5, "Bitcoin")
+    assert BTC1 != BTC2
+
+    BTC2 = Instrument("BTC", 8, "Etheruem")
+    assert BTC1 != BTC2
 
 
-def test_valid_subtraction():
-    m1 = Unit("m")
-    m2 = Unit("m")
-    m3 = m1 - m2
-    assert m3.symbol == "m"
+# Right multiply
+def test_valid_rmul():
+    BTC = Instrument("BTC", 8, "Bitcoin")
 
-
-def test_invalid_subtraction():
-    m = Unit("m")
-    s = Unit("s")
-    with pytest.raises(Exception):
-        m_minus_s = m - s
-
-
-def test_multiplication():
-    m1 = Unit("m")
-    m2 = Unit("s")
-    m3 = m1*m2
-    assert m3.symbol == "m*s"
-
-
-def test_division():
-    m1 = Unit("m")
-    m2 = Unit("s")
-    m3 = m1/m2
-    assert m3.symbol == "m/s"
-
-
-def test_make_quantity_with_unit():
-
-    m = Unit("m")
-    s = Unit("s")
-
-    q = 5*m
-
+    # int
+    q = 8*BTC
     assert isinstance(q, Quantity)
-    assert q.size == 5
-    assert q.unit == m
+    assert q.size == 8
+    assert q.instrument == BTC
 
-    q = 5 * (m / s)
-
+    # float
+    q = 8.0*BTC
     assert isinstance(q, Quantity)
-    assert q.size == 5
-    assert q.unit == m / s
+    assert q.size == 8.0
+    assert q.instrument == BTC
+
+
+def test_invalid_rmul():
+    BTC = Instrument("BTC", 8, "Bitcoin")
+
+    # int
+    with pytest.raises(TypeError):
+        q = BTC*8
+
+    # float
+    with pytest.raises(TypeError):
+        q = BTC*8.0
+
+
+# Division
+def test_valid_truediv():
+    BTC = Instrument("BTC", 8, "Bitcoin")
+    ETH = Instrument("ETH", 8, "Etheruem")
+
+    pair = BTC/ETH
+
+    assert pair.base == BTC
+    assert pair.quote == ETH
+
+
+def test_invalid_truediv():
+    BTC = Instrument("BTC", 8, "Bitcoin")
+
+    with pytest.raises(InvalidTradingPair):
+        pair = BTC / BTC
+
+
+# String
+def test_str():
+    BTC = Instrument("BTC", 8, "Bitcoin")
+    assert str(BTC) == "BTC"
