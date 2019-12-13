@@ -1,8 +1,8 @@
 
-from typing import Dict, Tuple
+from typing import Dict, Tuple, Union
 
 from tensortrade.base import Identifiable
-from tensortrade.base.exceptions import InsufficientFunds
+from tensortrade.base.exceptions import InsufficientFundsForAllocation
 from tensortrade.instruments import Quantity
 
 
@@ -69,7 +69,34 @@ class Wallet(Identifiable):
     def locked(self) -> Dict[str, 'Quantity']:
         return self._locked
 
-    def unlock(self, path_id: str):
+    def allocate(self, amount: Union['Quantity', float, int], path_id: str = None) -> 'Quantity':
+
+        if amount > self._balance:
+            raise InsufficientFundsForAllocation(self.balance, amount.size)
+
+        if isinstance(amount, Quantity) and amount.path_id and path_id:
+
+            if amount.path_id != path_id:
+                raise Exception("Specified path id of quantity and "
+                                "allocation parameter do not match: {} {}".format(amount.path_id, path_id))
+            else:
+                self -= amount.size * amount.instrument
+
+        elif isinstance(amount, Quantity) and not amount.path_id and not path_id:
+            self -= amount
+            amount = amount.lock_for(path_id)
+
+        elif isinstance(amount, float) or isinstance(amount, int) and path_id:
+            self -= amount
+            amount = Quantity(self.instrument, amount, path_id=path_id)
+
+        elif isinstance(amount, float) or isinstance(amount, int) and not path_id:
+            raise Exception("Can't allocate without valid path id: {}".format(path_id))
+
+        self += amount
+        return amount
+
+    def deallocate(self, path_id: str):
         if path_id in self.locked.keys():
             quantity = self.locked.pop(path_id, None)
 

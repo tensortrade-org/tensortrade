@@ -171,7 +171,7 @@ class Order(TimedIdentifiable):
 
     def release(self):
         for wallet in self.portfolio.wallets:
-            wallet.unlock(self.path_id)
+            wallet.deallocate(self.path_id)
 
     def to_dict(self):
         return {
