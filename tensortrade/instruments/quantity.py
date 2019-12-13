@@ -80,19 +80,12 @@ class Quantity:
         if isinstance(right, Quantity):
             if left.instrument != right.instrument:
                 raise IncompatibleInstrumentOperation(left, right)
-
             right_size = right.size
 
         if not isinstance(right_size, Number):
             raise InvalidNonNumericQuantity(right_size)
 
         size = op(left.size, right_size)
-
-        if size < 0:
-            warnings.warn(
-                'Quantity created with negative size {}. Replacing size with 0.'.format(size), Warning)
-
-            size = 0
 
         return Quantity(instrument=left.instrument, size=size, path_id=left.path_id)
 
