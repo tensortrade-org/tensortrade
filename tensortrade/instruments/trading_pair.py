@@ -1,9 +1,15 @@
 
+from tensortrade.base.exceptions import InvalidTradingPair
+
 
 class TradingPair:
     """A pair of financial instruments to be traded on a specific exchange."""
 
     def __init__(self, base: 'Instrument', quote: 'Instrument'):
+
+        if base == quote:
+            raise InvalidTradingPair(base, quote)
+
         self._base = base
         self._quote = quote
 

@@ -4,7 +4,8 @@ import warnings
 from typing import Union
 from numbers import Number
 
-from tensortrade.base.exceptions import InvalidNegativeQuantity, IncompatibleInstrumentOperation, InvalidNonNumericQuantity
+from tensortrade.base.exceptions import InvalidNegativeQuantity, IncompatibleInstrumentOperation, \
+    InvalidNonNumericQuantity, QuantityOpPathMismatch
 
 
 class Quantity:
@@ -80,6 +81,11 @@ class Quantity:
         if isinstance(right, Quantity):
             if left.instrument != right.instrument:
                 raise IncompatibleInstrumentOperation(left, right)
+
+            if left.path_id and right.path_id:
+                if left._path_id != right._path_id:
+                    raise QuantityOpPathMismatch(left.path_id, right.path_id)
+
             right_size = right.size
 
         if not isinstance(right_size, Number):
@@ -102,9 +108,6 @@ class Quantity:
         return Quantity._math_operation(self, other, operator.isub)
 
     def __mul__(self, other: Union['Quantity', float, int]) -> 'Quantity':
-        return Quantity._math_operation(self, other, operator.mul)
-
-    def __rmul__(self, other: Union['Quantity', float, int]) -> 'Quantity':
         return Quantity._math_operation(self, other, operator.mul)
 
     def __truediv__(self, other: Union['Quantity', float, int]) -> 'Quantity':
