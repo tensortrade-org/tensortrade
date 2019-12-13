@@ -43,7 +43,6 @@ class StochasticExchange(SimulatedExchange):
         self._hurst = self.default('hurst', 0.61, kwargs)
         self._timeframe = self.default('timeframe', '1H', kwargs)
         self._delta = self.default('delta', self.get_delta(self._timeframe), kwargs)
-
         self._scale_times_to_generate()
         self._model_params = self.default('model_params',
                                           self.get_model_params(self._param_type, self._base_price,
