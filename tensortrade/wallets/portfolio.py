@@ -174,11 +174,7 @@ class Portfolio(Component, TimedIdentifiable):
         self._performance = pd.concat(
             [self._performance, performance_update], axis=0, sort=True).dropna()
 
-        self.clock.increment()
-
     def reset(self):
         self._initial_balance = self.base_balance
         self._initial_net_worth = self.net_worth
         self._performance = pd.DataFrame([], columns=['step', 'net_worth'], index=['step'])
-
-        self.clock.reset()

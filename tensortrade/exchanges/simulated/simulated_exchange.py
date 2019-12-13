@@ -142,9 +142,11 @@ class SimulatedExchange(Exchange):
 
         # self._slippage_model.adjust_trade(trade)
 
+        quote_size = trade.size / trade.price * (order.price / trade.price)
+
         base_wallet -= quantity
         base_wallet -= commission
-        quote_wallet += Quantity(order.pair.quote, trade.size / trade.price, order.path_id)
+        quote_wallet += Quantity(order.pair.quote, quote_size, order.path_id)
 
         return trade
 
@@ -170,9 +172,11 @@ class SimulatedExchange(Exchange):
 
         # self._slippage_model.adjust_trade(trade)
 
-        quote_wallet -= Quantity(order.pair.quote, trade.size / trade.price, order.path_id)
-        base_wallet -= commission
+        quote_size = trade.size / trade.price * (trade.price / order.price)
+
+        quote_wallet -= Quantity(order.pair.quote, quote_size, order.path_id)
         base_wallet += quantity
+        base_wallet -= commission
 
         return trade
 
@@ -192,7 +196,6 @@ class SimulatedExchange(Exchange):
             order.fill(self, trade)
 
     def reset(self):
-
         self._initial_step = 0
         self._final_step = len(self._data_frame) - 1
 

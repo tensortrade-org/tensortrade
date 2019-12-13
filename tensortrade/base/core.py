@@ -5,6 +5,7 @@ from .clock import Clock
 
 
 objects = {}
+global_clock = Clock()
 
 
 class Identifiable(object, metaclass=ABCMeta):
@@ -25,7 +26,7 @@ class Identifiable(object, metaclass=ABCMeta):
 
 class TimeIndexed:
 
-    clock = Clock()
+    clock = global_clock
 
 
 class TimedIdentifiable(Identifiable, TimeIndexed, metaclass=ABCMeta):

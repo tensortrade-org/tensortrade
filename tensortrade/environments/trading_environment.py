@@ -301,7 +301,7 @@ class TradingEnvironment(gym.Env, TimeIndexed):
         Returns:
             A float corresponding to the benefit earned by the action taken this step.
         """
-        reward = self._reward_scheme.get_reward(self._portfolio, self.clock.step)
+        reward = self._reward_scheme.get_reward(self._portfolio)
         reward = np.nan_to_num(reward)
 
         if np.bitwise_not(np.isfinite(reward)):
@@ -371,6 +371,8 @@ class TradingEnvironment(gym.Env, TimeIndexed):
         Returns:
             The episode's initial observation.
         """
+        self.clock.reset()
+
         if not self._exchange.is_live:
             if self._initial_balances is not None:
                 self._portfolio._wallets = {}
@@ -385,8 +387,6 @@ class TradingEnvironment(gym.Env, TimeIndexed):
         self._exchange.reset()
         self._portfolio.reset()
         self._broker.reset()
-
-        self.clock.reset()
 
         observation = self._next_observation()
 
