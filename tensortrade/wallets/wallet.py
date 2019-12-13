@@ -89,6 +89,8 @@ class Wallet(Identifiable):
 
     def __isub__(self, quantity: 'Quantity') -> 'Wallet':
         if quantity.is_locked and self.locked[quantity.path_id]:
+            if quantity > self.locked[quantity.path_id]:
+                raise InsufficientFundsForAllocation(self.balance, quantity.size)
             self._locked[quantity.path_id] -= quantity
         elif not quantity.is_locked:
             if quantity > self._balance:
