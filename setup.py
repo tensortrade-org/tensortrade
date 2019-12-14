@@ -58,7 +58,7 @@ setup(
         'baselines': ['stable-baselines==2.8.0', 'mpi4py'],
         'ta': ['ta==0.4.7'],
         'ta-lib': ['ta-lib==0.4.17'],
-        'fbm': ['stochastic==0.4.0'],
+        'stochastic': ['stochastic==0.4.0'],
         'matplotlib': ['matplotlib==3.1.1'],
         'ccxt': ['ccxt==1.18.1220'],
         'all-framework': ['tensorflow==1.13.1',
