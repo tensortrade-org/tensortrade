@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 
 from typing import Callable, Tuple, Union, List, Dict, NewType
 
@@ -53,21 +54,6 @@ class Portfolio(Component, TimedIdentifiable):
     def base_balance(self) -> Quantity:
         """The current balance of the base instrument over all wallets."""
         return self.balance(self._base_instrument)
-
-    @property
-    def balances(self) -> List[Quantity]:
-        """The current unlocked balance of each instrument over all wallets."""
-        return [wallet.balance for wallet in self._wallets.values()]
-
-    @property
-    def locked_balances(self) -> List[Quantity]:
-        """The current locked balance of each instrument over all wallets."""
-        return [wallet.locked_balance for wallet in self._wallets.values()]
-
-    @property
-    def total_balances(self) -> List[Quantity]:
-        """The current total balance of each instrument over all wallets."""
-        return [wallet.total_balance for wallet in self._wallets.values()]
 
     @property
     def net_worth(self) -> float:
@@ -146,23 +132,24 @@ class Portfolio(Component, TimedIdentifiable):
         self._wallets[k] = wallet
 
     def remove(self, wallet: 'Wallet'):
-        self._wallets.pop(self._wallet_key(wallet), None)
+        self._wallets.pop((wallet.exchange.id, wallet.instrument.symbol), None)
 
     def remove_pair(self, exchange: 'Exchange', instrument: Instrument):
         self._wallets.pop((exchange.id, instrument.symbol), None)
 
     def update(self):
-        performance_update = pd.DataFrame(
-            [[self.clock.step, self.net_worth] +
-             [quantity.size for quantity in self.balances] +
-             [quantity.size for quantity in self.locked_balances]],
-            columns=['step', 'net_worth'] +
-            [quantity.instrument.symbol for quantity in self.balances] +
-            ['{}_pending'.format(quantity.instrument.symbol) for quantity in self.locked_balances]
-        )
 
-        self._performance = pd.concat(
-            [self._performance, performance_update], axis=0, sort=True).dropna()
+        columns = ['step', 'net_worth']
+        names = [[w.instrument.symbol, "{}_pending".format(w.instrument.symbol)] for w in self.wallets]
+        columns += list(np.array(names).flatten())
+
+        data = [self.clock.step, self.net_worth]
+        locked_data = [[w.balance.size, w.locked_balance.size] for w in self.wallets]
+        data += list(np.array(locked_data).flatten())
+
+        performance_update = pd.DataFrame(data, columns=columns)
+
+        self._performance = pd.concat([self._performance, performance_update], axis=0, sort=True).dropna()
 
     def reset(self):
         self._initial_balance = self.base_balance
