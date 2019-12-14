@@ -39,14 +39,13 @@ class SimulatedExchange(Exchange):
             feature_pipeline=self.default('feature_pipeline', None),
             **kwargs
         )
-
+        self._current_step = 0
         self._commission_percent = self.default('commission_percent', 0.3, kwargs)
         self._base_precision = self.default('base_precision', 2, kwargs)
         self._instrument_precision = self.default('instrument_precision', 8, kwargs)
         self._initial_balance = self.default('initial_balance', 1e4, kwargs)
         self._price_column = self.default('price_column', 'close', kwargs)
         self._pretransform = self.default('pretransform', True, kwargs)
-
         self.data_frame = self.default('data_frame', data_frame)
 
         model = self.default('slippage_model', 'uniform', kwargs)
