@@ -180,4 +180,5 @@ class StochasticExchange(SimulatedExchange):
         self.data_frame = data_frame.astype(self._dtype)
 
     def reset(self):
+        super().reset()
         self._generate_price_history()

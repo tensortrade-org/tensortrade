@@ -162,7 +162,7 @@ class SimulatedExchange(Exchange):
         return np.inf
 
     def _is_valid_trade(self, trade: Trade) -> bool:
-        if trade.is_buy and self._balance < trade.amount * trade.price:
+        if trade.is_buy and self.balance < trade.amount * trade.price:
             return False
         elif trade.is_sell and self._portfolio.get(trade.symbol, 0) < trade.amount:
             return False

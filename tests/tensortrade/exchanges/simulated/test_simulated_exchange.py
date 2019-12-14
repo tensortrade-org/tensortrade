@@ -11,7 +11,7 @@ from tensortrade.trades import Trade
 from tensortrade.slippage import SlippageModel
 from tensortrade.exchanges import Exchange, get
 from tensortrade.exchanges.live import CCXTExchange
-from tensortrade.exchanges.simulated import SimulatedExchange, FBMExchange
+from tensortrade.exchanges.simulated import SimulatedExchange, StochasticExchange as FBMExchange
 
 
 config = {
@@ -38,13 +38,3 @@ def test_create_injected_simulated_exchange(trade_context):
         assert exchange.base_instrument == 'EURO'
         assert exchange.initial_balance == 1e4
         assert exchange._current_step == 0
-
-def test_exchange_pretransform_true():
-    """ Test what would happen for pretransform == True """
-    
-    assert True == True
-
-def test_exchange_pretransform_false():
-    """ Test what would happen for pretransform == True """
-    
-    assert True == True

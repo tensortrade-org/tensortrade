@@ -7,7 +7,7 @@ import copy
 
 from tensortrade import TradingContext
 from tensortrade.trades import Trade
-from tensortrade.exchanges.simulated import FBMExchange
+from tensortrade.exchanges.simulated import StochasticExchange 
 from tensortrade.trades import TradeType, Trade
 
 
@@ -43,14 +43,14 @@ def trade_context():
 @pytest.fixture(scope="module")
 def create_exchange(trade_context):
     with trade_context:
-        exchange = FBMExchange()
+        exchange = StochasticExchange()
         exchange.reset()
         return exchange
 
 def test_create_new_exchange(trade_context):
     """ Here we create an entirely new exchange """
     with trade_context:
-        exchange = FBMExchange()
+        exchange = StochasticExchange()
         exchange.reset()
         assert hasattr(exchange.context, 'credentials')
         assert exchange.context.credentials == {
@@ -79,6 +79,7 @@ def test_get_current_price(create_exchange):
 def test_enact_order(create_exchange):
     # Create a trade
     exchange = copy.copy(create_exchange)
+    exchange.reset()
     trade_price = exchange.current_price(symbol="ETH")
     trade_1 = Trade(0, "ETH", TradeType.LIMIT_BUY, 100, trade_price)
     exchange._next_observation()
@@ -111,15 +112,9 @@ def test_enact_order(create_exchange):
 
 def test_exchange_pretransformed(trade_context):
     with trade_context:
-        # ta_indicator = TAlibIndicator(indicators=["BBAND", "RSI", "EMA", "SMA"])
-        # min_max = MinMaxNormalizer()
-        # feature_pipeline = FeaturePipeline([
-        #     ta_indicator, 
-        #     min_max
-        # ])
 
 
-        exchange = FBMExchange(
+        exchange = StochasticExchange(
             pretransform=True
         )
         exchange.reset()
