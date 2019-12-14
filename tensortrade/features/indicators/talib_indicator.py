@@ -104,6 +104,7 @@ class TAlibIndicator(FeatureTransformer):
         return real_inputs
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        X = X.copy()
         for idx, indicator in enumerate(self._indicators):
             
             indicator_name = self._indicator_names[idx]
@@ -112,7 +113,7 @@ class TAlibIndicator(FeatureTransformer):
             indicator_inputs = self._stats[indicator_name]["inputs"]
             # Convert inputs into something that we'd commonly run to
             matched_inputs = self._match_inputs(list(X.columns), indicator_inputs)
-            indicator_args = [X[arg].values for arg in matched_inputs]
+            indicator_args = [X[arg].to_numpy(dtype=float) for arg in matched_inputs]
             if indicator_name == 'BBANDS':
                 upper, middle, lower = indicator(*indicator_args,**indicator_params)
 
@@ -130,5 +131,5 @@ class TAlibIndicator(FeatureTransformer):
 
                 except:
                     X[indicator_name] = indicator(*indicator_args,**indicator_params)[0]
-
+        X = X.dropna()
         return X

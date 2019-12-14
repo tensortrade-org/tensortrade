@@ -10,6 +10,19 @@ from tensortrade.trades import Trade
 from tensortrade.exchanges.simulated import FBMExchange
 from tensortrade.trades import TradeType, Trade
 
+
+from tensortrade.features import FeaturePipeline
+from tensortrade.features.indicators import TAlibIndicator
+from tensortrade.features.scalers import MinMaxNormalizer
+
+
+ta_indicator = TAlibIndicator(indicators=["BBAND", "RSI", "EMA", "SMA"])
+min_max = MinMaxNormalizer()
+feature_pipeline = FeaturePipeline([
+    ta_indicator, min_max
+])
+
+
 config = {
     'base_instrument': 'EURO',
     'instruments': 'ETH',
@@ -18,7 +31,8 @@ config = {
             'api_key': '48hg34wydghi7ef',
             'api_secret_key': '0984hgoe8d7htg'
         }
-    }
+    },
+    "feature_pipeline": feature_pipeline
 }
 
 @pytest.fixture(scope="module")
@@ -95,6 +109,18 @@ def test_enact_order(create_exchange):
     assert len(exchange.trades) == 5
     assert exchange._current_step == 5
 
-def test_exchange_pretransformed(create_exchange):
-    create_exchange.reset()
-    assert True == True
+def test_exchange_pretransformed(trade_context):
+    with trade_context:
+        # ta_indicator = TAlibIndicator(indicators=["BBAND", "RSI", "EMA", "SMA"])
+        # min_max = MinMaxNormalizer()
+        # feature_pipeline = FeaturePipeline([
+        #     ta_indicator, 
+        #     min_max
+        # ])
+
+
+        exchange = FBMExchange(
+            pretransform=True
+        )
+        exchange.reset()
+        return exchange
