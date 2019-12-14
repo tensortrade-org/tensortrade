@@ -34,7 +34,7 @@ class TestSimpleProfit:
         
         assert reward1 == -1015.5908812273915
     
-    @pytest.mark.xfail
+    @pytest.mark.xfail(reason="The trade reward shouldn't equate to ...")
     def test_reward_invalid_trade_type_input(self):
         scheme = SimpleProfit()
         scheme.reset()
@@ -45,5 +45,4 @@ class TestSimpleProfit:
 
         scheme.get_reward(0, trade_1)
         reward1 = scheme.get_reward(2, trade_2)
-        
         assert reward1 == -1015.5908812273915

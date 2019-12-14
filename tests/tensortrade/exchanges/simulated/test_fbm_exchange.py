@@ -3,16 +3,12 @@ from typing import Generator, List, Dict
 
 import pandas as pd
 import tensortrade.slippage as slippage
-
-from gym import Space
+import copy
 
 from tensortrade import TradingContext
 from tensortrade.trades import Trade
-from tensortrade.slippage import SlippageModel
-from tensortrade.exchanges import Exchange, get
-from tensortrade.exchanges.live import CCXTExchange
 from tensortrade.exchanges.simulated import FBMExchange
-
+from tensortrade.trades import TradeType, Trade
 
 config = {
     'base_instrument': 'EURO',
@@ -51,7 +47,6 @@ def test_create_new_exchange(trade_context):
         }
         
         assert len(exchange.trades) == 0
-        assert exchange._hurst == 0.61
         assert isinstance(exchange.performance, pd.DataFrame)
 
 def test_get_next_observation(create_exchange):
@@ -60,8 +55,46 @@ def test_get_next_observation(create_exchange):
 
 
 def test_get_current_price(create_exchange):
-    """ Test that we're able to get the current price?"""
+    """ Test that we're able to get the current price and that it's not 0"""
     assert create_exchange.has_next_observation == True
     assert len(create_exchange.data_frame) != 0
-    assert create_exchange.current_price(symbol="ETH")
+    # This current_price should not be 0 and should not raise and exception.
+    assert create_exchange.current_price(symbol="ETH") != 0
     # Check that there are enough price observations
+
+def test_enact_order(create_exchange):
+    # Create a trade
+    exchange = copy.copy(create_exchange)
+    trade_price = exchange.current_price(symbol="ETH")
+    trade_1 = Trade(0, "ETH", TradeType.LIMIT_BUY, 100, trade_price)
+    exchange._next_observation()
+    exchange.execute_trade(trade_1)
+
+
+    trade_2 = Trade(1, "ETH", TradeType.LIMIT_BUY, 100, trade_price)
+    exchange._next_observation()
+    exchange.execute_trade(trade_2)
+    
+
+    trade_price = exchange.current_price(symbol="ETH")
+    trade_3 = Trade(2, "ETH", TradeType.LIMIT_SELL, 73, trade_price)
+    exchange._next_observation()
+    exchange.execute_trade(trade_3)
+    
+    
+    trade_4 = Trade(3, "ETH", TradeType.LIMIT_SELL, 50, trade_price)
+    exchange._next_observation()
+    exchange.execute_trade(trade_4)
+    
+
+    trade_5 = Trade(4, "ETH", TradeType.LIMIT_SELL, 25, trade_price)
+    exchange._next_observation()
+    exchange.execute_trade(trade_5)
+    
+    # Check that we're 5 trades in.
+    assert len(exchange.trades) == 5
+    assert exchange._current_step == 5
+
+def test_exchange_pretransformed(create_exchange):
+    create_exchange.reset()
+    assert True == True

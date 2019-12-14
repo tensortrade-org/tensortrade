@@ -39,7 +39,7 @@ class FBMExchange(SimulatedExchange):
         self._base_volume = self.default('base_volume', 1, kwargs)
         self._start_date = self.default('start_date', '2010-01-01', kwargs)
         self._start_date_format = self.default('start_date_format', '%Y-%m-%d', kwargs)
-        self._times_to_generate = self.default('times_to_generate', 100000, kwargs)
+        self._times_to_generate = self.default('times_to_generate', 10000, kwargs)
         self._hurst = self.default('hurst', 0.61, kwargs)
         self._timeframe = self.default('timeframe', '1h', kwargs)
         self._timeframe = self._timeframe.upper()

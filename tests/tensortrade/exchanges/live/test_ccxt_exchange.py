@@ -36,6 +36,7 @@ def test_initialize_ccxt_from_config():
 
 @pytest.mark.xfail(raises=ccxt.AuthenticationError)
 def test_get_failed_next_observation():
+    """ Test that the the authentication isn't valid (Non-valid keys)"""
     config = {
         'base_instrument': 'USD',
         'instruments': 'ETH',
@@ -54,6 +55,3 @@ def test_get_failed_next_observation():
         exchange.reset()
         assert str(exchange._exchange) == 'Binance'
         assert exchange._credentials == config['exchanges']['credentials']
-        
-        print(type(exchange.next_observation()))
-        assert True == False

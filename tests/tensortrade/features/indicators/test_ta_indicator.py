@@ -15,25 +15,25 @@ class TestTAIndicator:
     indicators_to_test = ['rsi', 'macd', 'ema']
 
 
-    @pytest.mark.xfail
+    @pytest.mark.skip(reason="TA Indicator never worked. Not fixing it for the time being.")
     def test_ta_indicator(self):
         print(dir(ta))
         test_feature = TAIndicator(TestTAIndicator.indicators_to_test)
         assert len(test_feature._indicator_names) == 3
 
-    @pytest.mark.xfail
-    def test_transform(self, data_frame):
+    @pytest.mark.skip(reason="TA Indicator never worked. Not fixing it for the time being.")
+    def test_ta_transform(self, data_frame):
         test_feature = TAIndicator(TestTAIndicator.indicators_to_test)
         test_feature.transform(data_frame)
         assert set(TestTAIndicator.indicators_to_test).issubset(data_frame.columns)
 
-    @pytest.mark.xfail
+    @pytest.mark.skip(reason="TA Indicator never worked. Not fixing it for the time being.")
     def test_transform_single_indicator(self, data_frame):
         test_feature = TAIndicator('rsi')
         test_feature.transform(data_frame)
         assert 'rsi' in data_frame.columns
 
-    @pytest.mark.xfail
+    @pytest.mark.skip(reason="TA Indicator never worked. Not fixing it for the time being.")
     def test_add_volatility_ta(self, data_frame):
         test_feature = TAIndicator('add_volatility_ta')
         print(test_feature._indicator_names)

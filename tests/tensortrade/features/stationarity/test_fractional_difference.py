@@ -9,7 +9,6 @@ from gym.spaces import Box
 from tensortrade.features import FeatureTransformer
 from tensortrade.features.stationarity import FractionalDifference
 
-
 @pytest.fixture
 def exchange():
     return exchanges.get('fbm')
@@ -21,6 +20,11 @@ def data_frame():
     return df
 
 
+@pytest.fixture
+def reference_frame():
+    df = pd.read_csv('tests/data/outputs/feature_pipeline_output.csv')
+    return df
+
 class TestFractionalDifference():
     def test_incremental_difference(self, data_frame):
         transformer = FractionalDifference(
@@ -29,7 +33,7 @@ class TestFractionalDifference():
         transformed_frame = transformer.transform(data_frame)
         assert transformed_frame is not None
 
-    def test_incremental_difference_inplace_false(self, data_frame):
+    def test_incremental_difference_inplace_false(self, data_frame, reference_frame):
         
         frame_tail = data_frame.tail(300)
 
