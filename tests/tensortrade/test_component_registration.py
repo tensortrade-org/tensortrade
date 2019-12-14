@@ -36,8 +36,8 @@ def test_ccxt_exchanges():
         assert isinstance(exchanges.get(exchange_id), CCXTExchange)
 
 
-def test_fbm_exchange():
-    assert isinstance(exchanges.get('fbm'), FBMExchange)
+def test_stochastic_exchange():
+    assert isinstance(exchanges.get('stochastic'), StochasticExchange)
 
 
 @pytest.mark.skip(reason="GAN exchange is not fully implemented yet.")
@@ -81,12 +81,12 @@ def test_ccxt_discrete_simple_env():
         assert make_env(exchange_id, 'continuous', 'simple')
 
 
-def test_fbm_continuous_simple_env():
-    assert make_env('fbm', 'continuous', 'simple')
+def test_stochastic_continuous_simple_env():
+    assert make_env('stochastic', 'continuous', 'simple')
 
 
-def test_fbm_discrete_simple_env():
-    assert make_env('fbm', 'discrete', 'simple')
+def test_stochastic_discrete_simple_env():
+    assert make_env('stochastic', 'discrete', 'simple')
 
 
 @pytest.mark.skip(reason="GAN exchange is not fully implemented yet.")
