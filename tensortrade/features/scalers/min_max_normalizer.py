@@ -59,10 +59,10 @@ class MinMaxNormalizer(FeatureTransformer):
             column_std = X[column].std()
 
             if column_min < self._input_min:
-                self._input_min = column_min - (random.random * 2 * column_std)
+                self._input_min = column_min - (random.random() * 2 * column_std)
 
             if column_max < self._input_max:
-                self._input_max = column_max + (random.random * 2 * column_std)
+                self._input_max = column_max + (random.random() * 2 * column_std)
 
             scale = (self._feature_max - self._feature_min)
 
