@@ -57,7 +57,7 @@ class Portfolio(Component, TimedIdentifiable):
 
     @property
     def net_worth(self) -> float:
-        """Calculate the net worth of the active account on the exchange.
+        """Calculate the net worth of the active account on thenge.
 
         Returns:
             The total portfolio value of the active account on the exchange.

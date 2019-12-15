@@ -1,36 +1,93 @@
 
 import pytest
-import pandas as pd
 
-from tensortrade.exchanges.simulated import SimulatedExchange
+from tensortrade.base.core import TimeIndexed
 from tensortrade.wallets import Wallet, Portfolio
-from tensortrade.instruments import USD, BTC, ETH, XRP
+from tensortrade.instruments import USD, BTC, ETH, XRP, BCH
 
 
-PRICE_COLUMN = "close"
-data_frame = pd.read_csv("tests/data/input/coinbase-1h-btc-usd.csv")
-data_frame.columns = map(str.lower, data_frame.columns)
-data_frame = data_frame.rename(columns={'volume btc': 'volume'})
+@pytest.fixture(scope="module")
+def exchange():
 
-coinbase = SimulatedExchange(data_frame=data_frame,
-                             price_column=PRICE_COLUMN,
-                             randomize_time_slices=True)
+    class MockExchange(TimeIndexed):
+
+        def __init__(self):
+            self.base_instrument = USD
+            self.id = "fake_id"
+
+        def quote_price(self, pair: 'TradingPair') -> float:
+            if self.clock.step == 0:
+                d = {
+                    ("USD", "BTC"): 7117.00,
+                    ("USD", "ETH"): 143.00,
+                    ("USD", "XRP"): 0.22
+                }
+                return d[(pair.base.symbol, pair.quote.symbol)]
+            d = {
+                ("USD", "BTC"): 6750.00,
+                ("USD", "ETH"): 135.00,
+                ("USD", "XRP"): 0.30
+            }
+            return d[(pair.base.symbol, pair.quote.symbol)]
+
+    return MockExchange()
 
 
-wallets = [
-    Wallet(coinbase, 10000 * USD),
-    Wallet(coinbase, 0 * BTC)
-]
-
-wallet_tuples = [
-   (coinbase, USD, 10000),
-   (coinbase, BTC, 0)
-]
+@pytest.fixture
+def wallet_usd(exchange):
+    return Wallet(exchange, 10000 * USD)
 
 
-def test_init():
+@pytest.fixture
+def wallet_btc(exchange):
+    return Wallet(exchange, 1 * BTC)
 
-    # Empty portfolio
+
+@pytest.fixture
+def wallet_eth(exchange):
+    return Wallet(exchange, 10 * ETH)
+
+
+@pytest.fixture
+def wallet_xrp(exchange):
+    return Wallet(exchange, 5000 * XRP)
+
+
+@pytest.fixture
+def portfolio(wallet_usd, wallet_btc, wallet_eth, wallet_xrp):
+
+    portfolio = Portfolio(USD, wallets=[
+        wallet_usd,
+        wallet_btc,
+        wallet_eth,
+        wallet_xrp
+    ])
+
+    return portfolio
+
+
+@pytest.fixture
+def portfolio_locked(portfolio, wallet_usd, wallet_btc, wallet_eth, wallet_xrp):
+    def allocate(wallet, amount, identifier):
+        wallet -= amount
+        amount.lock_for(identifier)
+        wallet += amount
+        return wallet
+
+    wallet_usd = allocate(wallet_usd, 50 * USD, "1")
+    wallet_usd = allocate(wallet_usd, 100 * USD, "2")
+    wallet_btc = allocate(wallet_btc, 0.5 * BTC, "3")
+    wallet_btc = allocate(wallet_btc, 0.25 * BTC, "4")
+    wallet_eth = allocate(wallet_eth, 5 * ETH, "5")
+    wallet_eth = allocate(wallet_eth, 2 * ETH, "6")
+    wallet_xrp = allocate(wallet_xrp, 250 * XRP, "7")
+    wallet_xrp = allocate(wallet_xrp, 12 * XRP, "8")
+
+    return portfolio
+
+
+def test_init_empty():
+
     portfolio = Portfolio(USD)
 
     assert portfolio.base_instrument == USD
@@ -38,16 +95,26 @@ def test_init():
     assert portfolio.initial_balance == 0 * USD
     assert len(portfolio.wallets) == 0
 
-    # Coinbase 2-wallet portfolio from List[Wallet]
-    portfolio = Portfolio(USD, wallets=wallets)
+
+def test_init_from_wallets(exchange):
+
+    portfolio = Portfolio(USD, wallets=[
+        Wallet(exchange, 10000 * USD),
+        Wallet(exchange, 0 * BTC)
+    ])
 
     assert portfolio.base_instrument == USD
     assert portfolio.base_balance == 10000 * USD
     assert portfolio.initial_balance == 10000 * USD
     assert len(portfolio.wallets) == 2
 
-    # Coinbase 2-wallet portfolio from List[Tuple['Exchange', Instrument, float]]
-    portfolio = Portfolio(USD, wallets=wallet_tuples)
+
+def test_init_from_wallet_tuples(exchange):
+
+    portfolio = Portfolio(USD, wallets=[
+        (exchange, USD, 10000),
+        (exchange, BTC, 0)
+    ])
 
     assert portfolio.base_instrument == USD
     assert portfolio.base_balance == 10000 * USD
@@ -55,136 +122,118 @@ def test_init():
     assert len(portfolio.wallets) == 2
 
 
-def test_net_worth():
+def test_net_worth(portfolio_locked):
 
-    wallet_usd = Wallet(coinbase, 10000 * USD)
-    wallet_btc = Wallet(coinbase, 1 * BTC)
-    wallet_eth = Wallet(coinbase, 10 * ETH)
-    wallet_xrp = Wallet(coinbase, 5000 * XRP)
+    net_worth = 10000 + (7117.00 * 1) + (143.00 * 10) + (0.22 * 5000)
 
-    def allocate(wallet, amount, identifier):
-        wallet -= amount
-        amount.lock_for(identifier)
-        wallet += amount
-        return wallet
-
-    wallet_usd = allocate(wallet_usd, 50 * USD, "1")
-    wallet_usd = allocate(wallet_usd, 100 * USD, "2")
-    wallet_btc = allocate(wallet_btc, 0.5 * BTC, "3")
-    wallet_btc = allocate(wallet_btc, 0.25 * BTC, "4")
-    wallet_eth = allocate(wallet_eth, 5 * ETH, "5")
-    wallet_eth = allocate(wallet_eth, 2 * ETH, "6")
-    wallet_xrp = allocate(wallet_xrp, 250 * XRP, "7")
-    wallet_xrp = allocate(wallet_xrp, 2.5 * XRP, "8")
-
-    pytest.fail("Failed.")
+    assert portfolio_locked.net_worth == net_worth
 
 
-def test_profit_loss():
-    pytest.fail("Failed.")
+def test_profit_loss(portfolio_locked):
+
+    initial_net_worth = 10000 + (7117.00 * 1) + (143.00 * 10) + (0.22 * 5000)
+    assert portfolio_locked.net_worth == initial_net_worth
+
+    portfolio_locked.clock.increment()
+    net_worth = 10000 + (6750.00 * 1) + (135.00 * 10) + (0.30 * 5000)
+    assert portfolio_locked.net_worth == net_worth
+
+    assert portfolio_locked.profit_loss == net_worth / initial_net_worth
+
+    portfolio_locked.clock.reset()
 
 
-def test_performance():
-    pytest.fail("Failed.")
+def test_balance(portfolio_locked):
+
+    assert portfolio_locked.balance(USD) == 9850
+    assert portfolio_locked.balance(BTC) == 0.25
+    assert portfolio_locked.balance(ETH) == 3
+    assert portfolio_locked.balance(XRP) == 4738
 
 
-def test_balance():
-    wallet_usd = Wallet(coinbase, 10000 * USD)
-    wallet_btc = Wallet(coinbase, 1 * BTC)
-    wallet_eth = Wallet(coinbase, 10 * ETH)
-    wallet_xrp = Wallet(coinbase, 5000 * XRP)
+def test_locked_balance(portfolio_locked):
 
-    def allocate(wallet, amount, identifier):
-        wallet -= amount
-        amount.lock_for(identifier)
-        wallet += amount
-        return wallet
-
-    wallet_usd = allocate(wallet_usd, 50 * USD, "1")
-    wallet_usd = allocate(wallet_usd, 100 * USD, "2")
-    wallet_btc = allocate(wallet_btc, 0.5 * BTC, "3")
-    wallet_btc = allocate(wallet_btc, 0.25 * BTC, "4")
-    wallet_eth = allocate(wallet_eth, 5 * ETH, "5")
-    wallet_eth = allocate(wallet_eth, 2 * ETH, "6")
-    wallet_xrp = allocate(wallet_xrp, 250 * XRP, "7")
-    wallet_xrp = allocate(wallet_xrp, 30 * XRP, "8")
-
-    portfolio = Portfolio(USD, wallets=[wallet_usd, wallet_btc, wallet_eth, wallet_xrp])
-
-    assert portfolio.balance(USD) == 9850
-    assert portfolio.balance(BTC) == 0.25
-    assert portfolio.balance(ETH) == 3
-    assert portfolio.balance(XRP) == 4720
+    assert portfolio_locked.locked_balance(USD) == 150
+    assert portfolio_locked.locked_balance(BTC) == 0.75
+    assert portfolio_locked.locked_balance(ETH) == 7
+    assert portfolio_locked.locked_balance(XRP) == 262
 
 
-def test_locked_balance():
-    pytest.fail("Failed.")
+def test_total_balance(portfolio_locked):
+
+    assert portfolio_locked.total_balance(USD) == 10000
+    assert portfolio_locked.total_balance(BTC) == 1
+    assert portfolio_locked.total_balance(ETH) == 10
+    assert portfolio_locked.total_balance(XRP) == 5000
 
 
-def test_total_balance():
-    pytest.fail("Failed.")
+def test_balances(portfolio_locked):
+
+    balances = [9850 * USD, 0.25 * BTC, 3 * ETH, 4738 * XRP]
+    assert portfolio_locked.balances == balances
 
 
-def test_get_wallet():
-    pytest.fail("Failed.")
+def test_locked_balances(portfolio_locked):
+
+    locked_balances = [150 * USD, 0.75 * BTC, 7 * ETH, 262 * XRP]
+    assert portfolio_locked.locked_balances == locked_balances
 
 
-def test_add():
-    wallet_usd = Wallet(coinbase, 10000 * USD)
-    wallet_btc = Wallet(coinbase, 1 * BTC)
-    wallet_eth = Wallet(coinbase, 10 * ETH)
-    wallet_xrp = Wallet(coinbase, 5000 * XRP)
-    portfolio = Portfolio(USD, wallets=[
-        wallet_usd,
-        wallet_btc,
-        wallet_eth
-    ])
+def test_total_balances(portfolio_locked):
 
-    portfolio.add(wallet_xrp)
-
-    assert wallet_xrp in portfolio.wallets
+    total_balances = [10000 * USD, 1 * BTC, 10 * ETH, 5000 * XRP]
+    assert portfolio_locked.total_balances == total_balances
 
 
-def test_remove():
-    wallet_usd = Wallet(coinbase, 10000 * USD)
-    wallet_btc = Wallet(coinbase, 1 * BTC)
-    wallet_eth = Wallet(coinbase, 10 * ETH)
-    wallet_xrp = Wallet(coinbase, 5000 * XRP)
-    portfolio = Portfolio(USD, wallets=[
-        wallet_usd,
-        wallet_btc,
-        wallet_eth,
-        wallet_xrp
-    ])
+def test_get_wallet(exchange, portfolio, wallet_xrp):
+
+    assert wallet_xrp == portfolio.get_wallet(exchange.id, XRP)
+
+
+def test_add(portfolio, exchange):
+
+    wallet_bch = Wallet(exchange, 1000 * BCH)
+
+    portfolio.add(wallet_bch)
+
+    assert wallet_bch in portfolio.wallets
+
+
+def test_remove(portfolio, wallet_btc):
 
     portfolio.remove(wallet_btc)
 
     assert wallet_btc not in portfolio.wallets
 
-    pytest.fail("Test removing base wallet and make sure there is an error.")
 
+def test_remove_pair(portfolio, exchange):
 
-def test_remove_pair():
-    wallet_usd = Wallet(coinbase, 10000 * USD)
-    wallet_btc = Wallet(coinbase, 1 * BTC)
-    wallet_eth = Wallet(coinbase, 10 * ETH)
-    wallet_xrp = Wallet(coinbase, 5000 * XRP)
-    portfolio = Portfolio(USD, wallets=[
-        wallet_usd,
-        wallet_btc,
-        wallet_eth,
-        wallet_xrp
-    ])
-
-    portfolio.remove_pair(coinbase, BTC)
+    portfolio.remove_pair(exchange, BTC)
 
     assert wallet_btc not in portfolio.wallets
 
-    pytest.fail("Test removing base wallet and make sure there is an error.")
 
+def test_update(portfolio_locked):
 
-def test_update():
-    pytest.fail("Failed.")
+    portfolio_locked.clock.increment()
+    portfolio_locked.update()
+
+    data = {
+        "step": 1,
+        "net_worth": 10000 + (6750.00 * 1) + (135.00 * 10) + (0.30 * 5000),
+        "USD": 9850,
+        "BTC": 0.25,
+        "ETH": 3,
+        "XRP": 4738,
+        "USD_pending": 150,
+        "BTC_pending": 0.75,
+        "ETH_pending": 7,
+        "XRP_pending": 262
+    }
+
+    performance = portfolio_locked.performance
+
+    assert data == dict(performance.iloc[0])
 
 
 def test_reset():
