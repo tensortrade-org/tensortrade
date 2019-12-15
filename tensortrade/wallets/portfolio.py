@@ -122,14 +122,29 @@ class Portfolio(Component, TimedIdentifiable):
         """The total balance of the portfolio in a specific instrument, both available for use and locked in orders."""
         return self.balance(instrument) + self.locked_balance(instrument)
 
+    @property
+    def balances(self) -> List[Quantity]:
+        """The current unlocked balance of each instrument over all wallets."""
+        return [wallet.balance for wallet in self._wallets.values()]
+
+    @property
+    def locked_balances(self) -> List[Quantity]:
+        """The current locked balance of each instrument over all wallets."""
+        return [wallet.locked_balance for wallet in self._wallets.values()]
+
+    @property
+    def total_balances(self) -> List[Quantity]:
+        """The current total balance of each instrument over all wallets."""
+        return [wallet.total_balance for wallet in self._wallets.values()]
+
     def get_wallet(self, exchange_id: str, instrument: Instrument):
         return self._wallets[(exchange_id, instrument.symbol)]
 
     def add(self, wallet: WalletType):
         if isinstance(wallet, tuple):
             wallet = Wallet.from_tuple(wallet)
-        k = (wallet.exchange.id, wallet.instrument.symbol)
-        self._wallets[k] = wallet
+
+        self._wallets[(wallet.exchange.id, wallet.instrument.symbol)] = wallet
 
     def remove(self, wallet: 'Wallet'):
         self._wallets.pop((wallet.exchange.id, wallet.instrument.symbol), None)
@@ -138,18 +153,21 @@ class Portfolio(Component, TimedIdentifiable):
         self._wallets.pop((exchange.id, instrument.symbol), None)
 
     def update(self):
-
         columns = ['step', 'net_worth']
-        names = [[w.instrument.symbol, "{}_pending".format(w.instrument.symbol)] for w in self.wallets]
+        names = [[wallet.instrument.symbol, "{}_pending".format(
+            wallet.instrument.symbol)] for wallet in self.wallets]
+
         columns += list(np.array(names).flatten())
 
         data = [self.clock.step, self.net_worth]
-        locked_data = [[w.balance.size, w.locked_balance.size] for w in self.wallets]
+        locked_data = [[wallet.balance.size, wallet.locked_balance.size] for wallet in self.wallets]
+
         data += list(np.array(locked_data).flatten())
 
         performance_update = pd.DataFrame(data, columns=columns)
 
-        self._performance = pd.concat([self._performance, performance_update], axis=0, sort=True).dropna()
+        self._performance = pd.concat(
+            [self._performance, performance_update], axis=0, sort=True).dropna()
 
     def reset(self):
         self._initial_balance = self.base_balance
