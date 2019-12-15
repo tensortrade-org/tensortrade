@@ -378,7 +378,7 @@ class TradingEnvironment(gym.Env, TimeIndexed):
                 self._portfolio._wallets = {}
 
                 for balance in self._initial_balances:
-                    self._portfolio.add_tuple((self._exchange, balance.instrument, balance.size))
+                    self._portfolio.add((self._exchange, balance.instrument, balance.size))
             else:
                 self._initial_balances = self._portfolio.total_balances
 

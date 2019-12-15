@@ -153,18 +153,13 @@ class Portfolio(Component, TimedIdentifiable):
         self._wallets.pop((exchange.id, instrument.symbol), None)
 
     def update(self):
-        columns = ['step', 'net_worth']
-        names = [[wallet.instrument.symbol, "{}_pending".format(
-            wallet.instrument.symbol)] for wallet in self.wallets]
+        performance = [[self.clock.step, self.net_worth] + [quantity.size for quantity in self.balances] +
+                       [quantity.size for quantity in self.locked_balances]]
 
-        columns += list(np.array(names).flatten())
+        columns = ['step', 'net_worth'] + [quantity.instrument.symbol for quantity in self.balances] + \
+            ['{}_pending'.format(quantity.instrument.symbol) for quantity in self.locked_balances]
 
-        data = [self.clock.step, self.net_worth]
-        locked_data = [[wallet.balance.size, wallet.locked_balance.size] for wallet in self.wallets]
-
-        data += list(np.array(locked_data).flatten())
-
-        performance_update = pd.DataFrame(data, columns=columns)
+        performance_update = pd.DataFrame(performance, columns=columns)
 
         self._performance = pd.concat(
             [self._performance, performance_update], axis=0, sort=True).dropna()
