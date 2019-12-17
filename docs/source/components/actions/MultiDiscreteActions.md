@@ -1,8 +1,8 @@
 # MultiDiscreteActions
 
-Discrete scheme, which calculates the trade amount as a fraction of the total balance for each instrument provided.
+Discrete scheme, which calculates the trade size as a fraction of the total balance for each instrument provided.
 
-The trade type is determined by `action % len(TradeType)`, and the trade amount is determined by the multiplicity of the action.
+The trade type is determined by `action % len(TradeType)`, and the trade size is determined by the multiplicity of the action.
 For example, `0 = HOLD`, `1 = LIMIT_BUY|0.25`, `2 = MARKET_BUY|0.25`, `5 = HOLD`, `6 = LIMIT_BUY|0.5`, 7 = `MARKET_BUY|0.5`, etc.
 
 ## Key Variables
@@ -12,7 +12,7 @@ For example, `0 = HOLD`, `1 = LIMIT_BUY|0.25`, `2 = MARKET_BUY|0.25`, `5 = HOLD`
 - `_actions_per_instrument`
   - The number of bins to divide the total balance by. Defaults to 20 (i.e. 1/20, 2/20, ..., 20/20).
 - `_max_allowed_slippage_percent`
-  - The maximum amount above the current price the scheme will pay for an instrument. Defaults to 1.0 (i.e. 1%).
+  - The maximum size above the current price the scheme will pay for an instrument. Defaults to 1.0 (i.e. 1%).
 
 ## Setters & Properties
 
@@ -42,4 +42,4 @@ from tensortrade.actions import MultiDiscreteActions
 action_scheme = MultiDiscreteActions(n_actions=20, instrument='BTC')
 ```
 
-_This discrete action scheme uses 20 discrete actions, which equates to 4 discrete amounts for each of the 5 trade types (market buy/sell, limit buy/sell, and hold). E.g. [0,5,10,15]=hold, 1=market buy 25%, 2=market sell 25%, 3=limit buy 25%, 4=limit sell 25%, 6=market buy 50%, 7=market sell 50%, etc…_
+_This discrete action scheme uses 20 discrete actions, which equates to 4 discrete sizes for each of the 5 trade types (market buy/sell, limit buy/sell, and hold). E.g. [0,5,10,15]=hold, 1=market buy 25%, 2=market sell 25%, 3=limit buy 25%, 4=limit sell 25%, 6=market buy 50%, 7=market sell 50%, etc…_

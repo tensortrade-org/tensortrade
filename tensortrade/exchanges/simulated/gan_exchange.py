@@ -29,49 +29,15 @@ class GANExchange(Exchange):
     model with supplied parameters.
 
     If the `training_data` parameter is not supplied upon initialization, it must be set before
-    the exchange can be used within a trading environments.
+    the exchange can be used within a trading environment.
     """
 
     def __init__(self, training_data: pd.DataFrame = None, **kwargs):
         super().__init__(**kwargs)
+
         self._training_data = self.default('training_data', training_data)
-        self._prices_per_gen = self.default('prices_per_gen', 1000, kwargs)
-        self._n_samples = self.default('n_samples', 64, kwargs)
-        self._output_shape = self.default('output_shape', (self._prices_per_gen, 5, 1), kwargs)
-        self._initialize_gan()
 
-    def _initialize_gan(self):
-        generator = tf.keras.Sequential([
-            tf.keras.layers.InputLayer(input_shape=(1, self._n_samples)),
-            tf.keras.layers.Dense(units=(self._prices_per_gen + 3) *
-                                  8 * self._n_samples, activation="relu"),
-            tf.keras.layers.Reshape(target_shape=((self._prices_per_gen + 3), 8, self._n_samples)),
-            tf.keras.layers.Conv2DTranspose(
-                filters=64, kernel_size=3, strides=(1, 1), padding="SAME", activation="relu"
-            ),
-            tf.keras.layers.Conv2DTranspose(
-                filters=32, kernel_size=3, strides=(1, 1), padding="SAME", activation="relu"
-            ),
-            tf.keras.layers.Conv2DTranspose(
-                filters=1, kernel_size=3, strides=(1, 1), padding="SAME", activation="sigmoid"
-            ),
-            tf.keras.layers.Reshape(target_shape=(self._output_shape))
-        ])
-
-        discriminator = tf.keras.Sequential([
-            tf.keras.layers.InputLayer(input_shape=self._output_shape),
-            tf.keras.layers.Conv2D(
-                filters=32, kernel_size=3, strides=(2, 2), activation="relu"
-            ),
-            tf.keras.layers.Conv2D(
-                filters=64, kernel_size=3, strides=(2, 2), activation="relu"
-            ),
-            tf.keras.layers.Flatten(),
-            tf.keras.layers.Dense(units=1, activation="sigmoid"),
-        ])
-
-        self._gan = {'generator': generator,
-                     'discriminator': discriminator}
+        raise NotImplementedError()
 
     def reset(self):
         super().reset()

@@ -45,11 +45,6 @@ class FractionalDifference(FeatureTransformer):
         self._difference_order = difference_order
         self._difference_threshold = difference_threshold
 
-        self.reset()
-
-    def reset(self):
-        self._history = None
-
     def _difference_weights(self, size: int):
         weights = [1.0]
 
@@ -90,19 +85,11 @@ class FractionalDifference(FeatureTransformer):
         return diff_series.fillna(method='bfill').fillna(0)
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
-        if self._history is None:
-            self._history = X.copy()
-        else:
-            self._history = self._history.append(X, ignore_index=True)
-
-        if len(self._history) > len(X):
-            self._history = self._history.iloc[-len(X) + 1:]
-
         if self.columns is None:
             self.columns = list(X.select_dtypes('number').columns)
 
         for column in self.columns:
-            diffed_series = self._fractional_difference(self._history[column])
+            diffed_series = self._fractional_difference(X[column])
 
             if not self._inplace:
                 column = '{}_diff_{}'.format(column, self._difference_order)

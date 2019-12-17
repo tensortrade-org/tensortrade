@@ -16,38 +16,25 @@ import pandas as pd
 import numpy as np
 
 from tensortrade.rewards import RewardScheme
-from tensortrade.trades import TradeType, Trade
 
 
 class SimpleProfit(RewardScheme):
-    """A reward scheme that rewards the agent for profitable trades and prioritizes trading over not trading.
+    """A simple reward scheme that rewards the agent for incremental increases in net worth."""
 
-    This scheme supports simple action schemes that trade a single position in a single instrument at a time.
-    """
+    def __init__(self, window_size: int = 1):
+        self.window_size = window_size
 
     def reset(self):
-        """Necessary to reset the last purchase price and state of open positions."""
-        self._purchase_price = -1
-        self._is_holding_instrument = False
+        pass
 
-    def get_reward(self, current_step: int, trade: Trade) -> float:
-        """Reward -1 for not holding a position, 1 for holding a position, 2 for opening a position, and 1 + 5^(log_10(profit)) for closing a position.
+    def get_reward(self, portfolio: 'Portfolio') -> float:
+        """Rewards the agent for incremental increases in net worth over a sliding window.
 
-        The 5^(log_10(profit)) function simply slows the growth of the reward as trades get large.
+        Args:
+            portfolio: The portfolio being used by the environment.
+
+        Returns:
+            The incremental increase in net worth over the previous `window_size` timesteps.
         """
-        if trade.is_hold and self._is_holding_instrument:
-            return 1
-        elif trade.is_buy and trade.amount > 0:
-            self._purchase_price = trade.price
-            self._is_holding_instrument = True
-
-            return 2
-        elif trade.is_sell and trade.amount > 0:
-            self._is_holding_instrument = False
-            profit_per_instrument = trade.price - self._purchase_price
-            profit = trade.amount * profit_per_instrument
-            profit_sign = np.sign(profit)
-
-            return profit_sign * (1 + (5 ** np.log10(abs(profit))))
-
-        return -1
+        returns = portfolio.performance['net_worth'].diff()
+        return sum(returns[-self.window_size:])

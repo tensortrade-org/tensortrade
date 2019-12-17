@@ -27,8 +27,8 @@ class MinMaxNormalizer(FeatureTransformer):
 
     def __init__(self,
                  columns: Union[List[str], str, None] = None,
-                 input_min: float = -1E-8,
-                 input_max: float = 1E8,
+                 input_min: Union[Dict[str, float], float] = -1E3,
+                 input_max: Union[Dict[str, float], float] = 1E8,
                  feature_min: float = 0,
                  feature_max: float = 1,
                  inplace: bool = True):
@@ -56,7 +56,8 @@ class MinMaxNormalizer(FeatureTransformer):
             self.columns = list(X.select_dtypes('number').columns)
 
         for column in self.columns:
-            low, high = self._input_min, self._input_max
+            low = self._input_min[column] if isinstance(self._input_min, dict) else self._input_min
+            high = self._input_max[column] if isinstance(self._input_max, dict) else self._input_max
 
             scale = (self._feature_max - self._feature_min)
 

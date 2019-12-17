@@ -16,37 +16,22 @@ import pandas as pd
 
 from abc import abstractmethod
 
-from tensortrade import Component
-from tensortrade.trades import Trade
+from tensortrade import Component, TimeIndexed
 
 
-class RewardScheme(Component):
+class RewardScheme(Component, TimeIndexed):
 
     registered_name = "rewards"
-
-    def __init__(self):
-        pass
-
-    @property
-    def exchange(self) -> 'Exchange':
-        """The exchange being used by the current trading environments. Setting the exchange causes the scheme to reset."""
-        return self._exchange
-
-    @exchange.setter
-    def exchange(self, exchange: 'Exchange'):
-        self._exchange = exchange
-        self.reset()
 
     def reset(self):
         """Optionally implementable method for resetting stateful schemes."""
         pass
 
     @abstractmethod
-    def get_reward(self, current_step: int, trade: Trade) -> float:
+    def get_reward(self, portfolio: 'Portfolio') -> float:
         """
         Arguments:
-            current_step: The environments's current timestep.
-            trade: The trade executed and filled this timestep.
+            portfolio: The portfolio being used by the environment.
 
         Returns:
             A float corresponding to the benefit earned by the action taken this timestep.

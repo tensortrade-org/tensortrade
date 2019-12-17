@@ -1,12 +1,13 @@
 
-import abc
+from abc import ABC, ABCMeta
 
 
 from .context import TradingContext, Context
 from .registry import get_registry, register
+from .core import Identifiable
 
 
-class InitContextMeta(abc.ABCMeta):
+class InitContextMeta(ABCMeta):
     """Metaclass that executes `__init__` of instance in it's base."""
 
     def __call__(cls, *args, **kwargs):
@@ -36,7 +37,7 @@ class ContextualizedMixin(object):
         self._context = context
 
 
-class Component(abc.ABC, ContextualizedMixin, metaclass=InitContextMeta):
+class Component(ABC, ContextualizedMixin, Identifiable, metaclass=InitContextMeta):
 
     registered_name = None
 

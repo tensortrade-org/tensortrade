@@ -25,21 +25,13 @@ from tensortrade.features.feature_transformer import FeatureTransformer
 class StandardNormalizer(FeatureTransformer):
     """A transformer for normalizing values within a feature pipeline by removing the mean and scaling to unit variance."""
 
-    def __init__(self, columns: Union[List[str], str, None] = None, feature_min=0, feature_max=1, inplace=True):
+    def __init__(self, columns: Union[List[str], str, None] = None, inplace=True):
         """
         Arguments:
             columns (optional): A list of column names to normalize.
-            feature_min (optional): The minimum value in the range to scale to.
-            feature_max (optional): The maximum value in the range to scale to.
             inplace (optional): If `False`, a new column will be added to the output for each input column.
         """
         super().__init__(columns=columns, inplace=inplace)
-
-        self._feature_min = feature_min
-        self._feature_max = feature_max
-
-        if feature_min >= feature_max:
-            raise ValueError("feature_min must be less than feature_max")
 
         self._history = {}
 
@@ -50,4 +42,13 @@ class StandardNormalizer(FeatureTransformer):
         if self.columns is None:
             self.columns = list(X.select_dtypes('number').columns)
 
-        raise NotImplementedError
+        for column in self.columns:
+            if not self._inplace:
+                column = '{}_standardize'.format(column)
+
+            args = {}
+            args[column] = (X[column] - X[column].mean()) / X[column].std()
+
+            X = X.assign(**args)
+
+        return X

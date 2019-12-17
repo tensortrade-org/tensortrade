@@ -14,76 +14,43 @@
 
 import numpy as np
 
-from typing import Union
-from abc import abstractmethod
-from gym.spaces import Space
+from abc import abstractmethod, ABCMeta
+from typing import Union, List
+from itertools import product
+from gym.spaces import Discrete
 
 from tensortrade import Component
-from tensortrade.trades import Trade
-
-DTypeString = Union[type, str]
-TradeActionUnion = Union[int, float, tuple]
+from tensortrade.orders import Order
 
 
-class ActionScheme(Component):
-    """An abstract scheme for determining the action to take at each timestep within a trading environments."""
+class ActionScheme(Component, metaclass=ABCMeta):
+    """A discrete action scheme for determining the action to take at each timestep within a trading environments."""
 
     registered_name = "actions"
 
+    def __init__(self):
+        pass
+
+    @property
     @abstractmethod
-    def __init__(self, action_space: Space, dtype: DTypeString = np.float32):
-        """
-        Arguments:
-            action_space: The shape of the actions produced by the scheme.
-            dtype: A type or str corresponding to the dtype of the `action_space`. Defaults to `np.float32`.
-        """
-        self._action_space = action_space
-        self._dtype = self.context.get('dtype', None) or dtype
-
-    @property
-    def action_space(self) -> Space:
-        """The shape of the actions produced by the scheme."""
-        return self._action_space
-
-    @action_space.setter
-    def action_space(self, action_space: Space):
-        self._action_space = action_space
-
-    @property
-    def dtype(self) -> DTypeString:
-        """A type or str corresponding to the dtype of the `action_space`."""
-        return self._dtype
-
-    @dtype.setter
-    def dtype(self, dtype: DTypeString):
-        self._dtype = dtype
-
-    @property
-    def exchange(self) -> 'Exchange':
-        """The exchange being used by the current trading environments.
-
-        This will be set by the trading environments upon initialization. Setting the exchange causes the scheme to reset.
-        """
-        return self._exchange
-
-    @exchange.setter
-    def exchange(self, exchange: 'Exchange'):
-        self._exchange = exchange
-        self.reset()
+    def action_space(self) -> Discrete:
+        """The discrete action space produced by the action scheme."""
+        raise NotImplementedError()
 
     def reset(self):
-        """Optionally implementable method for resetting stateful schemes."""
+        """An optional reset method, which will be called each time the environment is reset."""
         pass
 
     @abstractmethod
-    def get_trade(self, current_step: int, action: TradeActionUnion) -> Trade:
-        """Get the trade to be executed on the exchange based on the action provided.
+    def get_order(self, action: int, exchange: 'Exchange', portfolio: 'Portfolio') -> Order:
+        """Get the order to be executed on the exchange based on the action provided.
 
         Arguments:
-            current_step: The environments's current timestep.
-            action: The action to be converted into a trade.
+            action: The action to be converted into an order.
+            exchange: The exchange the action will be executed on.
+            portfolio: The portfolio of wallets used to execute the action.
 
         Returns:
-            The trade to be executed on the exchange this timestep.
+            The order to be executed on the exchange this timestep.
         """
-        raise NotImplementedError
+        raise NotImplementedError()

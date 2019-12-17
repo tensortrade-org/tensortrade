@@ -9,6 +9,8 @@ from matplotlib import style
 from datetime import datetime
 from pandas.plotting import register_matplotlib_converters
 
+from tensortrade.trades import TradeSide
+
 style.use('ggplot')
 register_matplotlib_converters()
 
@@ -109,19 +111,16 @@ class MatplotlibTradingChart:
         self.volume_ax.yaxis.set_ticks([])
 
     def _render_trades(self, step_range, trades):
-        for _, trade in trades.iterrows():
-            if trade['step'] in range(sys.maxsize)[step_range]:
-                date = self.df.index.values[trade['step']]
-                close = self.df['close'].values[trade['step']]
+        trades = [trade for sublist in trades.values() for trade in sublist]
 
-                if 'buy' in str(trade['type']).lower():
-                    color = 'g'
+        for trade in trades:
+            if trade.step in range(sys.maxsize)[step_range]:
+                date = self.df.index.values[trade.step]
+                close = self.df['close'].values[trade.step]
+                color = 'green'
 
-                elif 'sell' in str(trade['type']).lower():
-                    color = 'r'
-
-                else:
-                    color = 'b'
+                if trade.side is TradeSide.SELL:
+                    color = 'red'
 
                 self.price_ax.annotate(' ', (date, close),
                                        xytext=(date, close),

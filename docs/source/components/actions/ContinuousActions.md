@@ -1,6 +1,6 @@
 # ContinuousActions
 
-Simple continuous scheme, which calculates the trade amount as a fraction of the total balance.
+Simple continuous scheme, which calculates the trade size as a fraction of the total balance.
 
 ## Key Variables
 
@@ -9,7 +9,7 @@ Simple continuous scheme, which calculates the trade amount as a fraction of the
 - `instrument`
   - The number of bins to divide the total balance by. Defaults to 20 (i.e. 1/20, 2/20, ..., 20/20).
 - `instrument`
-  - The maximum amount above the current price the scheme will pay for an instrument. Defaults to 1.0 (i.e. 1%).
+  - The maximum size above the current price the scheme will pay for an instrument. Defaults to 1.0 (i.e. 1%).
 
 ## Setters & Properties
 

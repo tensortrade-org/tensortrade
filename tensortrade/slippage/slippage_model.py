@@ -27,7 +27,7 @@ class SlippageModel(Component):
         pass
 
     @abstractmethod
-    def fill_order(self, trade: Trade, **kwargs) -> Trade:
+    def adjust_trade(self, trade: Trade, **kwargs) -> Trade:
         """Simulate slippage on a trade ordered on a specific exchange.
 
         Arguments:
@@ -35,7 +35,7 @@ class SlippageModel(Component):
             **kwargs: Any other arguments necessary for the model.
 
         Returns:
-            A filled `Trade` with the `price` and `amount` adjusted for slippage.
+            A filled `Trade` with the `price` and `size` adjusted for slippage.
         """
 
         raise NotImplementedError()
