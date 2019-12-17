@@ -53,7 +53,7 @@ class Instrument:
 # Crypto-currency
 BTC = Instrument('BTC', 8, 'Bitcoin')
 ETH = Instrument('ETH', 8, 'Ethereum')
-BCH = Instrument('BTH', 8, 'Bitcoin Cash')
+BCH = Instrument('BCH', 8, 'Bitcoin Cash')
 LTC = Instrument('LTC', 2, 'Litecoin')
 XRP = Instrument('XRP', 2, 'XRP')
 
