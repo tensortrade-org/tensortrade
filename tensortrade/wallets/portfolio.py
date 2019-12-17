@@ -19,10 +19,14 @@ class Portfolio(Component, TimedIdentifiable):
 
     def __init__(self,
                  base_instrument: Instrument,
-                 wallets: List[WalletType] = None):
+                 wallets: List[WalletType] = None,
+                 order_listener: 'OrderListener' = None,
+                 performance_listener: Callable[[pd.DataFrame], None] = None):
         wallets = wallets or []
 
         self._base_instrument = self.default('base_instrument', base_instrument)
+        self._order_listener = self.default('order_listener', order_listener)
+        self._performance_listener = self.default('performance_listener', performance_listener)
         self._wallets = {}
 
         for wallet in wallets:
@@ -40,6 +44,24 @@ class Portfolio(Component, TimedIdentifiable):
     @base_instrument.setter
     def base_instrument(self, base_instrument: Instrument):
         self._base_instrument = base_instrument
+
+    @property
+    def order_listener(self) -> Instrument:
+        """The order listener to set for all orders executed by this portfolio."""
+        return self._order_listener
+
+    @order_listener.setter
+    def order_listener(self, order_listener: 'OrderListener'):
+        self._order_listener = order_listener
+
+    @property
+    def performance_listener(self) -> Instrument:
+        """The performance listener to send all portfolio updates to."""
+        return self._performance_listener
+
+    @performance_listener.setter
+    def performance_listener(self, performance_listener: Callable[[pd.DataFrame], None]):
+        self._performance_listener = performance_listener
 
     @property
     def wallets(self) -> List[Wallet]:
@@ -163,6 +185,9 @@ class Portfolio(Component, TimedIdentifiable):
 
         self._performance = pd.concat(
             [self._performance, performance_update], axis=0, sort=True).dropna()
+
+        if self._performance_listener:
+            self._performance_listener(performance_update)
 
     def reset(self):
         self._initial_balance = self.base_balance

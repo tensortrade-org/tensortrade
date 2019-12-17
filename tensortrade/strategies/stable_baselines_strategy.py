@@ -109,7 +109,7 @@ class StableBaselinesTradingStrategy(TradingStrategy):
             portfolio_performance = info[0].get('portfolio').performance
             performance = portfolio_performance if len(portfolio_performance) > 0 else performance
 
-            if render_mode is not None:
+            if render_mode is not None and self._environment.clock.step:
                 self._vectorized_environment.render(mode=render_mode)
 
             if dones[0]:

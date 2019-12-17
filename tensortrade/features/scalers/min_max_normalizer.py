@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License
 
-import random
 import pandas as pd
 import numpy as np
 
@@ -28,49 +27,44 @@ class MinMaxNormalizer(FeatureTransformer):
 
     def __init__(self,
                  columns: Union[List[str], str, None] = None,
+                 input_min: Union[Dict[str, float], float] = -1E3,
+                 input_max: Union[Dict[str, float], float] = 1E8,
                  feature_min: float = 0,
                  feature_max: float = 1,
                  inplace: bool = True):
         """
         Arguments:
             columns (optional): A list of column names to normalize.
+            input_min (optional): The minimum `float` in the range to scale to. Defaults to -1E-8.
+            input_max (optional): The maximum `float` in the range to scale to. Defaults to 1E8.
             feature_min (optional): The minimum `float` in the range to scale to. Defaults to 0.
             feature_max (optional): The maximum `float` in the range to scale to. Defaults to 1.
             inplace (optional): If `False`, a new column will be added to the output for each input column.
         """
         super().__init__(columns=columns, inplace=inplace)
 
+        self._input_min = input_min
+        self._input_max = input_max
         self._feature_min = feature_min
         self._feature_max = feature_max
 
         if feature_min >= feature_max:
             raise ValueError("feature_min must be less than feature_max")
 
-        self._input_min = np.inf
-        self._input_max = -np.inf
-
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         if self.columns is None:
             self.columns = list(X.select_dtypes('number').columns)
 
         for column in self.columns:
-            column_min = X[column].min()
-            column_max = X[column].max()
-            column_std = X[column].std()
-
-            if column_min < self._input_min:
-                self._input_min = column_min - (random.random() * 2 * column_std)
-
-            if column_max < self._input_max:
-                self._input_max = column_max + (random.random() * 2 * column_std)
+            low = self._input_min[column] if isinstance(self._input_min, dict) else self._input_min
+            high = self._input_max[column] if isinstance(self._input_max, dict) else self._input_max
 
             scale = (self._feature_max - self._feature_min)
 
-            if self._input_max - self._input_min == 0:
+            if high - low == 0:
                 normalized_column = (1/len(X[column])) * scale
             else:
-                normalized_column = (X[column] - self._input_min) / \
-                    (self._input_max - self._input_min) * scale
+                normalized_column = (X[column] - low) / (high - low) * scale
 
             if not self._inplace:
                 column = '{}_minmax_{}_{}'.format(column, self._feature_min, self._feature_max)

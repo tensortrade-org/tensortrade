@@ -21,10 +21,16 @@ class TradeType(Enum):
     LIMIT = 'limit'
     MARKET = 'market'
 
+    def __str__(self):
+        return str(self.value)
+
 
 class TradeSide(Enum):
     BUY = 'buy'
     SELL = 'sell'
+
+    def __str__(self):
+        return str(self.value)
 
 
 class Trade(TimedIdentifiable):
@@ -121,6 +127,19 @@ class Trade(TimedIdentifiable):
                 'quantity': self.quantity,
                 'price': self.price,
                 'commission': self.commission
+                }
+
+    def to_json(self):
+        return {'id': str(self.id),
+                'order_id': str(self.order_id),
+                'step': str(self.step),
+                'base_symbol': str(self.pair.base.symbol),
+                'quote_symbol': str(self.pair.quote.symbol),
+                'side': str(self.side),
+                'type': str(self.type),
+                'quantity': str(self.quantity),
+                'price': str(self.price),
+                'commission': str(self.commission)
                 }
 
     def __str__(self):

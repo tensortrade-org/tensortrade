@@ -16,6 +16,9 @@ class OrderStatus(Enum):
     PARTIALLY_FILLED = 3
     FILLED = 4
 
+    def __str__(self):
+        return str(self.value)
+
 
 class Order(TimedIdentifiable):
     """
@@ -126,6 +129,9 @@ class Order(TimedIdentifiable):
             wallet -= self.size * instrument
             wallet += self.quantity
 
+        if self.portfolio.order_listener:
+            self.attach(self.portfolio.order_listener)
+
         for listener in self._listeners or []:
             listener.on_execute(self, exchange)
 
@@ -185,6 +191,20 @@ class Order(TimedIdentifiable):
             "price": self.price,
             "criteria": self.criteria,
             "path_id": self.path_id
+        }
+
+    def to_json(self):
+        return {
+            "id": str(self.id),
+            "status": str(self.status),
+            "type": str(self.type),
+            "side": str(self.side),
+            "pair": str(self.pair),
+            "quantity": str(self.quantity),
+            "size": str(self.size),
+            "price": str(self.price),
+            "criteria": str(self.criteria),
+            "path_id": str(self.path_id)
         }
 
     def __iadd__(self, recipe: 'Recipe') -> 'Order':

@@ -12,10 +12,12 @@ class StopDirection(Enum):
     DOWN = 'down'
     EITHER = 'either'
 
+    def __str__(self):
+        return str(self.value)
+
 
 class StopLoss(Criteria):
-    """An order criteria that allows execution when the quote price for a
-    trading pair is above or below a specific price."""
+    """An order criteria that allows execution when the quote price for a trading pair is above or below a specific price."""
 
     def __init__(self, direction: StopDirection = StopDirection.DOWN, up_percent: float = 0.02, down_percent: float = 0.02, percent: float = None):
         self.direction = StopDirection(direction)
