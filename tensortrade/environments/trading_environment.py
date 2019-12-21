@@ -86,8 +86,12 @@ class TradingEnvironment(gym.Env, TimeIndexed):
         self.render_benchmarks: List[Dict] = kwargs.get('render_benchmarks', [])
         self.viewer = None
 
-        self.logger = logging.getLogger(kwargs.get('logger_name', __name__))
-        self.logger.setLevel(kwargs.get('log_level', logging.DEBUG))
+        self._enable_logger = kwargs.get('enable_logger', True)
+
+        if self._enable_logger:
+            self.logger = logging.getLogger(kwargs.get('logger_name', __name__))
+            self.logger.setLevel(kwargs.get('log_level', logging.DEBUG))
+
         logging.getLogger('tensorflow').disabled = kwargs.get('disable_tensorflow_logger', True)
 
         self._initial_balances = None
@@ -355,11 +359,12 @@ class TradingEnvironment(gym.Env, TimeIndexed):
         done = self._done()
         info = self._info(order)
 
-        self.logger.debug('Order: {}'.format(order))
-        self.logger.debug('Observation: {}'.format(observation))
-        self.logger.debug('P/L: {}'.format(self._portfolio.profit_loss))
-        self.logger.debug('Reward ({}): {}'.format(self.clock.step, reward))
-        self.logger.debug('Performance: {}'.format(self._portfolio.performance.tail(1)))
+        if self._enable_logger:
+            self.logger.debug('Order: {}'.format(order))
+            self.logger.debug('Observation: {}'.format(observation))
+            self.logger.debug('P/L: {}'.format(self._portfolio.profit_loss))
+            self.logger.debug('Reward ({}): {}'.format(self.clock.step, reward))
+            self.logger.debug('Performance: {}'.format(self._portfolio.performance.tail(1)))
 
         self.clock.increment()
 
