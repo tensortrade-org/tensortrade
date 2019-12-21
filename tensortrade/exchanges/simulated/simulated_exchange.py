@@ -49,15 +49,13 @@ class SimulatedExchange(Exchange):
         self._max_trade_price = self.default('max_trade_price', 1e8, kwargs)
         self._randomize_time_slices = self.default('randomize_time_slices', False, kwargs)
         self._min_time_slice = self.default('min_time_slice', 128, kwargs)
-
+        self._dtype = self.default('dtype', np.float16, kwargs)
         self._price_column = self.default('price_column', 'close', kwargs)
         self.data_frame = self.default('data_frame', data_frame)
 
         slippage_model = self.default('slippage_model', 'uniform', kwargs)
         self._slippage_model = slippage.get(slippage_model) if isinstance(
             slippage_model, str) else slippage_model()
-
-        self.reset()
 
     @property
     def is_live(self):
