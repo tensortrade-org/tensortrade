@@ -27,7 +27,7 @@ class MinMaxNormalizer(FeatureTransformer):
 
     def __init__(self,
                  columns: Union[List[str], str, None] = None,
-                 input_min: Union[Dict[str, float], float] = -1E3,
+                 input_min: Union[Dict[str, float], float] = -1E-8,
                  input_max: Union[Dict[str, float], float] = 1E8,
                  feature_min: float = 0,
                  feature_max: float = 1,

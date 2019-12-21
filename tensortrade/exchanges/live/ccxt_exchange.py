@@ -24,6 +24,7 @@ from ccxt import BadRequest
 from tensortrade.trades import Trade, TradeType, TradeSide
 from tensortrade.instruments import TradingPair, BTC, ETH
 from tensortrade.exchanges import Exchange
+from tensortrade.orders import OrderStatus
 
 BTC_ETH_PAIR = TradingPair(BTC, ETH)
 
@@ -137,10 +138,10 @@ class CCXTExchange(Exchange):
 
         max_wait_time = time.time() + self._max_trade_wait_in_sec
 
-        while order['status'] == 'open' and time.time() < max_wait_time:
+        while order['status'] == OrderStatus.OPEN and time.time() < max_wait_time:
             executed_order = self._exchange.fetch_order(order.id)
 
-        if order['status'] == 'open':
+        if order['status'] == OrderStatus.OPEN:
             self._exchange.cancel_order(order.id)
             order.cancel(self._exchange)
 
@@ -160,3 +161,6 @@ class CCXTExchange(Exchange):
         super().reset()
 
         self._data_frame = pd.DataFrame([], columns=self.observation_columns)
+
+    def is_pair_tradeable(self, trading_pair: 'TradingPair') -> bool:
+        return self._exchange.markets[trading_pair]['active']

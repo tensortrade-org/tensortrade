@@ -43,7 +43,7 @@ class LogDifference(FeatureTransformer):
             self.columns = list(X.select_dtypes('number').columns)
 
         for column in self.columns:
-            diffed_series = np.log(X[column]) - np.log(X[column].shift(1))
+            diffed_series = np.log(0.000001 + X[column]) - np.log(X[column].shift(1))
             diffed_series = diffed_series.fillna(method='bfill')
 
             if not self._inplace:

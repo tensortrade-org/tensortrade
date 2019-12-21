@@ -62,6 +62,7 @@ setup(
         'stochastic': ['stochastic==0.4.0'],
         'matplotlib': ['matplotlib==3.1.1'],
         'ccxt': ['ccxt==1.18.1220'],
+        'fbm': ['fbm==0.3.0'],
         'all-framework': ['tensorflow==1.13.1',
                           'tensorforce==0.5.2',
                           'stable-baselines==2.8.0',
@@ -70,7 +71,8 @@ setup(
                           'ta-lib==0.4.17',
                           'stochastic==0.4.0',
                           'ccxt==1.18.1220',
-                          'matplotlib==3.1.1'
+                          'matplotlib==3.1.1',
+                          'fbm==0.3.0'
                           ],
         'tests': ['pytest==5.1.1'],
         'all-tests': ['tensorflow==1.13.1',
