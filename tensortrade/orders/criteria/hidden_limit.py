@@ -1,5 +1,4 @@
 
-from typing import List, Union
 
 from tensortrade.orders.criteria import Criteria
 from tensortrade.trades import TradeSide
@@ -15,7 +14,6 @@ class HiddenLimit(Criteria):
     def __call__(self, order: 'Order', exchange: 'Exchange') -> bool:
         if not exchange.is_pair_tradable(order.pair):
             return False
-
         price = exchange.quote_price(order.pair)
 
         buy_satisfied = (order.side == TradeSide.BUY and price <= self.limit_price)
