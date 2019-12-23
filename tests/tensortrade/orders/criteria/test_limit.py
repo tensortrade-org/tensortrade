@@ -2,7 +2,7 @@
 import pytest
 
 from tensortrade.base.clock import Clock
-from tensortrade.orders.criteria import HiddenLimit
+from tensortrade.orders.criteria import Limit
 from tensortrade.instruments import USD, BTC
 from tensortrade.trades.trade import TradeSide
 from tensortrade.instruments import TradingPair
@@ -65,13 +65,13 @@ def sell_order():
 
 
 def test_init():
-    criteria = HiddenLimit(limit_price=7000.00)
+    criteria = Limit(limit_price=7000.00)
     assert criteria.limit_price == 7000.00
 
 
 def test_call(buy_order, sell_order, exchange):
 
-    criteria = HiddenLimit(limit_price=7000.00)
+    criteria = Limit(limit_price=7000.00)
 
     assert not criteria(buy_order, exchange)
     assert criteria(sell_order, exchange)
@@ -88,6 +88,6 @@ def test_call(buy_order, sell_order, exchange):
 
 
 def test_str():
-    criteria = HiddenLimit(limit_price=7000.00)
+    criteria = Limit(limit_price=7000.00)
 
     assert str(criteria) == "<Limit: price={0}>".format(7000.00)

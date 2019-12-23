@@ -6,11 +6,7 @@ def test_init():
     pytest.fail("Failed.")
 
 
-def test_create_order():
-    pytest.fail("Failed.")
-
-
-def test_to_dict():
+def test_call():
     pytest.fail("Failed.")
 
 

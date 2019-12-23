@@ -1,15 +1,14 @@
 
 
-from enum import Enum
-from typing import Callable, Union, Tuple, List
+from typing import Callable
 
 from tensortrade.base import Identifiable
-from tensortrade.base.exceptions import InvalidOrderQuantity
-from tensortrade.trades import Trade, TradeSide, TradeType
+from tensortrade.trades import TradeSide, TradeType
 from .order import Order
 
 
 class Recipe(Identifiable):
+
     def __init__(self,
                  side: TradeSide,
                  trade_type: TradeType,

@@ -22,7 +22,7 @@ from gym.spaces import Discrete
 from tensortrade.actions import ActionScheme
 from tensortrade.trades import TradeSide, TradeType
 from tensortrade.instruments import Quantity
-from tensortrade.orders.criteria import StopLoss
+from tensortrade.orders.criteria import Stop
 from tensortrade.orders import Recipe, Order, OrderListener
 
 
@@ -136,9 +136,7 @@ class ManagedRiskOrders(ActionScheme):
                       quantity=buy_quantity,
                       portfolio=portfolio)
 
-        risk_criteria = StopLoss(direction='either',
-                                 up_percent=take_profit,
-                                 down_percent=stop_loss)
+        risk_criteria = Stop("down", stop_loss) | Stop("up", take_profit)
 
         risk_management = Recipe(side=TradeSide.SELL if self._trade_side == TradeSide.BUY else TradeSide.BUY,
                                  trade_type=TradeType.MARKET,

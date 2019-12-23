@@ -4,8 +4,6 @@ import pytest
 from tensortrade.base.clock import Clock
 from tensortrade.instruments import *
 from tensortrade.orders import Order, Broker
-from tensortrade.orders.recipe import Recipe
-from tensortrade.orders.criteria import StopLoss, StopDirection
 from tensortrade.wallets import Portfolio, Wallet
 from tensortrade.trades import TradeSide, TradeType
 
@@ -101,5 +99,65 @@ def test_init(exchange, portfolio):
     assert isinstance(order.pair, TradingPair)
     assert order.pair.base == USD
     assert order.pair.quote == BTC
+
+
+def test_properties():
+    pytest.fail("Failed.")
+
+
+def test_is_executable_on():
+    pytest.fail("Failed.")
+
+
+def test_is_complete():
+    pytest.fail("Failed.")
+
+
+def test_add_recipe():
+    pytest.fail("Failed.")
+
+
+def test_attach():
+    pytest.fail("Failed.")
+
+
+def test_detach():
+    pytest.fail("Failed.")
+
+
+def test_execute():
+    pytest.fail("Failed.")
+
+
+def test_fill():
+    pytest.fail("Failed.")
+
+
+def test_complete():
+    pytest.fail("Failed.")
+
+
+def test_cancel():
+    pytest.fail("Failed.")
+
+
+def test_release():
+    pytest.fail("Failed.")
+
+
+def test_to_dict():
+    pytest.fail("Failed.")
+
+
+def test_to_json():
+    pytest.fail("Failed.")
+
+
+def test_iadd():
+    pytest.fail("Failed.")
+
+
+def test_str():
+    pytest.fail("Failed.")
 
 

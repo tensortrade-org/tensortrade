@@ -1,8 +1,9 @@
 
+
 import pytest
 
-from tensortrade.orders.criteria import Criteria, Limit, Timed, Stop
 from tensortrade.base.clock import Clock
+from tensortrade.orders.criteria import Stop, StopDirection
 from tensortrade.instruments import USD, BTC
 from tensortrade.trades.trade import TradeSide
 from tensortrade.instruments import TradingPair
@@ -54,45 +55,27 @@ class MockOrder:
         self.pair = pair
 
 
-class ConcreteCriteria(Criteria):
+@pytest.fixture
+def buy_order():
+    return MockOrder(side=TradeSide.BUY, pair=USD/BTC)
 
-    def call(self, order: 'Order', exchange: 'Exchange'):
-        return True
+
+@pytest.fixture
+def sell_order():
+    return MockOrder(side=TradeSide.SELL, pair=USD/BTC)
 
 
 def test_init():
-    criteria = ConcreteCriteria()
-    assert criteria
+
+    criteria = Stop(direction=StopDirection.DOWN,
+                    percent=0.3)
+    assert criteria.direction == StopDirection.UP
+    assert criteria.percent == 0.3
 
 
-def test_call(exchange):
-
-    criteria = ConcreteCriteria()
-
-    order = MockOrder(side=TradeSide.BUY, pair=BTC/USD)
-    assert not criteria(order, exchange)
-
-    order = MockOrder(side=TradeSide.BUY, pair=USD/BTC)
-    assert criteria(order, exchange)
+def test_call(buy_order, sell_order, exchange):
+    pytest.fail("Failed.")
 
 
-def test_and():
-
-    criteria = Limit(limit_price=7000.00) & Timed(wait=2)
-    assert criteria
-    assert isinstance(criteria, Criteria)
-
-    order = MockOrder(side=TradeSide.BUY, pair=USD/BTC)
-
-
-def test_or():
-
-    criteria = Limit(limit_price=7000.00) | Timed(wait=2)
-    assert criteria
-    assert isinstance(criteria, Criteria)
-
-    order = MockOrder(side=TradeSide.BUY, pair=USD/BTC)
-
-
-def test_invert():
+def test_str():
     pytest.fail("Failed.")
