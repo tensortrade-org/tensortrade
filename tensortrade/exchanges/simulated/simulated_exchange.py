@@ -101,7 +101,7 @@ class SimulatedExchange(Exchange):
 
         return obs
 
-    def is_pair_tradeable(self, pair: TradingPair) -> bool:
+    def is_pair_tradable(self, pair: TradingPair) -> bool:
         return pair.base == self._base_instrument and pair.quote == self._quote_instrument
 
     def quote_price(self, trading_pair: TradingPair) -> float:

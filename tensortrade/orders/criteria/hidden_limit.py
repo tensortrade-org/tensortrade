@@ -13,7 +13,7 @@ class HiddenLimit(Criteria):
         self.limit_price = limit_price
 
     def __call__(self, order: 'Order', exchange: 'Exchange') -> bool:
-        if not exchange.is_pair_tradeable(order.pair):
+        if not exchange.is_pair_tradable(order.pair):
             return False
 
         price = exchange.quote_price(order.pair)
@@ -24,7 +24,7 @@ class HiddenLimit(Criteria):
         return buy_satisfied or sell_satisfied
 
     def __str__(self):
-        return 'Limit: {}'.format(self.limit_price)
+        return '<Limit: price={0}>'.format(self.limit_price)
 
     def __repr__(self):
         return str(self)

@@ -1,7 +1,7 @@
 import operator
 import warnings
 
-from typing import Union
+from typing import Union, Tuple
 from numbers import Number
 
 from tensortrade.base.exceptions import InvalidNegativeQuantity, IncompatibleInstrumentOperation, \
@@ -51,21 +51,46 @@ class Quantity:
         self._path_id = path_id
 
     @staticmethod
-    def _bool_operation(left: Union['Quantity', float, int],
-                        right: Union['Quantity', float, int],
-                        bool_op: operator) -> bool:
-        right_size = right
+    def validate(left, right) -> Tuple['Quantity', 'Quantity']:
 
-        if isinstance(right, Quantity):
+        if isinstance(left, Quantity) and isinstance(right, Quantity):
             if left.instrument != right.instrument:
                 raise IncompatibleInstrumentOperation(left, right)
 
-            right_size = right.size
+            if (left.path_id and right.path_id) and (left.path_id != right.path_id):
+                raise QuantityOpPathMismatch(left.path_id, right.path_id)
 
-        if not isinstance(right_size, Number):
-            raise InvalidNonNumericQuantity(right_size)
+            elif left.path_id and not right.path_id:
+                right.path_id = left.path_id
 
-        boolean = bool_op(left.size, right_size)
+            elif not left.path_id and right.path_id:
+                left.path_id = right.path_id
+
+            return left, right
+
+        elif isinstance(left, Number) and isinstance(right, Quantity):
+            left = Quantity(right.instrument, float(left), right.path_id)
+            return left, right
+
+        elif isinstance(left, Quantity) and isinstance(right, Number):
+            right = Quantity(left.instrument, float(right), left.path_id)
+            return left, right
+
+        elif isinstance(left, Quantity):
+            raise InvalidNonNumericQuantity(right)
+
+        elif isinstance(right, Quantity):
+            raise InvalidNonNumericQuantity(left)
+
+        return left, right
+
+    @staticmethod
+    def _bool_operation(left: Union['Quantity', float, int],
+                        right: Union['Quantity', float, int],
+                        bool_op: operator) -> bool:
+        left, right = Quantity.validate(left, right)
+
+        boolean = bool_op(left.size, right.size)
 
         if not isinstance(boolean, bool):
             raise Exception("`bool_op` cannot return a non-bool type ({}).".format(boolean))
@@ -76,24 +101,10 @@ class Quantity:
     def _math_operation(left: Union['Quantity', float, int],
                         right: Union['Quantity', float, int],
                         op: operator) -> 'Quantity':
-        right_size = right
+        left, right = Quantity.validate(left, right)
 
-        if isinstance(right, Quantity):
-            if left.instrument != right.instrument:
-                raise IncompatibleInstrumentOperation(left, right)
-
-            if left.path_id and right.path_id:
-                if left._path_id != right._path_id:
-                    raise QuantityOpPathMismatch(left.path_id, right.path_id)
-
-            right_size = right.size
-
-        if not isinstance(right_size, Number):
-            raise InvalidNonNumericQuantity(right_size)
-
-        size = op(left.size, right_size)
-
-        return Quantity(instrument=left.instrument, size=size, path_id=left.path_id)
+        size = op(left.size, right.size)
+        return Quantity(left.instrument, size, left.path_id)
 
     def __add__(self, other: Union['Quantity', float, int]) -> 'Quantity':
         return Quantity._math_operation(self, other, operator.add)
@@ -110,8 +121,14 @@ class Quantity:
     def __mul__(self, other: Union['Quantity', float, int]) -> 'Quantity':
         return Quantity._math_operation(self, other, operator.mul)
 
+    def __rmul__(self, other: Union['Quantity', float, int]) -> 'Quantity':
+        return Quantity.__mul__(other, self)
+
     def __truediv__(self, other: Union['Quantity', float, int]) -> 'Quantity':
         return Quantity._math_operation(self, other, operator.truediv)
+
+    def __rtruediv__(self, other: Union['Quantity', float, int]) -> 'Quantity':
+        return Quantity.__truediv__(other, self)
 
     def __lt__(self, other: Union['Quantity', float, int]) -> bool:
         return Quantity._bool_operation(self, other, operator.lt)

@@ -69,14 +69,14 @@ class Exchange(Component, TimedIdentifiable):
         raise NotImplementedError
 
     @abstractmethod
-    def is_pair_tradeable(self, trading_pair: 'TradingPair') -> bool:
-        """Whether or not the specified trading pair is tradeable on this exchange.
+    def is_pair_tradable(self, trading_pair: 'TradingPair') -> bool:
+        """Whether or not the specified trading pair is tradable on this exchange.
 
         Args:
-            trading_pair: The `TradingPair` to test the tradeability of.
+            trading_pair: The `TradingPair` to test the tradability of.
 
         Returns:
-            A bool designating whether or not the pair is tradeable.
+            A bool designating whether or not the pair is tradable.
         """
         raise NotImplementedError()
 

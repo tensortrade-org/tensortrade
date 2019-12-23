@@ -14,7 +14,7 @@ class Broker(OrderListener, TimeIndexed):
     """
 
     def __init__(self, exchanges: Union[List['Exchange'], 'Exchange']):
-        self._exchanges = exchanges if isinstance(exchanges, list) else [exchanges]
+        self.exchanges = exchanges
 
         self.reset()
 

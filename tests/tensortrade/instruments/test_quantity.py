@@ -318,7 +318,7 @@ def test_invalid_isub():
 
 
 # Multiplication
-def test_valid_mul():
+def test_valid_left_mul():
 
     # Quantity
     q1 = Quantity(ETH, 50)
@@ -354,6 +354,46 @@ def test_valid_mul():
     q1 = Quantity(ETH, 50)
     q2 = 5.0
     q = q1 * q2
+    assert q.size == 250
+    assert q.instrument == ETH
+
+
+def test_valid_right_mul():
+
+    # Quantity
+    q1 = Quantity(ETH, 50)
+    q2 = Quantity(ETH, 5)
+    q = q2 * q1
+    assert q.size == 250
+    assert q.instrument == ETH
+
+    # Quantity with Path ID
+    q1 = Quantity(BTC, 50, path_id=path_id)
+    q2 = Quantity(BTC, 5)
+    q = q2 * q1
+    assert q.size == 250
+    assert q.instrument == BTC
+    assert q.path_id == path_id
+
+    # Quantity with matching Path ID
+    q1 = Quantity(BTC, 50, path_id=path_id)
+    q2 = Quantity(BTC, 5, path_id=path_id)
+    q = q2 * q1
+    assert q.size == 250
+    assert q.instrument == BTC
+    assert q.path_id == path_id
+
+    # int
+    q1 = Quantity(ETH, 50)
+    q2 = 5
+    q = q2 * q1
+    assert q.size == 250
+    assert q.instrument == ETH
+
+    # float
+    q1 = Quantity(ETH, 50)
+    q2 = 5.0
+    q = q2 * q1
     assert q.size == 250
     assert q.instrument == ETH
 
@@ -380,7 +420,7 @@ def test_invalid_mul():
 
 
 # Division
-def test_valid_truediv():
+def test_valid_left_truediv():
 
     # Quantity
     q1 = Quantity(ETH, 50)
@@ -416,6 +456,46 @@ def test_valid_truediv():
     q1 = Quantity(ETH, 50)
     q2 = 5.0
     q = q1 / q2
+    assert q.size == 10
+    assert q.instrument == ETH
+
+
+def test_valid_right_truediv():
+
+    # Quantity
+    q1 = Quantity(ETH, 5)
+    q2 = Quantity(ETH, 50)
+    q = q2 / q1
+    assert q.size == 10
+    assert q.instrument == ETH
+
+    # Quantity with Path ID
+    q1 = Quantity(BTC, 5, path_id=path_id)
+    q2 = Quantity(BTC, 50)
+    q = q2 / q1
+    assert q.size == 10
+    assert q.instrument == BTC
+    assert q.path_id == path_id
+
+    # Quantity with matching Path ID
+    q1 = Quantity(BTC, 5, path_id=path_id)
+    q2 = Quantity(BTC, 50, path_id=path_id)
+    q = q2 / q1
+    assert q.size == 10
+    assert q.instrument == BTC
+    assert q.path_id == path_id
+
+    # int
+    q1 = Quantity(ETH, 5)
+    q2 = 50
+    q = q2 / q1
+    assert q.size == 10
+    assert q.instrument == ETH
+
+    # float
+    q1 = Quantity(ETH, 5)
+    q2 = 50.0
+    q = q2 / q1
     assert q.size == 10
     assert q.instrument == ETH
 
@@ -546,7 +626,7 @@ def test_invalid_equals():
     q1 = Quantity(ETH, 5)
     q2 = Quantity(BTC, 5)
     with pytest.raises(IncompatibleInstrumentOperation):
-        (q1 == q2) and (q2 == q1)
+        assert (q1 == q2) and (q2 == q1)
 
 
 # Not equals
@@ -586,7 +666,7 @@ def test_invalid_unequals():
     q1 = Quantity(ETH, 5)
     q2 = Quantity(BTC, 5)
     with pytest.raises(IncompatibleInstrumentOperation):
-        not (q1 != q2) and not (q2 != q1)
+        assert not (q1 != q2) and not (q2 != q1)
 
 
 # Negation

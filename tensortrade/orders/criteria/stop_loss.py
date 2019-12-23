@@ -17,7 +17,8 @@ class StopDirection(Enum):
 
 
 class StopLoss(Criteria):
-    """An order criteria that allows execution when the quote price for a trading pair is above or below a specific price."""
+    """An order criteria that allows execution when the quote price for a
+    trading pair is above or below a specific price."""
 
     def __init__(self, direction: StopDirection = StopDirection.DOWN, up_percent: float = 0.02, down_percent: float = 0.02, percent: float = None):
         self.direction = StopDirection(direction)
@@ -30,7 +31,7 @@ class StopLoss(Criteria):
             self.down_percent = down_percent
 
     def __call__(self, order: 'Order', exchange: 'Exchange') -> bool:
-        if not exchange.is_pair_tradeable(order.pair):
+        if not exchange.is_pair_tradable(order.pair):
             return False
 
         price = exchange.quote_price(order.pair)
@@ -45,7 +46,9 @@ class StopLoss(Criteria):
         return take_profit_satisfied or stop_loss_satisfied
 
     def __str__(self):
-        return 'StopLoss: {} | {} (T/P) | {} (S/L)'.format(self.direction, self.up_percent, self.down_percent)
+        return '<StopLoss: direction={0}, TP={1:.2F}, SL={2:.2f}>'.format(self.direction,
+                                                                          self.up_percent,
+                                                                          self.down_percent)
 
     def __repr__(self):
         return str(self)
