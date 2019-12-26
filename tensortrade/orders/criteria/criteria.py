@@ -21,13 +21,16 @@ class Criteria(object, metaclass=ABCMeta):
         return self.call(order, exchange)
 
     def __and__(self, other: CriteriaType) -> 'Criteria':
-        return And(self, other)
+        return AND(self, other)
 
     def __or__(self, other: CriteriaType) -> 'Criteria':
-        return Or(self, other)
+        return OR(self, other)
+
+    def __xor__(self, other: CriteriaType) -> 'Criteria':
+        return XOR(self, other)
 
     def __invert__(self):
-        return Not(self)
+        return NOT(self)
 
     def __repr__(self):
         return str(self)
@@ -62,19 +65,25 @@ class CriteriaBinaryOp(Criteria):
         return "{} {} {}".format(self.left, self.op_str, self.right)
 
 
-class And(CriteriaBinaryOp):
+class AND(CriteriaBinaryOp):
 
     def __init__(self, left: CriteriaType, right: CriteriaType):
         super().__init__(left, right, operator.and_, "&")
 
 
-class Or(CriteriaBinaryOp):
+class OR(CriteriaBinaryOp):
 
     def __init__(self, left: CriteriaType, right: CriteriaType):
         super().__init__(left, right, operator.or_, "|")
 
 
-class Not(Criteria):
+class XOR(CriteriaBinaryOp):
+
+    def __init__(self, left: CriteriaType, right: CriteriaType):
+        super().__init__(left, right, operator.xor, "^")
+
+
+class NOT(Criteria):
 
     def __init__(self, criteria: CriteriaType):
         self.criteria = criteria

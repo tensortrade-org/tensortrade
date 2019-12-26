@@ -1,81 +1,67 @@
 
+import unittest.mock as mock
 
-import pytest
-
-from tensortrade.base.clock import Clock
 from tensortrade.orders.criteria import Stop, StopDirection
 from tensortrade.instruments import USD, BTC
-from tensortrade.trades.trade import TradeSide
-from tensortrade.instruments import TradingPair
-
-
-@pytest.fixture
-def clock():
-    return Clock()
-
-
-@pytest.fixture
-def exchange(clock):
-
-    class MockExchange:
-
-        def __init__(self):
-            self.base_instrument = USD
-            self.id = "fake_id"
-            self.clock = clock
-
-        def quote_price(self, pair: 'TradingPair') -> float:
-            d = {}
-            if self.clock.step == 0:
-                d = {
-                    ("USD", "BTC"): 7117.00,
-                }
-            elif self.clock.step == 1:
-                d = {
-                    ("USD", "BTC"): 6750.00,
-                }
-            elif self.clock.step == 2:
-                d = {
-                    ("USD", "BTC"): 7000.00,
-                }
-            return d[(pair.base.symbol, pair.quote.symbol)]
-
-        def is_pair_tradable(self, pair: TradingPair):
-            if str(pair) == "USD/BTC":
-                return True
-            return False
-
-    return MockExchange()
-
-
-class MockOrder:
-
-    def __init__(self, side, pair):
-        self.side = side
-        self.pair = pair
-
-
-@pytest.fixture
-def buy_order():
-    return MockOrder(side=TradeSide.BUY, pair=USD/BTC)
-
-
-@pytest.fixture
-def sell_order():
-    return MockOrder(side=TradeSide.SELL, pair=USD/BTC)
 
 
 def test_init():
 
-    criteria = Stop(direction=StopDirection.DOWN,
-                    percent=0.3)
+    criteria = Stop(direction=StopDirection.UP, percent=0.3)
     assert criteria.direction == StopDirection.UP
     assert criteria.percent == 0.3
 
 
-def test_call(buy_order, sell_order, exchange):
-    pytest.fail("Failed.")
+@mock.patch('tensortrade.exchanges.Exchange')
+@mock.patch('tensortrade.orders.Order')
+def test_call_with_direction_down(mock_order_class, mock_exchange_class):
+
+    exchange = mock_exchange_class.return_value
+
+    order = mock_order_class.return_value
+    order.pair = USD/BTC
+    order.price = 7000.00
+
+    criteria = Stop(direction=StopDirection.DOWN, percent=0.03)
+
+    # Greater than 3.00% below order price
+    exchange.quote_price.return_value = 0.95 * order.price
+    assert criteria(order, exchange)
+
+    # Equal to 3.00% below order price
+    exchange.quote_price.return_value = 0.969 * order.price
+    assert criteria(order, exchange)
+
+    # Less than 3.00% below order price
+    exchange.quote_price.return_value = 0.98 * order.price
+    assert not criteria(order, exchange)
+
+
+@mock.patch('tensortrade.exchanges.Exchange')
+@mock.patch('tensortrade.orders.Order')
+def test_call_with_direction_up(mock_order_class, mock_exchange_class):
+
+    exchange = mock_exchange_class.return_value
+
+    order = mock_order_class.return_value
+    order.pair = USD / BTC
+    order.price = 7000.00
+
+    criteria = Stop(direction=StopDirection.UP, percent=0.03)
+
+    # Less than 3.00% above order price
+    exchange.quote_price.return_value = 1.02 * order.price
+    assert not criteria(order, exchange)
+
+    # Equal to 3.00% above order price
+    exchange.quote_price.return_value = 1.031 * order.price
+    assert criteria(order, exchange)
+
+    # Greater than 3.00% above order price
+    exchange.quote_price.return_value = 1.05 * order.price
+    assert criteria(order, exchange)
 
 
 def test_str():
-    pytest.fail("Failed.")
+    criteria = Stop(direction=StopDirection.UP, percent=0.3)
+    assert str(criteria) == "<Stop: direction=up, percent=0.3>"

@@ -21,6 +21,12 @@ class TradingPair:
     def quote(self):
         return self._quote
 
+    def __eq__(self, other):
+        if isinstance(other, TradingPair):
+            if str(self) == str(other):
+                return True
+        return False
+
     def __str__(self):
         return '{}/{}'.format(self.base.symbol, self.quote.symbol)
 

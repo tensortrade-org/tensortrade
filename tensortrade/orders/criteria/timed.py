@@ -5,12 +5,12 @@ from .criteria import Criteria
 
 class Timed(Criteria):
 
-    def __init__(self, wait):
-        self.wait = wait
+    def __init__(self, duration):
+        self.duration = duration
 
     def call(self, order: 'Order', exchange: 'Exchange'):
-        return (order.clock.step - order.created_at) < self.wait
+        return (order.clock.step - order.created_at) <= self.duration
 
     def __str__(self):
-        return "<Timed: wait={}>".format(self.wait)
+        return "<Timed: duration={}>".format(self.duration)
 

@@ -1,57 +1,9 @@
 
-import pytest
+import unittest.mock as mock
 
-from tensortrade.orders.criteria import Criteria, Limit, Timed, Stop
-from tensortrade.base.clock import Clock
+from tensortrade.exchanges import Exchange
+from tensortrade.orders.criteria import Criteria
 from tensortrade.instruments import USD, BTC
-from tensortrade.trades.trade import TradeSide
-from tensortrade.instruments import TradingPair
-
-
-@pytest.fixture
-def clock():
-    return Clock()
-
-
-@pytest.fixture
-def exchange(clock):
-
-    class MockExchange:
-
-        def __init__(self):
-            self.base_instrument = USD
-            self.id = "fake_id"
-            self.clock = clock
-
-        def quote_price(self, pair: 'TradingPair') -> float:
-            d = {}
-            if self.clock.step == 0:
-                d = {
-                    ("USD", "BTC"): 7117.00,
-                }
-            elif self.clock.step == 1:
-                d = {
-                    ("USD", "BTC"): 6750.00,
-                }
-            elif self.clock.step == 2:
-                d = {
-                    ("USD", "BTC"): 7000.00,
-                }
-            return d[(pair.base.symbol, pair.quote.symbol)]
-
-        def is_pair_tradable(self, pair: TradingPair):
-            if str(pair) == "USD/BTC":
-                return True
-            return False
-
-    return MockExchange()
-
-
-class MockOrder:
-
-    def __init__(self, side, pair):
-        self.side = side
-        self.pair = pair
 
 
 class ConcreteCriteria(Criteria):
@@ -65,34 +17,28 @@ def test_init():
     assert criteria
 
 
-def test_call(exchange):
+@mock.patch('tensortrade.exchanges.Exchange')
+@mock.patch('tensortrade.orders.Order')
+def test_default_checks_on_call(mock_order_class, mock_exchange_class):
+
+    order = mock_order_class.return_value
+    order.pair = USD/BTC
+
+    exchange = mock_exchange_class.return_value
+    exchange.is_pair_tradable = lambda pair: str(pair) in ["USD/BTC", "USD/ETH", "USD/XRP"]
 
     criteria = ConcreteCriteria()
 
-    order = MockOrder(side=TradeSide.BUY, pair=BTC/USD)
-    assert not criteria(order, exchange)
-
-    order = MockOrder(side=TradeSide.BUY, pair=USD/BTC)
+    # Pair being traded is supported by exchange
+    exchange.is_pair_tradable = lambda pair: str(pair) in ["USD/BTC", "USD/ETH", "USD/XRP"]
     assert criteria(order, exchange)
 
-
-def test_and():
-
-    criteria = Limit(limit_price=7000.00) & Timed(wait=2)
-    assert criteria
-    assert isinstance(criteria, Criteria)
-
-    order = MockOrder(side=TradeSide.BUY, pair=USD/BTC)
+    # Pair being traded is not supported by exchange
+    exchange.is_pair_tradable = lambda pair: str(pair) in ["USD/ETH", "USD/XRP"]
+    assert not criteria(order, exchange)
 
 
-def test_or():
-
-    criteria = Limit(limit_price=7000.00) | Timed(wait=2)
-    assert criteria
-    assert isinstance(criteria, Criteria)
-
-    order = MockOrder(side=TradeSide.BUY, pair=USD/BTC)
 
 
-def test_invert():
-    pytest.fail("Failed.")
+
+

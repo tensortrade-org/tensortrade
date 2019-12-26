@@ -32,5 +32,5 @@ class Stop(Criteria):
         return (is_take_profit or is_stop_loss) and percent >= self.percent
 
     def __str__(self):
-        return '<StopLoss: direction={0}, percent={1}>'.format(self.direction,
-                                                               self.percent)
+        return '<Stop: direction={0}, percent={1}>'.format(self.direction,
+                                                           self.percent)
