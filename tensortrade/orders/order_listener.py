@@ -1,4 +1,5 @@
-from abc import ABCMeta, abstractmethod
+
+from abc import ABCMeta
 
 
 class OrderListener(object, metaclass=ABCMeta):

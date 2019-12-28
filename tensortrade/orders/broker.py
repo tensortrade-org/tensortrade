@@ -16,7 +16,9 @@ class Broker(OrderListener, TimeIndexed):
     def __init__(self, exchanges: Union[List['Exchange'], 'Exchange']):
         self.exchanges = exchanges
 
-        self.reset()
+        self._unexecuted = []
+        self._executed = {}
+        self._trades = {}
 
     @property
     def exchanges(self) -> List['Exchange']:

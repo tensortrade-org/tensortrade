@@ -45,7 +45,7 @@ class Trade(TimedIdentifiable):
                  trade_type: TradeType,
                  quantity: 'Quantity',
                  price: float,
-                 commission: float):
+                 commission: 'Quantity'):
         """
         Arguments:
             order_id: The id of the order that created the trade.
@@ -97,7 +97,7 @@ class Trade(TimedIdentifiable):
         return self._commission
 
     @commission.setter
-    def commission(self, commission: float):
+    def commission(self, commission: 'Quantity'):
         self._commission = commission.size * self.pair.base
 
     @property

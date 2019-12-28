@@ -36,7 +36,7 @@ class Criteria(object, metaclass=ABCMeta):
         return str(self)
 
 
-class CriteriaBinaryOp(Criteria):
+class CriteriaBinOp(Criteria):
 
     def __init__(self,
                  left: CriteriaType,
@@ -54,8 +54,8 @@ class CriteriaBinaryOp(Criteria):
         return self.op(left, right)
 
     def __str__(self):
-        is_left_op = isinstance(self.left, CriteriaBinaryOp)
-        is_right_op = isinstance(self.right, CriteriaBinaryOp)
+        is_left_op = isinstance(self.left, CriteriaBinOp)
+        is_right_op = isinstance(self.right, CriteriaBinOp)
         if is_left_op and is_right_op:
             return "({}) {} ({})".format(self.left, self.op_str, self.right)
         elif is_left_op and not is_right_op:
@@ -65,19 +65,19 @@ class CriteriaBinaryOp(Criteria):
         return "{} {} {}".format(self.left, self.op_str, self.right)
 
 
-class AND(CriteriaBinaryOp):
+class AND(CriteriaBinOp):
 
     def __init__(self, left: CriteriaType, right: CriteriaType):
         super().__init__(left, right, operator.and_, "&")
 
 
-class OR(CriteriaBinaryOp):
+class OR(CriteriaBinOp):
 
     def __init__(self, left: CriteriaType, right: CriteriaType):
         super().__init__(left, right, operator.or_, "|")
 
 
-class XOR(CriteriaBinaryOp):
+class XOR(CriteriaBinOp):
 
     def __init__(self, left: CriteriaType, right: CriteriaType):
         super().__init__(left, right, operator.xor, "^")
@@ -92,6 +92,6 @@ class NOT(Criteria):
         return not self.criteria(order, exchange)
 
     def __str__(self):
-        if isinstance(self.criteria, CriteriaBinaryOp):
+        if isinstance(self.criteria, CriteriaBinOp):
             return "~({})".format(self.criteria)
         return "~{}".format(self.criteria)

@@ -7,7 +7,7 @@ from tensortrade.trades import TradeSide, TradeType
 from .order import Order
 
 
-class Recipe(Identifiable):
+class OrderSpec(Identifiable):
 
     def __init__(self,
                  side: TradeSide,

@@ -1,9 +1,6 @@
 import pandas as pd
 
-from gym import Space
-from typing import Generator, List, Dict
-
-import tensortrade.slippage as slippage
+from typing import List, Dict
 
 from tensortrade import TradingContext
 from tensortrade.trades import Trade

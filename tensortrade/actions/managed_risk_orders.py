@@ -12,18 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License
 
-import numpy as np
+import tensortrade.orders.create as create
 
 from typing import Union, List
-from abc import abstractmethod
 from itertools import product
 from gym.spaces import Discrete
 
 from tensortrade.actions import ActionScheme
 from tensortrade.trades import TradeSide, TradeType
-from tensortrade.instruments import Quantity
-from tensortrade.orders.criteria import Stop
-from tensortrade.orders import Recipe, Order, OrderListener
+from tensortrade.orders import Order, OrderListener
 
 
 class ManagedRiskOrders(ActionScheme):
@@ -127,23 +124,18 @@ class ManagedRiskOrders(ActionScheme):
         if size < 10 ** -base_instrument.precision:
             return None
 
-        buy_quantity = size * base_instrument
+        params = {
+            'side': self._trade_side,
+            'trade_type': self._trade_type,
+            'pair': pair,
+            'price': price,
+            'size': size,
+            'down_percent': stop_loss,
+            'up_percent': take_profit,
+            'portfolio': portfolio
+        }
 
-        order = Order(side=self._trade_side,
-                      trade_type=self._trade_type,
-                      pair=pair,
-                      price=price,
-                      quantity=buy_quantity,
-                      portfolio=portfolio)
-
-        risk_criteria = Stop("down", stop_loss) | Stop("up", take_profit)
-
-        risk_management = Recipe(side=TradeSide.SELL if self._trade_side == TradeSide.BUY else TradeSide.BUY,
-                                 trade_type=TradeType.MARKET,
-                                 pair=pair,
-                                 criteria=risk_criteria)
-
-        order.add_recipe(risk_management)
+        order = create.risk_managed_order(**params)
 
         if self._order_listener is not None:
             order.attach(self._order_listener)

@@ -108,8 +108,6 @@ class DynamicOrders(ActionScheme):
 
         quantity = size * instrument
 
-        wallet -= quantity
-
         order = Order(side=side,
                       trade_type=self._trade_type,
                       pair=pair,
@@ -117,10 +115,6 @@ class DynamicOrders(ActionScheme):
                       quantity=quantity,
                       portfolio=portfolio,
                       criteria=criteria)
-
-        quantity.lock_for(order.id)
-
-        wallet += quantity
 
         if self._order_listener is not None:
             order.attach(self._order_listener)

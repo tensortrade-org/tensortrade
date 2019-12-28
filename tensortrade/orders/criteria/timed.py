@@ -1,6 +1,6 @@
 
 
-from .criteria import Criteria
+from tensortrade.orders.criteria import Criteria
 
 
 class Timed(Criteria):
