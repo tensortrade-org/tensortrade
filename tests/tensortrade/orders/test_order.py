@@ -561,9 +561,9 @@ def test_str(mock_portfolio_class):
 
     pattern = re.compile("<[A-Z][a-zA-Z]*:\\s(\\w+=.*,\\s)*(\\w+=.*)>")
 
-    order_string = str(order)
-    assert order_string
+    string = str(order)
+    assert string
 
-    assert order_string == pattern.fullmatch(order_string).string
+    assert string == pattern.fullmatch(string).string
 
 
