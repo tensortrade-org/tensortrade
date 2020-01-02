@@ -21,6 +21,7 @@ class OrderSpec(Identifiable):
 
     def create_order(self, order: 'Order', exchange: 'Exchange') -> 'Order':
         base_instrument = self.pair.base if self.side == TradeSide.BUY else self.pair.quote
+        print(base_instrument)
         wallet = order.portfolio.get_wallet(exchange.id, instrument=base_instrument)
         quantity = wallet.locked[order.path_id]
 

@@ -211,8 +211,7 @@ class Order(TimedIdentifiable):
 
     def __str__(self):
         data = ['{}={}'.format(k, v) for k, v in self.to_dict().items()]
-        recipes = [str(recipe) for recipe in self._specs]
-        return '<{}: {} | Recipes: {}>'.format(self.__class__.__name__, ', '.join(data), ', '.join(recipes))
+        return '<{}: {}>'.format(self.__class__.__name__, ', '.join(data))
 
     def __repr__(self):
         return str(self)

@@ -1,25 +1,12 @@
-"""
-Feature: Order management by a broker
 
-  Background:
-    Given a Broker
-    Given a Trader
-
-  Scenario: Trader created a market order
-    Given Trader has created a market order
-    When Trader submits a market order to Broker
-
-
-"""
-
-import pytest
 import unittest.mock as mock
+import re
 
 from tensortrade.instruments import *
-from tensortrade.orders import Order, OrderStatus
+from tensortrade.orders import Order, OrderStatus, OrderSpec
 from tensortrade.orders.criteria import Stop
 from tensortrade.wallets import Wallet, Portfolio
-from tensortrade.trades import TradeSide, TradeType, Trade
+from tensortrade.trades import TradeSide, TradeType
 
 
 @mock.patch('tensortrade.wallets.Portfolio')
@@ -231,6 +218,7 @@ def test_execute(mock_order_listener_class,
 
     wallet_usd = portfolio.get_wallet(exchange.id, USD)
     wallet_btc = portfolio.get_wallet(exchange.id, BTC)
+
     assert wallet_usd.balance == 4800 * USD
     assert wallet_usd.locked_balance == 5200 * USD
     assert order.path_id in wallet_usd.locked.keys()
@@ -269,19 +257,183 @@ def test_fill(mock_order_listener_class,
     trade.size = 3997.00
     trade.commission = 3.00 * USD
 
+    assert order.status == OrderStatus.OPEN
     order.fill(exchange, trade)
+    assert order.status == OrderStatus.PARTIALLY_FILLED
 
     assert order.remaining_size == 1200.00
 
     listener.on_fill.assert_called_once_with(order, exchange, trade)
 
 
-def test_complete():
-    pytest.fail("Failed.")
+@mock.patch('tensortrade.exchanges.Exchange')
+@mock.patch('tensortrade.trades.Trade')
+@mock.patch('tensortrade.orders.OrderListener')
+def test_complete_basic_order(mock_order_listener_class,
+                              mock_trade_class,
+                              mock_exchange_class):
+
+    exchange = mock_exchange_class.return_value
+    exchange.id = "fake_exchange_id"
+
+    wallets = [Wallet(exchange, 10000 * USD), Wallet(exchange, 0 * BTC)]
+    portfolio = Portfolio(USD, wallets)
+
+    order = Order(side=TradeSide.BUY,
+                  trade_type=TradeType.MARKET,
+                  pair=USD / BTC,
+                  quantity=5200.00 * USD,
+                  portfolio=portfolio,
+                  price=7000.00)
+
+    listener = mock_order_listener_class.return_value
+    listener.on_complete = mock.Mock(return_value=None)
+    order.attach(listener)
+
+    order.execute(exchange)
+
+    trade = mock_trade_class.return_value
+    trade.size = 5217.00
+    trade.commission = 3.00 * USD
+
+    order.fill(exchange, trade)
+
+    assert order.status == OrderStatus.PARTIALLY_FILLED
+    next_order = order.complete(exchange)
+    assert order.status == OrderStatus.FILLED
+
+    listener.on_complete.assert_called_once_with(order, exchange)
+    assert not next_order
 
 
-def test_cancel():
-    pytest.fail("Failed.")
+@mock.patch('tensortrade.exchanges.Exchange')
+@mock.patch('tensortrade.trades.Trade')
+def test_complete_complex_order(mock_trade_class,
+                                mock_exchange_class):
+
+    exchange = mock_exchange_class.return_value
+    exchange.id = "fake_exchange_id"
+
+    wallets = [Wallet(exchange, 10000 * USD), Wallet(exchange, 0 * BTC)]
+    portfolio = Portfolio(USD, wallets)
+
+    side = TradeSide.BUY
+
+    order = Order(side=TradeSide.BUY,
+                  trade_type=TradeType.MARKET,
+                  pair=USD / BTC,
+                  quantity=5200.00 * USD,
+                  portfolio=portfolio,
+                  price=7000.00)
+
+    risk_criteria = Stop("down", 0.03) ^ Stop("up", 0.02)
+
+    risk_management = OrderSpec(side=TradeSide.SELL if side == TradeSide.BUY else TradeSide.BUY,
+                                trade_type=TradeType.MARKET,
+                                pair=USD / BTC,
+                                criteria=risk_criteria)
+
+    order += risk_management
+
+    order.execute(exchange)
+
+    # Execute fake trade
+    price = 7010.00
+    scale = order.price / price
+    commission = 3.00 * USD
+
+    base_size = scale * order.size - commission.size
+
+    trade = mock_trade_class.return_value
+    trade.size = base_size
+    trade.price = price
+    trade.commission = commission
+
+    base_wallet = portfolio.get_wallet(exchange.id, USD)
+    quote_wallet = portfolio.get_wallet(exchange.id, BTC)
+
+    base_size = trade.size + trade.commission.size
+    quote_size = (order.price / trade.price) * (trade.size / trade.price)
+
+    base_wallet -= Quantity(USD, size=base_size, path_id=order.path_id)
+    quote_wallet += Quantity(BTC, size=quote_size, path_id=order.path_id)
+
+    # Fill fake trade
+    order.fill(exchange, trade)
+
+    assert order.path_id in portfolio.get_wallet(exchange.id, USD).locked
+
+    assert order.status == OrderStatus.PARTIALLY_FILLED
+    next_order = order.complete(exchange)
+    assert order.status == OrderStatus.FILLED
+
+    assert next_order
+    assert next_order.path_id == order.path_id
+    assert next_order.size
+    assert next_order.status == OrderStatus.PENDING
+    assert next_order.side == TradeSide.SELL
+    assert next_order.pair == USD/BTC
+
+
+@mock.patch('tensortrade.exchanges.Exchange')
+@mock.patch('tensortrade.trades.Trade')
+@mock.patch('tensortrade.orders.OrderListener')
+def test_cancel(mock_order_listener_class,
+                mock_trade_class,
+                mock_exchange_class):
+
+    exchange = mock_exchange_class.return_value
+    exchange.id = "fake_exchange_id"
+
+    wallets = [Wallet(exchange, 10000 * USD), Wallet(exchange, 0 * BTC)]
+    portfolio = Portfolio(USD, wallets)
+
+    order = Order(side=TradeSide.BUY,
+                  trade_type=TradeType.MARKET,
+                  pair=USD / BTC,
+                  quantity=5200.00 * USD,
+                  portfolio=portfolio,
+                  price=7000.00)
+
+    listener = mock_order_listener_class.return_value
+    listener.on_cancel = mock.Mock(return_value=None)
+    order.attach(listener)
+
+    order.execute(exchange)
+
+    # Execute fake trade
+    price = 7010.00
+    scale = order.price / price
+    commission = 3.00 * USD
+
+    trade = mock_trade_class.return_value
+    trade.size = scale * order.size - commission.size
+    trade.price = price
+    trade.commission = commission
+
+    base_wallet = portfolio.get_wallet(exchange.id, USD)
+    quote_wallet = portfolio.get_wallet(exchange.id, BTC)
+
+    base_size = trade.size + commission.size
+    quote_size = (order.price / trade.price) * (trade.size / trade.price)
+
+    base_wallet -= Quantity(USD, size=base_size, path_id=order.path_id)
+    quote_wallet += Quantity(BTC, size=quote_size, path_id=order.path_id)
+
+    order.fill(exchange, trade)
+
+    assert order.status == OrderStatus.PARTIALLY_FILLED
+    assert base_wallet.balance == 4800.00 * USD
+    assert base_wallet.locked[order.path_id] == 7.42 * USD
+    assert quote_wallet.balance == 0 * BTC
+    assert quote_wallet.locked[order.path_id] == 0.73925519 * BTC
+    order.cancel(exchange)
+
+    listener.on_cancel.assert_called_once_with(order, exchange)
+    assert base_wallet.balance == 4807.42 * USD
+    assert order.path_id not in base_wallet.locked
+    assert quote_wallet.balance == 0.73925519 * BTC
+    assert order.path_id not in quote_wallet.locked
 
 
 @mock.patch('tensortrade.exchanges.Exchange')
@@ -395,7 +547,23 @@ def test_iadd(mock_portfolio_class, mock_order_spec_class):
     assert order_spec in order._specs
 
 
-def test_str():
-    pytest.fail("Failed.")
+@mock.patch('tensortrade.wallets.Portfolio')
+def test_str(mock_portfolio_class):
+
+    portfolio = mock_portfolio_class.return_value
+
+    order = Order(side=TradeSide.BUY,
+                  trade_type=TradeType.MARKET,
+                  pair=USD / BTC,
+                  quantity=5200.00 * USD,
+                  portfolio=portfolio,
+                  price=7000.00)
+
+    pattern = re.compile("<[A-Z][a-zA-Z]*:\\s(\\w+=.*,\\s)*(\\w+=.*)>")
+
+    order_string = str(order)
+    assert order_string
+
+    assert order_string == pattern.fullmatch(order_string).string
 
 
