@@ -1,37 +1,40 @@
 
 import pytest
-import pandas as pd
+import unittest.mock as mock
 
-from tensortrade.base.core import TimeIndexed
+from tensortrade.base.core import Clock
 from tensortrade.wallets import Wallet, Portfolio
 from tensortrade.instruments import USD, BTC, ETH, XRP, BCH
 
 
-@pytest.fixture(scope="module")
-def exchange():
+@pytest.fixture
+@mock.patch('tensortrade.exchanges.Exchange')
+def exchange(mock_exchange_class):
 
-    class MockExchange(TimeIndexed):
+    exchange = mock_exchange_class.return_value
+    exchange.base_instrument = USD
+    exchange.id = "fake_id"
 
-        def __init__(self):
-            self.base_instrument = USD
-            self.id = "fake_id"
+    exchange.clock = Clock()
 
-        def quote_price(self, pair: 'TradingPair') -> float:
-            if self.clock.step == 0:
-                d = {
-                    ("USD", "BTC"): 7117.00,
-                    ("USD", "ETH"): 143.00,
-                    ("USD", "XRP"): 0.22
-                }
-                return d[(pair.base.symbol, pair.quote.symbol)]
+    def quote_price(pair):
+        if exchange.clock.step == 0:
             d = {
-                ("USD", "BTC"): 6750.00,
-                ("USD", "ETH"): 135.00,
-                ("USD", "XRP"): 0.30
+                ("USD", "BTC"): 7117.00,
+                ("USD", "ETH"): 143.00,
+                ("USD", "XRP"): 0.22
             }
             return d[(pair.base.symbol, pair.quote.symbol)]
+        d = {
+            ("USD", "BTC"): 6750.00,
+            ("USD", "ETH"): 135.00,
+            ("USD", "XRP"): 0.30
+        }
+        return d[(pair.base.symbol, pair.quote.symbol)]
 
-    return MockExchange()
+    exchange.quote_price = mock.Mock(side_effect=quote_price)
+
+    return exchange
 
 
 @pytest.fixture
@@ -55,7 +58,7 @@ def wallet_xrp(exchange):
 
 
 @pytest.fixture
-def portfolio(wallet_usd, wallet_btc, wallet_eth, wallet_xrp):
+def portfolio(wallet_usd, wallet_btc, wallet_eth, wallet_xrp, exchange):
 
     portfolio = Portfolio(USD, wallets=[
         wallet_usd,
@@ -63,6 +66,14 @@ def portfolio(wallet_usd, wallet_btc, wallet_eth, wallet_xrp):
         wallet_eth,
         wallet_xrp
     ])
+
+    with mock.patch.object(Portfolio, 'clock', return_value=exchange.clock) as clock:
+        portfolio = Portfolio(USD, wallets=[
+            wallet_usd,
+            wallet_btc,
+            wallet_eth,
+            wallet_xrp
+        ])
 
     return portfolio
 
@@ -131,7 +142,7 @@ def test_net_worth(portfolio_locked):
 
 
 def test_profit_loss(portfolio_locked):
-
+    print(portfolio_locked.clock.step)
     initial_net_worth = 10000 + (7117.00 * 1) + (143.00 * 10) + (0.22 * 5000)
     assert portfolio_locked.net_worth == initial_net_worth
 
@@ -141,7 +152,8 @@ def test_profit_loss(portfolio_locked):
 
     assert portfolio_locked.profit_loss == net_worth / initial_net_worth
 
-    portfolio_locked.clock.reset()
+    print(portfolio_locked.clock.step)
+    # portfolio_locked.clock.reset()
 
 
 def test_balance(portfolio_locked):
@@ -215,9 +227,12 @@ def test_remove_pair(portfolio, exchange):
 
 
 def test_update(portfolio_locked):
+    print(portfolio_locked.clock.step)
 
     portfolio_locked.clock.increment()
     portfolio_locked.update()
+
+    print(portfolio_locked.clock.step)
 
     data = {
         "step": 1,
@@ -236,13 +251,16 @@ def test_update(portfolio_locked):
 
     assert data == dict(performance.iloc[0])
 
-    portfolio_locked.clock.reset()
+    # portfolio_locked.clock.reset()
 
 
 def test_reset(portfolio_locked):
+    print(portfolio_locked.clock.step)
 
     portfolio_locked.clock.increment()
     portfolio_locked.update()
+
+    print(portfolio_locked.clock.step)
 
     data = {
         "step": 1,

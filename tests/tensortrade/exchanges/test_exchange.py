@@ -7,7 +7,7 @@ from tensortrade.trades import Trade
 from tensortrade.slippage import SlippageModel
 from tensortrade.exchanges import Exchange, get
 from tensortrade.exchanges.live import CCXTExchange
-from tensortrade.exchanges.simulated import SimulatedExchange, FBMExchange
+from tensortrade.exchanges.simulated import SimulatedExchange
 
 
 class ConcreteExchange(Exchange):
