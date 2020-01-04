@@ -13,17 +13,17 @@
 # limitations under the License
 
 import time
+from typing import Dict, List, Union
+
 import ccxt
 import numpy as np
 import pandas as pd
-
-from typing import Dict, List, Union
-from gym.spaces import Space, Box
 from ccxt import BadRequest
+from gym.spaces import Box, Space
 
-from tensortrade.trades import Trade, TradeType, TradeSide
-from tensortrade.instruments import TradingPair, BTC, ETH
 from tensortrade.exchanges import Exchange
+from tensortrade.instruments import BTC, ETH, TradingPair
+from tensortrade.trades import Trade, TradeSide, TradeType
 
 BTC_ETH_PAIR = TradingPair(BTC, ETH)
 
@@ -32,7 +32,7 @@ class CCXTExchange(Exchange):
     """An exchange for trading on CCXT-supported cryptocurrency exchanges."""
 
     def __init__(self, exchange: Union[ccxt.Exchange, str] = 'coinbase',  **kwargs):
-        super(CCXTExchange, self).__init__(**kwargs)
+        super(CCXTExchange, self).__init__()
 
         exchange = self.default('exchange', exchange)
 
@@ -109,6 +109,9 @@ class CCXTExchange(Exchange):
             self._data_frame = self._data_frame.iloc[-(window_size - 1):]
 
         return self.data_frame
+
+    def is_pair_tradeable(self, trading_pair: 'TradingPair') -> bool:
+        return True
 
     def pair_to_symbol(self, pair: 'TradingPair') -> str:
         return '{}/{}'.format(pair.quote.symbol, pair.base.symbol)
