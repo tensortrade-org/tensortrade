@@ -1,29 +1,34 @@
 
 import pytest
 import warnings
-import ccxt
+import unittest.mock as mock
+
 import tensortrade.actions as actions
 import tensortrade.exchanges as exchanges
 import tensortrade.rewards as rewards
 import tensortrade.slippage as slippage
 import tensortrade.environments as envs
 
-from tensortrade.actions import *
 from tensortrade.exchanges.simulated import *
 from tensortrade.exchanges.live import *
 from tensortrade.rewards import *
 from tensortrade.slippage import *
 from tensortrade.environments import TradingEnvironment
+from tensortrade.actions import DynamicOrders, PredefinedOrders, ManagedRiskOrders
 
 warnings.filterwarnings("ignore")
 
 
-def test_continuous_actions():
-    assert isinstance(actions.get('continuous'), ContinuousActions)
+def test_dynamic_actions():
+    assert isinstance(actions.get('dynamic'), DynamicOrders)
 
 
-def test_discrete_actions():
-    assert isinstance(actions.get('discrete'), DiscreteActions)
+def test_predefined_actions():
+    assert isinstance(actions.get('predefined'), PredefinedOrders)
+
+
+def test_managed_risk_actions():
+    assert isinstance(actions.get('managed-risk'), ManagedRiskOrders)
 
 
 def test_simulated_exchange():
@@ -58,7 +63,8 @@ def test_basic_environment():
 
 
 def make_env(exchange: str, action: str, reward: str):
-    return TradingEnvironment(exchange=exchange, action_scheme=action, reward_scheme=reward)
+    portfolio = mock.Mock()
+    return TradingEnvironment(exchange=exchange, action_scheme=action, reward_scheme=reward, portfolio=portfolio)
 
 
 def test_simulated_continuous_simple_env():

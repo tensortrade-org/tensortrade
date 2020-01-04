@@ -1,5 +1,8 @@
 
-from tensortrade.base.exceptions import InvalidTradingPair
+from numbers import Number
+
+from tensortrade.base.exceptions import InvalidTradingPair, IncompatibleTradingPairOperation
+from tensortrade.instruments.quantity import Price
 
 
 class TradingPair:
@@ -20,6 +23,11 @@ class TradingPair:
     @property
     def quote(self):
         return self._quote
+
+    def __rmul__(self, other):
+        if not isinstance(other, Number):
+            raise IncompatibleTradingPairOperation(other, self)
+        return Price(other, self)
 
     def __eq__(self, other):
         if isinstance(other, TradingPair):

@@ -1,5 +1,6 @@
 
 import pytest
+import pandas as pd
 
 from tensortrade.base.core import TimeIndexed
 from tensortrade.wallets import Wallet, Portfolio
@@ -235,6 +236,36 @@ def test_update(portfolio_locked):
 
     assert data == dict(performance.iloc[0])
 
+    portfolio_locked.clock.reset()
 
-def test_reset():
-    pytest.fail("Failed.")
+
+def test_reset(portfolio_locked):
+
+    portfolio_locked.clock.increment()
+    portfolio_locked.update()
+
+    data = {
+        "step": 1,
+        "net_worth": 10000 + (6750.00 * 1) + (135.00 * 10) + (0.30 * 5000),
+        "USD": 9850,
+        "BTC": 0.25,
+        "ETH": 3,
+        "XRP": 4738,
+        "USD_pending": 150,
+        "BTC_pending": 0.75,
+        "ETH_pending": 7,
+        "XRP_pending": 262
+    }
+
+    performance = portfolio_locked.performance
+    assert data == dict(performance.iloc[0])
+
+    assert portfolio_locked._initial_balance != portfolio_locked.base_balance
+    assert portfolio_locked._initial_net_worth != portfolio_locked.net_worth
+    assert not portfolio_locked.performance.isna().any().any()
+
+    portfolio_locked.reset()
+
+    assert portfolio_locked._initial_balance == portfolio_locked.base_balance
+    assert portfolio_locked._initial_net_worth == portfolio_locked.net_worth
+    assert portfolio_locked.performance.isna().any().any()

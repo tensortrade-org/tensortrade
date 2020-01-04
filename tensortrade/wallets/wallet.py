@@ -51,7 +51,7 @@ class Wallet(Identifiable):
         locked_balance = Quantity(self.instrument, 0)
 
         for quantity in self.locked.values():
-            locked_balance += quantity
+            locked_balance += quantity.size
 
         return locked_balance
 
@@ -61,7 +61,7 @@ class Wallet(Identifiable):
         total_balance = self._balance
 
         for quantity in self.locked.values():
-            total_balance += quantity
+            total_balance += quantity.size
 
         return total_balance
 

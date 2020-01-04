@@ -31,6 +31,18 @@ class QuantityOpPathMismatch(Exception):
 
 
 # =============================================================================
+# Price Exceptions
+# =============================================================================
+class IncompatiblePriceQuantityOperation(Exception):
+
+    def __init__(self, left, right, *args):
+        super().__init__(
+            "Quantity instrument does not match quote: {} != {}.".format(left, right),
+            *args
+        )
+
+
+# =============================================================================
 # Instrument Exceptions
 # =============================================================================
 class IncompatibleInstrumentOperation(Exception):
@@ -83,5 +95,14 @@ class InvalidTradingPair(Exception):
     def __init__(self, base, quote,*args):
         super().__init__(
             "Invalid instrument pair {}/{}.".format(base, quote),
+            *args
+        )
+
+
+class IncompatibleTradingPairOperation(Exception):
+
+    def __init__(self, left, right, *args):
+        super().__init__(
+            "Trading pairs are not of the same type ({} and {}).".format(left, right),
             *args
         )
