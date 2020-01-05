@@ -16,6 +16,7 @@ def main():
     portfolio = Portfolio(USD, wallets=[wallet])
     env = TradingEnvironment(portfolio, exchange, action, 'simple')
     while True:
+        env.step(0)
         env.render('chart')
         time.sleep(1)
 

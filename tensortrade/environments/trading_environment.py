@@ -12,33 +12,34 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import gym
-import logging
 import importlib
-import pandas as pd
+import logging
+from typing import Dict, List, Tuple, Union
+
+import gym
 import numpy as np
-
-from copy import deepcopy
+import pandas as pd
 from gym.spaces import Box, Discrete
-from typing import Union, Tuple, List, Dict
 
-import tensortrade.exchanges as exchanges
 import tensortrade.actions as actions
-import tensortrade.rewards as rewards
+import tensortrade.exchanges as exchanges
 import tensortrade.features as features
+import tensortrade.rewards as rewards
 import tensortrade.wallets as wallets
-
-from tensortrade.base.core import TimeIndexed
 from tensortrade.actions import ActionScheme
-from tensortrade.rewards import RewardScheme
+from tensortrade.base.core import TimeIndexed
 from tensortrade.exchanges import Exchange
 from tensortrade.features import FeaturePipeline
 from tensortrade.instruments import Instrument
 from tensortrade.orders import Broker, Order
+from tensortrade.rewards import RewardScheme
 from tensortrade.wallets import Portfolio
 
-if importlib.util.find_spec("matplotlib") is not None:
+if importlib.util.find_spec('matplotlib') is not None:
     from tensortrade.environments.render import MatplotlibTradingChart
+
+if importlib.util.find_spec('pyglet') is not None:
+    from tensortrade.environments.render import PygletTradingChart
 
 
 class TradingEnvironment(gym.Env, TimeIndexed):
@@ -377,6 +378,8 @@ class TradingEnvironment(gym.Env, TimeIndexed):
             The episode's initial observation.
         """
         self.clock.reset()
+        for _ in range(self.window_size):
+            self.clock.increment()
 
         if not self._exchange.is_live:
             if self._initial_balances is not None:
@@ -399,7 +402,7 @@ class TradingEnvironment(gym.Env, TimeIndexed):
 
         return observation
 
-    def render(self, mode='none'):
+    def render(self, mode='human'):
         """Renders the environment via matplotlib."""
         if mode == 'log':
             self.logger.info('Performance: ' + str(self._portfolio.performance))
@@ -412,6 +415,14 @@ class TradingEnvironment(gym.Env, TimeIndexed):
                                    self._portfolio.performance['net_worth'].values,
                                    self.render_benchmarks,
                                    self._broker.trades)
+        elif mode == 'human':
+            if self.viewer is None and hasattr(self.exchange, '_pre_transformed_data'):
+                self.viewer = PygletTradingChart()
+
+            if self.viewer is not None:
+                df = self.exchange._pre_transformed_data
+                df = df[self.clock.step - self._window_size:self.clock.step]
+                self.viewer.render(df, self._broker.trades)
 
     def close(self):
         """Utility method to clean environment before closing."""
