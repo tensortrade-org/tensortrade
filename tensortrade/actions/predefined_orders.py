@@ -12,16 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License
 
-import numpy as np
 
 from typing import Union, List
-from abc import abstractmethod
 from itertools import product
 from gym.spaces import Discrete
 
 from tensortrade.actions import ActionScheme
-from tensortrade.trades import TradeSide, TradeType
-from tensortrade.instruments import Quantity
+from tensortrade.trades import TradeSide
 from tensortrade.orders import Order, OrderListener
 
 
@@ -43,7 +40,10 @@ class PredefinedOrders(ActionScheme):
         self.trade_sizes = trade_sizes
         self._order_listener = self.default('order_listener', order_listener)
 
-        self.reset()
+        self._actions = [None]
+
+        for order, size in product(self._orders, self._trade_sizes):
+            self._actions += [(order, size)]
 
     @property
     def action_space(self) -> Discrete:

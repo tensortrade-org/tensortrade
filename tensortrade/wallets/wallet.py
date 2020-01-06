@@ -1,5 +1,19 @@
+# Copyright 2019 The TensorTrade Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License
 
-from typing import Dict, Tuple, Union
+
+from typing import Dict, Tuple
 
 from tensortrade.base import Identifiable
 from tensortrade.base.exceptions import InsufficientFundsForAllocation
@@ -51,7 +65,7 @@ class Wallet(Identifiable):
         locked_balance = Quantity(self.instrument, 0)
 
         for quantity in self.locked.values():
-            locked_balance += quantity
+            locked_balance += quantity.size
 
         return locked_balance
 
@@ -61,7 +75,7 @@ class Wallet(Identifiable):
         total_balance = self._balance
 
         for quantity in self.locked.values():
-            total_balance += quantity
+            total_balance += quantity.size
 
         return total_balance
 
@@ -90,7 +104,7 @@ class Wallet(Identifiable):
     def __isub__(self, quantity: 'Quantity') -> 'Wallet':
         if quantity.is_locked and self.locked[quantity.path_id]:
             if quantity > self.locked[quantity.path_id]:
-                raise InsufficientFundsForAllocation(self.balance, quantity.size)
+                raise InsufficientFundsForAllocation(self.locked[quantity.path_id], quantity.size)
             self._locked[quantity.path_id] -= quantity
         elif not quantity.is_locked:
             if quantity > self._balance:

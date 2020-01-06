@@ -16,8 +16,7 @@ import ta
 import numpy as np
 import pandas as pd
 
-from abc import abstractmethod
-from typing import Union, List, Callable
+from typing import Union, List
 
 from tensortrade.features.feature_transformer import FeatureTransformer
 

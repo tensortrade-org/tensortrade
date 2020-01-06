@@ -1,6 +1,6 @@
 from .broker import Broker
 from .order import Order, OrderStatus
 from .order_listener import OrderListener
-from .recipe import Recipe
+from .order_spec import OrderSpec
 
 from . import criteria

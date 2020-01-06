@@ -12,11 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License
 
-import numpy as np
 
 from abc import abstractmethod, ABCMeta
-from typing import Union, List
-from itertools import product
 from gym.spaces import Discrete
 
 from tensortrade import Component
@@ -51,6 +48,6 @@ class ActionScheme(Component, metaclass=ABCMeta):
             portfolio: The portfolio of wallets used to execute the action.
 
         Returns:
-            The order to be executed on the exchange this timestep.
+            The order to be executed on the exchange this time step.
         """
         raise NotImplementedError()

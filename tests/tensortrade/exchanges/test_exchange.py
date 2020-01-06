@@ -1,16 +1,13 @@
 import pandas as pd
 
-from gym import Space
-from typing import Generator, List, Dict
-
-import tensortrade.slippage as slippage
+from typing import List, Dict
 
 from tensortrade import TradingContext
 from tensortrade.trades import Trade
 from tensortrade.slippage import SlippageModel
 from tensortrade.exchanges import Exchange, get
 from tensortrade.exchanges.live import CCXTExchange
-from tensortrade.exchanges.simulated import SimulatedExchange, FBMExchange
+from tensortrade.exchanges.simulated import SimulatedExchange
 
 
 class ConcreteExchange(Exchange):

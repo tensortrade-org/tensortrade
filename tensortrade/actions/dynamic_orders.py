@@ -12,16 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License
 
-import numpy as np
 
 from typing import Union, List
-from abc import abstractmethod
 from itertools import product
 from gym.spaces import Discrete
 
 from tensortrade.actions import ActionScheme
 from tensortrade.trades import TradeSide, TradeType
-from tensortrade.instruments import Quantity
 from tensortrade.orders import Order, OrderListener
 
 
@@ -108,8 +105,6 @@ class DynamicOrders(ActionScheme):
 
         quantity = size * instrument
 
-        wallet -= quantity
-
         order = Order(side=side,
                       trade_type=self._trade_type,
                       pair=pair,
@@ -117,10 +112,6 @@ class DynamicOrders(ActionScheme):
                       quantity=quantity,
                       portfolio=portfolio,
                       criteria=criteria)
-
-        quantity.lock_for(order.id)
-
-        wallet += quantity
 
         if self._order_listener is not None:
             order.attach(self._order_listener)

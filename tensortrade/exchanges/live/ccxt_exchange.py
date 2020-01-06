@@ -17,8 +17,7 @@ import ccxt
 import numpy as np
 import pandas as pd
 
-from typing import Dict, List, Union
-from gym.spaces import Space, Box
+from typing import List, Union
 from ccxt import BadRequest
 
 from tensortrade.trades import Trade, TradeType, TradeSide
