@@ -12,9 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License
 
-import re
 
+import re
 import pandas as pd
+
 from stochastic.noise import GaussianNoise
 from stochastic.continuous import FractionalBrownianMotion
 from tensortrade.exchanges.simulated.simulated_exchange import SimulatedExchange

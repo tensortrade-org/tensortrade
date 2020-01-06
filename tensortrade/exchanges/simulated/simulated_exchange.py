@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License
 
+
 import numpy as np
 import pandas as pd
 import tensortrade.slippage as slippage
 
 from typing import List
-
 
 from tensortrade.trades import Trade, TradeType, TradeSide
 from tensortrade.instruments import TradingPair, Quantity

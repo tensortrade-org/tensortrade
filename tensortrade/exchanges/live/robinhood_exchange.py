@@ -12,13 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License
 
-import numpy as np
-import pandas as pd
 
-from typing import Dict, List
-from gym.spaces import Space, Box
-
-from tensortrade.trades import Trade, TradeType
 from tensortrade.exchanges import Exchange
 
 

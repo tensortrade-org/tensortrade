@@ -13,11 +13,8 @@
 # limitations under the License
 
 import pandas as pd
-import numpy as np
 
-from gym import Space
-from copy import copy
-from typing import Union, List, Tuple, Dict
+from typing import Union, List
 
 from tensortrade.features.feature_transformer import FeatureTransformer
 

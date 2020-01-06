@@ -12,16 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License
 
-import numpy as np
 
 from typing import Union, List
-from abc import abstractmethod
 from itertools import product
 from gym.spaces import Discrete
 
 from tensortrade.actions import ActionScheme
 from tensortrade.trades import TradeSide, TradeType
-from tensortrade.instruments import Quantity
 from tensortrade.orders import Order, OrderListener
 
 

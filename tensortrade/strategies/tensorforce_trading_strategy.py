@@ -12,14 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
-import json
 
 import pandas as pd
 import numpy as np
 
-from abc import ABCMeta, abstractmethod
-from typing import Union, Callable, List, Dict
+from typing import Callable
 
 from tensorforce.agents import Agent
 from tensorforce.execution import Runner
@@ -44,7 +41,10 @@ class TensorforceTradingStrategy(TradingStrategy):
 
         self._environment = environment
         self._tensorforce_environment = Environment.create(
-            environment='gym', level=environment, max_episode_timesteps=self._max_episode_timesteps)
+            environment='gym',
+            level=environment,
+            max_episode_timesteps=self._max_episode_timesteps
+        )
 
         self._agent = Agent.create(agent=agent,
                                    environment=self._tensorforce_environment,
@@ -64,7 +64,10 @@ class TensorforceTradingStrategy(TradingStrategy):
     def environment(self, environment: 'TradingEnvironment'):
         self._environment = environment
         self._tensorforce_environment = Environment.create(
-            environment='gym', level=environment, max_episode_timesteps=self._max_episode_timesteps)
+            environment='gym',
+            level=environment,
+            max_episode_timesteps=self._max_episode_timesteps
+        )
 
         self._runner = Runner(agent=self._agent,
                               environment=self._tensorforce_environment,

@@ -100,7 +100,7 @@ class ManagedRiskOrders(ActionScheme):
     @property
     def trade_sizes(self) -> List[float]:
         """A list of trade sizes to select from when submitting an order.
-        (e.g. '[1, 1/3]' = 100% or 33% of balance is tradeable. '4' = 25%, 50%, 75%, or 100% of balance is tradeable.)
+        (e.g. '[1, 1/3]' = 100% or 33% of balance is tradable. '4' = 25%, 50%, 75%, or 100% of balance is tradable.)
         """
         return self._trade_sizes
 
