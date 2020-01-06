@@ -32,7 +32,7 @@ def main():
                              window_size=20)
 
     times = []
-    while True:
+    for _ in range(300):
         env.step(0)
         t1 = time.time()
         env.render('human')

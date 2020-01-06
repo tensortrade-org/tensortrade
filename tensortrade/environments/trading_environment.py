@@ -378,8 +378,6 @@ class TradingEnvironment(gym.Env, TimeIndexed):
             The episode's initial observation.
         """
         self.clock.reset()
-        for _ in range(self.window_size):
-            self.clock.increment()
 
         if not self._exchange.is_live:
             if self._initial_balances is not None:
@@ -421,8 +419,10 @@ class TradingEnvironment(gym.Env, TimeIndexed):
 
             if self.viewer is not None:
                 df = self.exchange._pre_transformed_data
-                df = df[self.clock.step - self._window_size:self.clock.step]
-                self.viewer.render(df, self._broker.trades)
+                start = max(0, self.clock.step - self._window_size)
+                df = df[start:self.clock.step]
+                self.viewer.render(df, self._portfolio.performance['net_worth'],
+                                   self._broker.trades)
 
     def close(self):
         """Utility method to clean environment before closing."""

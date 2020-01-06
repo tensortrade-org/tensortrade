@@ -8,6 +8,7 @@ GREEN = (0, .5, 0)
 BRIGHT_RED = (1, 0, 0)
 BRIGHT_GREEN = (0, 1, 0)
 BLACK = (0, 0, 0)
+MARGIN = 5
 
 
 def new_label(text, xpos, ypos, anchor_x='center'):
@@ -23,27 +24,62 @@ class PygletTradingChart:
     """An OHLCV trading visualization using
     pyglet made to render gym environments."""
 
-    def __init__(self):
+    def __init__(self, width=960, height=540):
         super().__init__()
-        self.viewer = rendering.Viewer(1280, 720)
-        self.xstart = 0
-        self.xend = 1280
-        self.ystart = 200
-        self.yend = 720
-        self.height = self.yend - self.ystart
-        self.width = self.xend - self.xstart
-        self.price_label_width = self.width * .06
-        self.volume_graph_height = self.height * .08
-        self.candles_margin = min(5, self.volume_graph_height * .25)
+        self.viewer = rendering.Viewer(width, height)
+        self.width = width
+        self.height = height
+        self.chart_xstart = MARGIN
+        self.chart_xend = width - MARGIN
+        chart_height = height * .75 - 2 * MARGIN
+        self.chart_ystart = MARGIN
+        self.chart_yend = chart_height - MARGIN
+        self.chart_height = self.chart_yend - self.chart_ystart
+        self.chart_width = self.chart_xend - self.chart_xstart
+        self.price_label_width = self.chart_width * .06
+        self.volume_chart_height = self.chart_height * .08
+        self.candles_margin = min(MARGIN, self.volume_chart_height * .25)
+        self.net_worths_chart_height = height * .25 - 2 * MARGIN
         self.markers = []
         self._draw_axis()
 
-    def render(self, dataframe: 'DataFrame',
+    def render(self, dataframe: 'DataFrame', net_worths: 'List[float]',
                trades: 'List[Tuple[int, float, float]]'):
-        n_candles = len(dataframe)
-        width = self.width - self.price_label_width
-        grid = width / (n_candles + 1)
-        candle_width = width / (n_candles * 1.5)
+        window_size = len(dataframe)
+        if window_size <= 1:
+            return
+        self._render_chart(dataframe, trades, window_size)
+        self._render_net_worths(net_worths.values, window_size)
+        return self.viewer.render()
+
+    def _render_net_worths(self, net_worths, window_size):
+        initial = round(net_worths[0], 2)
+        net_worth = round(net_worths[-1], 2)
+        profit_percent = (net_worth - initial) / initial
+
+        grid = (self.width - MARGIN * 2) / window_size
+        label = new_label(f'Net worth: ${net_worth} '
+                          f'| Profit: {profit_percent:.2%}',
+                          self.width / 2, self.height - 10)
+        self.viewer.add_onetime(label)
+        if len(net_worths) > 1:
+            max_ = max(net_worths)
+            min_ = min(net_worths)
+            values = (net_worths - min_) / (max_ - min_)
+            values *= self.net_worths_chart_height
+            start = max(1, len(net_worths) - window_size)
+            for i in range(start, len(net_worths)):
+                previous = values[i - 1] + self.chart_yend + 2 * MARGIN
+                current = values[i] + self.chart_yend + 2 * MARGIN
+                i -= start
+                xaxis = rendering.Line(start=(i * grid, previous),
+                                       end=((i + 1) * grid, current))
+                self.viewer.add_onetime(xaxis)
+
+    def _render_chart(self, dataframe, trades, window_size):
+        width = self.chart_width - self.price_label_width
+        grid = width / (window_size + 1)
+        candle_width = width / (window_size * 1.5)
         cols = ['open', 'high', 'low', 'close']
         min_, max_ = self._min_max(dataframe[cols])
         tmp = self._scale(dataframe[cols], min_, max_)
@@ -54,7 +90,7 @@ class PygletTradingChart:
                 if trade[0] == index:
                     sign = (trade[2], self._scale(trade[1], min_, max_))
                     break
-            self._draw_candle(i * grid + self.xstart, values['open'],
+            self._draw_candle(i * grid + self.chart_xstart, values['open'],
                               values['high'], values['low'], values['close'],
                               candle_width, sign)
             color = BLACK
@@ -65,19 +101,18 @@ class PygletTradingChart:
                     color = GREEN
                 elif close[pos] < close[pos - 1]:
                     color = RED
-            self._draw_volume_bar(i * grid + self.xstart,
-                                  self.ystart, values['volume'],
+            self._draw_volume_bar(i * grid + self.chart_xstart,
+                                  self.chart_ystart, values['volume'],
                                   candle_width, color)
-        xpos = self.xend - self.price_label_width / 2
-        label = new_label(dataframe['low'].min(), xpos, tmp['low'].min())
+        xpos = self.chart_xend - self.price_label_width + 2
+        label = new_label(dataframe['low'].min(), xpos, tmp['low'].min(), 'left')
         self.viewer.add_onetime(label)
-        label = new_label(dataframe['high'].max(), xpos, tmp['high'].max())
+        label = new_label(dataframe['high'].max(), xpos, tmp['high'].max(), 'left')
         self.viewer.add_onetime(label)
         for price, color in self.markers:
             scaled_marker_price = self._scale(price, min_, max_)
             self._draw_marker_price(scaled_marker_price, color)
         self.markers = []
-        return self.viewer.render()
 
     def add_onetime_marker(self, price, color=BLACK):
         self.markers.append((price, color))
@@ -127,7 +162,7 @@ class PygletTradingChart:
 
     def _draw_volume_bar(self, pos, ybase, height, width, color):
         half_width = width / 2
-        max_height = self.volume_graph_height
+        max_height = self.volume_chart_height
         left, right = pos - half_width, pos + half_width
         vol_bar = rendering.FilledPolygon([(left, ybase),
                                            (left, ybase + max_height * height),
@@ -137,11 +172,27 @@ class PygletTradingChart:
         self.viewer.add_onetime(vol_bar)
 
     def _draw_axis(self):
-        xaxis = rendering.Line(start=(self.xstart, self.ystart),
-                               end=(self.xend, self.ystart))
+        # BOTTOM
+        xaxis = rendering.Line(start=(self.chart_xstart, self.chart_ystart),
+                               end=(self.chart_xend, self.chart_ystart))
         self.viewer.add_geom(xaxis)
-        yaxis = rendering.Line(start=(self.xend - self.price_label_width, self.ystart),
-                               end=(self.xend - self.price_label_width, self.yend))
+        # TOP
+        xaxis = rendering.Line(start=(self.chart_xstart, self.chart_yend),
+                               end=(self.chart_xend, self.chart_yend))
+        self.viewer.add_geom(xaxis)
+        # LEFT
+        yaxis = rendering.Line(start=(self.chart_xstart, self.chart_ystart),
+                               end=(self.chart_xstart, self.chart_yend))
+        self.viewer.add_geom(yaxis)
+        # MID RIGHT
+        yaxis = rendering.Line(start=(self.chart_xend - self.price_label_width,
+                                      self.chart_ystart),
+                               end=(self.chart_xend - self.price_label_width,
+                                    self.chart_yend))
+        self.viewer.add_geom(yaxis)
+        # RIGHT
+        yaxis = rendering.Line(start=(self.chart_xend, self.chart_ystart),
+                               end=(self.chart_xend, self.chart_yend))
         self.viewer.add_geom(yaxis)
 
     def _min_max(self, dataframe):
@@ -159,13 +210,13 @@ class PygletTradingChart:
 
     def _scale(self, value, min_, max_):
         return ((value - min_) / (max_ - min_)
-                * (self.height - self.volume_graph_height
+                * (self.chart_height - self.volume_chart_height
                    - self.candles_margin * 2)
-                + self.ystart + self.volume_graph_height + self.candles_margin)
+                + self.chart_ystart + self.volume_chart_height + self.candles_margin)
 
     def _draw_marker_price(self, scaled_price, color):
-        order = rendering.Line(start=(self.xstart, scaled_price),
-                               end=(self.xend - self.price_label_width,
+        order = rendering.Line(start=(self.chart_xstart, scaled_price),
+                               end=(self.chart_xend - self.price_label_width,
                                     scaled_price))
         order.set_color(*color)
         self.viewer.add_onetime(order)
