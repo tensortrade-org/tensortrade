@@ -54,6 +54,9 @@ class CCXTExchange(Exchange):
     def is_live(self):
         return True
 
+    def is_pair_tradable(self, trading_pair: 'TradingPair') -> bool:
+        return False
+
     @property
     def data_frame(self) -> pd.DataFrame:
         return self._data_frame

@@ -20,6 +20,7 @@ from gym.spaces import Discrete
 from tensortrade.actions import ActionScheme
 from tensortrade.trades import TradeSide, TradeType
 from tensortrade.orders import Order, OrderListener
+from tensortrade.instruments import USD, BTC
 
 
 class DynamicOrders(ActionScheme):
@@ -27,7 +28,7 @@ class DynamicOrders(ActionScheme):
     trading pairs, order criteria, and trade sizes."""
 
     def __init__(self,
-                 pairs: Union[List['TradingPair'], 'TradingPair'],
+                 pairs: Union[List['TradingPair'], 'TradingPair'] = USD/BTC,
                  criteria: Union[List['OrderCriteria'], 'OrderCriteria'] = None,
                  trade_sizes: Union[List[float], int] = 10,
                  trade_type: TradeType = TradeType.MARKET,

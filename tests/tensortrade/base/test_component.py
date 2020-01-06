@@ -159,6 +159,9 @@ def test_only_name_registered_component_space():
         value = 'the time and effort.'
         instance = WorthMessageComponent(name=name, value=value)
 
+        assert 'msg_var' in instance.context.keys()
+        assert 'valid' in instance.context.keys()
+        assert instance.context['msg_var'] == 0
         assert instance.context == {'msg_var': 0, 'valid': ['Hello', 'World'], **config}
 
 

@@ -52,7 +52,14 @@ class SimulatedExchange(Exchange):
         self._slippage_model = slippage.get(slippage_model) if isinstance(
             slippage_model, str) else slippage_model()
 
-        self.reset()
+        self._initial_step = 0
+        self._final_step = len(self._data_frame) - 1
+
+        if self._randomize_time_slices:
+            self._initial_step = np.random.randint(
+                0, len(self._data_frame) - self._min_time_slice - 2)
+            self._final_step = np.random.randint(
+                self._initial_step + self._min_time_slice, len(self._data_frame) - 1)
 
     @property
     def is_live(self):

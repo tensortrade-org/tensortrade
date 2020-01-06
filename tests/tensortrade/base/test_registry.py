@@ -23,10 +23,6 @@ def test_dynamic_actions():
     assert isinstance(actions.get('dynamic'), DynamicOrders)
 
 
-def test_predefined_actions():
-    assert isinstance(actions.get('predefined'), PredefinedOrders)
-
-
 def test_managed_risk_actions():
     assert isinstance(actions.get('managed-risk'), ManagedRiskOrders)
 
@@ -58,48 +54,44 @@ def test_random_uniform_slippage_model():
     assert isinstance(slippage.get('uniform'), RandomUniformSlippageModel)
 
 
-def test_basic_environment():
-    assert isinstance(envs.get('basic'), TradingEnvironment)
-
-
 def make_env(exchange: str, action: str, reward: str):
     portfolio = mock.Mock()
     return TradingEnvironment(exchange=exchange, action_scheme=action, reward_scheme=reward, portfolio=portfolio)
 
 
-def test_simulated_continuous_simple_env():
-    assert make_env('simulated', 'continuous', 'simple')
+def test_simulated_dynamic_simple_env():
+    assert make_env('simulated', 'dynamic', 'simple')
 
 
-def test_simulated_discrete_simple_env():
-    assert make_env('simulated', 'discrete', 'simple')
-
-
-@pytest.mark.skip(reason="Authentication Error")
-def test_ccxt_continuous_simple_env():
-    for exchange_id in ['coinbasepro', 'coinbase', 'binance', 'bitstamp']:
-        assert make_env(exchange_id, 'continuous', 'simple')
+def test_simulated_managed_risk_simple_env():
+    assert make_env('simulated', 'managed-risk', 'simple')
 
 
 @pytest.mark.skip(reason="Authentication Error")
-def test_ccxt_discrete_simple_env():
+def test_ccxt_dynamic_simple_env():
     for exchange_id in ['coinbasepro', 'coinbase', 'binance', 'bitstamp']:
-        assert make_env(exchange_id, 'continuous', 'simple')
+        assert make_env(exchange_id, 'dynamic', 'simple')
 
 
-def test_stochastic_continuous_simple_env():
-    assert make_env('stochastic', 'continuous', 'simple')
+@pytest.mark.skip(reason="Authentication Error")
+def test_ccxt_managed_risk_simple_env():
+    for exchange_id in ['coinbasepro', 'coinbase', 'binance', 'bitstamp']:
+        assert make_env(exchange_id, 'managed-risk', 'simple')
 
 
-def test_stochastic_discrete_simple_env():
-    assert make_env('stochastic', 'discrete', 'simple')
+def test_stochastic_dynamic_simple_env():
+    assert make_env('stochastic', 'dynamic', 'simple')
+
+
+def test_stochastic_managed_risk_simple_env():
+    assert make_env('stochastic', 'managed-risk', 'simple')
 
 
 @pytest.mark.skip(reason="GAN exchange is not fully implemented yet.")
-def test_gan_continuous_simple_env():
-    assert make_env('gan', 'continuous', 'simple')
+def test_gan_dynamic_simple_env():
+    assert make_env('gan', 'dynamic', 'simple')
 
 
 @pytest.mark.skip(reason="GAN exchange is not fully implemented yet.")
-def test_gan_discrete_simple_env():
-    assert make_env('gan', 'discrete', 'simple')
+def test_gan_managed_risk_simple_env():
+    assert make_env('gan', 'managed-risk', 'simple')

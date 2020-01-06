@@ -21,6 +21,7 @@ from gym.spaces import Discrete
 from tensortrade.actions import ActionScheme
 from tensortrade.trades import TradeSide, TradeType
 from tensortrade.orders import Order, OrderListener
+from tensortrade.instruments import USD, BTC
 
 
 class ManagedRiskOrders(ActionScheme):
@@ -29,7 +30,7 @@ class ManagedRiskOrders(ActionScheme):
     """
 
     def __init__(self,
-                 pairs: Union[List['TradingPair'], 'TradingPair'],
+                 pairs: Union[List['TradingPair'], 'TradingPair'] = USD/BTC,
                  stop_loss_percentages: Union[List[float], float] = [0.02, 0.04, 0.06],
                  take_profit_percentages: Union[List[float], float] = [0.01, 0.02, 0.03],
                  trade_sizes: Union[List[float], int] = 10,

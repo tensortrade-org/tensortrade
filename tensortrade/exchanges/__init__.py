@@ -37,7 +37,7 @@ def get(identifier: str) -> Exchange:
 
         return _registry[identifier]()
 
-    if identifier in ccxt.exchanges:
+    elif identifier in ccxt.exchanges:
         return live.CCXTExchange(exchange=identifier)
 
     raise KeyError('Identifier {} is not associated with any `Exchange`.'.format(identifier))

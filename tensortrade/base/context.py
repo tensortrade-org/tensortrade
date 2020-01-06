@@ -131,7 +131,7 @@ class Context(UserDict):
         base_instrument: The exchange symbol of the instrument to store/measure value in.
     """
 
-    def __init__(self, base_instrument: Instrument = USD, instruments: Union[str, List[str]] = 'BTC', **kwargs):
+    def __init__(self, base_instrument: Instrument = USD, **kwargs):
         super(Context, self).__init__(base_instrument=base_instrument, **kwargs)
 
         self._base_instrument = base_instrument

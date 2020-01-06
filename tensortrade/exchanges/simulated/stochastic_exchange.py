@@ -15,6 +15,7 @@
 
 import re
 import pandas as pd
+import numpy as np
 
 from stochastic.noise import GaussianNoise
 from stochastic.continuous import FractionalBrownianMotion
@@ -32,10 +33,10 @@ class StochasticExchange(SimulatedExchange):
     """
 
     def __init__(self, **kwargs):
-        super().__init__(data_frame=None, **kwargs)
 
         self._base_price = self.default('base_price', 1, kwargs)
         self._base_volume = self.default('base_volume', 1, kwargs)
+        self._dtype = self.default('dtype', np.float32, kwargs)
         self._start_date = self.default('start_date', '2010-01-01', kwargs)
         self._start_date_format = self.default('start_date_format', '%Y-%m-%d', kwargs)
         self._times_to_generate = self.default('times_to_generate', 1000, kwargs)
@@ -50,7 +51,9 @@ class StochasticExchange(SimulatedExchange):
                                                                 self._times_to_generate,
                                                                 self._delta), kwargs)
 
-        self._generate_price_history()
+        data_frame = self._generate_price_history()
+
+        super().__init__(data_frame=data_frame, **kwargs)
 
     def _scale_times_to_generate(self):
         if 'MIN' in self._timeframe.upper():
@@ -144,6 +147,7 @@ class StochasticExchange(SimulatedExchange):
             )
 
     def _generate_price_history(self):
+
         if self._model_type == 'FBM':
             price_fbm = FractionalBrownianMotion(t=self._times_to_generate, hurst=self._hurst)
             price_volatility = price_fbm.sample(self._times_to_generate, zero=False)
@@ -178,7 +182,7 @@ class StochasticExchange(SimulatedExchange):
         data_frame = price_frame['price'].resample(self._timeframe).ohlc()
         data_frame['volume'] = volume_frame['volume'].resample(self._timeframe).sum()
 
-        self.data_frame = data_frame.astype(self._dtype)
+        return data_frame.astype(self._dtype)
 
     def reset(self):
-        self._generate_price_history()
+        self.data_frame = self._generate_price_history()

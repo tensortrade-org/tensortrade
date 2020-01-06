@@ -6,7 +6,7 @@ from tensortrade.trades import Trade
 
 class ConcreteSlippageModel(SlippageModel):
 
-    def fill_order(self, trade: Trade, **kwargs) -> Trade:
+    def adjust_trade(self, trade: Trade, **kwargs) -> Trade:
         pass
 
 
