@@ -280,9 +280,10 @@ class TradingEnvironment(gym.Env, TimeIndexed):
             observation = self._feature_pipeline.transform(observation)
 
         if len(observation) < self._window_size:
-            padding = np.zeros((self._window_size - len(observation),
-                                len(self.observation_columns)))
-            padding = pd.DataFrame(padding, columns=self.observation_columns)
+            size = self._window_size - len(observation)
+            padding = np.zeros((size, observation.shape[1]))
+
+            padding = pd.DataFrame(padding, columns=observation.columns)
             observation = pd.concat([padding, observation], ignore_index=True, sort=False)
 
         observation = observation.select_dtypes(include='number')
