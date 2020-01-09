@@ -32,6 +32,7 @@ class Order(TimedIdentifiable):
     """
 
     def __init__(self,
+                 step: int,
                  side: TradeSide,
                  trade_type: TradeType,
                  pair: 'TradingPair',
@@ -43,6 +44,7 @@ class Order(TimedIdentifiable):
         if quantity.size == 0:
             raise InvalidOrderQuantity(quantity)
 
+        self.step = step
         self.side = side
         self.type = trade_type
         self.pair = pair
@@ -182,6 +184,7 @@ class Order(TimedIdentifiable):
     def to_dict(self):
         return {
             "id": self.id,
+            "step": self.step,
             "status": self.status,
             "type": self.type,
             "side": self.side,
@@ -196,6 +199,7 @@ class Order(TimedIdentifiable):
     def to_json(self):
         return {
             "id": str(self.id),
+            "step": str(self.step),
             "status": str(self.status),
             "type": str(self.type),
             "side": str(self.side),

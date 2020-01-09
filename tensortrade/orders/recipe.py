@@ -25,7 +25,8 @@ class Recipe(Identifiable):
         wallet = order.portfolio.get_wallet(exchange.id, instrument=base_instrument)
         quantity = wallet.locked[order.path_id]
 
-        return Order(side=self.side,
+        return Order(step=exchange.clock.step,
+                     side=self.side,
                      trade_type=self.type,
                      pair=self.pair,
                      quantity=quantity,

@@ -13,16 +13,18 @@
 # limitations under the License
 
 import re
+import random
 
 import pandas as pd
 from stochastic.noise import GaussianNoise
 from stochastic.continuous import FractionalBrownianMotion
 from tensortrade.exchanges.simulated.simulated_exchange import SimulatedExchange
-from tensortrade.exchanges.simulated.stochastic.stoch_gen import *
+from tensortrade.exchanges.simulated.stochastic import ModelParameters, geometric_brownian_motion_levels, heston_model_levels, geometric_brownian_motion_jump_diffusion_levels, cox_ingersoll_ross_levels, ornstein_uhlenbeck_levels
 
 
 class StochasticExchange(SimulatedExchange):
-    """A simulated instrument exchange, in which the price history is based off a
+    """A simulated instrument exchange, in which the price history is based off
+    *   Fractional Brownian Motion
     *   Geometric Brownian Motion
     *   The Merton Jump-Diffusion Model
     *   The Heston Stochastic Volatility Model
@@ -31,8 +33,6 @@ class StochasticExchange(SimulatedExchange):
     """
 
     def __init__(self, **kwargs):
-        super().__init__(data_frame=None, **kwargs)
-
         self._base_price = self.default('base_price', 1, kwargs)
         self._base_volume = self.default('base_volume', 1, kwargs)
         self._start_date = self.default('start_date', '2010-01-01', kwargs)
@@ -51,42 +51,44 @@ class StochasticExchange(SimulatedExchange):
 
         self._generate_price_history()
 
+        super().__init__(data_frame=self.data_frame, **kwargs)
+
     def _scale_times_to_generate(self):
         if 'MIN' in self._timeframe.upper():
             self._times_to_generate = self._times_to_generate * \
-                                      int(re.findall(r'\d+', self._timeframe)[0])
+                int(re.findall(r'\d+', self._timeframe)[0])
         elif 'H' in self._timeframe.upper():
             self._times_to_generate = self._times_to_generate * \
-                                      int(re.findall(r'\d+', self._timeframe)[0]) * 60
+                int(re.findall(r'\d+', self._timeframe)[0]) * 60
         elif 'D' in self._timeframe.upper():
             self._times_to_generate = self._times_to_generate * \
-                                      int(re.findall(r'\d+', self._timeframe)[0]) * 60 * 24
+                int(re.findall(r'\d+', self._timeframe)[0]) * 60 * 24
         elif 'W' in self._timeframe.upper():
             self._times_to_generate = self._times_to_generate * \
-                                      int(re.findall(r'\d+', self._timeframe)[0]) * 60 * 24 * 7
+                int(re.findall(r'\d+', self._timeframe)[0]) * 60 * 24 * 7
         elif 'M' in self._timeframe.upper():
             self._times_to_generate = self._times_to_generate * \
-                                      int(re.findall(r'\d+', self._timeframe)[0]) * 60 * 24 * 7 * 30
+                int(re.findall(r'\d+', self._timeframe)[0]) * 60 * 24 * 7 * 30
         else:
             raise ValueError(
                 'Timeframe must be either in minutes (min), hours (H), days (D), weeks (W), or months (M)')
 
     @staticmethod
-    def get_price_data(model_type, mp):
+    def get_price_data(model_type, model_parameters):
         if model_type.upper() == "GBM":
-            m = geometric_brownian_motion_levels(mp)
+            model = geometric_brownian_motion_levels(model_parameters)
         elif model_type.upper() == "HESTON":
-            m = heston_model_levels(mp)[0]
+            model = heston_model_levels(model_parameters)[0]
         elif model_type.upper() == "MERTON":
-            m = geometric_brownian_motion_jump_diffusion_levels(mp)
+            model = geometric_brownian_motion_jump_diffusion_levels(model_parameters)
         elif model_type.upper() == "COX":
-            m = cox_ingersoll_ross_levels(mp)
+            model = cox_ingersoll_ross_levels(model_parameters)
         elif model_type.upper() == "ORNSTEIN UHLENBECK":
-            m = ornstein_uhlenbeck_levels(mp)
+            model = ornstein_uhlenbeck_levels(model_parameters)
         else:
-            m = geometric_brownian_motion_levels(mp)
+            model = geometric_brownian_motion_levels(model_parameters)
 
-        return m
+        return model
 
     @staticmethod
     def get_delta(time_frame):
@@ -177,7 +179,7 @@ class StochasticExchange(SimulatedExchange):
         data_frame = price_frame['price'].resample(self._timeframe).ohlc()
         data_frame['volume'] = volume_frame['volume'].resample(self._timeframe).sum()
 
-        self.data_frame = data_frame.astype(self._dtype)
+        self.data_frame = data_frame
 
     def reset(self):
         self._generate_price_history()

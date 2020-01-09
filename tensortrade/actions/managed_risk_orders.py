@@ -129,7 +129,8 @@ class ManagedRiskOrders(ActionScheme):
 
         buy_quantity = size * base_instrument
 
-        order = Order(side=self._trade_side,
+        order = Order(step=exchange.clock.step,
+                      side=self._trade_side,
                       trade_type=self._trade_type,
                       pair=pair,
                       price=price,
