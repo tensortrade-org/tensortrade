@@ -91,7 +91,7 @@ class Trade(TimedIdentifiable):
 
     @price.setter
     def price(self, price: float):
-        self._price = round(price, self.pair.base.precision)
+        self._price = price
 
     @property
     def commission(self) -> 'Quantity':
