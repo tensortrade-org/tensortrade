@@ -13,19 +13,17 @@
 # limitations under the License
 
 
-from abc import ABCMeta
+from tensortrade.orders.criteria import Criteria
 
 
-class OrderListener(object, metaclass=ABCMeta):
+class Timed(Criteria):
 
-    def on_execute(self, order: 'Order', exchange: 'Exchange'):
-        pass
+    def __init__(self, duration):
+        self.duration = duration
 
-    def on_cancel(self, order: 'Order', exchange: 'Exchange'):
-        pass
+    def call(self, order: 'Order', exchange: 'Exchange'):
+        return (order.clock.step - order.created_at) <= self.duration
 
-    def on_fill(self, order: 'Order', exchange: 'Exchange', trade: 'Trade'):
-        pass
+    def __str__(self):
+        return "<Timed: duration={}>".format(self.duration)
 
-    def on_complete(self, order: 'Order', exchange: 'Exchange'):
-        pass

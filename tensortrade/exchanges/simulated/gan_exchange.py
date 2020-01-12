@@ -12,15 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License
 
-import tensorflow as tf
-import numpy as np
+
 import pandas as pd
 
-from gym import spaces
-from typing import Dict
-
-from tensortrade.trades import Trade, TradeType
-from tensortrade.slippage import RandomUniformSlippageModel
 from tensortrade.exchanges import Exchange
 
 

@@ -1,3 +1,17 @@
+# Copyright 2019 The TensorTrade Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License
+
 
 from itertools import product
 from typing import Union, List, Dict
@@ -14,9 +28,11 @@ class Broker(OrderListener, TimeIndexed):
     """
 
     def __init__(self, exchanges: Union[List['Exchange'], 'Exchange']):
-        self._exchanges = exchanges if isinstance(exchanges, list) else [exchanges]
+        self.exchanges = exchanges
 
-        self.reset()
+        self._unexecuted = []
+        self._executed = {}
+        self._trades = {}
 
     @property
     def exchanges(self) -> List['Exchange']:
@@ -72,7 +88,7 @@ class Broker(OrderListener, TimeIndexed):
     def on_fill(self, order: Order, exchange: 'Exchange', trade: 'Trade'):
         print('Fill: ', trade)
 
-        if trade.order_id in self._executed.keys() and trade not in self._trades:
+        if trade.order_id in self._executed and trade not in self._trades:
             self._trades[trade.order_id] = self._trades.get(trade.order_id, [])
             self._trades[trade.order_id] += [trade]
 

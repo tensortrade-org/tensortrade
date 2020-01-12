@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License
 
+
 from enum import Enum
 
 from tensortrade.base import TimedIdentifiable
@@ -45,7 +46,7 @@ class Trade(TimedIdentifiable):
                  trade_type: TradeType,
                  quantity: 'Quantity',
                  price: float,
-                 commission: float):
+                 commission: 'Quantity'):
         """
         Arguments:
             order_id: The id of the order that created the trade.
@@ -82,7 +83,10 @@ class Trade(TimedIdentifiable):
 
     @property
     def size(self) -> float:
-        return self.quantity.size
+        if self.pair.base is self.quantity.instrument:
+            return round(self.quantity.size, self.pair.base.precision)
+
+        return round(self.quantity.size * self.price, self.pair.base.precision)
 
     @property
     def price(self) -> float:
@@ -97,7 +101,7 @@ class Trade(TimedIdentifiable):
         return self._commission
 
     @commission.setter
-    def commission(self, commission: float):
+    def commission(self, commission: 'Quantity'):
         self._commission = commission.size * self.pair.base
 
     @property
@@ -124,6 +128,7 @@ class Trade(TimedIdentifiable):
                 'quote_symbol': self.pair.quote.symbol,
                 'side': self.side,
                 'type': self.type,
+                'size': self.size,
                 'quantity': self.quantity,
                 'price': self.price,
                 'commission': self.commission
@@ -132,11 +137,12 @@ class Trade(TimedIdentifiable):
     def to_json(self):
         return {'id': str(self.id),
                 'order_id': str(self.order_id),
-                'step': str(self.step),
+                'step': self.step,
                 'base_symbol': str(self.pair.base.symbol),
                 'quote_symbol': str(self.pair.quote.symbol),
                 'side': str(self.side),
                 'type': str(self.type),
+                'size': str(self.size),
                 'quantity': str(self.quantity),
                 'price': str(self.price),
                 'commission': str(self.commission)

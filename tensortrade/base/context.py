@@ -10,10 +10,10 @@ from tensortrade.instruments import Instrument, USD
 
 
 class TradingContext(UserDict):
-    """A class that objects that put themselves in a `Context` using
+    """A class for objects that put themselves in a `Context` using
     the `with` statement.
 
-    This implementation for this class is heavily borrowed from the pymc3
+    The implementation for this class is heavily borrowed from the pymc3
     library and adapted with the design goals of TensorTrade in mind.
 
     Arguments:
@@ -31,7 +31,7 @@ class TradingContext(UserDict):
         behavior.
 
     Reference:
-        https://github.com/pymc-devs/pymc3/blob/master/pymc3/model.py
+        - https://github.com/pymc-devs/pymc3/blob/master/pymc3/model.py
 
     """
     contexts = threading.local()
@@ -131,7 +131,7 @@ class Context(UserDict):
         base_instrument: The exchange symbol of the instrument to store/measure value in.
     """
 
-    def __init__(self, base_instrument: Instrument = USD, instruments: Union[str, List[str]] = 'BTC', **kwargs):
+    def __init__(self, base_instrument: Instrument = USD, **kwargs):
         super(Context, self).__init__(base_instrument=base_instrument, **kwargs)
 
         self._base_instrument = base_instrument

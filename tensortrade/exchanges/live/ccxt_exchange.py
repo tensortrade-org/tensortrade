@@ -17,8 +17,7 @@ import ccxt
 import numpy as np
 import pandas as pd
 
-from typing import Dict, List, Union
-from gym.spaces import Space, Box
+from typing import List, Union
 from ccxt import BadRequest
 
 from tensortrade.trades import Trade, TradeType, TradeSide
@@ -54,6 +53,9 @@ class CCXTExchange(Exchange):
     @property
     def is_live(self):
         return True
+
+    def is_pair_tradable(self, trading_pair: 'TradingPair') -> bool:
+        return False
 
     @property
     def data_frame(self) -> pd.DataFrame:

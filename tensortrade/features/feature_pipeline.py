@@ -15,8 +15,7 @@
 import pandas as pd
 import numpy as np
 
-from gym import Space
-from typing import List, Union, Callable
+from typing import List, Union
 
 from tensortrade import Component
 from .feature_transformer import FeatureTransformer

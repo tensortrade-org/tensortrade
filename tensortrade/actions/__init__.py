@@ -1,12 +1,10 @@
 from .action_scheme import ActionScheme
 from .dynamic_orders import DynamicOrders
-from .predefined_orders import PredefinedOrders
 from .managed_risk_orders import ManagedRiskOrders
 
 
 _registry = {
     'dynamic': DynamicOrders,
-    'predefined': PredefinedOrders,
     'managed-risk': ManagedRiskOrders,
 }
 

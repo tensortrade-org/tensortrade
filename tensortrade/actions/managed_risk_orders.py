@@ -12,18 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License
 
-import numpy as np
+import tensortrade.orders.create as create
 
 from typing import Union, List
-from abc import abstractmethod
 from itertools import product
 from gym.spaces import Discrete
 
 from tensortrade.actions import ActionScheme
 from tensortrade.trades import TradeSide, TradeType
-from tensortrade.instruments import Quantity
-from tensortrade.orders.criteria import StopLoss
-from tensortrade.orders import Recipe, Order, OrderListener
+from tensortrade.orders import Order, OrderListener, risk_managed_order
+from tensortrade.instruments import USD, BTC
 
 
 class ManagedRiskOrders(ActionScheme):
@@ -32,7 +30,7 @@ class ManagedRiskOrders(ActionScheme):
     """
 
     def __init__(self,
-                 pairs: Union[List['TradingPair'], 'TradingPair'],
+                 pairs: Union[List['TradingPair'], 'TradingPair'] = USD/BTC,
                  stop_loss_percentages: Union[List[float], float] = [0.02, 0.04, 0.06],
                  take_profit_percentages: Union[List[float], float] = [0.01, 0.02, 0.03],
                  trade_sizes: Union[List[float], int] = 10,
@@ -103,7 +101,7 @@ class ManagedRiskOrders(ActionScheme):
     @property
     def trade_sizes(self) -> List[float]:
         """A list of trade sizes to select from when submitting an order.
-        (e.g. '[1, 1/3]' = 100% or 33% of balance is tradeable. '4' = 25%, 50%, 75%, or 100% of balance is tradeable.)
+        (e.g. '[1, 1/3]' = 100% or 33% of balance is tradable. '4' = 25%, 50%, 75%, or 100% of balance is tradable.)
         """
         return self._trade_sizes
 
@@ -127,26 +125,19 @@ class ManagedRiskOrders(ActionScheme):
         if size < 10 ** -base_instrument.precision:
             return None
 
-        buy_quantity = size * base_instrument
+        params = {
+            'step': exchange.clock.step,
+            'side': self._trade_side,
+            'trade_type': self._trade_type,
+            'pair': pair,
+            'price': price,
+            'size': size,
+            'down_percent': stop_loss,
+            'up_percent': take_profit,
+            'portfolio': portfolio
+        }
 
-        order = Order(step=exchange.clock.step,
-                      side=self._trade_side,
-                      trade_type=self._trade_type,
-                      pair=pair,
-                      price=price,
-                      quantity=buy_quantity,
-                      portfolio=portfolio)
-
-        risk_criteria = StopLoss(direction='either',
-                                 up_percent=take_profit,
-                                 down_percent=stop_loss)
-
-        risk_management = Recipe(side=TradeSide.SELL if self._trade_side == TradeSide.BUY else TradeSide.BUY,
-                                 trade_type=TradeType.MARKET,
-                                 pair=pair,
-                                 criteria=risk_criteria)
-
-        order.add_recipe(risk_management)
+        order = risk_managed_order(**params)
 
         if self._order_listener is not None:
             order.attach(self._order_listener)

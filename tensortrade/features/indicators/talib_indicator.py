@@ -13,13 +13,9 @@
 # limitations under the License.
 
 import talib
-import numpy as np
 import pandas as pd
 
-from gym import Space
-from copy import copy
-from abc import abstractmethod
-from typing import Union, List, Callable
+from typing import Union, List
 
 from tensortrade.features import FeatureTransformer
 

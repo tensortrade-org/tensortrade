@@ -1,30 +1,29 @@
 
+import unittest.mock as mock
+
 from tensortrade import TradingContext
 from tensortrade.environments import TradingEnvironment
+from tensortrade.instruments import USD, BTC, ETH
 
 
 config = {
     'base_instrument': 50,
-    'instruments': ['BTC', 'ETH'],
     'actions': {
-        'n_actions': 50,
-        'max_allowed_slippage': 2.0
-    },
-    'exchanges': {
-
+        'pairs': [USD/BTC, USD/ETH]
     }
 }
 
 
 def make_env(exchange: str, action: str, reward: str):
-    return TradingEnvironment(exchange=exchange, action_scheme=action, reward_scheme=reward)
+    portfolio = mock.Mock()
+    return TradingEnvironment(exchange=exchange, action_scheme=action, reward_scheme=reward, portfolio=portfolio)
 
 
 def test_injects_simulated_discrete_simple_environment():
-    env = make_env('simulated', 'discrete', 'simple')
+    env = make_env('simulated', 'dynamic', 'simple')
 
-    assert env.action_scheme.n_actions == 20
+    assert env.action_scheme.pairs == [USD/BTC]
 
     with TradingContext(**config):
-        env = make_env('simulated', 'discrete', 'simple')
-        assert env.action_scheme.n_actions == 50
+        env = make_env('simulated', 'dynamic', 'simple')
+        assert env.action_scheme.pairs == [USD/BTC, USD/ETH]

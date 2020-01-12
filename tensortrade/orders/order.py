@@ -1,8 +1,20 @@
+# Copyright 2019 The TensorTrade Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License
 
-import uuid
 
 from enum import Enum
-from typing import Callable, Union, Tuple, List
+from typing import Callable
 
 from tensortrade.base import TimedIdentifiable
 from tensortrade.base.exceptions import InvalidOrderQuantity
@@ -10,24 +22,24 @@ from tensortrade.trades import Trade, TradeSide, TradeType
 
 
 class OrderStatus(Enum):
-    PENDING = 0
-    OPEN = 1
-    CANCELLED = 2
-    PARTIALLY_FILLED = 3
-    FILLED = 4
+    PENDING = 'pending'
+    OPEN = 'open'
+    CANCELLED = 'cancelled'
+    PARTIALLY_FILLED = 'partially_filled'
+    FILLED = 'filled'
 
     def __str__(self):
-        return str(self.value)
+        return self.value
 
 
 class Order(TimedIdentifiable):
     """
     Responsibilities of the Order:
         1. Confirming its own validity.
-        2. Tracking its trades and for reporting it back to the broker.
+        2. Tracking its trades and reporting it back to the broker.
         3. Managing movement of quantities from order to order.
         4. Generating the next order in its path given that there is a
-           'Recipe' for how to make the next order.
+           'OrderSpec' for how to make the next order.
         5. Managing its own state changes when it can.
     """
 
@@ -58,7 +70,7 @@ class Order(TimedIdentifiable):
         self.filled_size = 0
         self.remaining_size = self.size
 
-        self._recipes = []
+        self._specs = []
         self._listeners = []
         self._trades = []
 
@@ -66,8 +78,10 @@ class Order(TimedIdentifiable):
 
     @property
     def size(self) -> float:
-        size = self.quantity.size if self.pair.base is self.quantity.instrument else self.quantity.size * self.price
-        return round(size, self.pair.base.precision)
+        if self.pair.base is self.quantity.instrument:
+            return round(self.quantity.size, self.pair.base.precision)
+
+        return round(self.quantity.size * self.price, self.pair.base.precision)
 
     @property
     def price(self) -> float:
@@ -111,8 +125,8 @@ class Order(TimedIdentifiable):
     def is_complete(self):
         return self.remaining_size == 0
 
-    def add_recipe(self, recipe: 'Recipe') -> 'Order':
-        self._recipes = [recipe] + self._recipes
+    def add_order_spec(self, order_spec: 'OrderSpec') -> 'Order':
+        self._specs = [order_spec] + self._specs
         return self
 
     def attach(self, listener: 'OrderListener'):
@@ -137,7 +151,7 @@ class Order(TimedIdentifiable):
         for listener in self._listeners or []:
             listener.on_execute(self, exchange)
 
-        return exchange.execute_order(self, self.portfolio)
+        exchange.execute_order(self, self.portfolio)
 
     def fill(self, exchange: 'Exchange', trade: Trade):
         self.status = OrderStatus.PARTIALLY_FILLED
@@ -155,9 +169,9 @@ class Order(TimedIdentifiable):
 
         order = None
 
-        if self._recipes:
-            recipe = self._recipes.pop()
-            order = recipe.create_order(self, exchange)
+        if self._specs:
+            order_spec = self._specs.pop()
+            order = order_spec.create_order(self, exchange)
 
         for listener in self._listeners or []:
             listener.on_complete(self, exchange)
@@ -191,6 +205,7 @@ class Order(TimedIdentifiable):
             "pair": self.pair,
             "quantity": self.quantity,
             "size": self.size,
+            "filled_size": self.filled_size,
             "price": self.price,
             "criteria": self.criteria,
             "path_id": self.path_id
@@ -199,25 +214,26 @@ class Order(TimedIdentifiable):
     def to_json(self):
         return {
             "id": str(self.id),
-            "step": str(self.step),
+            "step": self.step,
             "status": str(self.status),
             "type": str(self.type),
             "side": str(self.side),
-            "pair": str(self.pair),
+            "base_symbol": str(self.pair.base.symbol),
+            "quote_symbol": str(self.pair.quote.symbol),
             "quantity": str(self.quantity),
             "size": str(self.size),
+            "filled_size": str(self.filled_size),
             "price": str(self.price),
             "criteria": str(self.criteria),
             "path_id": str(self.path_id)
         }
 
-    def __iadd__(self, recipe: 'Recipe') -> 'Order':
-        return self.add_recipe(recipe)
+    def __iadd__(self, recipe: 'OrderSpec') -> 'Order':
+        return self.add_order_spec(recipe)
 
     def __str__(self):
         data = ['{}={}'.format(k, v) for k, v in self.to_dict().items()]
-        recipes = [str(recipe) for recipe in self._recipes]
-        return '<{}: {} | Recipes: {}>'.format(self.__class__.__name__, ', '.join(data), ', '.join(recipes))
+        return '<{}: {}>'.format(self.__class__.__name__, ', '.join(data))
 
     def __repr__(self):
         return str(self)

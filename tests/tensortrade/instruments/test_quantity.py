@@ -114,7 +114,7 @@ def test_invalid_add():
         q = q1 + q2
 
 
-# Iterative add
+# Iterative Addition
 def test_valid_iadd():
 
     # Quantity
@@ -219,7 +219,7 @@ def test_invalid_sub():
 
     # Quantity with different instruments
     q1 = Quantity(BTC, 500)
-    q2 = Quantity(ETH,1000)
+    q2 = Quantity(ETH, 1000)
     with pytest.raises(IncompatibleInstrumentOperation):
         q = q1 - q2
 
@@ -358,6 +358,46 @@ def test_valid_mul():
     assert q.instrument == ETH
 
 
+def test_valid_rmul():
+
+    # Quantity
+    q1 = Quantity(ETH, 50)
+    q2 = Quantity(ETH, 5)
+    q = q2 * q1
+    assert q.size == 250
+    assert q.instrument == ETH
+
+    # Quantity with Path ID
+    q1 = Quantity(BTC, 50, path_id=path_id)
+    q2 = Quantity(BTC, 5)
+    q = q2 * q1
+    assert q.size == 250
+    assert q.instrument == BTC
+    assert q.path_id == path_id
+
+    # Quantity with matching Path ID
+    q1 = Quantity(BTC, 50, path_id=path_id)
+    q2 = Quantity(BTC, 5, path_id=path_id)
+    q = q2 * q1
+    assert q.size == 250
+    assert q.instrument == BTC
+    assert q.path_id == path_id
+
+    # int
+    q1 = Quantity(ETH, 50)
+    q2 = 5
+    q = q2 * q1
+    assert q.size == 250
+    assert q.instrument == ETH
+
+    # float
+    q1 = Quantity(ETH, 50)
+    q2 = 5.0
+    q = q2 * q1
+    assert q.size == 250
+    assert q.instrument == ETH
+
+
 def test_invalid_mul():
 
     # Quantity
@@ -380,7 +420,7 @@ def test_invalid_mul():
 
 
 # Division
-def test_valid_truediv():
+def test_valid_left_truediv():
 
     # Quantity
     q1 = Quantity(ETH, 50)
@@ -405,6 +445,22 @@ def test_valid_truediv():
     assert q.instrument == BTC
     assert q.path_id == path_id
 
+    # Quantity with different instruments
+    q1 = Quantity(USD, 50)
+    q2 = Quantity(BTC, 5)
+    p = q1 / q2
+    assert isinstance(p, Price)
+    assert p.rate == 10
+    assert p.pair == USD / BTC
+
+    # Instrument
+    q = Quantity(USD, 50)
+
+    p = q / BTC
+    assert isinstance(p, Price)
+    assert p.rate == 50
+    assert p.pair == USD / BTC
+
     # int
     q1 = Quantity(ETH, 50)
     q2 = 5
@@ -420,13 +476,33 @@ def test_valid_truediv():
     assert q.instrument == ETH
 
 
-def test_invalid_division():
+def test_valid_right_truediv():
 
-    # Quantity with different instruments
-    q1 = Quantity(ETH, 50)
-    q2 = Quantity(BTC, 5)
-    with pytest.raises(Exception):
-        q = q1 / q2
+    # Quantity
+    q1 = Quantity(ETH, 5)
+    q2 = Quantity(ETH, 50)
+    q = q2 / q1
+    assert q.size == 10
+    assert q.instrument == ETH
+
+    # Quantity with Path ID
+    q1 = Quantity(BTC, 5, path_id=path_id)
+    q2 = Quantity(BTC, 50)
+    q = q2 / q1
+    assert q.size == 10
+    assert q.instrument == BTC
+    assert q.path_id == path_id
+
+    # Quantity with matching Path ID
+    q1 = Quantity(BTC, 5, path_id=path_id)
+    q2 = Quantity(BTC, 50, path_id=path_id)
+    q = q2 / q1
+    assert q.size == 10
+    assert q.instrument == BTC
+    assert q.path_id == path_id
+
+
+def test_invalid_division():
 
     # Quantity with different Path IDs
     q1 = Quantity(BTC, 50, path_id=path_id)
@@ -546,7 +622,7 @@ def test_invalid_equals():
     q1 = Quantity(ETH, 5)
     q2 = Quantity(BTC, 5)
     with pytest.raises(IncompatibleInstrumentOperation):
-        (q1 == q2) and (q2 == q1)
+        assert (q1 == q2) and (q2 == q1)
 
 
 # Not equals
@@ -586,7 +662,7 @@ def test_invalid_unequals():
     q1 = Quantity(ETH, 5)
     q2 = Quantity(BTC, 5)
     with pytest.raises(IncompatibleInstrumentOperation):
-        not (q1 != q2) and not (q2 != q1)
+        assert not (q1 != q2) and not (q2 != q1)
 
 
 # Negation
@@ -595,3 +671,20 @@ def test_valid_negation():
     q = Quantity(ETH, 5)
     neg_q = -q
     assert neg_q == -5
+
+
+def test_free():
+
+    q = Quantity(ETH, 5)
+    free = q.free()
+
+    assert isinstance(free, Quantity)
+    assert free.size == 5 and free.instrument == ETH
+    assert not free.is_locked
+
+    q = Quantity(ETH, 5, path_id="fake_id")
+    free = q.free()
+
+    assert isinstance(free, Quantity)
+    assert free.size == 5 and free.instrument == ETH
+    assert not free.is_locked

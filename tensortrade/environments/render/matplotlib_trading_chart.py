@@ -1,12 +1,9 @@
 
 import sys
 import numpy as np
-import pandas as pd
-import matplotlib
 import matplotlib.pyplot as plt
 
 from matplotlib import style
-from datetime import datetime
 from pandas.plotting import register_matplotlib_converters
 
 from tensortrade.trades import TradeSide

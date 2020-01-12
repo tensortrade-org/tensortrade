@@ -12,21 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License
 
+
 import numpy as np
 import pandas as pd
-
 import tensortrade.slippage as slippage
 
-from gym.spaces import Space, Box
-from typing import List, Dict
-from copy import deepcopy
-
+from typing import List
 
 from tensortrade.trades import Trade, TradeType, TradeSide
-from tensortrade.orders import OrderStatus
 from tensortrade.instruments import TradingPair, Quantity
 from tensortrade.exchanges import Exchange
-from tensortrade.features import FeaturePipeline
 from tensortrade.instruments import USD, BTC
 
 
@@ -57,7 +52,14 @@ class SimulatedExchange(Exchange):
         self._slippage_model = slippage.get(slippage_model) if isinstance(
             slippage_model, str) else slippage_model()
 
-        self.reset()
+        self._initial_step = 0
+        self._final_step = len(self._data_frame) - 1
+
+        if self._randomize_time_slices:
+            self._initial_step = np.random.randint(
+                0, len(self._data_frame) - self._min_time_slice - 2)
+            self._final_step = np.random.randint(
+                self._initial_step + self._min_time_slice, len(self._data_frame) - 1)
 
     @property
     def is_live(self):
@@ -101,7 +103,7 @@ class SimulatedExchange(Exchange):
 
         return obs
 
-    def is_pair_tradeable(self, pair: TradingPair) -> bool:
+    def is_pair_tradable(self, pair: TradingPair) -> bool:
         return pair.base == self._base_instrument and pair.quote == self._quote_instrument
 
     def quote_price(self, trading_pair: TradingPair) -> float:
@@ -123,12 +125,13 @@ class SimulatedExchange(Exchange):
             return None
 
         commission = Quantity(order.pair.base, order.size * self._commission, order.path_id)
-        size = self._contain_size(order.size - commission.size)
+        base_size = self._contain_size(order.size - commission.size)
 
         if order.type == TradeType.MARKET:
-            size = self._contain_size(order.price / price * order.size - commission.size)
+            scale = order.price / price
+            base_size = self._contain_size(scale * order.size - commission.size)
 
-        quantity = Quantity(order.pair.base, size, order.path_id)
+        quantity = Quantity(order.pair.base, base_size, order.path_id)
 
         trade = Trade(order_id=order.id,
                       exchange_id=self.id,
@@ -141,8 +144,7 @@ class SimulatedExchange(Exchange):
                       commission=commission)
 
         # self._slippage_model.adjust_trade(trade)
-
-        quote_size = trade.size / trade.price * (order.price / trade.price)
+        quote_size = (order.price / trade.price) * (trade.size / trade.price)
 
         base_wallet -= quantity
         base_wallet -= commission

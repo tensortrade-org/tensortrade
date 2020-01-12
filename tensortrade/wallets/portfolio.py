@@ -1,7 +1,21 @@
-import pandas as pd
-import numpy as np
+# Copyright 2019 The TensorTrade Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License
 
-from typing import Callable, Tuple, Union, List, Dict, NewType
+
+import pandas as pd
+
+from typing import Callable, Tuple, Union, List
 
 from tensortrade import Component, TimedIdentifiable
 from tensortrade.instruments import Instrument, Quantity, TradingPair
@@ -34,7 +48,8 @@ class Portfolio(Component, TimedIdentifiable):
 
         self._initial_balance = self.base_balance
         self._initial_net_worth = self.net_worth
-        self._performance = pd.DataFrame([], columns=['step', 'net_worth'], index=['step'])
+        self._performance = pd.DataFrame(
+            [], columns=['step', 'net_worth', 'base_symbol'], index=['step'])
 
     @property
     def base_instrument(self) -> Instrument:
@@ -175,11 +190,20 @@ class Portfolio(Component, TimedIdentifiable):
         self._wallets.pop((exchange.id, instrument.symbol), None)
 
     def update(self):
-        performance = [[self.clock.step, self.net_worth] + [quantity.size for quantity in self.balances] +
-                       [quantity.size for quantity in self.locked_balances]]
+        wallets = list(
+            filter(lambda wallet: wallet.instrument.symbol is not self.base_instrument.symbol, self.wallets))
 
-        columns = ['step', 'net_worth'] + [quantity.instrument.symbol for quantity in self.balances] + \
-            ['{}_pending'.format(quantity.instrument.symbol) for quantity in self.locked_balances]
+        performance = [[self.clock.step, self.net_worth, self.base_instrument.symbol] +
+                       [quantity.size for quantity in self.balances] +
+                       [quantity.size for quantity in self.locked_balances] +
+                       [wallet.exchange.quote_price(
+                           wallet.instrument/self.base_instrument) for wallet in wallets]
+                       ]
+
+        columns = ['step', 'net_worth', 'base_symbol'] + \
+                  [quantity.instrument.symbol for quantity in self.balances] + \
+                  ['{}_pending'.format(quantity.instrument.symbol) for quantity in self.locked_balances] + \
+                  ['{}_price'.format(wallet.instrument.symbol) for wallet in wallets]
 
         performance_update = pd.DataFrame(performance, columns=columns)
 
@@ -192,4 +216,5 @@ class Portfolio(Component, TimedIdentifiable):
     def reset(self):
         self._initial_balance = self.base_balance
         self._initial_net_worth = self.net_worth
-        self._performance = pd.DataFrame([], columns=['step', 'net_worth'], index=['step'])
+        self._performance = pd.DataFrame(
+            [], columns=['step', 'net_worth', 'base_symbol'], index=['step'])

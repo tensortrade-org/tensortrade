@@ -1,16 +1,14 @@
 import pandas as pd
 
-from gym import Space
-from typing import Generator, List, Dict
-
-import tensortrade.slippage as slippage
+from typing import List
 
 from tensortrade import TradingContext
 from tensortrade.trades import Trade
 from tensortrade.slippage import SlippageModel
 from tensortrade.exchanges import Exchange, get
 from tensortrade.exchanges.live import CCXTExchange
-from tensortrade.exchanges.simulated import SimulatedExchange, FBMExchange
+from tensortrade.exchanges.simulated import SimulatedExchange
+from tensortrade.instruments import EUR, ETH
 
 
 class ConcreteExchange(Exchange):
@@ -19,23 +17,7 @@ class ConcreteExchange(Exchange):
         super(ConcreteExchange, self).__init__()
 
     @property
-    def initial_balance(self) -> float:
-        pass
-
-    @property
-    def balance(self) -> float:
-        pass
-
-    @property
-    def portfolio(self) -> Dict[str, float]:
-        pass
-
-    @property
-    def trades(self) -> List[Trade]:
-        pass
-
-    @property
-    def performance(self) -> pd.DataFrame:
+    def is_live(self):
         pass
 
     @property
@@ -49,10 +31,13 @@ class ConcreteExchange(Exchange):
     def next_observation(self) -> pd.DataFrame:
         pass
 
-    def current_price(self, symbol: str) -> float:
+    def quote_price(self, trading_pair: 'TradingPair') -> float:
         pass
 
-    def execute_trade(self, trade: Trade) -> Trade:
+    def is_pair_tradable(self, trading_pair: 'TradingPair') -> bool:
+        pass
+
+    def execute_order(self, order: 'Order', portfolio: 'Portfolio'):
         pass
 
     def reset(self):
@@ -60,8 +45,8 @@ class ConcreteExchange(Exchange):
 
 
 config = {
-    'base_instrument': 'EURO',
-    'instruments': 'ETH',
+    'base_instrument': EUR,
+    'instruments': ETH,
     'exchanges': {
         'credentials': {
             'api_key': '48hg34wydghi7ef',
@@ -86,9 +71,13 @@ def test_injects_exchange_with_credentials():
 def test_injects_base_instrument():
 
     with TradingContext(**config):
-        exchange = SimulatedExchange()
+        df = pd.DataFrame(
+            [[900, 849, 9023, 94039, 943]],
+            columns=["open", "high", "low", "close", "volume"]
+        )
+        exchange = SimulatedExchange(data_frame=df)
 
-        assert exchange.base_instrument == 'EURO'
+        assert exchange._base_instrument == EUR
 
 
 def test_injects_string_initialized_action_scheme():
@@ -106,7 +95,6 @@ def test_initialize_ccxt_from_config():
 
     config = {
         'base_instrument': 'USD',
-        'instruments': 'ETH',
         'exchanges': {
             'exchange': 'binance',
             'credentials': {
@@ -124,18 +112,18 @@ def test_initialize_ccxt_from_config():
         assert exchange._credentials == config['exchanges']['credentials']
 
 
-def test_simlulated_from_config():
+def test_simulated_from_config():
 
     class NoSlippage(SlippageModel):
 
-        def fill_order(self, trade: Trade, **kwargs) -> Trade:
-            return trade
+        def adjust_trade(self, trade: Trade, **kwargs) -> Trade:
+            pass
 
     config = {
         'base_instrument': 'EURO',
         'instruments': ['BTC', 'ETH'],
         'exchanges': {
-            'commission_percent': 0.5,
+            'commission': 0.5,
             'base_precision': 0.3,
             'instrument_precision': 10,
             'min_trade_price': 1e-7,
@@ -151,8 +139,11 @@ def test_simlulated_from_config():
     }
 
     with TradingContext(**config):
+        df = pd.DataFrame(
+            [[900, 849, 9023, 94039, 943]],
+            columns=["open", "high", "low", "close", "volume"]
+        )
+        exchange = SimulatedExchange(data_frame=df)
 
-        exchange = SimulatedExchange()
-
-        exchange.base_instrument == 'EURO'
-        exchange._commission_percent == 0.5
+        assert exchange._base_instrument == 'EURO'
+        assert exchange._commission == 0.5
