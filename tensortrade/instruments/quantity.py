@@ -31,7 +31,7 @@ class Quantity:
         if size < 0:
             raise InvalidNegativeQuantity(size)
 
-        self._size = round(size, instrument.precision)
+        self._size = size
         self._instrument = instrument
         self._path_id = path_id
 
@@ -122,7 +122,7 @@ class Quantity:
                         op: operator) -> 'Quantity':
         left, right = Quantity.validate(left, right)
 
-        size = op(left.size, right.size)
+        size = op(left._size, right._size)
         return Quantity(left.instrument, size, left.path_id)
 
     def __add__(self, other: Union['Quantity', float, int]) -> 'Quantity':

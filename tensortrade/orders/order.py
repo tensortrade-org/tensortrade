@@ -17,7 +17,8 @@ from enum import Enum
 from typing import Callable
 
 from tensortrade.base import TimedIdentifiable
-from tensortrade.base.exceptions import InvalidOrderQuantity
+from tensortrade.base.exceptions import InvalidOrderQuantity, InsufficientFundsForAllocation
+from tensortrade.instruments import Quantity
 from tensortrade.trades import Trade, TradeSide, TradeType
 
 
@@ -89,7 +90,7 @@ class Order(TimedIdentifiable):
 
     @price.setter
     def price(self, price: float):
-        self._price = round(price, self.pair.base.precision)
+        self._price = price
 
     @property
     def base_instrument(self) -> 'Instrument':
@@ -142,7 +143,13 @@ class Order(TimedIdentifiable):
         wallet = self.portfolio.get_wallet(exchange.id, instrument=instrument)
 
         if self.path_id not in wallet.locked.keys():
-            wallet -= self.size * instrument
+            try:
+                wallet -= self.size * instrument
+            except InsufficientFundsForAllocation:
+                size = wallet.balance.size
+                wallet -= size * instrument
+                self.quantity = Quantity(instrument, size, path_id=self.path_id)
+
             wallet += self.quantity
 
         if self.portfolio.order_listener:
