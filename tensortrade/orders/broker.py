@@ -77,8 +77,6 @@ class Broker(OrderListener, TimeIndexed):
     def update(self):
         for order, exchange in product(self._unexecuted, self._exchanges):
             if order.is_executable_on(exchange):
-                print('Execute: ', order)
-
                 self._unexecuted.remove(order)
                 self._executed[order.id] = order
 
@@ -86,13 +84,9 @@ class Broker(OrderListener, TimeIndexed):
                 order.execute(exchange)
 
     def on_fill(self, order: Order, exchange: 'Exchange', trade: 'Trade'):
-        print('Fill: ', trade)
-
         if trade.order_id in self._executed and trade not in self._trades:
             self._trades[trade.order_id] = self._trades.get(trade.order_id, [])
             self._trades[trade.order_id] += [trade]
-
-            print('Total traded: ', order.filled_size)
 
             if order.is_complete():
                 next_order = order.complete(exchange)

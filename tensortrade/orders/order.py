@@ -185,8 +185,6 @@ class Order(TimedIdentifiable):
 
         self._listeners = []
 
-        print('Completed: ', self.id, order)
-
         return order or self.release()
 
     def cancel(self, exchange: 'Exchange'):
