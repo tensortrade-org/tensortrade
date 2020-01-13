@@ -126,23 +126,23 @@ class SimulatedExchange(Exchange):
             return None
 
         commission = Quantity(order.pair.base, order.size * self._commission, order.path_id)
-        base_size = self._contain_size(order.size - commission.size)
+        size = self._contain_size(order.size - commission.size)
 
         if order.type == TradeType.MARKET:
             scale = order.price / price
-            base_size = self._contain_size(scale * order.size - commission.size)
+            size = self._contain_size(scale * order.size - commission.size)
 
         base_wallet -= commission
 
         try:
-            quantity = Quantity(order.pair.base, base_size, order.path_id)
+            quantity = Quantity(order.pair.base, size, order.path_id)
             base_wallet -= quantity
         except InsufficientFundsForAllocation:
             balance = base_wallet.locked[order.path_id]
             quantity = Quantity(order.pair.base, balance.size, order.path_id)
             base_wallet -= quantity
 
-        quote_size = (order.price / price) * (quantity.size / price)
+        quote_size = (order.price / price) * (size / price)
         quote_wallet += Quantity(order.pair.quote, quote_size, order.path_id)
 
         trade = Trade(order_id=order.id,
@@ -167,15 +167,17 @@ class SimulatedExchange(Exchange):
 
         commission = Quantity(order.pair.base, order.size * self._commission, order.path_id)
         size = self._contain_size(order.size - commission.size)
-        quantity = Quantity(order.pair.base, size, order.path_id)
 
         try:
-            quote_size = quantity.size / price * (price / order.price)
+            quote_size = size / price * (price / order.price)
             quote_wallet -= Quantity(order.pair.quote, quote_size, order.path_id)
         except InsufficientFundsForAllocation:
             balance = quote_wallet.locked[order.path_id]
-            quantity = Quantity(order.pair.quote, balance.size, order.path_id)
-            quote_wallet -= quantity
+            quote_size = balance.size
+            quote_wallet -= Quantity(order.pair.quote, quote_size, order.path_id)
+
+        base_size = quote_size * price / (price / order.price)
+        quantity = Quantity(order.pair.base, base_size, order.path_id)
 
         base_wallet += quantity
         base_wallet -= commission
