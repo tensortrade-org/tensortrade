@@ -292,9 +292,6 @@ class TradingEnvironment(gym.Env, TimeIndexed):
             observation = observation.fillna(0, axis=1)
             observation = observation.values
 
-        if len(observation) != 0:
-            observation = observation[0]
-
         observation = np.nan_to_num(observation)
 
         return observation
