@@ -138,7 +138,6 @@ def env():
 
         env = TradingEnvironment(
             portfolio=portfolio,
-            exchange=exchange,
             action_scheme=action_scheme,
             reward_scheme=reward_scheme,
             window_size=14,
@@ -187,7 +186,6 @@ def env():
 
         env = TradingEnvironment(
             portfolio=portfolio,
-            exchange=exchange,
             action_scheme=action_scheme,
             reward_scheme=reward_scheme,
             window_size=14,

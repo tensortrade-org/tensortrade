@@ -21,16 +21,14 @@ import numpy as np
 from gym.spaces import Box, Discrete
 from typing import Union, Tuple, List, Dict
 
-import tensortrade.exchanges as exchanges
 import tensortrade.actions as actions
 import tensortrade.rewards as rewards
 import tensortrade.features as features
 import tensortrade.wallets as wallets
 
-from tensortrade.base.core import TimeIndexed
+from tensortrade.base.core import TimeIndexed, Clock
 from tensortrade.actions import ActionScheme
 from tensortrade.rewards import RewardScheme
-from tensortrade.exchanges import Exchange
 from tensortrade.features import FeaturePipeline
 from tensortrade.instruments import Instrument
 from tensortrade.orders import Broker, Order
@@ -45,7 +43,6 @@ class TradingEnvironment(gym.Env, TimeIndexed):
 
     def __init__(self,
                  portfolio: Union[Portfolio, str],
-                 exchange: Union[Exchange, str],
                  action_scheme: Union[ActionScheme, str],
                  reward_scheme: Union[RewardScheme, str],
                  feature_pipeline: Union[FeaturePipeline, str] = None,
@@ -53,7 +50,6 @@ class TradingEnvironment(gym.Env, TimeIndexed):
                  **kwargs):
         """
         Arguments:
-            exchange: The `Exchange` used to feed data from and execute trades within.
             portfolio: The `Portfolio` of wallets used to submit and execute orders from.
             action_scheme:  The component for transforming an action into an `Order` at each timestep.
             reward_scheme: The component for determining the reward at each timestep.
@@ -61,12 +57,15 @@ class TradingEnvironment(gym.Env, TimeIndexed):
             kwargs (optional): Additional arguments for tuning the environments, logging, etc.
         """
         super().__init__()
+        TimeIndexed.clock = Clock()
 
         self.portfolio = portfolio
-        self.exchange = exchange
         self.action_scheme = action_scheme
+        self.action_scheme.over(self.portfolio.exchange_pairs)
         self.reward_scheme = reward_scheme
         self.feature_pipeline = feature_pipeline
+
+        self._broker = Broker(self.portfolio.exchanges)
 
         self._window_size = window_size
         self._dtype = kwargs.get('dtype', np.float32)
@@ -93,10 +92,6 @@ class TradingEnvironment(gym.Env, TimeIndexed):
 
         logging.getLogger('tensorflow').disabled = kwargs.get('disable_tensorflow_logger', True)
 
-        self._initial_balances = None
-
-        self.reset()
-
     @property
     def window_size(self) -> int:
         """The length of the observation window in the `observation_space`."""
@@ -114,17 +109,6 @@ class TradingEnvironment(gym.Env, TimeIndexed):
     @portfolio.setter
     def portfolio(self, portfolio: Union[Portfolio, str]):
         self._portfolio = wallets.get(portfolio) if isinstance(portfolio, str) else portfolio
-
-    @property
-    def exchange(self) -> Exchange:
-        """The `Exchange` that will be used to feed data from and execute trades within."""
-        return self._exchange
-
-    @exchange.setter
-    def exchange(self, exchange: Union[Exchange, str]):
-        self._exchange = exchanges.get(exchange) if isinstance(exchange, str) else exchange
-
-        self._broker = Broker(self._exchange)
 
     @property
     def broker(self) -> Broker:
@@ -252,7 +236,7 @@ class TradingEnvironment(gym.Env, TimeIndexed):
         Returns:
             The order created by the agent this time step, if any.
         """
-        order = self._action_scheme.get_order(action, self._exchange, self._portfolio)
+        order = self._action_scheme.get_order(action, self._portfolio)
 
         if order:
             self._broker.submit(order)
@@ -375,18 +359,8 @@ class TradingEnvironment(gym.Env, TimeIndexed):
         """
         self.clock.reset()
 
-        if not self._exchange.is_live:
-            if self._initial_balances is not None:
-                self._portfolio._wallets = {}
-
-                for balance in self._initial_balances:
-                    self._portfolio.add((self._exchange, balance.instrument, balance.size))
-            else:
-                self._initial_balances = self._portfolio.total_balances
-
         self._action_scheme.reset()
         self._reward_scheme.reset()
-        self._exchange.reset()
         self._portfolio.reset()
         self._broker.reset()
 

@@ -1,6 +1,8 @@
 import uuid
 
-from abc import ABCMeta
+from abc import ABCMeta, abstractmethod
+from typing import Dict
+
 from .clock import Clock
 
 
@@ -24,9 +26,22 @@ class Identifiable(object, metaclass=ABCMeta):
         self._id = identifier
 
 
+class Observable:
+
+    @abstractmethod
+    def observe(self) -> Dict[str, float]:
+        raise NotImplementedError
+
+
 class TimeIndexed:
 
-    clock = global_clock
+    @property
+    def clock(self):
+        return self._clock
+
+    @clock.setter
+    def clock(self, clock: 'Clock'):
+        self._clock = clock
 
 
 class TimedIdentifiable(Identifiable, TimeIndexed, metaclass=ABCMeta):

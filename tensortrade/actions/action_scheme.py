@@ -14,6 +14,8 @@
 
 
 from abc import abstractmethod, ABCMeta
+from typing import List, Tuple
+from itertools import product
 from gym.spaces import Discrete
 
 from tensortrade import Component
@@ -29,17 +31,31 @@ class ActionScheme(Component, metaclass=ABCMeta):
         pass
 
     @property
-    @abstractmethod
+    def actions(self):
+        return self._actions
+
+    @actions.setter
+    def actions(self, actions):
+        self._actions = actions
+
+    def over(self, exchange_pairs: List[Tuple['Exchange', 'Pair']]):
+        self.actions = list(product(exchange_pairs, self.actions))
+        self.actions = [None] + self.actions
+
+    @property
     def action_space(self) -> Discrete:
         """The discrete action space produced by the action scheme."""
-        raise NotImplementedError()
+        return Discrete(len(self.actions))
 
     def reset(self):
         """An optional reset method, which will be called each time the environment is reset."""
         pass
 
+    def __add__(self, other):
+        return ADD(self, other)
+
     @abstractmethod
-    def get_order(self, action: int, exchange: 'Exchange', portfolio: 'Portfolio') -> Order:
+    def get_order(self, action: int, portfolio: 'Portfolio') -> Order:
         """Get the order to be executed on the exchange based on the action provided.
 
         Arguments:
@@ -51,3 +67,37 @@ class ActionScheme(Component, metaclass=ABCMeta):
             The order to be executed on the exchange this time step.
         """
         raise NotImplementedError()
+
+
+class ADD(ActionScheme):
+
+    def __init__(self, left: ActionScheme, right: ActionScheme):
+        super().__init__()
+        self.left = left
+        self.right = right
+
+        self.actions = [None]
+
+    def over(self, exchange_pairs):
+        self.left.over(exchange_pairs)
+        self.right.over(exchange_pairs)
+
+        left_size = len(self.left.actions)
+        right_size = len(self.right.actions)
+
+        self.actions += [("left", i) for i in range(1, left_size)]
+        self.actions += [("right", i) for i in range(1, right_size)]
+
+    def get_order(self, action, portfolio):
+        if action == 0:
+            return None
+
+        side, action = self.actions[action]
+
+        if side == "left":
+            order = self.left.get_order(action, portfolio)
+            return order
+
+        order = self.right.get_order(action, portfolio)
+
+        return order

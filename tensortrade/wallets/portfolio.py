@@ -46,8 +46,8 @@ class Portfolio(Component, TimedIdentifiable):
         for wallet in wallets:
             self.add(wallet)
 
+        self._initial_net_worth = None
         self._initial_balance = self.base_balance
-        self._initial_net_worth = self.net_worth
         self._performance = pd.DataFrame([], columns=['step', 'net_worth'], index=['step'])
 
     @property
@@ -82,6 +82,23 @@ class Portfolio(Component, TimedIdentifiable):
         return list(self._wallets.values())
 
     @property
+    def exchanges(self) -> List['Exchange']:
+        exchanges = []
+        for w in self.wallets:
+            if w.exchange not in exchanges:
+                exchanges += [w.exchange]
+        return exchanges
+
+    @property
+    def exchange_pairs(self) -> List['Exchange']:
+        exchange_pairs = []
+
+        for w in self.wallets:
+            if w.instrument != self.base_instrument:
+                exchange_pairs += [(w.exchange, self.base_instrument/w.instrument)]
+        return exchange_pairs
+
+    @property
     def initial_balance(self) -> Quantity:
         """The initial balance of the base instrument over all wallets, set by calling `reset`."""
         return self._initial_balance
@@ -90,6 +107,12 @@ class Portfolio(Component, TimedIdentifiable):
     def base_balance(self) -> Quantity:
         """The current balance of the base instrument over all wallets."""
         return self.balance(self._base_instrument)
+
+    @property
+    def initial_net_worth(self):
+        if not self._initial_net_worth:
+            self._initial_net_worth = self.net_worth
+        return self._initial_net_worth
 
     @property
     def net_worth(self) -> float:
