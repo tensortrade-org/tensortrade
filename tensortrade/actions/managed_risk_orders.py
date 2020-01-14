@@ -103,7 +103,6 @@ class ManagedRiskOrders(ActionScheme):
         if action == 0:
             return None
 
-        print(self.actions)
         ((exchange, pair), (stop_loss, take_profit, size)) = self.actions[action]
 
         base_instrument = pair.base if self._trade_side == TradeSide.BUY else pair.quote

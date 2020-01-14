@@ -12,52 +12,35 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pandas as pd
-
 from abc import abstractmethod
-from typing import List
+from typing import Dict, Callable
 
 from tensortrade.base import Component, TimedIdentifiable
+from tensortrade.data import DataSource
+from tensortrade.instruments import TradingPair, Price
 
 
 class Exchange(Component, TimedIdentifiable):
     """An abstract exchange for use within a trading environment."""
+
     registered_name = "exchanges"
+
+    def __init__(self,
+                 source: DataSource,
+                 extract: Callable[[dict], Dict[TradingPair, Price]]):
+        source.attach(self)
+        self._extract = extract
+        self._prices = None
+
+    def on_next(self, data: dict):
+        self._prices = self._extract(data)
 
     @property
     @abstractmethod
     def is_live(self):
         raise NotImplementedError()
 
-    @property
-    @abstractmethod
-    def observation_columns(self) -> List[str]:
-        """The list of observation columns provided by the exchange each time step."""
-        raise NotImplementedError
-
-    @property
-    @abstractmethod
-    def has_next_observation(self) -> bool:
-        """If `False`, the exchange's data source has run out of observations.
-
-        Resetting the exchange may be necessary to continue generating observations.
-
-        Returns:
-            Whether or not the specified instrument has a next observation.
-        """
-        raise NotImplementedError
-
-    @abstractmethod
-    def next_observation(self) -> pd.DataFrame:
-        """Generate the next observation from the exchange, including wallet balances if specified.
-
-        Returns:
-            A `pandas.DataFrame` of exchange observations for the next time step.
-        """
-        raise NotImplementedError
-
-    @abstractmethod
-    def quote_price(self, trading_pair: 'TradingPair') -> float:
+    def quote_price(self, trading_pair: 'TradingPair') -> 'Price':
         """The quote price of a trading pair on the exchange, denoted in the base instrument.
 
         Arguments:
@@ -66,7 +49,8 @@ class Exchange(Component, TimedIdentifiable):
         Returns:
             The quote price of the specified trading pair, denoted in the base instrument.
         """
-        raise NotImplementedError
+        if self._prices:
+            return Price(self._prices[trading_pair], trading_pair)
 
     @abstractmethod
     def is_pair_tradable(self, trading_pair: 'TradingPair') -> bool:

@@ -46,7 +46,6 @@ class Portfolio(Component, TimedIdentifiable):
         for wallet in wallets:
             self.add(wallet)
 
-        self._initial_net_worth = None
         self._initial_balance = self.base_balance
         self._performance = pd.DataFrame([], columns=['step', 'net_worth'], index=['step'])
 
@@ -228,5 +227,4 @@ class Portfolio(Component, TimedIdentifiable):
 
     def reset(self):
         self._initial_balance = self.base_balance
-        self._initial_net_worth = self.net_worth
         self._performance = pd.DataFrame([], columns=['step', 'net_worth'], index=['step'])

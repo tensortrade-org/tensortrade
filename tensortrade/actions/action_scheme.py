@@ -42,10 +42,9 @@ class ActionScheme(Component, metaclass=ABCMeta):
         self.actions = list(product(exchange_pairs, self.actions))
         self.actions = [None] + self.actions
 
-    @property
-    def action_space(self) -> Discrete:
+    def __len__(self) -> int:
         """The discrete action space produced by the action scheme."""
-        return Discrete(len(self.actions))
+        return len(self.actions)
 
     def reset(self):
         """An optional reset method, which will be called each time the environment is reset."""
