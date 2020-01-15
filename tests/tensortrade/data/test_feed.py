@@ -30,7 +30,6 @@ def test_init():
     feed = DataFeed(sources=sources)
 
     assert feed
-    assert feed.sources == sources
 
 
 def test_next():

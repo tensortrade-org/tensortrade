@@ -12,13 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import gym
+
 import logging
-import importlib
-import pandas as pd
 import numpy as np
 
-from gym.spaces import Box, Discrete
 from typing import Union, Tuple, List, Dict
 
 import tensortrade.actions as actions
@@ -29,13 +26,12 @@ from tensortrade.base.core import TimeIndexed, Clock
 from tensortrade.actions import ActionScheme
 from tensortrade.rewards import RewardScheme
 from tensortrade.data import DataFeed
-from tensortrade.instruments import Instrument
 from tensortrade.orders import Broker, Order
 from tensortrade.wallets import Portfolio
 from tensortrade.environments.history import History
 
 
-class TradingEnvironment(gym.Env, TimeIndexed):
+class TradingEnvironment(TimeIndexed):
     """A trading environments made for use with Gym-compatible reinforcement learning algorithms."""
 
     def __init__(self,
@@ -58,11 +54,11 @@ class TradingEnvironment(gym.Env, TimeIndexed):
 
         self.portfolio = portfolio
         self.action_scheme = action_scheme
-        self.action_scheme.over(self.portfolio.exchange_pairs)
+        self.action_scheme.over(exchange_pairs=self.portfolio.exchange_pairs)
         self.reward_scheme = reward_scheme
         self.feed = feed
         self.history = History(window_size=window_size)
-        self._broker = Broker(self.portfolio.exchanges)
+        self._broker = Broker(exchanges=self.portfolio.exchanges)
 
         self.render_benchmarks: List[Dict] = kwargs.get('render_benchmarks', [])
         self.viewer = None

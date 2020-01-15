@@ -3,6 +3,7 @@ import pytest
 import pandas as pd
 
 from tensortrade.base.exceptions import InsufficientFundsForAllocation, IncompatibleInstrumentOperation
+from tensortrade.data import DataFrame
 from tensortrade.exchanges.simulated import SimulatedExchange
 from tensortrade.wallets import Wallet
 from tensortrade.instruments import USD, BTC, Quantity
@@ -16,9 +17,10 @@ data_frame = pd.read_csv("tests/data/input/coinbase-1h-btc-usd.csv")
 data_frame.columns = map(str.lower, data_frame.columns)
 data_frame = data_frame.rename(columns={'volume btc': 'volume'})
 
-exchange = SimulatedExchange(data_frame=data_frame,
-                             price_column=PRICE_COLUMN,
-                             randomize_time_slices=True)
+exchange_ds = DataFrame('prices', data_frame)
+
+exchange = SimulatedExchange(exchange_ds,
+                             extract=lambda x: {USD/BTC: x['close']})
 
 
 def test_init():

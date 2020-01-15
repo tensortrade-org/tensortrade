@@ -56,7 +56,11 @@ def test_random_uniform_slippage_model():
 
 def make_env(exchange: str, action: str, reward: str):
     portfolio = mock.Mock()
-    return TradingEnvironment(exchange=exchange, action_scheme=action, reward_scheme=reward, portfolio=portfolio)
+    feed = mock.Mock()
+    return TradingEnvironment(portfolio=portfolio,
+                              action_scheme=action,
+                              reward_scheme=reward,
+                              feed=feed)
 
 
 def test_simulated_dynamic_simple_env():

@@ -6,7 +6,7 @@ import pandas as pd
 
 from tensortrade import TradingContext
 from tensortrade.environments import TradingEnvironment
-from tensortrade.exchanges.simulated import StochasticExchange, SimulatedExchange
+from tensortrade.exchanges.simulated import SimulatedExchange
 from tensortrade.instruments import USD, BTC, ETH
 from tensortrade.wallets import Portfolio
 from tensortrade.actions import ManagedRiskOrders, DynamicOrders
@@ -19,21 +19,6 @@ config = {
         'pairs': [USD/BTC, USD/ETH]
     }
 }
-
-
-def make_env(exchange: str, action: str, reward: str):
-    portfolio = mock.Mock()
-    return TradingEnvironment(exchange=exchange, action_scheme=action, reward_scheme=reward, portfolio=portfolio)
-
-
-def test_injects_simulated_discrete_simple_environment():
-    env = make_env('simulated', 'dynamic', 'simple')
-
-    assert env.action_scheme.pairs == [USD/BTC]
-
-    with TradingContext(**config):
-        env = make_env('simulated', 'dynamic', 'simple')
-        assert env.action_scheme.pairs == [USD/BTC, USD/ETH]
 
 
 @pytest.fixture
@@ -74,6 +59,15 @@ def portfolio(exchange):
     return portfolio
 
 
+def make_env(action: str, reward: str):
+    portfolio = mock.Mock()
+    feed = mock.Mock()
+    return TradingEnvironment(portfolio=portfolio,
+                              action_scheme=action,
+                              reward_scheme=reward,
+                              feed=feed)
+
+
 @pytest.fixture
 def feed(portfolio, exchange_ds):
 
@@ -84,6 +78,22 @@ def feed(portfolio, exchange_ds):
         portfolio_ds
     ])
     return data_feed
+
+
+def test_injects_dynamic_simple_environment(portfolio, feed):
+    env = TradingEnvironment(portfolio=portfolio,
+                             action_scheme='dynamic',
+                             reward_scheme='simple',
+                             feed=feed)
+
+    assert not hasattr(env.action_scheme, 'pairs')
+
+    with TradingContext(**config):
+        env = TradingEnvironment(portfolio=portfolio,
+                                 action_scheme='dynamic',
+                                 reward_scheme='simple',
+                                 feed=feed)
+        assert env.action_scheme.pairs == [USD/BTC, USD/ETH]
 
 
 def test_init(exchange, portfolio, feed):
@@ -113,12 +123,12 @@ def test_init(exchange, portfolio, feed):
         portfolio=portfolio,
         action_scheme=action_scheme,
         reward_scheme="simple",
-        feed=feed
+        feed=feed,
+        window_size=20
     )
 
     obs = env.reset()
-    print(obs)
 
     assert env
+    assert obs.shape == (20, 11)
 
-    pytest.fail("Failed.")

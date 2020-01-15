@@ -4,7 +4,7 @@ import numpy as np
 from typing import List
 
 from tensortrade import TradingContext
-from tensortrade.data import DataSource, DataFrame
+from tensortrade.data import DataFrame
 from tensortrade.trades import Trade
 from tensortrade.slippage import SlippageModel
 from tensortrade.exchanges import Exchange, get
@@ -145,7 +145,11 @@ def test_simulated_from_config():
             [[900, 849, 9023, 94039, 943]],
             columns=["open", "high", "low", "close", "volume"]
         )
-        exchange = SimulatedExchange(data_frame=df)
+
+        exchange_ds = DataFrame('prices', df)
+
+        exchange = SimulatedExchange(exchange_ds,
+                                     extract=lambda x: {EUR/ETH: x['close']})
 
         assert exchange._base_instrument == 'EURO'
         assert exchange._commission == 0.5
