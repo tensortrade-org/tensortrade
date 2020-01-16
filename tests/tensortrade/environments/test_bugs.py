@@ -81,7 +81,7 @@ class FunctionsTransformer(FeatureTransformer):
             inplace=True,
             specifications: List[tuple] = None,
             window_size: int = None
-    ):
+        ):
         super().__init__(columns, inplace)
         self.specifications = specifications
         self.window_size = window_size

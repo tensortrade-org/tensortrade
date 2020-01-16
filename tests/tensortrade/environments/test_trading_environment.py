@@ -93,7 +93,8 @@ def test_injects_dynamic_simple_environment(portfolio, feed):
                                  action_scheme='dynamic',
                                  reward_scheme='simple',
                                  feed=feed)
-        assert env.action_scheme.pairs == [USD/BTC, USD/ETH]
+
+        assert env.action_scheme.context.pairs == [USD/BTC, USD/ETH]
 
 
 def test_init(exchange, portfolio, feed):
