@@ -36,6 +36,8 @@ class Portfolio(Component, TimedIdentifiable):
                  wallets: List[WalletType] = None,
                  order_listener: 'OrderListener' = None,
                  performance_listener: Callable[[pd.DataFrame], None] = None):
+        super().__init__()
+
         wallets = wallets or []
 
         self._base_instrument = self.default('base_instrument', base_instrument)

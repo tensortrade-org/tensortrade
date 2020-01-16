@@ -31,7 +31,10 @@ class TimeIndexed:
 
 class TimedIdentifiable(Identifiable, TimeIndexed, metaclass=ABCMeta):
 
-    __created_at = global_clock.now()
+    def __init__(self):
+        print('Init: ', self.id, global_clock.now())
+
+        self.__created_at = global_clock.now()
 
     @property
     def created_at(self):

@@ -55,6 +55,8 @@ class Order(TimedIdentifiable):
                  criteria: Callable[['Order', 'Exchange'], bool] = None,
                  path_id: str = None,
                  ttl_in_seconds: int = None):
+        super().__init__()
+
         if quantity.size == 0:
             raise InvalidOrderQuantity(quantity)
 
