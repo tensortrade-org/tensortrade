@@ -85,8 +85,13 @@ class Broker(OrderListener, TimeIndexed):
                 order.execute(exchange)
 
         for order in self._unexecuted + list(self._executed.values()):
-            order_expired = (datetime.now() -
-                             order.created_at).total_seconds() > order.ttl_in_seconds
+            if order.ttl_in_seconds:
+                seconds_passed = (datetime.now() - order.created_at).total_seconds()
+                order_expired = seconds_passed > order.ttl_in_seconds
+            elif order.ttl_in_steps:
+                steps_passed = self.clock.step - order.step
+                order_expired = steps_passed > order.ttl_in_steps
+
             order_active = order.status not in [OrderStatus.FILLED, OrderStatus.CANCELLED]
 
             if order_active and order_expired:

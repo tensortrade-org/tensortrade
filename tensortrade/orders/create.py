@@ -42,7 +42,8 @@ def limit_order(step: int,
                 price: float,
                 size: float,
                 portfolio: 'Portfolio',
-                ttl_in_seconds: int = None):
+                ttl_in_seconds: int = None,
+                ttl_in_steps: int = None):
 
     order = Order(step=step,
                   side=side,
@@ -51,6 +52,7 @@ def limit_order(step: int,
                   price=price,
                   quantity=(size*pair.base),
                   ttl_in_seconds=ttl_in_seconds,
+                  ttl_in_steps=ttl_in_steps,
                   portfolio=portfolio
                   )
     return order
@@ -62,7 +64,8 @@ def hidden_limit_order(step: int,
                        price: float,
                        size: float,
                        portfolio: 'Portfolio',
-                       ttl_in_seconds: int = None):
+                       ttl_in_seconds: int = None,
+                       ttl_in_steps: int = None):
 
     order = Order(step=step,
                   side=side,
@@ -71,6 +74,7 @@ def hidden_limit_order(step: int,
                   price=price,
                   quantity=(size*pair.base),
                   ttl_in_seconds=ttl_in_seconds,
+                  ttl_in_steps=ttl_in_steps,
                   portfolio=portfolio,
                   criteria=Limit(limit_price=price)
                   )
@@ -87,7 +91,8 @@ def risk_managed_order(step: int,
                        down_percent: float,
                        up_percent: float,
                        portfolio: 'Portfolio',
-                       ttl_in_seconds: int = None):
+                       ttl_in_seconds: int = None,
+                       ttl_in_steps: int = None):
 
     order = Order(step=step,
                   side=side,
@@ -95,6 +100,7 @@ def risk_managed_order(step: int,
                   pair=pair,
                   price=price,
                   ttl_in_seconds=ttl_in_seconds,
+                  ttl_in_steps=ttl_in_steps,
                   quantity=(size * pair.base),
                   portfolio=portfolio)
 

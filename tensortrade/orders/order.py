@@ -54,7 +54,8 @@ class Order(TimedIdentifiable):
                  price: float,
                  criteria: Callable[['Order', 'Exchange'], bool] = None,
                  path_id: str = None,
-                 ttl_in_seconds: int = None):
+                 ttl_in_seconds: int = None,
+                 ttl_in_steps: int = None):
         super().__init__()
 
         if quantity.size == 0:
@@ -70,6 +71,7 @@ class Order(TimedIdentifiable):
         self.criteria = criteria
         self.path_id = path_id or self.id
         self.ttl_in_seconds = ttl_in_seconds
+        self.ttl_in_steps = ttl_in_steps
         self.status = OrderStatus.PENDING
 
         self.filled_size = 0
