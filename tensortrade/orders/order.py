@@ -234,7 +234,7 @@ class Order(TimedIdentifiable):
             "price": str(self.price),
             "criteria": str(self.criteria),
             "path_id": str(self.path_id),
-            "created_at": str(self.created_at.strftime("%H:%M:%S"))
+            "created_at": str(self.created_at)
         }
 
     def __iadd__(self, recipe: 'OrderSpec') -> 'Order':

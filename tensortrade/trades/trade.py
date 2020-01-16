@@ -147,7 +147,7 @@ class Trade(TimedIdentifiable):
                 'quantity': str(self.quantity),
                 'price': str(self.price),
                 'commission': str(self.commission),
-                "created_at": str(self.created_at.strftime("%H:%M:%S"))
+                "created_at": str(self.created_at)
                 }
 
     def __str__(self):
