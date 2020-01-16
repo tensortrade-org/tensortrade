@@ -8,7 +8,7 @@ from tensortrade.data.source import DataSource
 class DataFeed(DataSource):
 
     def __init__(self, sources: List[DataSource]):
-        super().__init__('feed')
+        super().__init__()
         self._sources = sources
 
     def next(self) -> Dict[str, any]:

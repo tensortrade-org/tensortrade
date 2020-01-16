@@ -1,24 +1,5 @@
 
-
-from typing import List
-
-from tensortrade.data import DataFeed, DataSource
-
-
-class Array(DataSource):
-
-    def __init__(self, array: List[int]):
-        super().__init__('array')
-        self.cursor = 0
-        self.array = array
-
-    def next(self):
-        v = {self.cursor: self.array[self.cursor]}
-        self.cursor += 1
-        return v
-
-    def reset(self):
-        self.cursor = 0
+from tensortrade.data import DataFeed, DataSource, Array
 
 
 def test_init():

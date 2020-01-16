@@ -6,7 +6,7 @@ from typing import Dict, Callable
 from .source import DataSource, DataFrame
 
 from tensortrade.wallets import Portfolio
-from tensortrade.instruments import TradingPair, Price
+from tensortrade.instruments import TradingPair
 
 
 class PortfolioDataSource(DataSource):
@@ -46,7 +46,6 @@ class ExchangeDataSource(DataSource):
         prices = {pair: price * pair for pair, price in prices.items()}
 
         self._prices = prices
-        self.data_frame_ds.reset()
 
     @property
     def prices(self):
@@ -63,3 +62,12 @@ class ExchangeDataSource(DataSource):
 
     def has_next(self) -> bool:
         return self.data_frame_ds.has_next()
+
+    def reset(self):
+        self.data_frame_ds.reset()
+
+        data = self.data_frame_ds.next()
+        prices = self.fetch(data)
+        prices = {pair: price * pair for pair, price in prices.items()}
+
+        self._prices = prices

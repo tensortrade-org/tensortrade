@@ -84,6 +84,3 @@ class DataFrame(DataSource):
 
     def reset(self):
         self._cursor = 0
-
-
-

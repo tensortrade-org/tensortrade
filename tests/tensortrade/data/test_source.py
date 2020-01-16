@@ -8,7 +8,7 @@ from tensortrade.data import Array, DataFrame
 
 def test_array_init():
 
-    array_ds = Array('a1', [1, 2, 3])
+    array_ds = Array([1, 2, 3])
 
     assert array_ds
     assert array_ds._array == [1, 2, 3]
@@ -17,7 +17,7 @@ def test_array_init():
 
 def test_array_next():
 
-    array_ds = Array('a1', [1, 2, 3])
+    array_ds = Array([1, 2, 3])
 
     next_value = array_ds.next()
 
@@ -25,7 +25,7 @@ def test_array_next():
 
 
 def test_array_reset():
-    array_ds = Array('a1', [1, 2, 3])
+    array_ds = Array([1, 2, 3])
     assert array_ds.next() == {0: 1}
     assert array_ds.next() == {1: 2}
     assert array_ds.next() == {2: 3}
@@ -52,7 +52,7 @@ def test_data_frame_init():
     columns = ["open", "high", "low", "close", "volume"]
     data_frame = pd.DataFrame(data, index=index, columns=columns)
 
-    data_frame_ds = DataFrame('a1', data_frame)
+    data_frame_ds = DataFrame(data_frame)
 
     assert data_frame_ds
 
@@ -72,7 +72,7 @@ def test_data_frame_next():
     columns = ["open", "high", "low", "close", "volume"]
     data_frame = pd.DataFrame(data, index=index, columns=columns)
 
-    data_frame_ds = DataFrame('a1', data_frame)
+    data_frame_ds = DataFrame(data_frame)
 
     d1 = data_frame_ds.next()
     assert d1 == {k: v for k, v in zip(columns, data[0, :])}
@@ -93,7 +93,7 @@ def test_data_frame_reset():
     columns = ["open", "high", "low", "close", "volume"]
     data_frame = pd.DataFrame(data, index=index, columns=columns)
 
-    data_frame_ds = DataFrame('a1', data_frame)
+    data_frame_ds = DataFrame(data_frame)
 
     for i in range(5):
         assert data_frame_ds.next() == {k: v for k, v in zip(columns, data[i, :])}
@@ -101,4 +101,3 @@ def test_data_frame_reset():
     data_frame_ds.reset()
     for i in range(5):
         assert data_frame_ds.next() == {k: v for k, v in zip(columns, data[i, :])}
-

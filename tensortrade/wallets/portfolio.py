@@ -121,22 +121,21 @@ class Portfolio(Component, TimedIdentifiable):
         Returns:
             The total portfolio value of the active account on the exchange.
         """
-        net_worth = 0
+        net_worth = 0 * self.base_instrument
 
         if not self._wallets:
-            return net_worth
+            return net_worth.size
 
         for wallet in self._wallets.values():
             if wallet.instrument == self._base_instrument:
-                current_price = 1
+                current_price = 1 * self.base_instrument
             else:
                 pair = TradingPair(self._base_instrument, wallet.instrument)
                 current_price = wallet.exchange.quote_price(pair)
 
-            wallet_balance = wallet.total_balance.size
-            net_worth += current_price * wallet_balance
+            net_worth += current_price * wallet.total_balance
 
-        return net_worth
+        return net_worth.size
 
     @property
     def profit_loss(self) -> float:
