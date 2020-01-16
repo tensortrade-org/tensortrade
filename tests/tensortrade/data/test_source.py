@@ -8,7 +8,7 @@ from tensortrade.data import Array, DataFrame
 
 def test_array_init():
 
-    array_ds = Array([1, 2, 3])
+    array_ds = Array('a', [1, 2, 3])
 
     assert array_ds
     assert array_ds._array == [1, 2, 3]
@@ -17,23 +17,23 @@ def test_array_init():
 
 def test_array_next():
 
-    array_ds = Array([1, 2, 3])
+    array_ds = Array('a', [1, 2, 3])
 
     next_value = array_ds.next()
 
-    assert next_value == {0: 1}
+    assert next_value == {'a': 1}
 
 
 def test_array_reset():
-    array_ds = Array([1, 2, 3])
-    assert array_ds.next() == {0: 1}
-    assert array_ds.next() == {1: 2}
-    assert array_ds.next() == {2: 3}
+    array_ds = Array('a', [1, 2, 3])
+    assert array_ds.next() == {'a': 1}
+    assert array_ds.next() == {'a': 2}
+    assert array_ds.next() == {'a': 3}
 
     array_ds.reset()
-    assert array_ds.next() == {0: 1}
-    assert array_ds.next() == {1: 2}
-    assert array_ds.next() == {2: 3}
+    assert array_ds.next() == {'a': 1}
+    assert array_ds.next() == {'a': 2}
+    assert array_ds.next() == {'a': 3}
 
 
 def test_data_frame_init():

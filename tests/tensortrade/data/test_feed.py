@@ -4,23 +4,24 @@ from tensortrade.data import DataFeed, DataSource, Array
 
 def test_init():
     sources = [
-        Array([1, 2, 3]),
-        Array([4, 5, 6]),
-        Array([7, 8, 9])
+        Array('a1', [1, 2, 3]),
+        Array('a2', [4, 5, 6]),
+        Array('a3', [7, 8, 9])
     ]
-    feed = DataFeed(sources=sources)
+    feed = DataFeed(outputs=sources)
 
     assert feed
 
 
 def test_next():
     sources = [
-        Array([1, 2, 3]),
-        Array([4, 5, 6]),
-        Array([7, 8, 9])
+        Array('a1', [1, 2, 3]),
+        Array('a2', [4, 5, 6]),
+        Array('a3', [7, 8, 9])
     ]
-    feed = DataFeed(sources=sources)
+    feed = DataFeed(inputs=sources)
 
-    assert isinstance(feed, DataSource)
+    data = feed.next()
 
-    feed.next()
+    assert data == {'a1': 1, 'a2': 4, 'a3': 7}
+

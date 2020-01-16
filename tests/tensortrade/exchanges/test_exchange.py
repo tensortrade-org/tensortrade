@@ -22,17 +22,6 @@ class ConcreteExchange(Exchange):
     def is_live(self):
         pass
 
-    @property
-    def observation_columns(self) -> List[str]:
-        pass
-
-    @property
-    def has_next_observation(self) -> bool:
-        pass
-
-    def next_observation(self) -> pd.DataFrame:
-        pass
-
     def quote_price(self, trading_pair: 'TradingPair') -> float:
         pass
 

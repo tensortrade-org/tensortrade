@@ -10,44 +10,66 @@ from tensortrade.base.core import TimeIndexed
 
 class DataSource(TimeIndexed, metaclass=ABCMeta):
 
-    def __init__(self):
-        self._listeners = []
+    count = 0
 
-    def attach(self, listener):
-        self._listeners += [listener]
+    def __init__(self, name: str = None):
+        self._outbound_sources = []
+        self._name = name if name else str(DataSource.count)
+        self._incoming_data = {}
 
-    def detach(self, listener):
-        self._listeners.remove(listener)
+        DataSource.count += 1
 
     @property
     def name(self):
         return self._name
 
-    @name.setter
-    def name(self, name: str):
-        self._name = name
+    def add(self, source: 'DataSource'):
+        self._outbound_sources += [source]
+
+    def use(self, sources: List['DataSource']):
+        for s in sources:
+            s.add(self)
+
+    def send(self, data: dict):
+        for source in self._outbound_sources:
+            source.receive(data)
+
+    def receive(self, data: dict):
+        self._incoming_data.update(data)
+
+    def next(self, ) -> Dict[str, any]:
+        data = self.call(self._incoming_data)
+        self.send(data)
+        self._incoming_data = {}
+        return data
 
     @abstractmethod
-    def next(self) -> Dict[str, any]:
-        raise NotImplementedError
+    def call(self, data: dict):
+        raise NotImplementedError()
 
     @abstractmethod
     def has_next(self) -> bool:
         raise NotImplementedError()
 
-    def reset(self):
-        pass
+    @abstractmethod
+    def reset(self) -> bool:
+        raise NotImplementedError()
+
+    def refresh(self):
+        self.reset()
+        for source in self._outbound_sources:
+            source.refresh()
 
 
 class Array(DataSource):
 
-    def __init__(self, array: List[any]):
-        super().__init__()
+    def __init__(self, name: str, array: List[any] = None):
+        super().__init__(name)
         self._cursor = 0
-        self._array = array
+        self._array = array if array else []
 
-    def next(self) -> Dict:
-        data = {self._cursor: self._array[self._cursor]}
+    def call(self, data: dict) -> Dict:
+        data = {self.name: self._array[self._cursor]}
         self._cursor += 1
         return data
 
@@ -67,14 +89,10 @@ class DataFrame(DataSource):
         self._cursor = 0
         self._data_frame = data_frame
 
-    def next(self) -> Dict[str, any]:
+    def call(self, data: dict) -> Dict[str, any]:
         idx = self._data_frame.index[self._cursor]
         data = dict(self._data_frame.loc[idx, :])
         self._cursor += 1
-
-        for listener in self._listeners:
-            listener.on_next(data)
-
         return data
 
     def has_next(self) -> bool:

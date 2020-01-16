@@ -44,7 +44,6 @@ class Exchange(Component, TimedIdentifiable):
         """
         return self._ds.prices[trading_pair]
 
-    @abstractmethod
     def is_pair_tradable(self, trading_pair: 'TradingPair') -> bool:
         """Whether or not the specified trading pair is tradable on this exchange.
 
@@ -54,7 +53,7 @@ class Exchange(Component, TimedIdentifiable):
         Returns:
             A bool designating whether or not the pair is tradable.
         """
-        raise NotImplementedError()
+        return trading_pair in self._ds.prices.keys()
 
     @abstractmethod
     def execute_order(self, order: 'Order', portfolio: 'Portfolio'):

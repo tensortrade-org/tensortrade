@@ -71,35 +71,40 @@ def portfolio(exchange):
 
 def tests_portfolio_data_source(exchange_ds, exchange, portfolio):
 
-    source = PortfolioDataSource(portfolio)
+    source = PortfolioDataSource(portfolio,
+                                 fetch=lambda x: {
+                                     USD/BTC: x['BTC:close'],
+                                     USD/ETH: x['ETH:close']
+                                 })
+    source.use([exchange_ds])
+
+    feed = DataFeed(inputs=[exchange_ds], outputs=[source])
 
     btc_price_0 = 13480.01
     eth_price_0 = 11.25
 
     net_worth = 10000.00 + (10.00000000 * btc_price_0) + (200.00000000 * eth_price_0)
 
-    assert source
-    assert source.next() == {'USD': 10000.00, 'USD_pending': 0.00,
-                             'BTC': 10.00000000, 'BTC_pending': 0.00000000,
-                             'ETH': 200.00000000, 'ETH_pending': 0.00000000,
-                             'net_worth': net_worth}
+    assert feed
+    assert feed.next() == {'USD': 10000.00, 'USD_pending': 0.00,
+                           'BTC': 10.00000000, 'BTC_pending': 0.00000000,
+                           'ETH': 200.00000000, 'ETH_pending': 0.00000000,
+                           'net_worth': net_worth}
 
     wallet_usd = portfolio.get_wallet(exchange.id, USD)
 
     wallet_usd -= 1000*USD
     wallet_usd += Quantity(USD, 1000, path_id="fake_path_id")
 
-    exchange_ds.next()
-
     btc_price_1 = 14781.51
     eth_price_1 = 11.93
 
-    net_worth = 10000.00 + (10.00000000 * btc_price_1) + (200.00000000 * eth_price_1)
+    net_worth = 10000 + (10 * btc_price_1) + (200 * eth_price_1)
 
-    assert source.next() == {'USD': 9000.00, 'USD_pending': 1000.00,
-                             'BTC': 10.00000000, 'BTC_pending': 0.00000000,
-                             'ETH': 200.00000000, 'ETH_pending': 0.00000000,
-                             'net_worth': net_worth}
+    assert feed.next() == {'USD': 9000.00, 'USD_pending': 1000.00,
+                           'BTC': 10.00000000, 'BTC_pending': 0.00000000,
+                           'ETH': 200.00000000, 'ETH_pending': 0.00000000,
+                           'net_worth': net_worth}
 
 
 def test_internal_data_feed(data_frame):
@@ -118,10 +123,17 @@ def test_internal_data_feed(data_frame):
         Wallet(exchange, 200 * ETH)
     ])
 
-    feed = DataFeed(sources=[
-        exchange_ds,
-        PortfolioDataSource(portfolio)
-    ])
+    portfolio_ds = PortfolioDataSource(portfolio=portfolio,
+                                       fetch=lambda x: {
+                                           USD/BTC: x['BTC:close'],
+                                           USD/ETH: x['ETH:close']
+                                       })
+    portfolio_ds.use([exchange_ds])
+
+    feed = DataFeed(
+        inputs=[exchange_ds],
+        outputs=[exchange_ds, portfolio_ds]
+    )
 
     d = feed.next()
 
