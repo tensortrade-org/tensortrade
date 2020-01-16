@@ -63,7 +63,7 @@ def test_cancel_unexecuted_order(mock_order_class,
     broker.submit(order)
     assert order in broker.unexecuted
 
-    broker.cancel(order, exchange)
+    broker.cancel(order)
     assert order not in broker.unexecuted
     order.cancel.assert_called_once_with(exchange)
 
@@ -84,19 +84,19 @@ def test_cancel_executed_order(mock_order_class,
 
     order.status = OrderStatus.OPEN
     with pytest.raises(Warning):
-        broker.cancel(order, exchange)
+        broker.cancel(order)
 
     order.status = OrderStatus.PARTIALLY_FILLED
     with pytest.raises(Warning):
-        broker.cancel(order, exchange)
+        broker.cancel(order)
 
     order.status = OrderStatus.FILLED
     with pytest.raises(Warning):
-        broker.cancel(order, exchange)
+        broker.cancel(order)
 
     order.status = OrderStatus.CANCELLED
     with pytest.raises(Warning):
-        broker.cancel(order, exchange)
+        broker.cancel(order)
 
 
 @mock.patch('tensortrade.orders.Order')

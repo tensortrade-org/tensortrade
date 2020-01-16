@@ -13,6 +13,7 @@
 # limitations under the License
 
 
+from datetime import datetime
 from itertools import product
 from typing import Union, List, Dict
 
@@ -61,7 +62,7 @@ class Broker(OrderListener, TimeIndexed):
     def submit(self, order: Order):
         self._unexecuted += [order]
 
-    def cancel(self, order: Order, exchange: 'Exchange'):
+    def cancel(self, order: Order):
         if order.status == OrderStatus.CANCELLED:
             raise Warning(
                 'Cannot cancel order {} - order has already been cancelled.'.format(order.id))
@@ -72,7 +73,7 @@ class Broker(OrderListener, TimeIndexed):
 
         self._unexecuted.remove(order)
 
-        order.cancel(exchange)
+        order.cancel()
 
     def update(self):
         for order, exchange in product(self._unexecuted, self._exchanges):
@@ -82,6 +83,14 @@ class Broker(OrderListener, TimeIndexed):
 
                 order.attach(self)
                 order.execute(exchange)
+
+        for order in self._unexecuted + list(self._executed.values()):
+            order_expired = (datetime.now() -
+                             order.created_at).total_seconds() > order.ttl_in_seconds
+            order_active = order.status not in [OrderStatus.FILLED, OrderStatus.CANCELLED]
+
+            if order_active and order_expired:
+                order.cancel()
 
     def on_fill(self, order: Order, exchange: 'Exchange', trade: 'Trade'):
         if trade.order_id in self._executed and trade not in self._trades:

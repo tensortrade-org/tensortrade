@@ -444,9 +444,9 @@ def test_cancel(mock_order_listener_class,
     assert base_wallet.locked[order.path_id] == 7.42 * USD
     assert quote_wallet.balance == 0 * BTC
     assert quote_wallet.locked[order.path_id] == 0.73925519 * BTC
-    order.cancel(exchange)
+    order.cancel()
 
-    listener.on_cancel.assert_called_once_with(order, exchange)
+    listener.on_cancel.assert_called_once_with(order)
     assert base_wallet.balance == 4807.42 * USD
     assert order.path_id not in base_wallet.locked
     assert quote_wallet.balance == 0.73925519 * BTC

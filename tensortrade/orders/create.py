@@ -41,14 +41,16 @@ def limit_order(step: int,
                 pair: 'TradingPair',
                 price: float,
                 size: float,
-                portfolio: 'Portfolio'):
+                portfolio: 'Portfolio',
+                ttl_in_seconds: int = None):
 
     order = Order(step=step,
                   side=side,
                   trade_type=TradeType.LIMIT,
                   pair=pair,
                   price=price,
-                  quantity=(size * pair.base),
+                  quantity=(size*pair.base),
+                  ttl_in_seconds=ttl_in_seconds,
                   portfolio=portfolio
                   )
     return order
@@ -59,14 +61,16 @@ def hidden_limit_order(step: int,
                        pair: 'TradingPair',
                        price: float,
                        size: float,
-                       portfolio: 'Portfolio'):
+                       portfolio: 'Portfolio',
+                       ttl_in_seconds: int = None):
 
     order = Order(step=step,
                   side=side,
                   trade_type=TradeType.MARKET,
                   pair=pair,
                   price=price,
-                  quantity=(size * pair.base),
+                  quantity=(size*pair.base),
+                  ttl_in_seconds=ttl_in_seconds,
                   portfolio=portfolio,
                   criteria=Limit(limit_price=price)
                   )
@@ -82,13 +86,15 @@ def risk_managed_order(step: int,
                        size: float,
                        down_percent: float,
                        up_percent: float,
-                       portfolio: 'Portfolio'):
+                       portfolio: 'Portfolio',
+                       ttl_in_seconds: int = None):
 
     order = Order(step=step,
                   side=side,
                   trade_type=trade_type,
                   pair=pair,
                   price=price,
+                  ttl_in_seconds=ttl_in_seconds,
                   quantity=(size * pair.base),
                   portfolio=portfolio)
 

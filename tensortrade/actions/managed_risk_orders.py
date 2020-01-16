@@ -134,7 +134,8 @@ class ManagedRiskOrders(ActionScheme):
             'size': size,
             'down_percent': stop_loss,
             'up_percent': take_profit,
-            'portfolio': portfolio
+            'portfolio': portfolio,
+            'ttl_in_seconds': 60,
         }
 
         order = risk_managed_order(**params)

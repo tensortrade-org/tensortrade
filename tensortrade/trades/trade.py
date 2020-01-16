@@ -131,7 +131,8 @@ class Trade(TimedIdentifiable):
                 'size': self.size,
                 'quantity': self.quantity,
                 'price': self.price,
-                'commission': self.commission
+                'commission': self.commission,
+                "created_at": self.created_at
                 }
 
     def to_json(self):
@@ -145,7 +146,8 @@ class Trade(TimedIdentifiable):
                 'size': str(self.size),
                 'quantity': str(self.quantity),
                 'price': str(self.price),
-                'commission': str(self.commission)
+                'commission': str(self.commission),
+                "created_at": str(self.created_at.strftime("%H:%M:%S"))
                 }
 
     def __str__(self):

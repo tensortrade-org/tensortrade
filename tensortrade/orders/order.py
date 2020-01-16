@@ -53,7 +53,8 @@ class Order(TimedIdentifiable):
                  portfolio: 'Portfolio',
                  price: float,
                  criteria: Callable[['Order', 'Exchange'], bool] = None,
-                 path_id: str = None):
+                 path_id: str = None,
+                 ttl_in_seconds: int = None):
         if quantity.size == 0:
             raise InvalidOrderQuantity(quantity)
 
@@ -66,6 +67,7 @@ class Order(TimedIdentifiable):
         self.price = price
         self.criteria = criteria
         self.path_id = path_id or self.id
+        self.ttl_in_seconds = ttl_in_seconds
         self.status = OrderStatus.PENDING
 
         self.filled_size = 0
@@ -187,11 +189,11 @@ class Order(TimedIdentifiable):
 
         return order or self.release()
 
-    def cancel(self, exchange: 'Exchange'):
+    def cancel(self):
         self.status = OrderStatus.CANCELLED
 
         for listener in self._listeners or []:
-            listener.on_cancel(self, exchange)
+            listener.on_cancel(self)
 
         self._listeners = []
         self.release()
@@ -213,7 +215,8 @@ class Order(TimedIdentifiable):
             "filled_size": self.filled_size,
             "price": self.price,
             "criteria": self.criteria,
-            "path_id": self.path_id
+            "path_id": self.path_id,
+            "created_at": self.created_at
         }
 
     def to_json(self):
@@ -230,7 +233,8 @@ class Order(TimedIdentifiable):
             "filled_size": str(self.filled_size),
             "price": str(self.price),
             "criteria": str(self.criteria),
-            "path_id": str(self.path_id)
+            "path_id": str(self.path_id),
+            "created_at": str(self.created_at.strftime("%H:%M:%S"))
         }
 
     def __iadd__(self, recipe: 'OrderSpec') -> 'Order':
