@@ -85,6 +85,8 @@ class Broker(OrderListener, TimeIndexed):
                 order.execute(exchange)
 
         for order in self._unexecuted + list(self._executed.values()):
+            order_expired = False
+
             if order.ttl_in_seconds:
                 seconds_passed = (datetime.now() - order.created_at).total_seconds()
                 order_expired = seconds_passed > order.ttl_in_seconds
