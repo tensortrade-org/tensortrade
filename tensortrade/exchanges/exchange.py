@@ -13,10 +13,9 @@
 # limitations under the License.
 
 from abc import abstractmethod
-from typing import Dict, Callable
 
 from tensortrade.base import Component, TimedIdentifiable
-from tensortrade.data import DataSource
+from tensortrade.data import ExchangeDataSource
 from tensortrade.instruments import TradingPair, Price
 
 
@@ -26,14 +25,8 @@ class Exchange(Component, TimedIdentifiable):
     registered_name = "exchanges"
 
     def __init__(self,
-                 source: DataSource,
-                 extract: Callable[[dict], Dict[TradingPair, Price]]):
-        source.attach(self)
-        self._extract = extract
-        self._prices = None
-
-    def on_next(self, data: dict):
-        self._prices = self._extract(data)
+                 ds: ExchangeDataSource):
+        self._ds = ds
 
     @property
     @abstractmethod
@@ -49,8 +42,7 @@ class Exchange(Component, TimedIdentifiable):
         Returns:
             The quote price of the specified trading pair, denoted in the base instrument.
         """
-        if self._prices:
-            return Price(self._prices[trading_pair], trading_pair)
+        return self._ds.prices[trading_pair]
 
     @abstractmethod
     def is_pair_tradable(self, trading_pair: 'TradingPair') -> bool:

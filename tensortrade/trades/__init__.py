@@ -1,1 +1,1 @@
-from .trade import Trade, TradeSide, TradeType
+from .trade import Trade, TradeSide, TradeType, TradeOptions

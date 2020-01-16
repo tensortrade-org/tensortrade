@@ -10,8 +10,7 @@ from tensortrade.base.core import TimeIndexed
 
 class DataSource(TimeIndexed, metaclass=ABCMeta):
 
-    def __init__(self, name):
-        self.name = name
+    def __init__(self):
         self._listeners = []
 
     def attach(self, listener):
@@ -42,8 +41,8 @@ class DataSource(TimeIndexed, metaclass=ABCMeta):
 
 class Array(DataSource):
 
-    def __init__(self, name: str, array: List[any]):
-        super().__init__(name)
+    def __init__(self, array: List[any]):
+        super().__init__()
         self._cursor = 0
         self._array = array
 
@@ -63,8 +62,8 @@ class Array(DataSource):
 
 class DataFrame(DataSource):
 
-    def __init__(self, name: str, data_frame: pd.DataFrame):
-        super().__init__(name)
+    def __init__(self, data_frame: pd.DataFrame):
+        super().__init__()
         self._cursor = 0
         self._data_frame = data_frame
 

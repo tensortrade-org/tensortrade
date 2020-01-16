@@ -1,9 +1,10 @@
 
-from tensortrade.data.stochastic.cox import cox
+
+from tensortrade.data.stochastic import ornstein
 
 
 def test_shape():
-    frame = cox(
+    frame = ornstein(
         base_price=7000,
         base_volume=15000,
         start_date='2018-01-01',

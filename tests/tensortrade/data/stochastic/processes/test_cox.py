@@ -1,10 +1,9 @@
 
-
-from tensortrade.data.stochastic.heston import heston
+from tensortrade.data.stochastic import cox
 
 
 def test_shape():
-    frame = heston(
+    frame = cox(
         base_price=7000,
         base_volume=15000,
         start_date='2018-01-01',

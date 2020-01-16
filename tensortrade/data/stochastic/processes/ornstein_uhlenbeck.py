@@ -12,31 +12,53 @@
 # See the License for the specific language governing permissions and
 # limitations under the License
 
+import numpy as np
 import pandas as pd
 
 from stochastic.noise import GaussianNoise
-from stochastic.continuous import FractionalBrownianMotion
 
-from .utils.helpers import scale_times_to_generate
+from tensortrade.data.stochastic.utils.brownian_motion import brownian_motion_log_returns
+from tensortrade.data.stochastic.utils.helpers import get_delta, scale_times_to_generate
+from tensortrade.data.stochastic.utils.parameters import ModelParameters, default
 
 
-def fbm(base_price: int = 1,
-        base_volume: int = 1,
-        start_date: str = '2010-01-01',
-        start_date_format: str = '%Y-%m-%d',
-        times_to_generate: int = 1000,
-        hurst: float = 0.61,
-        time_frame: str = '1h'):
+def ornstein_uhlenbeck_levels(params):
+    """
+    Constructs the rate levels of a mean-reverting ornstein uhlenbeck process.
 
+    Arguments:
+        params : ModelParameters
+            The parameters for the stochastic model.
+
+    Returns:
+        The interest rate levels for the Ornstein Uhlenbeck process
+    """
+    ou_levels = [params.all_r0]
+    brownian_motion_returns = brownian_motion_log_returns(params)
+    for i in range(1, params.all_time):
+        drift = params.ou_a * (params.ou_mu - ou_levels[i - 1]) * params.all_delta
+        randomness = brownian_motion_returns[i - 1]
+        ou_levels.append(ou_levels[i - 1] + drift + randomness)
+    return np.array(ou_levels)
+
+
+def ornstein(base_price: int = 1,
+             base_volume: int = 1,
+             start_date: str = '2010-01-01',
+             start_date_format: str = '%Y-%m-%d',
+             times_to_generate: int = 1000,
+             time_frame: str = '1h',
+             params: ModelParameters = None):
+
+    delta = get_delta(time_frame)
     times_to_generate = scale_times_to_generate(times_to_generate, time_frame)
 
-    price_fbm = FractionalBrownianMotion(t=times_to_generate, hurst=hurst)
-    price_volatility = price_fbm.sample(times_to_generate, zero=False)
-    prices = price_volatility + base_price
+    params = params or default(base_price, times_to_generate, delta)
 
-    volume_gen = GaussianNoise(times_to_generate)
-    volume_volatility = volume_gen.sample(times_to_generate)
-    volumes = volume_volatility * price_volatility + base_volume
+    prices = ornstein_uhlenbeck_levels(params)
+
+    volume_gen = GaussianNoise(t=times_to_generate)
+    volumes = volume_gen.sample(times_to_generate) + base_volume
 
     start_date = pd.to_datetime(start_date, format=start_date_format)
     price_frame = pd.DataFrame([], columns=['date', 'price'], dtype=float)

@@ -14,8 +14,10 @@
 
 
 import logging
+import gym
 import numpy as np
 
+from gym.spaces import Discrete
 from typing import Union, Tuple, List, Dict
 
 import tensortrade.actions as actions
@@ -31,7 +33,7 @@ from tensortrade.wallets import Portfolio
 from tensortrade.environments.history import History
 
 
-class TradingEnvironment(TimeIndexed):
+class TradingEnvironment(gym.Env, TimeIndexed):
     """A trading environments made for use with Gym-compatible reinforcement learning algorithms."""
 
     def __init__(self,
@@ -40,6 +42,7 @@ class TradingEnvironment(TimeIndexed):
                  reward_scheme: Union[RewardScheme, str],
                  feed: DataFeed,
                  window_size: int = 1,
+                 history: History = None,
                  **kwargs):
         """
         Arguments:
@@ -57,7 +60,7 @@ class TradingEnvironment(TimeIndexed):
         self.action_scheme.over(exchange_pairs=self.portfolio.exchange_pairs)
         self.reward_scheme = reward_scheme
         self.feed = feed
-        self.history = History(window_size=window_size)
+        self.history = history if history else History(window_size=window_size)
         self._broker = Broker(exchanges=self.portfolio.exchanges)
 
         self.render_benchmarks: List[Dict] = kwargs.get('render_benchmarks', [])
@@ -70,6 +73,14 @@ class TradingEnvironment(TimeIndexed):
             self.logger.setLevel(kwargs.get('log_level', logging.DEBUG))
 
         logging.getLogger('tensorflow').disabled = kwargs.get('disable_tensorflow_logger', True)
+
+    @property
+    def action_space(self):
+        return Discrete(len(self.action_scheme))
+
+    @property
+    def observation_shape(self):
+        obs = self.observation_shape
 
     @property
     def window_size(self) -> int:
@@ -178,7 +189,7 @@ class TradingEnvironment(TimeIndexed):
         """Returns any auxiliary, diagnostic, or debugging information for the current timestep.
 
         Args:
-            order: The order created during the currente timestep.
+            order: The order created during the current timestep.
 
         Returns:
             info: A dictionary containing the exchange used, the portfolio, the broker,
@@ -190,6 +201,9 @@ class TradingEnvironment(TimeIndexed):
             'broker': self._broker,
             'order': order,
         }
+
+    def compile(self):
+        obs = self.feed.next()
 
     def step(self, action: int) -> Tuple[np.array, float, bool, dict]:
         """Run one timestep within the environments based on the specified action.
@@ -211,9 +225,9 @@ class TradingEnvironment(TimeIndexed):
         info = self._info(order)
 
         if self._enable_logger:
-            self.logger.debug('Order: {}'.format(order))
+            self.logger.debug('Order:       {}'.format(order))
             self.logger.debug('Observation: {}'.format(observation))
-            self.logger.debug('P/L: {}'.format(self._portfolio.profit_loss))
+            self.logger.debug('P/L:         {}'.format(self._portfolio.profit_loss))
             self.logger.debug('Reward ({}): {}'.format(self.clock.step, reward))
             self.logger.debug('Performance: {}'.format(self._portfolio.performance.tail(1)))
 

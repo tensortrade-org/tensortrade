@@ -15,29 +15,28 @@
 import pandas as pd
 
 from stochastic.noise import GaussianNoise
+from stochastic.continuous import FractionalBrownianMotion
 
-from .heston import geometric_brownian_motion_jump_diffusion_levels
-from .utils.helpers import get_delta, scale_times_to_generate
-from .utils.parameters import ModelParameters, default
+from tensortrade.data.stochastic.utils.helpers import scale_times_to_generate
 
 
-def merton(base_price: int = 1,
-           base_volume: int = 1,
-           start_date: str = '2010-01-01',
-           start_date_format: str = '%Y-%m-%d',
-           times_to_generate: int = 1000,
-           time_frame: str = '1h',
-           params: ModelParameters = None):
+def fbm(base_price: int = 1,
+        base_volume: int = 1,
+        start_date: str = '2010-01-01',
+        start_date_format: str = '%Y-%m-%d',
+        times_to_generate: int = 1000,
+        hurst: float = 0.61,
+        time_frame: str = '1h'):
 
-    delta = get_delta(time_frame)
     times_to_generate = scale_times_to_generate(times_to_generate, time_frame)
 
-    params = params or default(base_price, times_to_generate, delta)
+    price_fbm = FractionalBrownianMotion(t=times_to_generate, hurst=hurst)
+    price_volatility = price_fbm.sample(times_to_generate, zero=False)
+    prices = price_volatility + base_price
 
-    prices = geometric_brownian_motion_jump_diffusion_levels(params)
-
-    volume_gen = GaussianNoise(t=times_to_generate)
-    volumes = volume_gen.sample(times_to_generate) + base_volume
+    volume_gen = GaussianNoise(times_to_generate)
+    volume_volatility = volume_gen.sample(times_to_generate)
+    volumes = volume_volatility * price_volatility + base_volume
 
     start_date = pd.to_datetime(start_date, format=start_date_format)
     price_frame = pd.DataFrame([], columns=['date', 'price'], dtype=float)

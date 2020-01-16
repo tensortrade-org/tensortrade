@@ -17,7 +17,7 @@ from enum import Enum
 from typing import Callable
 
 from tensortrade.base import TimedIdentifiable
-from tensortrade.base.exceptions import InvalidOrderQuantity, InsufficientFundsForAllocation
+from tensortrade.base.exceptions import InvalidOrderQuantity, InsufficientFunds
 from tensortrade.instruments import Quantity
 from tensortrade.trades import Trade, TradeSide, TradeType
 
@@ -141,7 +141,7 @@ class Order(TimedIdentifiable):
         if self.path_id not in wallet.locked.keys():
             try:
                 wallet -= self.size * instrument
-            except InsufficientFundsForAllocation:
+            except InsufficientFunds:
                 size = wallet.balance.size
                 wallet -= size * instrument
                 self.quantity = Quantity(instrument, size, path_id=self.path_id)

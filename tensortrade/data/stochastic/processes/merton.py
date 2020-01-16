@@ -12,50 +12,29 @@
 # See the License for the specific language governing permissions and
 # limitations under the License
 
-import numpy as np
 import pandas as pd
 
 from stochastic.noise import GaussianNoise
 
-from .utils.brownian_motion import brownian_motion_log_returns
-from .utils.helpers import get_delta, scale_times_to_generate
-from .utils.parameters import ModelParameters, default
+from tensortrade.data.stochastic.processes.heston import geometric_brownian_motion_jump_diffusion_levels
+from tensortrade.data.stochastic.utils.helpers import get_delta, scale_times_to_generate
+from tensortrade.data.stochastic.utils.parameters import ModelParameters, default
 
 
-def ornstein_uhlenbeck_levels(params):
-    """
-    Constructs the rate levels of a mean-reverting ornstein uhlenbeck process.
-
-    Arguments:
-        params : ModelParameters
-            The parameters for the stochastic model.
-
-    Returns:
-        The interest rate levels for the Ornstein Uhlenbeck process
-    """
-    ou_levels = [params.all_r0]
-    brownian_motion_returns = brownian_motion_log_returns(params)
-    for i in range(1, params.all_time):
-        drift = params.ou_a * (params.ou_mu - ou_levels[i - 1]) * params.all_delta
-        randomness = brownian_motion_returns[i - 1]
-        ou_levels.append(ou_levels[i - 1] + drift + randomness)
-    return np.array(ou_levels)
-
-
-def ornstein(base_price: int = 1,
-             base_volume: int = 1,
-             start_date: str = '2010-01-01',
-             start_date_format: str = '%Y-%m-%d',
-             times_to_generate: int = 1000,
-             time_frame: str = '1h',
-             params: ModelParameters = None):
+def merton(base_price: int = 1,
+           base_volume: int = 1,
+           start_date: str = '2010-01-01',
+           start_date_format: str = '%Y-%m-%d',
+           times_to_generate: int = 1000,
+           time_frame: str = '1h',
+           params: ModelParameters = None):
 
     delta = get_delta(time_frame)
     times_to_generate = scale_times_to_generate(times_to_generate, time_frame)
 
     params = params or default(base_price, times_to_generate, delta)
 
-    prices = ornstein_uhlenbeck_levels(params)
+    prices = geometric_brownian_motion_jump_diffusion_levels(params)
 
     volume_gen = GaussianNoise(t=times_to_generate)
     volumes = volume_gen.sample(times_to_generate) + base_volume

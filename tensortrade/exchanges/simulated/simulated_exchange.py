@@ -13,16 +13,12 @@
 # limitations under the License
 
 
-import numpy as np
-import pandas as pd
 import tensortrade.slippage as slippage
 
-from typing import List, Callable, Dict
+import tensortrade.exchanges.services.execution.simulated as services
 
-from tensortrade.base.exceptions import InsufficientFundsForAllocation
-from tensortrade.data import DataSource
-from tensortrade.trades import Trade, TradeType, TradeSide
-from tensortrade.instruments import TradingPair, Quantity, Price
+from tensortrade.data import ExchangeDataSource
+from tensortrade.trades import TradeOptions
 from tensortrade.exchanges import Exchange
 from tensortrade.instruments import USD, BTC
 
@@ -35,15 +31,16 @@ class SimulatedExchange(Exchange):
     the exchange can be used within a trading environments.
     """
 
-    def __init__(self, source: DataSource, extract: Callable[[dict], Dict[TradingPair, Price]], **kwargs):
-        super().__init__(source, extract)
+    def __init__(self, source: ExchangeDataSource, **kwargs):
+        super().__init__(source)
         self._commission = self.default('commission', 0.003, kwargs)
-        self._base_instrument = self.default('base_instrument', USD, kwargs)
-        self._quote_instrument = self.default('quote_instrument', BTC, kwargs)
-        self._min_trade_size = self.default('min_trade_size', 1e-6, kwargs)
-        self._max_trade_size = self.default('max_trade_size', 1e6, kwargs)
-        self._min_trade_price = self.default('min_trade_price', 1e-8, kwargs)
-        self._max_trade_price = self.default('max_trade_price', 1e8, kwargs)
+
+        self._trade_options = TradeOptions(
+            min_trade_size=self.default('min_trade_size', 1e-6, kwargs),
+            max_trade_size=self.default('max_trade_size', 1e6, kwargs),
+            min_trade_price=self.default('min_trade_price', 1e-8, kwargs),
+            max_trade_price=self.default('max_trade_price', 1e8, kwargs)
+        )
 
         slippage_model = self.default('slippage_model', 'uniform', kwargs)
         self._slippage_model = slippage.get(slippage_model) if isinstance(
@@ -53,106 +50,21 @@ class SimulatedExchange(Exchange):
     def is_live(self):
         return False
 
-    def is_pair_tradable(self, pair: TradingPair) -> bool:
-        return pair.base == self._base_instrument and pair.quote == self._quote_instrument
-
-    def _contain_price(self, price: float) -> float:
-        return max(min(price, self._max_trade_price), self._min_trade_price)
-
-    def _contain_size(self, size: float) -> float:
-        return max(min(size, self._max_trade_size), self._min_trade_size)
-
-    def _execute_buy_order(self, order: 'Order', base_wallet: 'Wallet', quote_wallet: 'Wallet', current_price: float) -> Trade:
-        price = self._contain_price(current_price)
-
-        if order.type == TradeType.LIMIT and order.price < current_price:
-            return None
-
-        commission = Quantity(order.pair.base, order.size * self._commission, order.path_id)
-        base_size = self._contain_size(order.size - commission.size)
-
-        if order.type == TradeType.MARKET:
-            scale = order.price / price
-            base_size = self._contain_size(scale * order.size - commission.size)
-
-        base_wallet -= commission
-
-        try:
-            quantity = Quantity(order.pair.base, base_size, order.path_id)
-            base_wallet -= quantity
-        except InsufficientFundsForAllocation:
-            balance = base_wallet.locked[order.path_id]
-            quantity = Quantity(order.pair.base, balance.size, order.path_id)
-            base_wallet -= quantity
-
-        quote_size = (order.price / price) * (quantity.size / price)
-        quote_wallet += Quantity(order.pair.quote, quote_size, order.path_id)
-
-        trade = Trade(order_id=order.id,
-                      exchange_id=self.id,
-                      step=self.clock.step,
-                      pair=order.pair,
-                      side=TradeSide.BUY,
-                      trade_type=order.type,
-                      quantity=quantity,
-                      price=price,
-                      commission=commission)
-
-        # self._slippage_model.adjust_trade(trade)
-
-        return trade
-
-    def _execute_sell_order(self,
-                            order: 'Order',
-                            base_wallet: 'Wallet',
-                            quote_wallet: 'Wallet',
-                            current_price: 'Price') -> Trade:
-        price = self._contain_price(current_price)
-
-        if order.type == TradeType.LIMIT and order.price > current_price:
-            return None
-
-        commission = Quantity(order.pair.base, order.size * self._commission, order.path_id)
-        size = self._contain_size(order.size - commission.size)
-        quantity = Quantity(order.pair.base, size, order.path_id)
-
-        try:
-            quote_size = quantity.size / price * (price / order.price)
-            quote_wallet -= Quantity(order.pair.quote, quote_size, order.path_id)
-        except InsufficientFundsForAllocation:
-            balance = quote_wallet.locked[order.path_id]
-            quantity = Quantity(order.pair.quote, balance.size, order.path_id)
-            quote_wallet -= quantity
-
-        base_wallet += quantity
-        base_wallet -= commission
-
-        trade = Trade(order_id=order.id,
-                      exchange_id=self.id,
-                      step=self.clock.step,
-                      pair=order.pair,
-                      side=TradeSide.SELL,
-                      trade_type=order.type,
-                      quantity=quantity,
-                      price=price,
-                      commission=commission)
-
-        # self._slippage_model.adjust_trade(trade)
-
-        return trade
+    def is_pair_tradable(self, pair: 'TradingPair') -> bool:
+        return pair in self._ds.prices.keys()
 
     def execute_order(self, order: 'Order', portfolio: 'Portfolio'):
-        base_wallet = portfolio.get_wallet(self.id, order.pair.base)
-        quote_wallet = portfolio.get_wallet(self.id, order.pair.quote)
-        current_price = self.quote_price(order.pair)
-        print(current_price)
 
-        if order.is_buy:
-            trade = self._execute_buy_order(order, base_wallet, quote_wallet, current_price)
-        elif order.is_sell:
-            trade = self._execute_sell_order(order, base_wallet, quote_wallet, current_price)
-        else:
-            trade = None
+        trade = services.execute_order(
+            order=order,
+            base_wallet=portfolio.get_wallet(self.id, order.pair.base),
+            quote_wallet=portfolio.get_wallet(self.id, order.pair.quote),
+            current_price=self.quote_price(order.pair).rate,
+            commission=self._commission,
+            options=self._trade_options,
+            exchange_id=self.id,
+            clock=self.clock
+        )
 
         if trade:
             order.fill(self, trade)

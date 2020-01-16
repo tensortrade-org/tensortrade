@@ -17,9 +17,9 @@ import pandas as pd
 
 from stochastic.noise import GaussianNoise
 
-from .utils.brownian_motion import brownian_motion_log_returns
-from .utils.helpers import get_delta, scale_times_to_generate, convert_to_prices
-from .utils.parameters import ModelParameters, default
+from tensortrade.data.stochastic.utils.brownian_motion import brownian_motion_log_returns
+from tensortrade.data.stochastic.utils.helpers import get_delta, scale_times_to_generate, convert_to_prices
+from tensortrade.data.stochastic.utils.parameters import ModelParameters, default
 
 
 def geometric_brownian_motion_log_returns(params: ModelParameters):

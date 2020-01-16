@@ -1,10 +1,12 @@
 
+import pytest
 
-from tensortrade.data.stochastic.gbm import gbm
+from tensortrade.data.stochastic import merton
 
 
+@pytest.mark.skip("Takes too long.")
 def test_shape():
-    frame = gbm(
+    frame = merton(
         base_price=7000,
         base_volume=15000,
         start_date='2018-01-01',

@@ -78,7 +78,7 @@ class IncompatibleRecipePath(Exception):
 # =============================================================================
 # Wallet Exceptions
 # =============================================================================
-class InsufficientFundsForAllocation(Exception):
+class InsufficientFunds(Exception):
 
     def __init__(self, balance, size, *args):
         super().__init__(

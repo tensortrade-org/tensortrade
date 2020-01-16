@@ -2,7 +2,7 @@
 import pytest
 import pandas as pd
 
-from tensortrade.base.exceptions import InsufficientFundsForAllocation, IncompatibleInstrumentOperation
+from tensortrade.base.exceptions import InsufficientFunds, IncompatibleInstrumentOperation
 from tensortrade.data import DataFrame
 from tensortrade.exchanges.simulated import SimulatedExchange
 from tensortrade.wallets import Wallet
@@ -109,13 +109,13 @@ def test_invalid_isub():
     wallet += Quantity(USD, 500, path_id=path_id)
     wallet += Quantity(USD, 700, path_id=other_id)
 
-    with pytest.raises(InsufficientFundsForAllocation):
+    with pytest.raises(InsufficientFunds):
         wallet -= 11000 * USD
 
-    with pytest.raises(InsufficientFundsForAllocation):
+    with pytest.raises(InsufficientFunds):
         wallet -= Quantity(USD, 750, path_id)
 
-    with pytest.raises(InsufficientFundsForAllocation):
+    with pytest.raises(InsufficientFunds):
         wallet -= Quantity(USD, 750, path_id)
 
     with pytest.raises(IncompatibleInstrumentOperation):
