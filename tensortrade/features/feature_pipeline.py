@@ -1,16 +1,3 @@
-# Copyright 2019 The TensorTrade Authors.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
 
 import pandas as pd
 import numpy as np
@@ -42,10 +29,23 @@ class FeaturePipeline(Component):
     def steps(self, steps: List[FeatureTransformer]):
         self._steps = steps
 
+    @property
+    def observation_columns(self) -> pd.DataFrame:
+        ret = [] 
+        for transformer in self._steps:
+            ret+= transformer.observation_columns()
+        return ret 
+        
     def reset(self):
         """Reset all transformers within the feature pipeline."""
         for transformer in self._steps:
             transformer.reset()
+
+    def transform_spaces(self, low, high):
+        """Transforms bounding space same as observations to reflect the post processed data""" 
+        for transformer in self._steps: 
+            low, high = transformer.transform_spaces(low, high)
+        return low,high 
 
     def _transform(self, observations: pd.DataFrame) -> pd.DataFrame:
         """Utility method for transforming observations via a list of `FeatureTransformer` objects."""

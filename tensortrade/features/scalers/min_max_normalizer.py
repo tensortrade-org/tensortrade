@@ -44,6 +44,18 @@ class MinMaxNormalizer(FeatureTransformer):
         self._input_max = input_max
         self._feature_min = feature_min
         self._feature_max = feature_max
+    
+    def transform_spaces(self, low, high):
+        #transforms observation space bounds to feature_min and max
+        new_low, new_high = low.copy(), high.copy()
+        scale = (self._feature_max - self._feature_min) + self._feature_min
+
+
+        new_low = (new_low-low) /(high-low) * scale
+        new_high = (new_high-low) /(high-low) * scale
+
+        return new_low, new_high
+
 
         if feature_min >= feature_max:
             raise ValueError("feature_min must be less than feature_max")
@@ -61,11 +73,10 @@ class MinMaxNormalizer(FeatureTransformer):
             if high - low == 0:
                 normalized_column = (1/len(X[column])) * scale
             else:
-                normalized_column = (X[column] - low) / (high - low) * scale
-
+                normalized_column = np.abs((X[column] - low) / (high - low) * scale)
             if not self._inplace:
                 column = '{}_minmax_{}_{}'.format(column, self._feature_min, self._feature_max)
-
+            
             args = {}
             args[column] = normalized_column + self._feature_min
 
