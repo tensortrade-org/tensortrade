@@ -33,10 +33,10 @@ class OrderSpec(Identifiable):
         self.criteria = criteria
 
     def create_order(self, order: 'Order', exchange: 'Exchange') -> 'Order':
-        base_instrument = self.pair.base if self.side == TradeSide.BUY else self.pair.quote
+        wallet_instrument = self.pair.base if self.side == TradeSide.BUY else self.pair.quote
 
-        wallet = order.portfolio.get_wallet(exchange.id, instrument=base_instrument)
-        quantity = wallet.locked[order.path_id]
+        wallet = order.portfolio.get_wallet(exchange.id, instrument=wallet_instrument)
+        quantity = wallet.locked.get(order.path_id, 0)
 
         return Order(step=exchange.clock.step,
                      side=self.side,

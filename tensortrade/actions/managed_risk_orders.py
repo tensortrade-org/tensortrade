@@ -112,15 +112,20 @@ class ManagedRiskOrders(ActionScheme):
         if action == 0:
             return None
 
-        (pair, stop_loss, take_profit, size, side) = self._actions[action]
+        (pair, stop_loss, take_profit, order_size, side) = self._actions[action]
 
-        base_instrument = pair.base if side == TradeSide.BUY else pair.quote
-        base_wallet = portfolio.get_wallet(exchange.id, instrument=base_instrument)
+        wallet_instrument = pair.base if side == TradeSide.BUY else pair.quote
+        wallet = portfolio.get_wallet(exchange.id, instrument=wallet_instrument)
 
         price = exchange.quote_price(pair)
-        size = min(base_wallet.balance.size, (base_wallet.balance.size * size))
+        size = (wallet.balance.size * order_size)
 
-        if size < 10 ** -base_instrument.precision:
+        size = min(wallet.balance.size, size)
+
+        if side == TradeSide.SELL:
+            size = size * price
+
+        if size < 10 ** -pair.base.precision:
             return None
 
         params = {
@@ -146,4 +151,5 @@ class ManagedRiskOrders(ActionScheme):
     def reset(self):
         generator = product(self._pairs, self.stop_loss_percentages,
                             self.take_profit_percentages, self.trade_sizes, [TradeSide.BUY, TradeSide.SELL])
+
         self._actions = [None] + list(generator)
