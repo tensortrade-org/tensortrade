@@ -34,7 +34,6 @@ class ManagedRiskOrders(ActionScheme):
                  stop_loss_percentages: Union[List[float], float] = [0.02, 0.04, 0.06],
                  take_profit_percentages: Union[List[float], float] = [0.01, 0.02, 0.03],
                  trade_sizes: Union[List[float], int] = 10,
-                 trade_side: TradeType = TradeSide.BUY,
                  trade_type: TradeType = TradeType.MARKET,
                  order_listener: OrderListener = None):
         """
@@ -52,7 +51,6 @@ class ManagedRiskOrders(ActionScheme):
         self.take_profit_percentages = self.default(
             'take_profit_percentages', take_profit_percentages)
         self.trade_sizes = self.default('trade_sizes', trade_sizes)
-        self._trade_side = self.default('trade_side', trade_side)
         self._trade_type = self.default('trade_type', trade_type)
         self._order_listener = self.default('order_listener', order_listener)
 
@@ -114,9 +112,9 @@ class ManagedRiskOrders(ActionScheme):
         if action == 0:
             return None
 
-        (pair, stop_loss, take_profit, size) = self._actions[action]
+        (pair, stop_loss, take_profit, size, side) = self._actions[action]
 
-        base_instrument = pair.base if self._trade_side == TradeSide.BUY else pair.quote
+        base_instrument = pair.base if side == TradeSide.BUY else pair.quote
         base_wallet = portfolio.get_wallet(exchange.id, instrument=base_instrument)
 
         price = exchange.quote_price(pair)
@@ -127,7 +125,7 @@ class ManagedRiskOrders(ActionScheme):
 
         params = {
             'step': exchange.clock.step,
-            'side': self._trade_side,
+            'side': side,
             'trade_type': self._trade_type,
             'pair': pair,
             'price': price,
@@ -147,5 +145,5 @@ class ManagedRiskOrders(ActionScheme):
 
     def reset(self):
         generator = product(self._pairs, self.stop_loss_percentages,
-                            self.take_profit_percentages, self.trade_sizes)
+                            self.take_profit_percentages, self.trade_sizes, [TradeSide.BUY, TradeSide.SELL])
         self._actions = [None] + list(generator)
