@@ -24,15 +24,16 @@ def market_order(step: int,
                  price: float,
                  size: float,
                  portfolio: 'Portfolio'):
-
+    instrument = pair.base if side == TradeSide.BUY else pair.quote
     order = Order(step=step,
                   side=side,
                   trade_type=TradeType.MARKET,
                   pair=pair,
                   price=price,
-                  quantity=(size * pair.base),
+                  quantity=(size * instrument),
                   portfolio=portfolio
                   )
+
     return order
 
 
@@ -44,17 +45,18 @@ def limit_order(step: int,
                 portfolio: 'Portfolio',
                 ttl_in_seconds: int = None,
                 ttl_in_steps: int = None):
-
+    instrument = pair.base if side == TradeSide.BUY else pair.quote
     order = Order(step=step,
                   side=side,
                   trade_type=TradeType.LIMIT,
                   pair=pair,
                   price=price,
-                  quantity=(size*pair.base),
+                  quantity=(size * instrument),
                   ttl_in_seconds=ttl_in_seconds,
                   ttl_in_steps=ttl_in_steps,
                   portfolio=portfolio
                   )
+
     return order
 
 
@@ -66,13 +68,13 @@ def hidden_limit_order(step: int,
                        portfolio: 'Portfolio',
                        ttl_in_seconds: int = None,
                        ttl_in_steps: int = None):
-
+    instrument = pair.base if side == TradeSide.BUY else pair.quote
     order = Order(step=step,
                   side=side,
                   trade_type=TradeType.MARKET,
                   pair=pair,
                   price=price,
-                  quantity=(size*pair.base),
+                  quantity=(size * instrument),
                   ttl_in_seconds=ttl_in_seconds,
                   ttl_in_steps=ttl_in_steps,
                   portfolio=portfolio,
@@ -93,7 +95,7 @@ def risk_managed_order(step: int,
                        portfolio: 'Portfolio',
                        ttl_in_seconds: int = None,
                        ttl_in_steps: int = None):
-
+    instrument = pair.base if side == TradeSide.BUY else pair.quote
     order = Order(step=step,
                   side=side,
                   trade_type=trade_type,
@@ -101,11 +103,10 @@ def risk_managed_order(step: int,
                   price=price,
                   ttl_in_seconds=ttl_in_seconds,
                   ttl_in_steps=ttl_in_steps,
-                  quantity=(size * pair.base),
+                  quantity=(size * instrument),
                   portfolio=portfolio)
 
     risk_criteria = Stop("down", down_percent) ^ Stop("up", up_percent)
-
     risk_management = OrderSpec(side=TradeSide.SELL if side == TradeSide.BUY else TradeSide.BUY,
                                 trade_type=TradeType.MARKET,
                                 pair=pair,

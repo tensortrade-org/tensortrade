@@ -35,6 +35,8 @@ class ManagedRiskOrders(ActionScheme):
                  take_profit_percentages: Union[List[float], float] = [0.01, 0.02, 0.03],
                  trade_sizes: Union[List[float], int] = 10,
                  trade_type: TradeType = TradeType.MARKET,
+                 ttl_in_seconds: int = None,
+                 ttl_in_steps: int = None,
                  order_listener: OrderListener = None):
         """
         Arguments:
@@ -51,7 +53,9 @@ class ManagedRiskOrders(ActionScheme):
         self.take_profit_percentages = self.default(
             'take_profit_percentages', take_profit_percentages)
         self.trade_sizes = self.default('trade_sizes', trade_sizes)
-        self._trade_type = self.default('trade_type', trade_type)
+        self.trade_type = self.default('trade_type', trade_type)
+        self.ttl_in_seconds = self.default('ttl_in_seconds', ttl_in_seconds)
+        self.ttl_in_steps = self.default('ttl_in_steps', ttl_in_steps)
         self._order_listener = self.default('order_listener', order_listener)
 
         self.reset()
@@ -114,16 +118,13 @@ class ManagedRiskOrders(ActionScheme):
 
         (pair, stop_loss, take_profit, order_size, side) = self._actions[action]
 
+        price = exchange.quote_price(pair)
+
         wallet_instrument = pair.base if side == TradeSide.BUY else pair.quote
         wallet = portfolio.get_wallet(exchange.id, instrument=wallet_instrument)
 
-        price = exchange.quote_price(pair)
         size = (wallet.balance.size * order_size)
-
         size = min(wallet.balance.size, size)
-
-        if side == TradeSide.SELL:
-            size = size * price
 
         if size < 10 ** -pair.base.precision:
             return None
@@ -131,14 +132,15 @@ class ManagedRiskOrders(ActionScheme):
         params = {
             'step': exchange.clock.step,
             'side': side,
-            'trade_type': self._trade_type,
             'pair': pair,
             'price': price,
             'size': size,
             'down_percent': stop_loss,
             'up_percent': take_profit,
             'portfolio': portfolio,
-            'ttl_in_steps': 100,
+            'trade_type': self.trade_type,
+            'ttl_in_seconds': self.ttl_in_seconds,
+            'ttl_in_steps': self.ttl_in_steps,
         }
 
         order = risk_managed_order(**params)
