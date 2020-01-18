@@ -2,16 +2,17 @@
 from tensortrade.base import Clock
 from tensortrade.base.exceptions import InsufficientFunds
 from tensortrade.wallets import Wallet
-from tensortrade.instruments import Quantity, Price
+from tensortrade.instruments import Quantity
+from tensortrade.exchanges import ExchangeOptions
 from tensortrade.orders import Order
-from tensortrade.trades import Trade, TradeOptions, TradeType, TradeSide
+from tensortrade.trades import Trade, TradeType, TradeSide
 
 
-def contain_price(price: float, options: TradeOptions):
+def contain_price(price: float, options: 'ExchangeOptions'):
     return max(min(price, options.min_trade_price), options.min_trade_price)
 
 
-def contain_size(size: float, options: TradeOptions):
+def contain_size(size: float, options: 'ExchangeOptions'):
     return max(min(size, options.max_trade_size), options.min_trade_size)
 
 
@@ -19,8 +20,7 @@ def execute_buy_order(order: 'Order',
                       base_wallet: 'Wallet',
                       quote_wallet: 'Wallet',
                       current_price: float,
-                      commission: float,
-                      options: 'TradeOptions',
+                      options: 'ExchangeOptions',
                       exchange_id: str,
                       clock: 'Clock') -> 'Trade':
     price = contain_price(current_price, options)
@@ -28,7 +28,7 @@ def execute_buy_order(order: 'Order',
     if order.type == TradeType.LIMIT and order.price < current_price:
         return None
 
-    commission = Quantity(order.pair.base, order.size * commission, order.path_id)
+    commission = Quantity(order.pair.base, order.size * options.commission, order.path_id)
     base_size = contain_size(order.size - commission.size, options)
 
     if order.type == TradeType.MARKET:
@@ -65,8 +65,7 @@ def execute_sell_order(order: 'Order',
                        base_wallet: 'Wallet',
                        quote_wallet: 'Wallet',
                        current_price: float,
-                       commission: float,
-                       options: 'TradeOptions',
+                       options: 'ExchangeOptions',
                        exchange_id: str,
                        clock: 'Clock') -> 'Trade':
     price = contain_price(current_price, options)
@@ -74,7 +73,7 @@ def execute_sell_order(order: 'Order',
     if order.type == TradeType.LIMIT and order.price > current_price:
         return None
 
-    commission = Quantity(order.pair.base, order.size * commission, order.path_id)
+    commission = Quantity(order.pair.base, order.size * options.commission, order.path_id)
     size = contain_size(order.size - commission.size, options)
     quantity = Quantity(order.pair.base, size, order.path_id)
 
@@ -106,8 +105,7 @@ def execute_order(order: 'Order',
                   base_wallet: 'Wallet',
                   quote_wallet: 'Wallet',
                   current_price: float,
-                  commission: float,
-                  options: 'TradeOptions',
+                  options: 'Options',
                   exchange_id: str,
                   clock: 'Clock') -> 'Trade':
 
@@ -117,7 +115,6 @@ def execute_order(order: 'Order',
             base_wallet=base_wallet,
             quote_wallet=quote_wallet,
             current_price=current_price,
-            commission=commission,
             options=options,
             exchange_id=exchange_id,
             clock=clock
@@ -128,7 +125,6 @@ def execute_order(order: 'Order',
             base_wallet=base_wallet,
             quote_wallet=quote_wallet,
             current_price=current_price,
-            commission=commission,
             options=options,
             exchange_id=exchange_id,
             clock=clock

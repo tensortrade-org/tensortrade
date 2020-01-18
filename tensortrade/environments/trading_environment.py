@@ -17,7 +17,7 @@ import logging
 import gym
 import numpy as np
 
-from gym.spaces import Discrete
+from gym.spaces import Discrete, Space, Box
 from typing import Union, Tuple, List, Dict
 
 import tensortrade.actions as actions
@@ -42,14 +42,14 @@ class TradingEnvironment(gym.Env, TimeIndexed):
                  reward_scheme: Union[RewardScheme, str],
                  feed: DataFeed,
                  window_size: int = 1,
-                 history: History = None,
+                 use_internal=True,
                  **kwargs):
         """
         Arguments:
             portfolio: The `Portfolio` of wallets used to submit and execute orders from.
             action_scheme:  The component for transforming an action into an `Order` at each timestep.
             reward_scheme: The component for determining the reward at each timestep.
-            feature_pipeline (optional): The pipeline of features to pass the observations through.
+            feed (optional): The pipeline of features to pass the observations through.
             kwargs (optional): Additional arguments for tuning the environments, logging, etc.
         """
         super().__init__()
@@ -57,10 +57,17 @@ class TradingEnvironment(gym.Env, TimeIndexed):
 
         self.portfolio = portfolio
         self.action_scheme = action_scheme
-        self.action_scheme.over(exchange_pairs=self.portfolio.exchange_pairs)
         self.reward_scheme = reward_scheme
         self.feed = feed
-        self.history = history if history else History(window_size=window_size)
+        self.window_size = window_size
+        self.use_internal = use_internal
+
+        self.history = History(window_size=window_size)
+
+        self._dtype = kwargs.get('dtype', np.float32)
+        self._observation_lows = kwargs.get('observation_lows', 0)
+        self._observation_highs = kwargs.get('observation_highs', 1)
+
         self._broker = Broker(exchanges=self.portfolio.exchanges)
 
         self.render_benchmarks: List[Dict] = kwargs.get('render_benchmarks', [])
@@ -74,13 +81,67 @@ class TradingEnvironment(gym.Env, TimeIndexed):
 
         logging.getLogger('tensorflow').disabled = kwargs.get('disable_tensorflow_logger', True)
 
-    @property
-    def action_space(self):
-        return Discrete(len(self.action_scheme))
+        self.compile()
+
+    def compile(self):
+        """
+        Sets the observation space and the action space of the environment.
+        Creates the internal feed and sets initialization for different components.
+        """
+        # Set clocks to all components
+
+        # Set action scheme over trading pairs
+        self.action_scheme.over(exchange_pairs=self.portfolio.exchange_pairs)
+
+        # Set data feed with internal data sources
+        if self.use_internal:
+            # ===========================
+            # Attach internal data feed
+            # ===========================
+            pass
+
+        # Set action space
+        self.action_space = Discrete(len(self.action_scheme))
+
+        # Set observation space
+        obs = self.feed.next()
+        n_features = len(obs.keys())
+
+        low = self._observation_lows if isinstance(
+            self._observation_lows, list) else np.tile(self._observation_lows, n_features)
+        high = self._observation_highs if isinstance(
+            self._observation_highs, list) else np.tile(self._observation_highs, n_features)
+
+        if self._window_size > 1:
+            low = np.tile(low, self._window_size).reshape((self._window_size, n_features))
+            high = np.tile(high, self._window_size).reshape((self._window_size, n_features))
+
+        observation_space = Box(
+            low=low,
+            high=high,
+            shape=(self.window_size, n_features),
+            dtype=self._dtype
+        )
+        self.observation_space = observation_space
+
+        # Reset data feed
+        self.feed.reset()
 
     @property
-    def observation_shape(self):
-        obs = self.observation_shape
+    def action_space(self) -> Space:
+        return self._action_space
+
+    @action_space.setter
+    def action_space(self, action_space: Space):
+        self._action_space = action_space
+
+    @property
+    def observation_space(self) -> Space:
+        return self._observation_space
+
+    @observation_space.setter
+    def observation_space(self, observation_space: Space):
+        self._observation_space = observation_space
 
     @property
     def window_size(self) -> int:
@@ -201,9 +262,6 @@ class TradingEnvironment(gym.Env, TimeIndexed):
             'broker': self._broker,
             'order': order,
         }
-
-    def compile(self):
-        obs = self.feed.next()
 
     def step(self, action: int) -> Tuple[np.array, float, bool, dict]:
         """Run one timestep within the environments based on the specified action.

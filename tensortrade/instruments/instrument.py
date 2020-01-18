@@ -57,6 +57,9 @@ class Instrument:
         if isinstance(other, Instrument):
             return TradingPair(self, other)
 
+    def __hash__(self):
+        return hash(self.symbol)
+
     def __str__(self):
         return str(self.symbol)
 

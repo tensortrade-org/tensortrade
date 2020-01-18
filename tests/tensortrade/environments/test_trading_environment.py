@@ -7,10 +7,11 @@ import pandas as pd
 from tensortrade import TradingContext
 from tensortrade.environments import TradingEnvironment
 from tensortrade.exchanges.simulated import SimulatedExchange
-from tensortrade.instruments import USD, BTC, ETH
+from tensortrade.instruments import USD, BTC, ETH, LTC
+from tensortrade.rewards import SimpleProfit
 from tensortrade.wallets import Portfolio
 from tensortrade.actions import ManagedRiskOrders, DynamicOrders
-from tensortrade.data import DataFeed, PortfolioDataSource, DataFrame
+from tensortrade.data import DataFeed, PortfolioDS, DataFrame, SimExchangeDS
 
 
 config = {
@@ -71,7 +72,7 @@ def make_env(action: str, reward: str):
 @pytest.fixture
 def feed(portfolio, exchange_ds):
 
-    portfolio_ds = PortfolioDataSource(portfolio)
+    portfolio_ds = PortfolioDS(portfolio)
 
     data_feed = DataFeed(sources=[
         exchange_ds,
@@ -133,3 +134,53 @@ def test_init(exchange, portfolio, feed):
     assert env
     assert obs.shape == (20, 11)
 
+
+def test_init_multiple_exchanges():
+
+    df1 = pd.read_csv("tests/data/input/coinbase_(BTC,ETH)USD_d.csv").tail()
+    df1 = df1.rename({"Unnamed: 0": "date"}, axis=1)
+    df1 = df1.set_index("date")
+
+    df2 = pd.read_csv("tests/data/input/bitstamp_(BTC,ETH,LTC)USD_d.csv").tail()
+    df2 = df2.rename({"Unnamed: 0": "date"}, axis=1)
+    df2 = df2.set_index("date")
+
+    exchange_ds1 = SimExchangeDS(
+        name="coinbase",
+        data_frame=df1,
+        fetch=lambda x: {
+          USD / BTC: x['BTC:close'],
+          USD / ETH: x['ETH:close']
+    })
+
+    exchange_ds2 = SimExchangeDS(
+        name="bitstamp",
+        data_frame=df2,
+        fetch=lambda x: {
+          USD / BTC: x['BTC:close'],
+          USD / ETH: x['ETH:close'],
+          USD / LTC: x['LTC:close']
+        }
+    )
+
+    ex1 = SimulatedExchange(exchange_ds1)
+    ex2 = SimulatedExchange(exchange_ds2)
+
+    portfolio = Portfolio(USD, [
+        Wallet(ex1, 1000 * USD),
+        Wallet(ex1, 200 * BTC),
+        Wallet(ex1, 200 * ETH),
+        Wallet(ex2, 500 * USD),
+        Wallet(ex2, 200 * BTC),
+        Wallet(ex2, 500 * ETH),
+        Wallet(ex2, 7000 * LTC)
+    ])
+
+    action_scheme = ManagedRiskOrders() + DynamicOrders()
+    reward_scheme = SimpleProfit()
+
+    env = TradingEnvironment(
+        portfolio=portfolio,
+        action_scheme=action_scheme,
+        reward_scheme=reward_scheme
+    )

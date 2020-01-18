@@ -7,7 +7,7 @@ A primary goal of Tensortrade is to be inclusive to the largest number of contri
 This code of conduct outlines our expectations for all those who participate in our community, as well as the consequences for unacceptable behavior.
 
 We invite all those who participate in Tensortrade to help us create safe and positive experiences for everyone.
-2. Open [Source/Culture/Tech] Citizenship
+2. Open [Node/Culture/Tech] Citizenship
 
 A supplemental goal of this Code of Conduct is to increase open [source/culture/tech] citizenship by encouraging participants to recognize and strengthen the relationships between our actions and their effects on our community.
 

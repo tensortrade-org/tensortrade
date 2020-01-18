@@ -26,13 +26,6 @@ class Identifiable(object, metaclass=ABCMeta):
         self._id = identifier
 
 
-class Observable:
-
-    @abstractmethod
-    def observe(self) -> Dict[str, float]:
-        raise NotImplementedError
-
-
 class TimeIndexed:
 
     @property
@@ -52,3 +45,19 @@ class TimedIdentifiable(Identifiable, TimeIndexed, metaclass=ABCMeta):
             self.__created_at = self.clock.step
 
         return self.__created_at
+
+
+class Listener:
+    pass
+
+
+class Observable:
+
+    def __init__(self):
+        self._listeners = []
+
+    def attach(self, listener: Listener):
+        self._listeners += [listener]
+
+    def detach(self, listener: Listener):
+        self._listeners.remove(listener)
