@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License
 #
-# Reference Node: Marcos Lopez De Prado - Advances in Financial Machine Learning
+# Reference Source: Marcos Lopez De Prado - Advances in Financial Machine Learning
 #                   Chapter 5 (Pg. 82) - Fractionally Differentiated Features
 
 import pandas as pd
