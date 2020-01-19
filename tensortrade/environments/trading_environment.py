@@ -28,6 +28,7 @@ from tensortrade.base.core import TimeIndexed, Clock
 from tensortrade.actions import ActionScheme
 from tensortrade.rewards import RewardScheme
 from tensortrade.data import DataFeed
+from tensortrade.data.internal import create_internal_feed
 from tensortrade.orders import Broker, Order
 from tensortrade.wallets import Portfolio
 from tensortrade.environments.history import History
@@ -40,7 +41,7 @@ class TradingEnvironment(gym.Env, TimeIndexed):
                  portfolio: Union[Portfolio, str],
                  action_scheme: Union[ActionScheme, str],
                  reward_scheme: Union[RewardScheme, str],
-                 feed: DataFeed,
+                 feed: DataFeed = None,
                  window_size: int = 1,
                  use_internal=True,
                  **kwargs):
@@ -92,33 +93,21 @@ class TradingEnvironment(gym.Env, TimeIndexed):
 
         # Set action scheme over trading pairs
         self.action_scheme.over(exchange_pairs=self.portfolio.exchange_pairs)
-
-        # Set data feed with internal data sources
-        if self.use_internal:
-            # ===========================
-            # Attach internal data feed
-            # ===========================
-            pass
-
-        # Set action space
         self.action_space = Discrete(len(self.action_scheme))
 
+        # Set data feed with internal data sources
+        if not self.feed:
+            self.feed = create_internal_feed(self.portfolio)
+        elif self.use_internal:
+            self.feed = self.feed + create_internal_feed(self.portfolio)
+
         # Set observation space
-        obs = self.feed.next()
-        n_features = len(obs.keys())
-
-        low = self._observation_lows if isinstance(
-            self._observation_lows, list) else np.tile(self._observation_lows, n_features)
-        high = self._observation_highs if isinstance(
-            self._observation_highs, list) else np.tile(self._observation_highs, n_features)
-
-        if self._window_size > 1:
-            low = np.tile(low, self._window_size).reshape((self._window_size, n_features))
-            high = np.tile(high, self._window_size).reshape((self._window_size, n_features))
+        d = self.feed.next()
+        n_features = len(d.keys())
 
         observation_space = Box(
-            low=low,
-            high=high,
+            low=self._observation_lows,
+            high=self._observation_highs,
             shape=(self.window_size, n_features),
             dtype=self._dtype
         )

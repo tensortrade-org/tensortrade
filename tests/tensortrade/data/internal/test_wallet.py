@@ -1,117 +1,51 @@
 
 import operator
-import unittest.mock as mock
 
 from tensortrade.wallets import Wallet
 from tensortrade.instruments import Quantity, USD, BTC
-from tensortrade.data.stream.transform import BinOp
-from tensortrade.data.internal.wallet import Balance, LockedBalance
-from tensortrade.data.stream.feed import DataFeed
 
 
-def test_balance_ds():
-    exchange = mock.Mock()
-    exchange.name = "fake"
-    wallet = Wallet(exchange, 10000*USD)
-
-    balance = Balance(wallet)
-    assert balance.next() == 10000
-
-    wallet -= 1000 * USD
-    wallet += Quantity(USD, 1000, path_id="fake_id")
-
-    balance = Balance(wallet)
-    assert balance.next() == 9000
+from tensortrade.exchanges.services.execution.simulated import execute_order
+from tensortrade.exchanges import Exchange
+from tensortrade.data.internal import create_wallet_ds
+from tensortrade.data.stream.transform import Reduce
+from tensortrade.data import DataFeed, Array
 
 
-def test_balance_feed():
-    exchange = mock.Mock()
-    exchange.name = "fake"
-    w1 = Wallet(exchange, 10000 * USD)
-    w2 = Wallet(exchange, 10 * BTC)
+def test_exchange_with_wallets_feed():
 
-    w1 -= 1000 * USD
-    w1 += Quantity(USD, 1000, path_id="fake_id")
+    ex1 = Exchange("coinbase", service=execute_order)(
+        Array("USD-BTC", [7000, 7500, 8300]),
+        Array("USD-ETH", [200, 212, 400])
+    )
 
-    w2 -= 1 * BTC
-    w2 += Quantity(BTC, 1, path_id="fake_id")
+    ex2 = Exchange("binance", service=execute_order)(
+        Array("USD-BTC", [7005, 7600, 8200]),
+        Array("USD-ETH", [201, 208, 402]),
+        Array("USD-LTC", [56, 52, 60])
+    )
 
-    b1 = Balance(w1)
-    b2 = Balance(w2)
+    wallet_btc = Wallet(ex1, 10 * BTC)
+    wallet_btc_ds = create_wallet_ds(wallet_btc)
 
-    feed = DataFeed([b1, b2])
+    wallet_usd = Wallet(ex2, 1000 * USD)
+    wallet_usd -= 400 * USD
+    wallet_usd += Quantity(USD, 400, path_id="fake_id")
+    wallet_usd_ds = create_wallet_ds(wallet_usd, include_worth=False)
 
-    assert feed.next() == {"fake_USD": 9000, "fake_BTC": 9}
+    feed = DataFeed([ex1, ex2, wallet_btc_ds, wallet_usd_ds])
 
-
-def test_locked_balance_ds():
-    exchange = mock.Mock()
-    exchange.name = "fake"
-    wallet = Wallet(exchange, 10000*USD)
-
-    locked_balance = LockedBalance(wallet)
-
-    wallet -= 1000 * USD
-    wallet += Quantity(USD, 1000, path_id="fake_id_0")
-
-    wallet -= 2000 * USD
-    wallet += Quantity(USD, 2000, path_id="fake_id_1")
-
-    assert locked_balance.next() == 3000
-
-
-def test_wallet_feed():
-
-    exchange = mock.Mock()
-    exchange.name = "fake"
-    wallet = Wallet(exchange, 10000*USD)
-
-    locked_balance = LockedBalance(wallet)
-    balance = Balance(wallet)
-
-    wallet -= 1000 * USD
-    wallet += Quantity(USD, 1000, path_id="fake_id_0")
-
-    wallet -= 2000 * USD
-    wallet += Quantity(USD, 2000, path_id="fake_id_1")
-
-    feed = DataFeed([balance, locked_balance])
-
-    assert feed.next() == {"fake_USD": 7000, "fake_USD_locked": 3000}
-
-
-def test_multiple_wallets_feed():
-
-    exchange = mock.Mock()
-    exchange.name = "fake"
-
-    # Wallet 1
-    w1 = Wallet(exchange, 10000*USD)
-
-    lb1 = LockedBalance(w1)
-    b1 = Balance(w1)
-
-    w1 -= 1000 * USD
-    w1 += Quantity(USD, 1000, path_id="fake_id_0")
-    w1 -= 2000 * USD
-    w1 += Quantity(USD, 2000, path_id="fake_id_1")
-
-    tb1 = BinOp("fake.USD.total", operator.add)(b1, lb1)
-
-    # Wallet 2
-    w2 = Wallet(exchange, 10*BTC)
-
-    lb2 = LockedBalance(w2)
-    b2 = Balance(w2)
-
-    w2 -= 3 * BTC
-    w2 += Quantity(BTC, 3, path_id="fake_id_0")
-    w2 -= 1 * BTC
-    w2 += Quantity(BTC, 1, path_id="fake_id_1")
-
-    tb2 = BinOp("fake.BTC.total", operator.add)(b2, lb2)
-
-    feed = DataFeed([b1, lb1, tb1, b2, lb2, tb2])
-
-    assert feed.next() == {"fake_USD": 7000, "fake_USD_locked": 3000, "fake.USD.total": 10000,
-                           "fake_BTC": 6, "fake_BTC_locked": 4, "fake.BTC.total": 10}
+    assert feed.next() == {
+        "coinbase:/USD-BTC": 7000,
+        "coinbase:/USD-ETH": 200,
+        "coinbase:/BTC:/free": 10,
+        "coinbase:/BTC:/locked": 0,
+        "coinbase:/BTC:/total": 10,
+        "coinbase:/BTC:/worth": 70000,
+        "binance:/USD-BTC": 7005,
+        "binance:/USD-ETH": 201,
+        "binance:/USD-LTC": 56,
+        "binance:/USD:/free": 600,
+        "binance:/USD:/locked": 400,
+        "binance:/USD:/total": 1000
+    }

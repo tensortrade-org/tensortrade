@@ -28,8 +28,7 @@ class ExchangeOptions:
                  max_trade_size: float = 1e6,
                  min_trade_price: float = 1e-8,
                  max_trade_price: float = 1e8,
-                 is_live: bool = False
-                 ):
+                 is_live: bool = False):
         self.commission = commission
         self.min_trade_size = min_trade_size
         self.max_trade_size = max_trade_size
@@ -49,9 +48,9 @@ class Exchange(Component, TimedIdentifiable, Transform):
                  options: ExchangeOptions = None):
         super().__init__(name)
         self._service = service
-        self._options = options
+        self._options = options if options else ExchangeOptions()
         self._prices = None
-        self._flatten = True
+        self.flatten = True
 
     @property
     def options(self):
@@ -66,10 +65,13 @@ class Exchange(Component, TimedIdentifiable, Transform):
         Returns:
             The quote price of the specified trading pair, denoted in the base instrument.
         """
-        return self._prices[str(trading_pair)]
+        return self._prices[str(trading_pair)] * trading_pair
 
     def transform(self, inbound_data):
-        self._prices = inbound_data
+        self._prices = {}
+        for k, v in inbound_data.items():
+            pair = "".join([c if c.isalnum() else "/" for c in k])
+            self._prices[pair] = v
         return inbound_data
 
     def is_pair_tradable(self, trading_pair: 'TradingPair') -> bool:
@@ -94,7 +96,7 @@ class Exchange(Component, TimedIdentifiable, Transform):
             order=order,
             base_wallet=portfolio.get_wallet(self.id, order.pair.base),
             quote_wallet=portfolio.get_wallet(self.id, order.pair.quote),
-            current_price=self.quote_price(order.pair).rate,
+            current_price=self.quote_price(order.pair),
             options=self.options,
             exchange_id=self.id,
             clock=self.clock

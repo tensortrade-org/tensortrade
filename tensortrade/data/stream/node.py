@@ -5,21 +5,37 @@ from abc import abstractmethod
 from typing import List
 
 
+def _flatten(data, parent_key='', sep=':/'):
+    items = []
+    for k, v in data.items():
+        new_key = parent_key + sep + k if parent_key else k
+        if isinstance(v, collections.MutableMapping):
+            items.extend(_flatten(v, new_key, sep=sep).items())
+        else:
+            items.append((new_key, v))
+    return dict(items)
 
 
 class Node:
 
-    def __init__(self, name: str):
+    def __init__(self, name: str, sep: str = ":/"):
         self._name = name
+        self._inputs = []
         self._inbound = []
         self._outbound = []
         self._inbound_data = {}
         self._call_count = 0
-        self._flatten = False
+        self._data = {}
+        self.flatten = False
+        self._sep = sep
 
     @property
     def name(self):
         return self._name
+
+    @name.setter
+    def name(self, name: str):
+        self._name = name
 
     @property
     def inbound(self):
@@ -37,6 +53,14 @@ class Node:
     def outbound(self, outbound: List['Node']):
         self._outbound = outbound
 
+    @property
+    def flatten(self) -> bool:
+        return self._flatten
+
+    @flatten.setter
+    def flatten(self, flatten: bool):
+        self._flatten = flatten
+
     def gather(self) -> List['Node']:
         """
         for node in self.inbound:
@@ -53,14 +77,13 @@ class Node:
             starting += node.gather()
         return starting
 
-    def subscribe(self, source):
-        self.outbound += [source]
+    def subscribe(self, node: 'Node'):
+        self.outbound += [node]
 
     def push(self, inbound_data: dict):
         self._inbound_data.update(inbound_data)
 
-    def propagate(self, outbound_data: dict):
-        data = {self.name: outbound_data}
+    def propagate(self, data: dict):
         for node in self.outbound:
             node.push(data)
 
@@ -69,7 +92,8 @@ class Node:
         if self._call_count < len(self.inbound):
             return
         self._call_count = 0
-        outbound_data = self.call(self._inbound_data)
+        data = {self.name: self.call(self._inbound_data)}
+        outbound_data = _flatten(data, sep=self._sep) if self.flatten else data
         self.propagate(outbound_data)
         return outbound_data
 

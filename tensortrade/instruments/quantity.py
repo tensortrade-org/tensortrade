@@ -209,7 +209,7 @@ class Price:
 
     @rate.setter
     def rate(self, rate: float):
-        self._rate = round(rate, self.pair.base.precision)
+        self._rate = rate
 
     @property
     def pair(self) -> 'TradingPair':

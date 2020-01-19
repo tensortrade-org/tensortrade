@@ -2,7 +2,7 @@
 import pandas as pd
 
 from abc import abstractmethod
-from typing import Dict, List
+from typing import Dict, List, Callable
 
 
 from tensortrade.base.core import TimeIndexed
@@ -67,3 +67,20 @@ class DataFrame(DataSource):
 
     def reset(self):
         self._cursor = 0
+
+
+class Lambda(DataSource):
+
+    def __init__(self, name: str, extract: Callable[[any], float], obj: any):
+        super().__init__(name)
+        self.extract = extract
+        self.obj = obj
+
+    def generate(self):
+        return self.extract(self.obj)
+
+    def has_next(self):
+        return True
+
+    def reset(self):
+        pass

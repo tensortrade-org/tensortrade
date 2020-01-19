@@ -117,6 +117,8 @@ class Order(TimedIdentifiable):
         return self.type == TradeType.MARKET
 
     def is_executable_on(self, exchange: 'Exchange'):
+        if exchange.is_pair_tradable(self.pair):
+            return False
         return self.criteria is None or self.criteria(self, exchange)
 
     def is_complete(self):

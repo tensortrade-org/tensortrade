@@ -1,40 +1,27 @@
 
+import operator
 
+from tensortrade.data.stream.source import Lambda
+from tensortrade.data.stream.transform import Namespace, Select, BinOp
 from tensortrade.wallets import Wallet
-from tensortrade.data.stream.source import DataSource
 
 
-class Balance(DataSource):
+def create_wallet_ds(wallet: Wallet, include_worth=True):
+    exchange_name = wallet.exchange.name
+    symbol = wallet.instrument.symbol
 
-    def __init__(self, wallet: Wallet):
-        super().__init__(
-            name="{}_{}".format(wallet.exchange.name, wallet.instrument.symbol)
-        )
-        self.wallet = wallet
+    free_balance = Lambda("free", lambda w: w.balance.size, wallet)
+    locked_balance = Lambda("locked", lambda w: w.locked_balance.size, wallet)
+    total_balance = Lambda("total", lambda w: w.total_balance.size, wallet)
 
-    def generate(self):
-        return self.wallet.balance.size
+    if include_worth:
+        price = Select(lambda k: k.endswith(symbol))(wallet.exchange)
+        worth = BinOp("worth", operator.mul)(price, total_balance)
+        nodes = [free_balance, locked_balance, total_balance, worth]
+    else:
+        nodes = [free_balance, locked_balance, total_balance]
 
-    def has_next(self):
-        return True
+    name = exchange_name + ":/" + symbol
+    wallet_ds = Namespace(name)(*nodes)
 
-    def reset(self):
-        pass
-
-
-class LockedBalance(DataSource):
-
-    def __init__(self, wallet: Wallet):
-        super().__init__(
-            name="{}_{}_locked".format(wallet.exchange.name, wallet.instrument.symbol)
-        )
-        self.wallet = wallet
-
-    def generate(self):
-        return self.wallet.locked_balance.size
-
-    def has_next(self):
-        return True
-
-    def reset(self):
-        pass
+    return wallet_ds

@@ -26,7 +26,6 @@ class History(object):
             size = self.window_size - len(observation)
             padding = np.zeros((size, observation.shape[1]))
             padding = pd.DataFrame(padding, columns=self.observations.columns)
-            print(padding)
             observation = pd.concat([padding, observation], ignore_index=True, sort=False)
 
         if isinstance(observation, pd.DataFrame):
