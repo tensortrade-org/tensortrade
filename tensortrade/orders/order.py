@@ -226,16 +226,16 @@ class Order(TimedIdentifiable):
     def to_json(self):
         return {
             "id": str(self.id),
-            "step": self.step,
+            "step": int(self.step),
             "status": str(self.status),
             "type": str(self.type),
             "side": str(self.side),
             "base_symbol": str(self.pair.base.symbol),
             "quote_symbol": str(self.pair.quote.symbol),
             "quantity": str(self.quantity),
-            "size": str(self.size),
-            "filled_size": str(self.filled_size),
-            "price": str(self.price),
+            "size": float(self.size),
+            "filled_size": self.filled_size,
+            "price": float(self.price),
             "criteria": str(self.criteria),
             "path_id": str(self.path_id),
             "created_at": str(self.created_at)

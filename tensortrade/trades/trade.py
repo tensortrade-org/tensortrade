@@ -140,14 +140,14 @@ class Trade(TimedIdentifiable):
     def to_json(self):
         return {'id': str(self.id),
                 'order_id': str(self.order_id),
-                'step': self.step,
+                'step': int(self.step),
                 'base_symbol': str(self.pair.base.symbol),
                 'quote_symbol': str(self.pair.quote.symbol),
                 'side': str(self.side),
                 'type': str(self.type),
-                'size': str(self.size),
+                'size': float(self.size),
                 'quantity': str(self.quantity),
-                'price': str(self.price),
+                'price': float(self.price),
                 'commission': str(self.commission),
                 "created_at": str(self.created_at)
                 }
