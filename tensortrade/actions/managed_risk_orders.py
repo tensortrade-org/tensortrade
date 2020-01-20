@@ -138,7 +138,5 @@ class ManagedRiskOrders(ActionScheme):
         if self._order_listener is not None:
             order.attach(self._order_listener)
 
-        return order
-
     def reset(self):
         pass

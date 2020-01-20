@@ -27,4 +27,6 @@ def create_internal_feed(portfolio: 'Portfolio'):
 
     sources += [net_worth]
 
-    return DataFeed(sources)
+    feed = DataFeed(sources)
+    feed.attach(portfolio)
+    return feed

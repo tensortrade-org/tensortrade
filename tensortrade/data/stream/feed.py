@@ -1,10 +1,12 @@
 
 import collections
+import pandas as pd
 
 from typing import List
 
 from tensortrade.base.core import Observable
 from tensortrade.data.stream.node import Node
+from tensortrade.data import Array
 
 
 def _flatten(data, parent_key='', sep=':/'):
@@ -74,6 +76,8 @@ class DataFeed(Observable):
         for node in self.inputs:
             self._next(node)
         feed_data = {name: self._data[name] for name in self.names}
+        for listener in self.listeners:
+            listener.on_next(feed_data)
         return feed_data
 
     def has_next(self) -> bool:
@@ -84,8 +88,19 @@ class DataFeed(Observable):
 
     def __add__(self, other):
         if isinstance(other, DataFeed):
-            return DataFeed(self._nodes + other._nodes)
+            feed = DataFeed(self._nodes + other._nodes)
+            listeners = self.listeners + other.listeners
+            for listener in listeners:
+                feed.attach(listener)
+            return feed
 
     def reset(self):
         for node in self.inputs:
             node.refresh()
+
+    @staticmethod
+    def from_frame(frame: pd.DataFrame) -> 'DataFeed':
+        nodes = []
+        for name in frame.columns:
+            nodes += [Array(name, list(frame[name]))]
+        return DataFeed(nodes)

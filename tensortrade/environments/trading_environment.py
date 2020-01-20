@@ -29,6 +29,7 @@ from tensortrade.actions import ActionScheme
 from tensortrade.rewards import RewardScheme
 from tensortrade.data import DataFeed
 from tensortrade.data.internal import create_internal_feed
+from tensortrade.data.stream.transform import Select
 from tensortrade.orders import Broker, Order
 from tensortrade.wallets import Portfolio
 from tensortrade.environments.history import History
@@ -60,6 +61,10 @@ class TradingEnvironment(gym.Env, TimeIndexed):
         self.action_scheme = action_scheme
         self.reward_scheme = reward_scheme
         self.feed = feed
+        if self.feed:
+            self._external_keys = feed.next().keys()
+            feed.reset()
+
         self.window_size = window_size
         self.use_internal = use_internal
 
@@ -98,12 +103,12 @@ class TradingEnvironment(gym.Env, TimeIndexed):
         # Set data feed with internal data sources
         if not self.feed:
             self.feed = create_internal_feed(self.portfolio)
-        elif self.use_internal:
-            self.feed = self.feed + create_internal_feed(self.portfolio)
+
+        self.feed = self.feed + create_internal_feed(self.portfolio)
 
         # Set observation space
         d = self.feed.next()
-        n_features = len(d.keys())
+        n_features = len(d.keys()) if self.use_internal else len(self._external_keys)
 
         observation_space = Box(
             low=self._observation_lows,
@@ -180,78 +185,6 @@ class TradingEnvironment(gym.Env, TimeIndexed):
         self._reward_scheme = rewards.get(reward_scheme) if isinstance(
             reward_scheme, str) else reward_scheme
 
-    def _take_action(self, action: int) -> Order:
-        """Determines a specific trade to be taken and executes it within the exchange.
-
-        Arguments:
-            action: The int provided by the agent to map to a trade action for this timestep.
-
-        Returns:
-            The order created by the agent this time step, if any.
-        """
-        order = self._action_scheme.get_order(action, self.portfolio)
-
-        if order:
-            self.broker.submit(order)
-
-        self.broker.update()
-        self.portfolio.update()
-
-        return order
-
-    def _next_observation(self) -> np.ndarray:
-        """Returns the next observation from the exchange.
-
-        Returns:
-            The observation provided by the environments's exchange, often OHLCV or tick trade history data points.
-        """
-
-        obs = self.feed.next()
-
-        self.history.push(obs)
-
-        return self.history.observe()
-
-    def _get_reward(self) -> float:
-        """Returns the reward for the current timestep.
-
-        Returns:
-            A float corresponding to the benefit earned by the action taken this step.
-        """
-        reward = self._reward_scheme.get_reward(self._portfolio)
-        reward = np.nan_to_num(reward)
-
-        if np.bitwise_not(np.isfinite(reward)):
-            raise ValueError('Reward returned by the reward scheme must by a finite float.')
-
-        return reward
-
-    def _done(self) -> bool:
-        """Returns whether or not the environments is done and should be restarted.
-
-        Returns:
-            A boolean signaling whether the environments is done and should be restarted.
-        """
-        lost_90_percent_net_worth = self._portfolio.profit_loss < 0.1
-        return lost_90_percent_net_worth or not self.feed.has_next()
-
-    def _info(self, order: Order) -> dict:
-        """Returns any auxiliary, diagnostic, or debugging information for the current timestep.
-
-        Args:
-            order: The order created during the current timestep.
-
-        Returns:
-            info: A dictionary containing the exchange used, the portfolio, the broker,
-                  the current timestep, and any order executed this time step.
-        """
-        return {
-            'current_step': self.clock.step,
-            'portfolio': self._portfolio,
-            'broker': self._broker,
-            'order': order,
-        }
-
     def step(self, action: int) -> Tuple[np.array, float, bool, dict]:
         """Run one timestep within the environments based on the specified action.
 
@@ -264,23 +197,46 @@ class TradingEnvironment(gym.Env, TimeIndexed):
             done (bool): If `True`, the environments is complete and should be restarted.
             info (dict): Any auxiliary, diagnostic, or debugging information to output.
         """
-        order = self._take_action(action)
+        # Perform the action on the environment
+        order = self.action_scheme.get_order(action, self.portfolio)
+        if order:
+            self.broker.submit(order)
+        self.broker.update()
 
-        observation = self._next_observation()
-        reward = self._get_reward()
-        done = self._done()
-        info = self._info(order)
+        # Get next observation
+        row = self.feed.next()
+        if not self.use_internal:
+            row = {k: row[k] for k in self._external_keys}
+        self.history.push(row)
+        obs = self.history.observe()
+
+        # Compute reward
+        reward = self.reward_scheme.get_reward(self._portfolio)
+        reward = np.nan_to_num(reward)
+        if np.bitwise_not(np.isfinite(reward)):
+            raise ValueError('Reward returned by the reward scheme must by a finite float.')
+
+        # Find out if episode is complete
+        done = (self.portfolio.profit_loss < 0.1) or not self.feed.has_next()
+
+        # Collect information on episode
+        info = {
+            'step': self.clock.step,
+            'portfolio': self.portfolio,
+            'broker': self.broker,
+            'order': order,
+        }
 
         if self._enable_logger:
             self.logger.debug('Order:       {}'.format(order))
-            self.logger.debug('Observation: {}'.format(observation))
+            self.logger.debug('Observation: {}'.format(obs))
             self.logger.debug('P/L:         {}'.format(self._portfolio.profit_loss))
             self.logger.debug('Reward ({}): {}'.format(self.clock.step, reward))
             self.logger.debug('Performance: {}'.format(self._portfolio.performance.tail(1)))
 
         self.clock.increment()
 
-        return observation, reward, done, info
+        return obs, reward, done, info
 
     def reset(self) -> np.array:
         """Resets the state of the environments and returns an initial observation.
@@ -294,12 +250,18 @@ class TradingEnvironment(gym.Env, TimeIndexed):
         self.reward_scheme.reset()
         self.portfolio.reset()
         self.broker.reset()
+        self.history.reset()
 
-        observation = self._next_observation()
+        # Get next observation
+        row = self.feed.next()
+        if not self.use_internal:
+            row = {k: row[k] for k in self._external_keys}
+        self.history.push(row)
+        obs = self.history.observe()
 
         self.clock.increment()
 
-        return observation
+        return obs
 
     def render(self, mode='none'):
         """Renders the environment via matplotlib."""

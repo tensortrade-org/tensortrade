@@ -109,7 +109,6 @@ class Wallet(Identifiable):
             if quantity > self._balance:
                 raise InsufficientFunds(self.balance, quantity.size)
             self._balance -= quantity
-
         return self
 
     def __str__(self):

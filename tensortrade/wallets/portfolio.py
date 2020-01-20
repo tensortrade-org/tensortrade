@@ -12,13 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License
 
-
+import re
 import pandas as pd
 
 from typing import Callable, Tuple, Union, List
 
 from tensortrade import Component, TimedIdentifiable
 from tensortrade.instruments import Instrument, Quantity, TradingPair
+from tensortrade.data.stream.listeners import FeedListener
 
 from .wallet import Wallet
 
@@ -26,7 +27,7 @@ from .wallet import Wallet
 WalletType = Union['Wallet', Tuple['Exchange', Instrument, float]]
 
 
-class Portfolio(Component, TimedIdentifiable):
+class Portfolio(Component, TimedIdentifiable, FeedListener):
     """A portfolio of wallets on exchanges."""
 
     registered_name = "portfolio"
@@ -49,9 +50,10 @@ class Portfolio(Component, TimedIdentifiable):
             self.add(wallet)
 
         self._initial_balance = self.base_balance
-        self._performance = pd.DataFrame(
-            [], columns=['step', 'net_worth', 'base_symbol'], index=['step'])
-
+        self._initial_net_worth = None
+        self._net_worth = None
+        self._performance = None
+        self._keys = None
 
     @property
     def base_instrument(self) -> Instrument:
@@ -113,8 +115,6 @@ class Portfolio(Component, TimedIdentifiable):
 
     @property
     def initial_net_worth(self):
-        if not self._initial_net_worth:
-            self._initial_net_worth = self.net_worth
         return self._initial_net_worth
 
     @property
@@ -124,21 +124,7 @@ class Portfolio(Component, TimedIdentifiable):
         Returns:
             The total portfolio value of the active account on the exchange.
         """
-        net_worth = 0 * self.base_instrument
-
-        if not self._wallets:
-            return net_worth.size
-
-        for wallet in self._wallets.values():
-            if wallet.instrument == self._base_instrument:
-                current_price = 1 * self.base_instrument
-            else:
-                pair = TradingPair(self._base_instrument, wallet.instrument)
-                current_price = wallet.exchange.quote_price(pair)
-
-            net_worth += current_price * wallet.total_balance
-
-        return net_worth.size
+        return self._net_worth
 
     @property
     def profit_loss(self) -> float:
@@ -148,7 +134,7 @@ class Portfolio(Component, TimedIdentifiable):
             The percentage change in net worth since the last reset.
             i.e. A return value of 2 would indicate a 100% increase in net worth (e.g. $100 -> $200)
         """
-        return self.net_worth / self._initial_net_worth
+        return self.net_worth / self.initial_net_worth
 
     @property
     def performance(self) -> pd.DataFrame:
@@ -213,32 +199,44 @@ class Portfolio(Component, TimedIdentifiable):
     def remove_pair(self, exchange: 'Exchange', instrument: Instrument):
         self._wallets.pop((exchange.id, instrument.symbol), None)
 
-    def update(self):
-        wallets = list(
-            filter(lambda wallet: wallet.instrument.symbol is not self.base_instrument.symbol, self.wallets))
+    @staticmethod
+    def find_keys(data: dict):
+        endings = [
+            ":/free",
+            ":/locked",
+            ":/total",
+            "worth"
+        ]
+        price_pattern = re.compile("\\w+:/([A-Z]{3,4}).([A-Z]{3,4})")
 
-        performance = [[self.clock.step, self.net_worth, self.base_instrument.symbol] +
-                       [quantity.size for quantity in self.balances] +
-                       [quantity.size for quantity in self.locked_balances] +
-                       [wallet.exchange.quote_price(
-                           wallet.instrument/self.base_instrument) for wallet in wallets]
-                       ]
+        keys = []
+        for k in data.keys():
+            if any(k.endswith(end) for end in endings):
+                keys += [k]
+            elif price_pattern.match(k):
+                keys += [k]
+        return keys
 
-        columns = ['step', 'net_worth', 'base_symbol'] + \
-                  [quantity.instrument.symbol for quantity in self.balances] + \
-                  ['{}_pending'.format(quantity.instrument.symbol) for quantity in self.locked_balances] + \
-                  ['{}_price'.format(wallet.instrument.symbol) for wallet in wallets]
+    def on_next(self, data: dict):
+        if not self._keys:
+            self._keys = self.find_keys(data)
 
-        performance_update = pd.DataFrame(performance, columns=columns)
-
-        self._performance = pd.concat(
-            [self._performance, performance_update], axis=0, sort=True).dropna()
+        index = pd.Index([self.clock.step], name="step")
+        performance_step = pd.DataFrame({k: data[k] for k in self._keys}, index=index)
+        net_worth = data['net_worth']
+        if self._performance is None:
+            self._performance = performance_step
+            self._initial_net_worth = net_worth
+            self._net_worth = net_worth
+        else:
+            self._performance = self._performance.append(performance_step)
+            self._net_worth = net_worth
 
         if self._performance_listener:
-            self._performance_listener(performance_update)
+            self._performance_listener(performance_step)
 
     def reset(self):
         self._initial_balance = self.base_balance
         self._initial_net_worth = None
-        self._performance = pd.DataFrame(
-            [], columns=['step', 'net_worth', 'base_symbol'], index=['step'])
+        self._net_worth = None
+        self._performance = None

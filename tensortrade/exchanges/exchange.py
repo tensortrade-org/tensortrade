@@ -12,12 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import re
 
 from typing import Callable, Union
 
 from tensortrade.base import Component, TimedIdentifiable
 from tensortrade.instruments import TradingPair, Price
-from tensortrade.data.stream.transform import Transform
+from tensortrade.data import Node
 
 
 class ExchangeOptions:
@@ -37,7 +38,7 @@ class ExchangeOptions:
         self.is_live = is_live
 
 
-class Exchange(Component, TimedIdentifiable, Transform):
+class Exchange(Node, Component, TimedIdentifiable):
     """An abstract exchange for use within a trading environment."""
 
     registered_name = "exchanges"
@@ -67,7 +68,7 @@ class Exchange(Component, TimedIdentifiable, Transform):
         """
         return self._prices[str(trading_pair)] * trading_pair
 
-    def transform(self, inbound_data):
+    def call(self, inbound_data):
         self._prices = {}
         for k, v in inbound_data.items():
             pair = "".join([c if c.isalnum() else "/" for c in k])
@@ -96,7 +97,7 @@ class Exchange(Component, TimedIdentifiable, Transform):
             order=order,
             base_wallet=portfolio.get_wallet(self.id, order.pair.base),
             quote_wallet=portfolio.get_wallet(self.id, order.pair.quote),
-            current_price=self.quote_price(order.pair),
+            current_price=self.quote_price(order.pair).rate,
             options=self.options,
             exchange_id=self.id,
             clock=self.clock
@@ -104,6 +105,9 @@ class Exchange(Component, TimedIdentifiable, Transform):
 
         if trade:
             order.fill(self, trade)
+
+    def has_next(self):
+        return True
 
     def reset(self):
         self._prices = None

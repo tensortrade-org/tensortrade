@@ -35,3 +35,6 @@ class History(object):
         observation = np.nan_to_num(observation)
 
         return observation
+
+    def reset(self):
+        self.observations = pd.DataFrame()

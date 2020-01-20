@@ -8,17 +8,18 @@ from typing import Union, Callable, List
 from .node import Node
 
 
-class Transform(Node):
+class BinOp(Node):
 
-    def __init__(self, name: str, sep: str = ":/"):
-        super().__init__(name, sep)
+    def __init__(self, name: str, op):
+        super().__init__(name)
+        self.op = op
 
-    def call(self, inbound_data):
-        return self.transform(inbound_data)
-
-    @abstractmethod
-    def transform(self, inbound_data):
-        raise NotImplementedError()
+    def call(self, inbound_data: dict):
+        left_name = self.inbound[0].name
+        right_name = self.inbound[1].name
+        left_value = inbound_data.get(left_name, 0)
+        right_value = inbound_data.get(right_name, 0)
+        return self.op(left_value, right_value)
 
     def has_next(self):
         return True
@@ -27,21 +28,7 @@ class Transform(Node):
         pass
 
 
-class BinOp(Transform):
-
-    def __init__(self, name: str, op):
-        super().__init__(name)
-        self.op = op
-
-    def transform(self, inbound_data: dict):
-        left_name = self.inbound[0].name
-        right_name = self.inbound[1].name
-        left_value = inbound_data.get(left_name, 0)
-        right_value = inbound_data.get(right_name, 0)
-        return self.op(left_value, right_value)
-
-
-class Reduce(Transform):
+class Reduce(Node):
 
     def __init__(self,
                  name: str,
@@ -51,12 +38,18 @@ class Reduce(Transform):
         self.selector = selector
         self.func = func
 
-    def transform(self, inbound_data):
+    def call(self, inbound_data):
         keys = list(filter(self.selector, inbound_data.keys()))
         return functools.reduce(self.func, [inbound_data[k] for k in keys])
 
+    def has_next(self):
+        return True
 
-class Select(Transform):
+    def reset(self):
+        pass
+
+
+class Select(Node):
 
     def __init__(self, selector: Union[Callable[[str], bool], str]):
         if isinstance(selector, str):
@@ -69,17 +62,29 @@ class Select(Transform):
 
         self.flatten = True
 
-    def transform(self, inbound_data):
+    def call(self, inbound_data):
         if not self.key:
             self.key = list(filter(self.selector, inbound_data.keys()))[0]
         return inbound_data[self.key]
 
+    def has_next(self):
+        return True
 
-class Namespace(Transform):
+    def reset(self):
+        pass
+
+
+class Namespace(Node):
 
     def __init__(self, name: str):
         super().__init__(name)
         self.flatten = True
 
-    def transform(self, inbound_data: dict):
+    def call(self, inbound_data: dict):
         return inbound_data
+
+    def has_next(self):
+        return True
+
+    def reset(self):
+        pass

@@ -119,3 +119,35 @@ class Node:
         self.reset()
         for source in self.outbound:
             source.refresh()
+
+
+class Value(Node):
+
+    def __init__(self, name: str, value: float):
+        super().__init__(name)
+        self.value = value
+
+    def call(self, inbound_data: dict):
+        return self.value
+
+    def has_next(self):
+        return True
+
+    def reset(self):
+        pass
+
+
+class Placeholder(Node):
+
+    def __init__(self, name: str):
+        super().__init__(name)
+        self.name = name
+
+    def call(self, inbound_data: dict):
+        return inbound_data[self.name]
+
+    def has_next(self):
+        return True
+
+    def reset(self):
+        pass

@@ -56,6 +56,10 @@ class Observable:
     def __init__(self):
         self._listeners = []
 
+    @property
+    def listeners(self):
+        return self._listeners
+
     def attach(self, listener: Listener):
         self._listeners += [listener]
 

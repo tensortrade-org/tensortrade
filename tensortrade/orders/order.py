@@ -18,7 +18,7 @@ from typing import Callable
 
 from tensortrade.base import TimedIdentifiable
 from tensortrade.base.exceptions import InvalidOrderQuantity, InsufficientFunds
-from tensortrade.instruments import Quantity
+from tensortrade.instruments import Quantity, Price
 from tensortrade.trades import Trade, TradeSide, TradeType
 
 
@@ -51,7 +51,7 @@ class Order(TimedIdentifiable):
                  pair: 'TradingPair',
                  quantity: 'Quantity',
                  portfolio: 'Portfolio',
-                 price: float,
+                 price: 'Price',
                  criteria: Callable[['Order', 'Exchange'], bool] = None,
                  path_id: str = None,
                  ttl_in_seconds: int = None,
@@ -86,16 +86,15 @@ class Order(TimedIdentifiable):
     @property
     def size(self) -> float:
         if self.pair.base is self.quantity.instrument:
-            return round(self.quantity.size, self.pair.base.precision)
-
-        return round(self.quantity.size * self.price, self.pair.base.precision)
+            return self.quantity.size
+        return self.quantity.size * self.price.rate
 
     @property
-    def price(self) -> float:
+    def price(self) -> 'Price':
         return self._price
 
     @price.setter
-    def price(self, price: float):
+    def price(self, price: 'Price'):
         self._price = price
 
     @property
@@ -127,7 +126,7 @@ class Order(TimedIdentifiable):
         return self.type == TradeType.MARKET
 
     def is_executable_on(self, exchange: 'Exchange'):
-        if exchange.is_pair_tradable(self.pair):
+        if not exchange.is_pair_tradable(self.pair):
             return False
         return self.criteria is None or self.criteria(self, exchange)
 
