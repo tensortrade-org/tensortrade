@@ -9,9 +9,11 @@ python:
   - '3.6'
 
 install:
-  - pip install -e .[all-tests]
+  - pip install mypy -e .[all-tests]
 
-script: pytest
+script:
+  - mypy .
+  - pytest
 
 notifications:
   webhooks:
