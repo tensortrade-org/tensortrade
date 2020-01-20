@@ -5,13 +5,15 @@ from tensortrade.base.core import TimedIdentifiable
 class ExampleTimedIdentifiable(TimedIdentifiable):
 
     def __init__(self, msg):
+        super().__init__()
+
         self.msg = msg
 
 
 class Environment(TimedIdentifiable):
 
     def __init__(self):
-        pass
+        super().__init__()
 
     def step(self):
         self.clock.increment()

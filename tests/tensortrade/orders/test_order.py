@@ -14,15 +14,18 @@ def test_init(mock_portfolio_class):
 
     portfolio = mock_portfolio_class.return_value
 
-    order = Order(side=TradeSide.BUY,
+    order = Order(step=0,
+                  side=TradeSide.BUY,
                   trade_type=TradeType.MARKET,
                   pair=USD/BTC,
                   quantity=5000 * USD,
                   price=7000,
                   portfolio=portfolio)
+
     assert order
     assert order.id
     assert order.path_id
+    assert order.step == 0
     assert order.quantity.instrument == USD
     assert order.filled_size == 0
     assert order.remaining_size == order.quantity
@@ -36,7 +39,8 @@ def test_properties(mock_portfolio_class):
 
     portfolio = mock_portfolio_class.return_value
 
-    order = Order(side=TradeSide.BUY,
+    order = Order(step=0,
+                  side=TradeSide.BUY,
                   trade_type=TradeType.LIMIT,
                   pair=USD/BTC,
                   quantity=5000.00 * USD,
@@ -44,6 +48,7 @@ def test_properties(mock_portfolio_class):
                   price=7000.00)
 
     assert order
+    assert order.step == 0
     assert order.base_instrument == USD
     assert order.quote_instrument == BTC
     assert order.size == 5000.00 * USD
@@ -64,7 +69,8 @@ def test_is_executable_on(mock_portfolio_class, mock_exchange_class):
     portfolio = mock_portfolio_class.return_value
 
     # Market order
-    order = Order(side=TradeSide.BUY,
+    order = Order(step=0,
+                  side=TradeSide.BUY,
                   trade_type=TradeType.MARKET,
                   pair=USD/BTC,
                   quantity=5000.00 * USD,
@@ -78,7 +84,8 @@ def test_is_executable_on(mock_portfolio_class, mock_exchange_class):
     assert order.is_executable_on(exchange)
 
     # Limit order
-    order = Order(side=TradeSide.BUY,
+    order = Order(step=0,
+                  side=TradeSide.BUY,
                   trade_type=TradeType.LIMIT,
                   pair=USD/BTC,
                   quantity=5000.00 * USD,
@@ -92,7 +99,8 @@ def test_is_executable_on(mock_portfolio_class, mock_exchange_class):
     assert order.is_executable_on(exchange)
 
     # Stop Order
-    order = Order(side=TradeSide.SELL,
+    order = Order(step=0,
+                  side=TradeSide.SELL,
                   trade_type=TradeType.LIMIT,
                   pair=USD/BTC,
                   quantity=5000.00 * USD,
@@ -113,7 +121,8 @@ def test_is_complete(mock_portfolio_class):
     portfolio = mock_portfolio_class.return_value
 
     # Market order
-    order = Order(side=TradeSide.BUY,
+    order = Order(step=0,
+                  side=TradeSide.BUY,
                   trade_type=TradeType.MARKET,
                   pair=USD / BTC,
                   quantity=5000.00 * USD,
@@ -133,7 +142,8 @@ def test_add_order_spec(mock_portfolio_class, mock_order_spec_class):
     portfolio = mock_portfolio_class.return_value
 
     # Market order
-    order = Order(side=TradeSide.BUY,
+    order = Order(step=0,
+                  side=TradeSide.BUY,
                   trade_type=TradeType.MARKET,
                   pair=USD / BTC,
                   quantity=5000.00 * USD,
@@ -154,7 +164,8 @@ def test_add_order_spec(mock_portfolio_class, mock_order_spec_class):
 def test_attach(mock_portfolio_class, mock_order_listener_class):
 
     portfolio = mock_portfolio_class.return_value
-    order = Order(side=TradeSide.BUY,
+    order = Order(step=0,
+                  side=TradeSide.BUY,
                   trade_type=TradeType.MARKET,
                   pair=USD / BTC,
                   quantity=5000.00 * USD,
@@ -173,7 +184,8 @@ def test_attach(mock_portfolio_class, mock_order_listener_class):
 @mock.patch('tensortrade.wallets.Portfolio')
 def test_detach(mock_portfolio_class, mock_order_listener_class):
     portfolio = mock_portfolio_class.return_value
-    order = Order(side=TradeSide.BUY,
+    order = Order(step=0,
+                  side=TradeSide.BUY,
                   trade_type=TradeType.MARKET,
                   pair=USD / BTC,
                   quantity=5000.00 * USD,
@@ -201,7 +213,8 @@ def test_execute(mock_order_listener_class,
     wallets = [Wallet(exchange, 10000 * USD), Wallet(exchange, 0 * BTC)]
     portfolio = Portfolio(USD, wallets)
 
-    order = Order(side=TradeSide.BUY,
+    order = Order(step=0,
+                  side=TradeSide.BUY,
                   trade_type=TradeType.MARKET,
                   pair=USD / BTC,
                   quantity=5200.00 * USD,
@@ -240,7 +253,8 @@ def test_fill(mock_order_listener_class,
     wallets = [Wallet(exchange, 10000 * USD), Wallet(exchange, 0 * BTC)]
     portfolio = Portfolio(USD, wallets)
 
-    order = Order(side=TradeSide.BUY,
+    order = Order(step=0,
+                  side=TradeSide.BUY,
                   trade_type=TradeType.MARKET,
                   pair=USD / BTC,
                   quantity=5200.00 * USD,
@@ -279,7 +293,8 @@ def test_complete_basic_order(mock_order_listener_class,
     wallets = [Wallet(exchange, 10000 * USD), Wallet(exchange, 0 * BTC)]
     portfolio = Portfolio(USD, wallets)
 
-    order = Order(side=TradeSide.BUY,
+    order = Order(step=0,
+                  side=TradeSide.BUY,
                   trade_type=TradeType.MARKET,
                   pair=USD / BTC,
                   quantity=5200.00 * USD,
@@ -319,7 +334,8 @@ def test_complete_complex_order(mock_trade_class,
 
     side = TradeSide.BUY
 
-    order = Order(side=TradeSide.BUY,
+    order = Order(step=0,
+                  side=TradeSide.BUY,
                   trade_type=TradeType.MARKET,
                   pair=USD / BTC,
                   quantity=5200.00 * USD,
@@ -388,7 +404,8 @@ def test_cancel(mock_order_listener_class,
     wallets = [Wallet(exchange, 10000 * USD), Wallet(exchange, 0 * BTC)]
     portfolio = Portfolio(USD, wallets)
 
-    order = Order(side=TradeSide.BUY,
+    order = Order(step=0,
+                  side=TradeSide.BUY,
                   trade_type=TradeType.MARKET,
                   pair=USD / BTC,
                   quantity=5200.00 * USD,
@@ -427,9 +444,9 @@ def test_cancel(mock_order_listener_class,
     assert base_wallet.locked[order.path_id] == 7.42 * USD
     assert quote_wallet.balance == 0 * BTC
     assert quote_wallet.locked[order.path_id] == 0.73925519 * BTC
-    order.cancel(exchange)
+    order.cancel()
 
-    listener.on_cancel.assert_called_once_with(order, exchange)
+    listener.on_cancel.assert_called_once_with(order)
     assert base_wallet.balance == 4807.42 * USD
     assert order.path_id not in base_wallet.locked
     assert quote_wallet.balance == 0.73925519 * BTC
@@ -445,7 +462,8 @@ def test_release(mock_exchange_class):
     wallets = [Wallet(exchange, 10000 * USD), Wallet(exchange, 0 * BTC)]
     portfolio = Portfolio(USD, wallets)
 
-    order = Order(side=TradeSide.BUY,
+    order = Order(step=0,
+                  side=TradeSide.BUY,
                   trade_type=TradeType.MARKET,
                   pair=USD / BTC,
                   quantity=5200.00 * USD,
@@ -471,7 +489,8 @@ def test_to_dict(mock_portfolio_class):
 
     portfolio = mock_portfolio_class.return_value
 
-    order = Order(side=TradeSide.BUY,
+    order = Order(step=0,
+                  side=TradeSide.BUY,
                   trade_type=TradeType.MARKET,
                   pair=USD / BTC,
                   quantity=5200.00 * USD,

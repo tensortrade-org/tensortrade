@@ -59,7 +59,7 @@ def cancel_listener():
         def __init__(self):
             self.listened = False
 
-        def on_cancel(self, order: 'Order', exchange: 'Exchange'):
+        def on_cancel(self, order: 'Order'):
             self.listened = True
 
     return CancelListener()
@@ -74,7 +74,8 @@ def test_on_execute(mock_exchange_class,
     wallets = [Wallet(exchange, 10000 * USD), Wallet(exchange, 0 * BTC)]
     portfolio = Portfolio(USD, wallets)
 
-    order = Order(side=TradeSide.BUY,
+    order = Order(step=0,
+                  side=TradeSide.BUY,
                   trade_type=TradeType.MARKET,
                   pair=USD / BTC,
                   quantity=5200.00 * USD,
@@ -98,7 +99,8 @@ def test_on_cancel(mock_exchange_class,
     wallets = [Wallet(exchange, 10000 * USD), Wallet(exchange, 0 * BTC)]
     portfolio = Portfolio(USD, wallets)
 
-    order = Order(side=TradeSide.BUY,
+    order = Order(step=0,
+                  side=TradeSide.BUY,
                   trade_type=TradeType.MARKET,
                   pair=USD / BTC,
                   quantity=5200.00 * USD,
@@ -108,7 +110,7 @@ def test_on_cancel(mock_exchange_class,
     order.attach(cancel_listener)
 
     assert not cancel_listener.listened
-    order.cancel(exchange)
+    order.cancel()
     assert cancel_listener.listened
 
 
@@ -124,7 +126,8 @@ def test_on_fill(mock_trade_class,
     wallets = [Wallet(exchange, 10000 * USD), Wallet(exchange, 0 * BTC)]
     portfolio = Portfolio(USD, wallets)
 
-    order = Order(side=TradeSide.BUY,
+    order = Order(step=0,
+                  side=TradeSide.BUY,
                   trade_type=TradeType.MARKET,
                   pair=USD / BTC,
                   quantity=5200.00 * USD,
@@ -156,7 +159,8 @@ def test_on_complete(mock_trade_class,
     wallets = [Wallet(exchange, 10000 * USD), Wallet(exchange, 0 * BTC)]
     portfolio = Portfolio(USD, wallets)
 
-    order = Order(side=TradeSide.BUY,
+    order = Order(step=0,
+                  side=TradeSide.BUY,
                   trade_type=TradeType.MARKET,
                   pair=USD / BTC,
                   quantity=5200.00 * USD,

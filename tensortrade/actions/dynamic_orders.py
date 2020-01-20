@@ -99,7 +99,8 @@ class DynamicOrders(ActionScheme):
 
         quantity = size * instrument
 
-        order = Order(side=side,
+        order = Order(step=exchange.clock.step,
+                      side=side,
                       trade_type=self._trade_type,
                       pair=pair,
                       price=price,

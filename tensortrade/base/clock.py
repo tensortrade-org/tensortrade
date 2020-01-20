@@ -1,3 +1,4 @@
+from datetime import datetime
 
 
 class Clock(object):
@@ -7,12 +8,18 @@ class Clock(object):
         self._step = self._start
 
     @property
-    def start(self):
+    def start(self) -> int:
         return self._start
 
     @property
-    def step(self):
+    def step(self) -> int:
         return self._step
+
+    def now(self) -> str:
+        return datetime.now()
+
+    def now_formatted(self) -> str:
+        return self.now().strftime("%H:%M:%S")
 
     def increment(self):
         self._step += 1

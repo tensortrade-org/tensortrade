@@ -20,8 +20,7 @@ from gym.spaces import Discrete
 
 from tensortrade.actions import ActionScheme
 from tensortrade.trades import TradeSide, TradeType
-from tensortrade.orders import Order, OrderListener
-from tensortrade.instruments import USD, BTC
+from tensortrade.orders import Order, OrderListener, risk_managed_order
 
 
 class ManagedRiskOrders(ActionScheme):
@@ -33,8 +32,9 @@ class ManagedRiskOrders(ActionScheme):
                  stop_loss_percentages: Union[List[float], float] = [0.02, 0.04, 0.06],
                  take_profit_percentages: Union[List[float], float] = [0.01, 0.02, 0.03],
                  trade_sizes: Union[List[float], int] = 10,
-                 trade_side: TradeType = TradeSide.BUY,
                  trade_type: TradeType = TradeType.MARKET,
+                 ttl_in_seconds: int = None,
+                 ttl_in_steps: int = None,
                  order_listener: OrderListener = None):
         """
         Arguments:
@@ -50,12 +50,15 @@ class ManagedRiskOrders(ActionScheme):
         self.take_profit_percentages = self.default(
             'take_profit_percentages', take_profit_percentages)
         self.trade_sizes = self.default('trade_sizes', trade_sizes)
-        self._trade_side = self.default('trade_side', trade_side)
-        self._trade_type = self.default('trade_type', trade_type)
+        self.trade_type = self.default('trade_type', trade_type)
+        self.ttl_in_seconds = self.default('ttl_in_seconds', ttl_in_seconds)
+        self.ttl_in_steps = self.default('ttl_in_steps', ttl_in_steps)
         self._order_listener = self.default('order_listener', order_listener)
 
         generator = product(self.stop_loss_percentages,
-                            self.take_profit_percentages, self.trade_sizes)
+                            self.take_profit_percentages,
+                            self.trade_sizes,
+                            [TradeSide.BUY, TradeSide.SELL])
         self.actions = list(generator)
 
     @property
@@ -103,32 +106,39 @@ class ManagedRiskOrders(ActionScheme):
         if action == 0:
             return None
 
-        ((exchange, pair), (stop_loss, take_profit, size)) = self.actions[action]
-
-        base_instrument = pair.base if self._trade_side == TradeSide.BUY else pair.quote
-        base_wallet = portfolio.get_wallet(exchange.id, instrument=base_instrument)
+        ((exchange, pair), (stop_loss, take_profit, size, side)) = self.actions[action]
 
         price = exchange.quote_price(pair)
-        size = min(base_wallet.balance.size, (base_wallet.balance.size * size))
 
-        if size < 10 ** -base_instrument.precision:
+        wallet_instrument = pair.base if side == TradeSide.BUY else pair.quote
+        wallet = portfolio.get_wallet(exchange.id, instrument=wallet_instrument)
+
+        size = (wallet.balance.size * size)
+        size = min(wallet.balance.size, size)
+
+        if size < 10 ** -pair.base.precision:
             return None
 
         params = {
-            'side': self._trade_side,
-            'trade_type': self._trade_type,
+            'step': exchange.clock.step,
+            'side': side,
             'pair': pair,
             'price': price,
             'size': size,
             'down_percent': stop_loss,
             'up_percent': take_profit,
-            'portfolio': portfolio
+            'portfolio': portfolio,
+            'trade_type': self.trade_type,
+            'ttl_in_seconds': self.ttl_in_seconds,
+            'ttl_in_steps': self.ttl_in_steps,
         }
 
-        order = create.risk_managed_order(**params)
+        order = risk_managed_order(**params)
 
         if self._order_listener is not None:
             order.attach(self._order_listener)
 
         return order
 
+    def reset(self):
+        pass

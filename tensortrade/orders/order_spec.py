@@ -33,18 +33,21 @@ class OrderSpec(Identifiable):
         self.criteria = criteria
 
     def create_order(self, order: 'Order', exchange: 'Exchange') -> 'Order':
-        base_instrument = self.pair.base if self.side == TradeSide.BUY else self.pair.quote
+        wallet_instrument = self.pair.base if self.side == TradeSide.BUY else self.pair.quote
 
-        wallet = order.portfolio.get_wallet(exchange.id, instrument=base_instrument)
-        quantity = wallet.locked[order.path_id]
+        wallet = order.portfolio.get_wallet(exchange.id, instrument=wallet_instrument)
+        quantity = wallet.locked.get(order.path_id, 0)
 
-        return Order(side=self.side,
+        return Order(step=exchange.clock.step,
+                     side=self.side,
                      trade_type=self.type,
                      pair=self.pair,
                      quantity=quantity,
                      portfolio=order.portfolio,
                      price=order.price,
                      criteria=self.criteria,
+                     ttl_in_seconds=order.ttl_in_seconds,
+                     ttl_in_steps=order.ttl_in_steps,
                      path_id=order.path_id)
 
     def to_dict(self):

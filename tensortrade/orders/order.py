@@ -23,14 +23,14 @@ from tensortrade.trades import Trade, TradeSide, TradeType
 
 
 class OrderStatus(Enum):
-    PENDING = 0
-    OPEN = 1
-    CANCELLED = 2
-    PARTIALLY_FILLED = 3
-    FILLED = 4
+    PENDING = 'pending'
+    OPEN = 'open'
+    CANCELLED = 'cancelled'
+    PARTIALLY_FILLED = 'partially_filled'
+    FILLED = 'filled'
 
     def __str__(self):
-        return str(self.value)
+        return self.value
 
 
 class Order(TimedIdentifiable):
@@ -45,6 +45,7 @@ class Order(TimedIdentifiable):
     """
 
     def __init__(self,
+                 step: int,
                  side: TradeSide,
                  trade_type: TradeType,
                  pair: 'TradingPair',
@@ -52,10 +53,15 @@ class Order(TimedIdentifiable):
                  portfolio: 'Portfolio',
                  price: float,
                  criteria: Callable[['Order', 'Exchange'], bool] = None,
-                 path_id: str = None):
+                 path_id: str = None,
+                 ttl_in_seconds: int = None,
+                 ttl_in_steps: int = None):
+        super().__init__()
+
         if quantity.size == 0:
             raise InvalidOrderQuantity(quantity)
 
+        self.step = step
         self.side = side
         self.type = trade_type
         self.pair = pair
@@ -64,6 +70,8 @@ class Order(TimedIdentifiable):
         self.price = price
         self.criteria = criteria
         self.path_id = path_id or self.id
+        self.ttl_in_seconds = ttl_in_seconds
+        self.ttl_in_steps = ttl_in_steps
         self.status = OrderStatus.PENDING
 
         self.filled_size = 0
@@ -77,8 +85,10 @@ class Order(TimedIdentifiable):
 
     @property
     def size(self) -> float:
-        size = self.quantity.size if self.pair.base is self.quantity.instrument else self.quantity.size * self.price
-        return size
+        if self.pair.base is self.quantity.instrument:
+            return round(self.quantity.size, self.pair.base.precision)
+
+        return round(self.quantity.size * self.price, self.pair.base.precision)
 
     @property
     def price(self) -> float:
@@ -183,15 +193,13 @@ class Order(TimedIdentifiable):
 
         self._listeners = []
 
-        print('Completed: ', self.id, order)
-
         return order or self.release()
 
-    def cancel(self, exchange: 'Exchange'):
+    def cancel(self):
         self.status = OrderStatus.CANCELLED
 
         for listener in self._listeners or []:
-            listener.on_cancel(self, exchange)
+            listener.on_cancel(self)
 
         self._listeners = []
         self.release()
@@ -203,29 +211,36 @@ class Order(TimedIdentifiable):
     def to_dict(self):
         return {
             "id": self.id,
+            "step": self.step,
             "status": self.status,
             "type": self.type,
             "side": self.side,
             "pair": self.pair,
             "quantity": self.quantity,
             "size": self.size,
+            "filled_size": self.filled_size,
             "price": self.price,
             "criteria": self.criteria,
-            "path_id": self.path_id
+            "path_id": self.path_id,
+            "created_at": self.created_at
         }
 
     def to_json(self):
         return {
             "id": str(self.id),
+            "step": int(self.step),
             "status": str(self.status),
             "type": str(self.type),
             "side": str(self.side),
-            "pair": str(self.pair),
+            "base_symbol": str(self.pair.base.symbol),
+            "quote_symbol": str(self.pair.quote.symbol),
             "quantity": str(self.quantity),
-            "size": str(self.size),
-            "price": str(self.price),
+            "size": float(self.size),
+            "filled_size": self.filled_size,
+            "price": float(self.price),
             "criteria": str(self.criteria),
-            "path_id": str(self.path_id)
+            "path_id": str(self.path_id),
+            "created_at": str(self.created_at)
         }
 
     def __iadd__(self, recipe: 'OrderSpec') -> 'Order':
