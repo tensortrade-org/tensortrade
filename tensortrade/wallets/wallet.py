@@ -107,10 +107,12 @@ class Wallet(Identifiable):
         if quantity.is_locked and self.locked[quantity.path_id]:
             if quantity > self.locked[quantity.path_id]:
                 raise InsufficientFundsForAllocation(self.locked[quantity.path_id], quantity.size)
+
             self._locked[quantity.path_id] -= quantity
         elif not quantity.is_locked:
             if quantity > self._balance:
                 raise InsufficientFundsForAllocation(self.balance, quantity.size)
+
             self._balance -= quantity
 
         return self

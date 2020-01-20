@@ -18,77 +18,95 @@ from tensortrade.orders.criteria import Stop, Limit
 from tensortrade.trades import TradeSide, TradeType
 
 
-def market_order(side: 'TradeSide',
+def market_order(step: int,
+                 side: 'TradeSide',
                  pair: 'TradingPair',
                  price: float,
                  size: float,
                  portfolio: 'Portfolio'):
+    instrument = pair.base if side == TradeSide.BUY else pair.quote
+    order = Order(step=step,
+                  side=side,
+                  trade_type=TradeType.MARKET,
+                  pair=pair,
+                  price=price,
+                  quantity=(size * instrument),
+                  portfolio=portfolio
+                  )
 
-    order = Order(
-        side=side,
-        trade_type=TradeType.MARKET,
-        pair=pair,
-        price=price,
-        quantity=(size * pair.base),
-        portfolio=portfolio
-    )
     return order
 
 
-def limit_order(side: 'TradeSide',
+def limit_order(step: int,
+                side: 'TradeSide',
                 pair: 'TradingPair',
                 price: float,
                 size: float,
-                portfolio: 'Portfolio'):
+                portfolio: 'Portfolio',
+                ttl_in_seconds: int = None,
+                ttl_in_steps: int = None):
+    instrument = pair.base if side == TradeSide.BUY else pair.quote
+    order = Order(step=step,
+                  side=side,
+                  trade_type=TradeType.LIMIT,
+                  pair=pair,
+                  price=price,
+                  quantity=(size * instrument),
+                  ttl_in_seconds=ttl_in_seconds,
+                  ttl_in_steps=ttl_in_steps,
+                  portfolio=portfolio
+                  )
 
-    order = Order(
-        side=side,
-        trade_type=TradeType.LIMIT,
-        pair=pair,
-        price=price,
-        quantity=(size * pair.base),
-        portfolio=portfolio
-    )
     return order
 
 
-def hidden_limit_order(side: 'TradeSide',
+def hidden_limit_order(step: int,
+                       side: 'TradeSide',
                        pair: 'TradingPair',
                        price: float,
                        size: float,
-                       portfolio: 'Portfolio'):
-
-    order = Order(
-        side=side,
-        trade_type=TradeType.MARKET,
-        pair=pair,
-        price=price,
-        quantity=(size * pair.base),
-        portfolio=portfolio,
-        criteria=Limit(limit_price=price)
-    )
+                       portfolio: 'Portfolio',
+                       ttl_in_seconds: int = None,
+                       ttl_in_steps: int = None):
+    instrument = pair.base if side == TradeSide.BUY else pair.quote
+    order = Order(step=step,
+                  side=side,
+                  trade_type=TradeType.MARKET,
+                  pair=pair,
+                  price=price,
+                  quantity=(size * instrument),
+                  ttl_in_seconds=ttl_in_seconds,
+                  ttl_in_steps=ttl_in_steps,
+                  portfolio=portfolio,
+                  criteria=Limit(limit_price=price)
+                  )
 
     return order
 
 
-def risk_managed_order(side: 'TradeSide',
+def risk_managed_order(step: int,
+                       side: 'TradeSide',
                        trade_type: 'TradeType',
                        pair: 'TradingPair',
                        price: float,
                        size: float,
                        down_percent: float,
                        up_percent: float,
-                       portfolio: 'Portfolio'):
-
-    order = Order(side=side,
+                       portfolio: 'Portfolio',
+                       ttl_in_seconds: int = None,
+                       ttl_in_steps: int = None):
+    instrument = pair.base if side == TradeSide.BUY else pair.quote
+    order = Order(step=step,
+                  side=side,
                   trade_type=trade_type,
                   pair=pair,
                   price=price,
-                  quantity=(size * pair.base),
+                  ttl_in_seconds=ttl_in_seconds,
+                  ttl_in_steps=ttl_in_steps,
+                  quantity=(size * instrument),
                   portfolio=portfolio)
 
     risk_criteria = Stop("down", down_percent) ^ Stop("up", up_percent)
-
     risk_management = OrderSpec(side=TradeSide.SELL if side == TradeSide.BUY else TradeSide.BUY,
                                 trade_type=TradeType.MARKET,
                                 pair=pair,
@@ -97,4 +115,3 @@ def risk_managed_order(side: 'TradeSide',
     order += risk_management
 
     return order
-

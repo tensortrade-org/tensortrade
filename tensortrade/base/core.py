@@ -46,9 +46,9 @@ class TimeIndexed:
 
 class TimedIdentifiable(Identifiable, TimeIndexed, metaclass=ABCMeta):
 
+    def __init__(self):
+        self.__created_at = global_clock.now()
+
     @property
     def created_at(self):
-        if not hasattr(self, '__created_at'):
-            self.__created_at = self.clock.step
-
         return self.__created_at

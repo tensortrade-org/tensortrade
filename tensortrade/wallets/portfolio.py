@@ -36,6 +36,8 @@ class Portfolio(Component, TimedIdentifiable):
                  wallets: List[WalletType] = None,
                  order_listener: 'OrderListener' = None,
                  performance_listener: Callable[[pd.DataFrame], None] = None):
+        super().__init__()
+
         wallets = wallets or []
 
         self._base_instrument = self.default('base_instrument', base_instrument)
@@ -48,7 +50,9 @@ class Portfolio(Component, TimedIdentifiable):
 
         self._initial_net_worth = None
         self._initial_balance = self.base_balance
-        self._performance = pd.DataFrame([], columns=['step', 'net_worth'], index=['step'])
+        self._performance = pd.DataFrame(
+            [], columns=['step', 'net_worth', 'base_symbol'], index=['step'])
+
 
     @property
     def base_instrument(self) -> Instrument:
@@ -212,11 +216,20 @@ class Portfolio(Component, TimedIdentifiable):
         self._wallets.pop((exchange.id, instrument.symbol), None)
 
     def update(self):
-        performance = [[self.clock.step, self.net_worth] + [quantity.size for quantity in self.balances] +
-                       [quantity.size for quantity in self.locked_balances]]
+        wallets = list(
+            filter(lambda wallet: wallet.instrument.symbol is not self.base_instrument.symbol, self.wallets))
 
-        columns = ['step', 'net_worth'] + [quantity.instrument.symbol for quantity in self.balances] + \
-            ['{}_pending'.format(quantity.instrument.symbol) for quantity in self.locked_balances]
+        performance = [[self.clock.step, self.net_worth, self.base_instrument.symbol] +
+                       [quantity.size for quantity in self.balances] +
+                       [quantity.size for quantity in self.locked_balances] +
+                       [wallet.exchange.quote_price(
+                           wallet.instrument/self.base_instrument) for wallet in wallets]
+                       ]
+
+        columns = ['step', 'net_worth', 'base_symbol'] + \
+                  [quantity.instrument.symbol for quantity in self.balances] + \
+                  ['{}_pending'.format(quantity.instrument.symbol) for quantity in self.locked_balances] + \
+                  ['{}_price'.format(wallet.instrument.symbol) for wallet in wallets]
 
         performance_update = pd.DataFrame(performance, columns=columns)
 
@@ -229,4 +242,5 @@ class Portfolio(Component, TimedIdentifiable):
     def reset(self):
         self._initial_balance = self.base_balance
         self._initial_net_worth = self.net_worth
-        self._performance = pd.DataFrame([], columns=['step', 'net_worth'], index=['step'])
+        self._performance = pd.DataFrame(
+            [], columns=['step', 'net_worth', 'base_symbol'], index=['step'])

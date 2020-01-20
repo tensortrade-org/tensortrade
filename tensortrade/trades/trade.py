@@ -63,6 +63,8 @@ class Trade(TimedIdentifiable):
             commission: The commission paid for the trade in terms of the base instrument.
             (e.g. 10000 represents $10,000.00 if the `base_instrument` is "USD").
         """
+        super().__init__()
+
         self.order_id = order_id
         self.exchange_id = exchange_id
         self.step = step
@@ -83,7 +85,10 @@ class Trade(TimedIdentifiable):
 
     @property
     def size(self) -> float:
-        return self.quantity.size
+        if self.pair.base is self.quantity.instrument:
+            return round(self.quantity.size, self.pair.base.precision)
+
+        return round(self.quantity.size * self.price, self.pair.base.precision)
 
     @property
     def price(self) -> float:
@@ -125,22 +130,26 @@ class Trade(TimedIdentifiable):
                 'quote_symbol': self.pair.quote.symbol,
                 'side': self.side,
                 'type': self.type,
+                'size': self.size,
                 'quantity': self.quantity,
                 'price': self.price,
-                'commission': self.commission
+                'commission': self.commission,
+                "created_at": self.created_at
                 }
 
     def to_json(self):
         return {'id': str(self.id),
                 'order_id': str(self.order_id),
-                'step': str(self.step),
+                'step': int(self.step),
                 'base_symbol': str(self.pair.base.symbol),
                 'quote_symbol': str(self.pair.quote.symbol),
                 'side': str(self.side),
                 'type': str(self.type),
+                'size': float(self.size),
                 'quantity': str(self.quantity),
-                'price': str(self.price),
-                'commission': str(self.commission)
+                'price': float(self.price),
+                'commission': str(self.commission),
+                "created_at": str(self.created_at)
                 }
 
     def __str__(self):

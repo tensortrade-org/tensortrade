@@ -15,8 +15,9 @@
 import math
 import random
 import numpy
-import scipy.linalg
 import numpy.random as nrand
+
+from scipy import linalg
 
 from tensortrade.exchanges.simulated.stochastic.helper_classes import convert_to_prices
 from tensortrade.exchanges.simulated.stochastic.model_params import ModelParameters
@@ -89,13 +90,12 @@ def jump_diffusion_process(param):
     s_n = time = 0
     small_lamda = -(1.0 / param.lamda)
     jump_sizes = []
-    for k in range(0, param.all_time):
+    for _ in range(0, param.all_time):
         jump_sizes.append(0.0)
     while s_n < param.all_time:
         s_n += small_lamda * math.log(random.uniform(0, 1))
         for j in range(0, param.all_time):
             if time * param.all_delta <= s_n * param.all_delta <= (j + 1) * param.all_delta:
-                # print("was true")
                 jump_sizes[j] += random.normalvariate(param.jumps_mu, param.jumps_sigma)
                 break
         time += 1
@@ -201,7 +201,7 @@ def get_correlated_geometric_brownian_motions(param, correlation_matrix, n):
     :return: n correlated log return geometric brownian motion processes
     """
     assert isinstance(param, ModelParameters)
-    decomposition = scipy.linalg.cholesky(correlation_matrix, lower=False)
+    decomposition = linalg.cholesky(correlation_matrix)
     uncorrelated_paths = []
     sqrt_delta_sigma = math.sqrt(param.all_delta) * param.all_sigma
     # Construct uncorrelated paths to convert into correlated paths
