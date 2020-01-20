@@ -28,13 +28,7 @@ class Identifiable(object, metaclass=ABCMeta):
 
 class TimeIndexed:
 
-    @property
-    def clock(self):
-        return self._clock
-
-    @clock.setter
-    def clock(self, clock: 'Clock'):
-        self._clock = clock
+    clock = None
 
 
 class TimedIdentifiable(Identifiable, TimeIndexed, metaclass=ABCMeta):
