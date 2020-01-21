@@ -24,7 +24,7 @@ class Limit(Criteria):
     def __init__(self, limit_price: float):
         self.limit_price = limit_price
 
-    def call(self, order: 'Order', exchange: 'Exchange') -> bool:
+    def check(self, order: 'Order', exchange: 'Exchange') -> bool:
         price = exchange.quote_price(order.pair)
 
         buy_satisfied = (order.side == TradeSide.BUY and price <= self.limit_price)

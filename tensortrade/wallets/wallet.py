@@ -12,13 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License
 
-
-import numpy as np
-
 from typing import Dict, Tuple
 
 from tensortrade.base import Identifiable
-from tensortrade.base.exceptions import InsufficientFundsForAllocation
+from tensortrade.base.exceptions import InsufficientFunds
 from tensortrade.instruments import Quantity
 
 
@@ -106,15 +103,12 @@ class Wallet(Identifiable):
     def __isub__(self, quantity: 'Quantity') -> 'Wallet':
         if quantity.is_locked and self.locked[quantity.path_id]:
             if quantity > self.locked[quantity.path_id]:
-                raise InsufficientFundsForAllocation(self.locked[quantity.path_id], quantity.size)
-
+                raise InsufficientFunds(self.locked[quantity.path_id], quantity.size)
             self._locked[quantity.path_id] -= quantity
         elif not quantity.is_locked:
             if quantity > self._balance:
-                raise InsufficientFundsForAllocation(self.balance, quantity.size)
-
+                raise InsufficientFunds(self.balance, quantity.size)
             self._balance -= quantity
-
         return self
 
     def __str__(self):

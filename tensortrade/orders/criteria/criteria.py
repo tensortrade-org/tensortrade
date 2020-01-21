@@ -26,25 +26,25 @@ class Criteria(object, metaclass=ABCMeta):
     """A criteria to be satisfied before an order will be executed."""
 
     @abstractmethod
-    def call(self, order: 'Order', exchange: 'Exchange') -> bool:
+    def check(self, order: 'Order', exchange: 'Exchange') -> bool:
         raise NotImplementedError
 
     def __call__(self, order: 'Order', exchange: 'Exchange') -> bool:
         if not exchange.is_pair_tradable(order.pair):
             return False
-        return self.call(order, exchange)
+        return self.check(order, exchange)
 
     def __and__(self, other: CriteriaType) -> 'Criteria':
-        return AND(self, other)
+        return AndCriteria(self, other)
 
     def __or__(self, other: CriteriaType) -> 'Criteria':
-        return OR(self, other)
+        return OrCriteria(self, other)
 
     def __xor__(self, other: CriteriaType) -> 'Criteria':
-        return XOR(self, other)
+        return XorCriteria(self, other)
 
     def __invert__(self):
-        return NOT(self)
+        return NotCriteria(self)
 
     def __repr__(self):
         return str(self)
@@ -62,47 +62,50 @@ class CriteriaBinOp(Criteria):
         self.op = op
         self.op_str = op_str
 
-    def call(self, order: 'Order', exchange: 'Exchange') -> bool:
+    def check(self, order: 'Order', exchange: 'Exchange') -> bool:
         left = self.left(order, exchange)
         right = self.right(order, exchange)
+
         return self.op(left, right)
 
     def __str__(self):
         is_left_op = isinstance(self.left, CriteriaBinOp)
         is_right_op = isinstance(self.right, CriteriaBinOp)
+
         if is_left_op and is_right_op:
             return "({}) {} ({})".format(self.left, self.op_str, self.right)
         elif is_left_op and not is_right_op:
             return "({}) {} {}".format(self.left, self.op_str, self.right)
         elif not is_left_op and is_right_op:
             return "{} {} ({})".format(self.left, self.op_str, self.right)
+
         return "{} {} {}".format(self.left, self.op_str, self.right)
 
 
-class AND(CriteriaBinOp):
+class AndCriteria(CriteriaBinOp):
 
     def __init__(self, left: CriteriaType, right: CriteriaType):
         super().__init__(left, right, operator.and_, "&")
 
 
-class OR(CriteriaBinOp):
+class OrCriteria(CriteriaBinOp):
 
     def __init__(self, left: CriteriaType, right: CriteriaType):
         super().__init__(left, right, operator.or_, "|")
 
 
-class XOR(CriteriaBinOp):
+class XorCriteria(CriteriaBinOp):
 
     def __init__(self, left: CriteriaType, right: CriteriaType):
         super().__init__(left, right, operator.xor, "^")
 
 
-class NOT(Criteria):
+class NotCriteria(Criteria):
 
     def __init__(self, criteria: CriteriaType):
         self.criteria = criteria
 
-    def call(self, order: 'Order', exchange: 'Exchange') -> bool:
+    def check(self, order: 'Order', exchange: 'Exchange') -> bool:
         return not self.criteria(order, exchange)
 
     def __str__(self):

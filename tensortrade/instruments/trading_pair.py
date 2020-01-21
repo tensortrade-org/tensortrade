@@ -38,6 +38,9 @@ class TradingPair:
     def quote(self):
         return self._quote
 
+    def __hash__(self):
+        return hash(str(self))
+
     def __rmul__(self, other):
         if not isinstance(other, Number):
             raise IncompatibleTradingPairOperation(other, self)

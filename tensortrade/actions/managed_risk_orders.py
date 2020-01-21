@@ -14,14 +14,13 @@
 
 import tensortrade.orders.create as create
 
-from typing import Union, List
+from typing import Union, List, Tuple
 from itertools import product
 from gym.spaces import Discrete
 
 from tensortrade.actions import ActionScheme
 from tensortrade.trades import TradeSide, TradeType
 from tensortrade.orders import Order, OrderListener, risk_managed_order
-from tensortrade.instruments import USD, BTC
 
 
 class ManagedRiskOrders(ActionScheme):
@@ -30,7 +29,6 @@ class ManagedRiskOrders(ActionScheme):
     """
 
     def __init__(self,
-                 pairs: Union[List['TradingPair'], 'TradingPair'] = USD/BTC,
                  stop_loss_percentages: Union[List[float], float] = [0.02, 0.04, 0.06],
                  take_profit_percentages: Union[List[float], float] = [0.01, 0.02, 0.03],
                  trade_sizes: Union[List[float], int] = 10,
@@ -45,10 +43,9 @@ class ManagedRiskOrders(ActionScheme):
             stop_loss_percentages: A list of possible stop loss percentages for each order.
             take_profit_percentages: A list of possible take profit percentages for each order.
             trade_sizes: A list of trade sizes to select from when submitting an order.
-            (e.g. '[1, 1/3]' = 100% or 33% of balance is tradeable. '4' = 25%, 50%, 75%, or 100% of balance is tradeable.)
+            (e.g. '[1, 1/3]' = 100% or 33% of balance is tradable. '4' = 25%, 50%, 75%, or 100% of balance is tradable.)
             order_listener (optional): An optional listener for order events executed by this action scheme.
         """
-        self.pairs = self.default('pairs', pairs)
         self.stop_loss_percentages = self.default('stop_loss_percentages', stop_loss_percentages)
         self.take_profit_percentages = self.default(
             'take_profit_percentages', take_profit_percentages)
@@ -58,23 +55,16 @@ class ManagedRiskOrders(ActionScheme):
         self.ttl_in_steps = self.default('ttl_in_steps', ttl_in_steps)
         self._order_listener = self.default('order_listener', order_listener)
 
-        self.reset()
+        generator = product(self.stop_loss_percentages,
+                            self.take_profit_percentages,
+                            self.trade_sizes,
+                            [TradeSide.BUY, TradeSide.SELL])
+        self.actions = list(generator)
 
     @property
     def action_space(self) -> Discrete:
         """The discrete action space produced by the action scheme."""
-        return Discrete(len(self._actions))
-
-    @property
-    def pairs(self) -> List['TradingPair']:
-        """A list of trading pairs to select from when submitting an order.
-        (e.g. TradingPair(BTC, USD), TradingPair(ETH, BTC), etc.)
-        """
-        return self._pairs
-
-    @pairs.setter
-    def pairs(self, pairs: Union[List['TradingPair'], 'TradingPair']):
-        self._pairs = pairs if isinstance(pairs, list) else [pairs]
+        return Discrete(len(self.actions))
 
     @property
     def stop_loss_percentages(self) -> List[float]:
@@ -112,18 +102,18 @@ class ManagedRiskOrders(ActionScheme):
         self._trade_sizes = trade_sizes if isinstance(trade_sizes, list) else [
             (x + 1) / trade_sizes for x in range(trade_sizes)]
 
-    def get_order(self, action: int, exchange: 'Exchange', portfolio: 'Portfolio') -> Order:
+    def get_order(self, action: int, portfolio: 'Portfolio') -> Order:
         if action == 0:
             return None
 
-        (pair, stop_loss, take_profit, order_size, side) = self._actions[action]
+        ((exchange, pair), (stop_loss, take_profit, size, side)) = self.actions[action]
 
         price = exchange.quote_price(pair)
 
         wallet_instrument = pair.base if side == TradeSide.BUY else pair.quote
         wallet = portfolio.get_wallet(exchange.id, instrument=wallet_instrument)
 
-        size = (wallet.balance.size * order_size)
+        size = (wallet.balance.size * size)
         size = min(wallet.balance.size, size)
 
         if size < 10 ** -pair.base.precision:
@@ -148,10 +138,5 @@ class ManagedRiskOrders(ActionScheme):
         if self._order_listener is not None:
             order.attach(self._order_listener)
 
-        return order
-
     def reset(self):
-        generator = product(self._pairs, self.stop_loss_percentages,
-                            self.take_profit_percentages, self.trade_sizes, [TradeSide.BUY, TradeSide.SELL])
-
-        self._actions = [None] + list(generator)
+        pass

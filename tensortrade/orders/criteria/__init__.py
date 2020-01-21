@@ -1,4 +1,4 @@
-from .criteria import Criteria
+from .criteria import Criteria, AndCriteria, NotCriteria, OrCriteria, XorCriteria, CriteriaBinOp
 
 from .limit import Limit
 from .stop import Stop, StopDirection

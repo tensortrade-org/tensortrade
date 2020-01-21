@@ -145,7 +145,7 @@ class Quantity:
         return Quantity._math_operation(self, other, operator.mul)
 
     def __rmul__(self, other: Union['Quantity', float, int]) -> 'Quantity':
-        return Quantity.__mul__(other, self)
+        return Quantity.__mul__(self, other)
 
     def __truediv__(self, other: Union['Quantity', 'Instrument', float, int]) -> Union['Quantity', 'Price']:
         if isinstance(other, Price):
@@ -209,7 +209,7 @@ class Price:
 
     @rate.setter
     def rate(self, rate: float):
-        self._rate = round(rate, self.pair.base.precision)
+        self._rate = rate
 
     @property
     def pair(self) -> 'TradingPair':

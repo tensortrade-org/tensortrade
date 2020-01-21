@@ -12,52 +12,53 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pandas as pd
+import re
 
-from abc import abstractmethod
-from typing import List
+from typing import Callable, Union
 
 from tensortrade.base import Component, TimedIdentifiable
+from tensortrade.instruments import TradingPair, Price
+from tensortrade.data import Node
 
 
-class Exchange(Component, TimedIdentifiable):
+class ExchangeOptions:
+
+    def __init__(self,
+                 commission: float = 0.003,
+                 min_trade_size: float = 1e-6,
+                 max_trade_size: float = 1e6,
+                 min_trade_price: float = 1e-8,
+                 max_trade_price: float = 1e8,
+                 is_live: bool = False):
+        self.commission = commission
+        self.min_trade_size = min_trade_size
+        self.max_trade_size = max_trade_size
+        self.min_trade_price = min_trade_price
+        self.max_trade_price = max_trade_price
+        self.is_live = is_live
+
+
+class Exchange(Node, Component, TimedIdentifiable):
     """An abstract exchange for use within a trading environment."""
+
     registered_name = "exchanges"
 
-    @property
-    @abstractmethod
-    def is_live(self):
-        raise NotImplementedError()
+    def __init__(self,
+                 name: str,
+                 service: Union[Callable, str],
+                 options: ExchangeOptions = None):
+        super().__init__(name)
+
+        self._service = service
+        self._options = options if options else ExchangeOptions()
+        self._prices = None
+        self.flatten = True
 
     @property
-    @abstractmethod
-    def observation_columns(self) -> List[str]:
-        """The list of observation columns provided by the exchange each time step."""
-        raise NotImplementedError
+    def options(self):
+        return self._options
 
-    @property
-    @abstractmethod
-    def has_next_observation(self) -> bool:
-        """If `False`, the exchange's data source has run out of observations.
-
-        Resetting the exchange may be necessary to continue generating observations.
-
-        Returns:
-            Whether or not the specified instrument has a next observation.
-        """
-        raise NotImplementedError
-
-    @abstractmethod
-    def next_observation(self) -> pd.DataFrame:
-        """Generate the next observation from the exchange, including wallet balances if specified.
-
-        Returns:
-            A `pandas.DataFrame` of exchange observations for the next time step.
-        """
-        raise NotImplementedError
-
-    @abstractmethod
-    def quote_price(self, trading_pair: 'TradingPair') -> float:
+    def quote_price(self, trading_pair: 'TradingPair') -> 'Price':
         """The quote price of a trading pair on the exchange, denoted in the base instrument.
 
         Arguments:
@@ -66,9 +67,17 @@ class Exchange(Component, TimedIdentifiable):
         Returns:
             The quote price of the specified trading pair, denoted in the base instrument.
         """
-        raise NotImplementedError
+        return self._prices[str(trading_pair)] * trading_pair
 
-    @abstractmethod
+    def forward(self, inbound_data: dict):
+        self._prices = {}
+
+        for k, v in inbound_data.items():
+            pair = "".join([c if c.isalnum() else "/" for c in k])
+            self._prices[pair] = v
+
+        return inbound_data
+
     def is_pair_tradable(self, trading_pair: 'TradingPair') -> bool:
         """Whether or not the specified trading pair is tradable on this exchange.
 
@@ -78,17 +87,30 @@ class Exchange(Component, TimedIdentifiable):
         Returns:
             A bool designating whether or not the pair is tradable.
         """
-        raise NotImplementedError()
+        return str(trading_pair) in self._prices.keys()
 
-    @abstractmethod
     def execute_order(self, order: 'Order', portfolio: 'Portfolio'):
         """Execute an order on the exchange.
 
         Arguments:
             order: The order to execute.
+            portfolio: The portfolio to use.
         """
-        raise NotImplementedError
+        trade = self._service(
+            order=order,
+            base_wallet=portfolio.get_wallet(self.id, order.pair.base),
+            quote_wallet=portfolio.get_wallet(self.id, order.pair.quote),
+            current_price=self.quote_price(order.pair).rate,
+            options=self.options,
+            exchange_id=self.id,
+            clock=self.clock
+        )
 
-    @abstractmethod
+        if trade:
+            order.fill(self, trade)
+
+    def has_next(self):
+        return True
+
     def reset(self):
-        pass
+        self._prices = None
