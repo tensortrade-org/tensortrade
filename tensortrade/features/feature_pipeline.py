@@ -31,7 +31,6 @@ class FeaturePipeline(Component):
             steps: A list of feature transformations to apply to observations.
         """
         self._steps = steps
-        self._dtype: Union[type, str] = self.default('dtype', np.float32, kwargs)
 
     @property
     def steps(self) -> List[FeatureTransformer]:

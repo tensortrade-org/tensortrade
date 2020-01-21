@@ -9,20 +9,20 @@ from tensortrade.instruments import Quantity, USD, BTC, ETH, LTC
 from tensortrade.exchanges.services.execution.simulated import execute_order
 from tensortrade.exchanges import Exchange
 from tensortrade.data.internal import create_internal_feed
-from tensortrade.data import DataFeed, Array
+from tensortrade.data import DataFeed, ArraySource
 
 
 def test_create_internal_data_feed():
 
-    ex1 = Exchange("coinbase", service=execute_order)(
-        Array("USD-BTC", [7000, 7500, 8300]),
-        Array("USD-ETH", [200, 212, 400])
+    ex1 = Exchange("coinbase", execution_service=execute_order)(
+        ArraySource("USD-BTC", [7000, 7500, 8300]),
+        ArraySource("USD-ETH", [200, 212, 400])
     )
 
-    ex2 = Exchange("binance", service=execute_order)(
-        Array("USD-BTC", [7005, 7600, 8200]),
-        Array("USD-ETH", [201, 208, 402]),
-        Array("USD-LTC", [56, 52, 60])
+    ex2 = Exchange("binance", execution_service=execute_order)(
+        ArraySource("USD-BTC", [7005, 7600, 8200]),
+        ArraySource("USD-ETH", [201, 208, 402]),
+        ArraySource("USD-LTC", [56, 52, 60])
     )
 
     portfolio = Portfolio(USD, [
@@ -74,6 +74,7 @@ def test_create_internal_data_feed():
     coinbase_net_worth = 10000 + (10 * 7000) + (5 * 200)
     binance_net_worth = 1000 + (5 * 7005) + (20 * 201) + (3 * 56)
     print(coinbase_net_worth + binance_net_worth)
-    data['net_worth'] = sum(data[k] if k.endswith("worth") or k.endswith("USD:/total") else 0 for k in data.keys())
+    data['net_worth'] = sum(data[k] if k.endswith(
+        "worth") or k.endswith("USD:/total") else 0 for k in data.keys())
 
     assert feed.next() == data

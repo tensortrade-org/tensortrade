@@ -2,10 +2,9 @@
 import operator
 
 
-from .wallet import create_wallet_ds
+from .wallet import create_wallet_source
 
-from tensortrade.data import DataFeed
-from tensortrade.data.stream.transform import Reduce
+from tensortrade.data import DataFeed, Reduce
 from tensortrade.wallets import Portfolio
 
 
@@ -17,7 +16,7 @@ def create_internal_feed(portfolio: 'Portfolio'):
     for wallet in portfolio.wallets:
         symbol = wallet.instrument.symbol
         sources += [wallet.exchange]
-        sources += [create_wallet_ds(wallet, include_worth=(symbol != base_symbol))]
+        sources += [create_wallet_source(wallet, include_worth=(symbol != base_symbol))]
 
     net_worth = Reduce(
         name="net_worth",

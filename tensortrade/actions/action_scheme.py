@@ -38,7 +38,7 @@ class ActionScheme(Component, metaclass=ABCMeta):
     def actions(self, actions):
         self._actions = actions
 
-    def over(self, exchange_pairs: List[Tuple['Exchange', 'Pair']]):
+    def set_pairs(self, exchange_pairs: List[Tuple['Exchange', 'Pair']]):
         self.actions = list(product(exchange_pairs, self.actions))
         self.actions = [None] + self.actions
 
@@ -51,7 +51,7 @@ class ActionScheme(Component, metaclass=ABCMeta):
         pass
 
     def __add__(self, other):
-        return ADD(self, other)
+        return AddActions(self, other)
 
     @abstractmethod
     def get_order(self, action: int, portfolio: 'Portfolio') -> Order:
@@ -68,7 +68,7 @@ class ActionScheme(Component, metaclass=ABCMeta):
         raise NotImplementedError()
 
 
-class ADD(ActionScheme):
+class AddActions(ActionScheme):
 
     def __init__(self, left: ActionScheme, right: ActionScheme):
         super().__init__()
@@ -77,9 +77,9 @@ class ADD(ActionScheme):
 
         self.actions = [None]
 
-    def over(self, exchange_pairs):
-        self.left.over(exchange_pairs)
-        self.right.over(exchange_pairs)
+    def set_pairs(self, exchange_pairs):
+        self.left.set_pairs(exchange_pairs)
+        self.right.set_pairs(exchange_pairs)
 
         left_size = len(self.left.actions)
         right_size = len(self.right.actions)

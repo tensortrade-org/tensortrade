@@ -1,8 +1,8 @@
 
 
 from typing import Callable
-from .exchange import Exchange, ExchangeOptions
 
+from .exchange import Exchange, ExchangeOptions
 
 
 _registry = {

@@ -3,7 +3,7 @@ import pytest
 import pandas as pd
 
 from tensortrade.base import TradingContext
-from tensortrade.exchanges.simulated import StochasticExchange
+from tensortrade.exchanges import Exchange
 from tensortrade.actions import ManagedRiskOrders
 from tensortrade.rewards import RiskAdjustedReturns
 from tensortrade.features import FeatureTransformer, FeaturePipeline
@@ -33,7 +33,7 @@ def rsi(X: pd.DataFrame,
     U = returns.apply(lambda x: x if x > 0 else 0)
     D = returns.apply(lambda x: -x if x < 0 else 0)
 
-    SMMA = lambda s, n: s.ewm(alpha=1 / n).mean()
+    def SMMA(s, n): return s.ewm(alpha=1 / n).mean()
 
     RS = SMMA(U, period) / SMMA(D, period)
 
@@ -43,11 +43,11 @@ def rsi(X: pd.DataFrame,
     return RSI
 
 
-def macd(X : pd.DataFrame,
-         lower : int = 7,
-         upper : int = 14,
-         price_window : int = 63,
-         window : int = 252):
+def macd(X: pd.DataFrame,
+         lower: int = 7,
+         upper: int = 14,
+         price_window: int = 63,
+         window: int = 252):
     """
     Computes the Moving Average Convergence Divergence.
 
@@ -64,7 +64,7 @@ def macd(X : pd.DataFrame,
         window : int = 252
     """
     prices = X.close
-    ewma = lambda span: prices.ewm(span=span, adjust=False).mean()
+    def ewma(span): return prices.ewm(span=span, adjust=False).mean()
 
     q = (ewma(upper) - ewma(lower)) / prices.rolling(price_window).std()
     macd = q / prices.rolling(window).std()
@@ -76,12 +76,12 @@ def macd(X : pd.DataFrame,
 class FunctionsTransformer(FeatureTransformer):
 
     def __init__(
-            self,
-            columns: Union[List[str], str, None] = None,
-            inplace=True,
-            specifications: List[tuple] = None,
-            window_size: int = None
-        ):
+        self,
+        columns: Union[List[str], str, None] = None,
+        inplace=True,
+        specifications: List[tuple] = None,
+        window_size: int = None
+    ):
         super().__init__(columns, inplace)
         self.specifications = specifications
         self.window_size = window_size
@@ -129,7 +129,7 @@ def env():
     with TradingContext(**context):
         action_scheme = ManagedRiskOrders()
         reward_scheme = RiskAdjustedReturns()
-        exchange = StochasticExchange()
+        exchange = Exchange()
 
         portfolio = Portfolio(USD, [
             Wallet(exchange, 100000 * USD),
@@ -177,7 +177,7 @@ def env():
     with TradingContext(**context):
         action_scheme = ManagedRiskOrders()
         reward_scheme = RiskAdjustedReturns()
-        exchange = StochasticExchange()
+        exchange = Exchange()
 
         portfolio = Portfolio(USD, [
             Wallet(exchange, 100000 * USD),
@@ -208,5 +208,3 @@ def test_insufficient_funds(env):
         total_reward += reward
 
     assert done
-
-

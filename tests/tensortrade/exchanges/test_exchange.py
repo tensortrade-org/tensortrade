@@ -4,7 +4,7 @@ import numpy as np
 from typing import List
 
 from tensortrade import TradingContext
-from tensortrade.data import DataFrame
+from tensortrade.data import DataFrameSource
 from tensortrade.trades import Trade
 from tensortrade.slippage import SlippageModel
 from tensortrade.exchanges import Exchange, get
@@ -62,7 +62,7 @@ def test_injects_exchange_with_credentials():
 def test_injects_base_instrument():
 
     with TradingContext(**config):
-        df = pd.DataFrame(
+        df = pd.Source(
             [[900, 849, 9023, 94039, 943]],
             columns=["open", "high", "low", "close", "volume"]
         )
@@ -130,12 +130,12 @@ def test_simulated_from_config():
     }
 
     with TradingContext(**config):
-        df = pd.DataFrame(
+        df = pd.Source(
             [[900, 849, 9023, 94039, 943]],
             columns=["open", "high", "low", "close", "volume"]
         )
 
-        exchange_ds = DataFrame('prices', df)
+        exchange_ds = DataFrameSource('prices', df)
 
         exchange = SimulatedExchange(exchange_ds,
                                      extract=lambda x: {EUR/ETH: x['close']})
@@ -158,7 +158,6 @@ def test_exchange_with_data_source():
         name="date"
     )
     columns = ["open", "high", "low", "close", "volume"]
-    data_frame = pd.DataFrame(data, index=index, columns=columns)
+    data_frame = pd.Source(data, index=index, columns=columns)
 
-    data_frame_ds = DataFrame('a1', data_frame)
-
+    data_frame_ds = DataFrameSource('a1', data_frame)

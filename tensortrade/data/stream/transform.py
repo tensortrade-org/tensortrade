@@ -1,3 +1,17 @@
+# Copyright 2019 The TensorTrade Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 
 import operator
 import functools
@@ -14,11 +28,12 @@ class BinOp(Node):
         super().__init__(name)
         self.op = op
 
-    def call(self, inbound_data: dict):
+    def update(self, inbound_data: dict):
         left_name = self.inbound[0].name
         right_name = self.inbound[1].name
         left_value = inbound_data.get(left_name, 0)
         right_value = inbound_data.get(right_name, 0)
+
         return self.op(left_value, right_value)
 
     def has_next(self):
@@ -35,10 +50,11 @@ class Reduce(Node):
                  selector: Callable[[str], bool],
                  func: Callable[[float, float], float]):
         super().__init__(name)
+
         self.selector = selector
         self.func = func
 
-    def call(self, inbound_data):
+    def update(self, inbound_data):
         keys = list(filter(self.selector, inbound_data.keys()))
         return functools.reduce(self.func, [inbound_data[k] for k in keys])
 
@@ -58,11 +74,10 @@ class Select(Node):
         else:
             self.key = None
             self.selector = selector
+
         super().__init__(self.key or "select")
 
-        self.flatten = True
-
-    def call(self, inbound_data):
+    def update(self, inbound_data):
         if not self.key:
             self.key = list(filter(self.selector, inbound_data.keys()))[0]
         return inbound_data[self.key]
@@ -78,9 +93,8 @@ class Namespace(Node):
 
     def __init__(self, name: str):
         super().__init__(name)
-        self.flatten = True
 
-    def call(self, inbound_data: dict):
+    def update(self, inbound_data: dict):
         return inbound_data
 
     def has_next(self):

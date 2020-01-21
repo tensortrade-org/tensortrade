@@ -1,4 +1,19 @@
+# Copyright 2019 The TensorTrade Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
+
+import collections
 import pandas as pd
 import numpy as np
 
@@ -9,12 +24,25 @@ class History(object):
         self.window_size = window_size
         self.observations = pd.DataFrame()
 
+    def _flatten(self, observation: dict, parent_key='', sep=':/') -> dict:
+        items = []
+
+        for key, val in observation.items():
+            new_key = parent_key + sep + key if parent_key else key
+
+            if isinstance(val, collections.MutableMapping):
+                items.extend(self._flatten(val, new_key, sep=sep).items())
+            else:
+                items.append((new_key, val))
+
+        return dict(items)
+
     def push(self, observation: dict):
         """Saves an observation."""
-        self.observations = self.observations.append(
-            observation,
-            ignore_index=True
-        )
+        flattened = self._flatten(observation)
+
+        self.observations = self.observations.append(flattened, ignore_index=True)
+
         if len(self.observations) > self.window_size:
             self.observations = self.observations[-self.window_size:]
 

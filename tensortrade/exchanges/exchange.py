@@ -45,13 +45,13 @@ class Exchange(Node, Component, TimedIdentifiable):
 
     def __init__(self,
                  name: str,
-                 service: Union[Callable, str],
+                 execution_service: Union[Callable, str],
                  options: ExchangeOptions = None):
         super().__init__(name)
-        self._service = service
+
+        self._execution_service = execution_service
         self._options = options if options else ExchangeOptions()
         self._prices = None
-        self.flatten = True
 
     @property
     def options(self):
@@ -68,11 +68,13 @@ class Exchange(Node, Component, TimedIdentifiable):
         """
         return self._prices[str(trading_pair)] * trading_pair
 
-    def call(self, inbound_data):
+    def update(self, inbound_data: dict):
         self._prices = {}
+
         for k, v in inbound_data.items():
             pair = "".join([c if c.isalnum() else "/" for c in k])
             self._prices[pair] = v
+
         return inbound_data
 
     def is_pair_tradable(self, trading_pair: 'TradingPair') -> bool:
@@ -93,7 +95,7 @@ class Exchange(Node, Component, TimedIdentifiable):
             order: The order to execute.
             portfolio: The portfolio to use.
         """
-        trade = self._service(
+        trade = self._execution_service(
             order=order,
             base_wallet=portfolio.get_wallet(self.id, order.pair.base),
             quote_wallet=portfolio.get_wallet(self.id, order.pair.quote),

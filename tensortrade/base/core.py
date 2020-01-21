@@ -7,7 +7,6 @@ from .clock import Clock
 
 
 objects = {}
-global_clock = Clock()
 
 
 class Identifiable(object, metaclass=ABCMeta):
@@ -28,13 +27,28 @@ class Identifiable(object, metaclass=ABCMeta):
 
 class TimeIndexed:
 
-    clock = None
+    @property
+    def clock(self) -> Clock:
+        return self._clock
+
+    @clock.setter
+    def clock(self, clock: Clock):
+        self._clock = clock
 
 
 class TimedIdentifiable(Identifiable, TimeIndexed, metaclass=ABCMeta):
 
     def __init__(self):
-        self.__created_at = global_clock.now()
+        self.__created_at = self._clock.now()
+
+    @property
+    def clock(self) -> Clock:
+        return self._clock
+
+    @clock.setter
+    def clock(self, clock: Clock):
+        self._clock = clock
+        self.__created_at = self._clock.now()
 
     @property
     def created_at(self):

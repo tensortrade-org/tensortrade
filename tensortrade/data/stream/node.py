@@ -1,19 +1,20 @@
+# Copyright 2019 The TensorTrade Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-import collections
 
 from abc import abstractmethod
 from typing import List
-
-
-def _flatten(data, parent_key='', sep=':/'):
-    items = []
-    for k, v in data.items():
-        new_key = parent_key + sep + k if parent_key else k
-        if isinstance(v, collections.MutableMapping):
-            items.extend(_flatten(v, new_key, sep=sep).items())
-        else:
-            items.append((new_key, v))
-    return dict(items)
 
 
 class Node:
@@ -26,7 +27,6 @@ class Node:
         self._inbound_data = {}
         self._call_count = 0
         self._data = {}
-        self.flatten = False
         self._sep = sep
 
     @property
@@ -53,28 +53,15 @@ class Node:
     def outbound(self, outbound: List['Node']):
         self._outbound = outbound
 
-    @property
-    def flatten(self) -> bool:
-        return self._flatten
-
-    @flatten.setter
-    def flatten(self, flatten: bool):
-        self._flatten = flatten
-
     def gather(self) -> List['Node']:
-        """
-        for node in self.inbound:
-            if len(node.inbound) == 0:
-                starting += [node]
-            else:
-                starting += node.gather()
-        """
         if len(self.inbound) == 0:
             return [self]
 
         starting = []
+
         for node in self.inbound:
             starting += node.gather()
+
         return starting
 
     def subscribe(self, node: 'Node'):
@@ -89,22 +76,28 @@ class Node:
 
     def next(self):
         self._call_count += 1
+
         if self._call_count < len(self.inbound):
             return
+
         self._call_count = 0
-        data = {self.name: self.call(self._inbound_data)}
-        outbound_data = _flatten(data, sep=self._sep) if self.flatten else data
+
+        outbound_data = {self.name: self.update(self._inbound_data)}
+
         self.propagate(outbound_data)
+
         return outbound_data
 
     def __call__(self, *inbound):
         self.inbound = list(inbound)
+
         for node in self.inbound:
             node.subscribe(self)
+
         return self
 
     @abstractmethod
-    def call(self, inbound_data: dict):
+    def update(self, inbound_data: dict):
         raise NotImplementedError()
 
     @abstractmethod
@@ -117,6 +110,7 @@ class Node:
 
     def refresh(self):
         self.reset()
+
         for source in self.outbound:
             source.refresh()
 
@@ -125,9 +119,10 @@ class Value(Node):
 
     def __init__(self, name: str, value: float):
         super().__init__(name)
+
         self.value = value
 
-    def call(self, inbound_data: dict):
+    def update(self, inbound_data: dict):
         return self.value
 
     def has_next(self):
@@ -141,9 +136,10 @@ class Placeholder(Node):
 
     def __init__(self, name: str):
         super().__init__(name)
+
         self.name = name
 
-    def call(self, inbound_data: dict):
+    def update(self, inbound_data: dict):
         return inbound_data[self.name]
 
     def has_next(self):

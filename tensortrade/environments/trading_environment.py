@@ -24,12 +24,11 @@ import tensortrade.actions as actions
 import tensortrade.rewards as rewards
 import tensortrade.wallets as wallets
 
-from tensortrade.base.core import TimeIndexed, Clock
+from tensortrade.base import TimeIndexed, Clock
 from tensortrade.actions import ActionScheme
 from tensortrade.rewards import RewardScheme
-from tensortrade.data import DataFeed
+from tensortrade.data import DataFeed, Select
 from tensortrade.data.internal import create_internal_feed
-from tensortrade.data.stream.transform import Select
 from tensortrade.orders import Broker, Order
 from tensortrade.wallets import Portfolio
 from tensortrade.environments.history import History
@@ -55,31 +54,30 @@ class TradingEnvironment(gym.Env, TimeIndexed):
             kwargs (optional): Additional arguments for tuning the environments, logging, etc.
         """
         super().__init__()
-        TimeIndexed.clock = Clock()
 
         self.portfolio = portfolio
         self.action_scheme = action_scheme
         self.reward_scheme = reward_scheme
         self.feed = feed
-        if self.feed:
-            self._external_keys = feed.next().keys()
-            feed.reset()
-
         self.window_size = window_size
         self.use_internal = use_internal
 
+        if self.feed:
+            self._external_keys = self.feed.next().keys()
+            self.feed.reset()
+
         self.history = History(window_size=window_size)
-
-        self._dtype = kwargs.get('dtype', np.float32)
-        self._observation_lows = kwargs.get('observation_lows', 0)
-        self._observation_highs = kwargs.get('observation_highs', 1)
-
         self._broker = Broker(exchanges=self.portfolio.exchanges)
 
-        self.render_benchmarks: List[Dict] = kwargs.get('render_benchmarks', [])
+        self.clock = Clock()
+        self.action_space = None
+        self.observation_space = None
         self.viewer = None
 
         self._enable_logger = kwargs.get('enable_logger', True)
+        self._observation_dtype = kwargs.get('dtype', np.float32)
+        self._observation_lows = kwargs.get('observation_lows', 0)
+        self._observation_highs = kwargs.get('observation_highs', 1)
 
         if self._enable_logger:
             self.logger = logging.getLogger(kwargs.get('logger_name', __name__))
@@ -94,57 +92,28 @@ class TradingEnvironment(gym.Env, TimeIndexed):
         Sets the observation space and the action space of the environment.
         Creates the internal feed and sets initialization for different components.
         """
-        # Set clocks to all components
+        for component in [self._broker, self.portfolio, self.action_scheme, self.reward_scheme, self.feed]:
+            component.clock = self.clock
 
-        # Set action scheme over trading pairs
-        self.action_scheme.over(exchange_pairs=self.portfolio.exchange_pairs)
+        self.action_scheme.set_pairs(exchange_pairs=self.portfolio.exchange_pairs)
         self.action_space = Discrete(len(self.action_scheme))
 
-        # Set data feed with internal data sources
         if not self.feed:
             self.feed = create_internal_feed(self.portfolio)
 
         self.feed = self.feed + create_internal_feed(self.portfolio)
 
-        # Set observation space
-        d = self.feed.next()
-        n_features = len(d.keys()) if self.use_internal else len(self._external_keys)
+        initial_obs = self.feed.next()
+        n_features = len(initial_obs.keys()) if self.use_internal else len(self._external_keys)
 
-        observation_space = Box(
+        self.observation_space = Box(
             low=self._observation_lows,
             high=self._observation_highs,
             shape=(self.window_size, n_features),
-            dtype=self._dtype
+            dtype=self._observation_dtype
         )
-        self.observation_space = observation_space
 
-        # Reset data feed
         self.feed.reset()
-
-    @property
-    def action_space(self) -> Space:
-        return self._action_space
-
-    @action_space.setter
-    def action_space(self, action_space: Space):
-        self._action_space = action_space
-
-    @property
-    def observation_space(self) -> Space:
-        return self._observation_space
-
-    @observation_space.setter
-    def observation_space(self, observation_space: Space):
-        self._observation_space = observation_space
-
-    @property
-    def window_size(self) -> int:
-        """The length of the observation window in the `observation_space`."""
-        return self._window_size
-
-    @window_size.setter
-    def window_size(self, window_size: int):
-        self._window_size = window_size
 
     @property
     def portfolio(self) -> Portfolio:
@@ -197,33 +166,34 @@ class TradingEnvironment(gym.Env, TimeIndexed):
             done (bool): If `True`, the environments is complete and should be restarted.
             info (dict): Any auxiliary, diagnostic, or debugging information to output.
         """
-        # Perform the action on the environment
         order = self.action_scheme.get_order(action, self.portfolio)
-        if order:
-            self.broker.submit(order)
-        self.broker.update()
 
-        # Get next observation
-        row = self.feed.next()
+        if order:
+            self._broker.submit(order)
+
+        self._broker.update()
+
+        obs_row = self.feed.next()
+
         if not self.use_internal:
-            row = {k: row[k] for k in self._external_keys}
-        self.history.push(row)
+            obs_row = {k: obs_row[k] for k in self._external_keys}
+
+        self.history.push(obs_row)
+
         obs = self.history.observe()
 
-        # Compute reward
         reward = self.reward_scheme.get_reward(self._portfolio)
         reward = np.nan_to_num(reward)
+
         if np.bitwise_not(np.isfinite(reward)):
             raise ValueError('Reward returned by the reward scheme must by a finite float.')
 
-        # Find out if episode is complete
         done = (self.portfolio.profit_loss < 0.1) or not self.feed.has_next()
 
-        # Collect information on episode
         info = {
             'step': self.clock.step,
             'portfolio': self.portfolio,
-            'broker': self.broker,
+            'broker': self._broker,
             'order': order,
         }
 
@@ -249,14 +219,16 @@ class TradingEnvironment(gym.Env, TimeIndexed):
         self.action_scheme.reset()
         self.reward_scheme.reset()
         self.portfolio.reset()
-        self.broker.reset()
         self.history.reset()
+        self._broker.reset()
 
-        # Get next observation
-        row = self.feed.next()
+        obs_row = self.feed.next()
+
         if not self.use_internal:
-            row = {k: row[k] for k in self._external_keys}
-        self.history.push(row)
+            obs_row = {k: obs_row[k] for k in self._external_keys}
+
+        self.history.push(obs_row)
+
         obs = self.history.observe()
 
         self.clock.increment()
@@ -268,11 +240,12 @@ class TradingEnvironment(gym.Env, TimeIndexed):
         if mode == 'log':
             self.logger.info('Performance: ' + str(self._portfolio.performance))
         elif mode == 'chart':
-            if self.viewer is not None:
-                self.viewer.render(self.clock.step - 1,
-                                   self._portfolio.performance['net_worth'].values,
-                                   self.render_benchmarks,
-                                   self._broker.trades)
+            if self.viewer is None:
+                raise NotImplementedError()
+
+            self.viewer.render(self.clock.step - 1,
+                               self._portfolio.performance,
+                               self._broker.trades)
 
     def close(self):
         """Utility method to clean environment before closing."""

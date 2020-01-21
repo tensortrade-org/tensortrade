@@ -35,7 +35,7 @@ class Stop(Criteria):
         self.direction = StopDirection(direction)
         self.percent = percent
 
-    def call(self, order: 'Order', exchange: 'Exchange') -> bool:
+    def check(self, order: 'Order', exchange: 'Exchange') -> bool:
         price = exchange.quote_price(order.pair)
         percent = abs(price - order.price) / price
 
