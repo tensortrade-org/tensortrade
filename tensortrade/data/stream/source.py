@@ -28,7 +28,7 @@ class DataSource(TimeIndexed, Node):
         super().__init__(name)
 
 
-class ArraySource(DataSource):
+class Array(DataSource):
 
     def __init__(self, name: str, array: List[any] = None):
         super().__init__(name)
@@ -36,7 +36,7 @@ class ArraySource(DataSource):
         self._array = array if array else []
         self._cursor = 0
 
-    def generate(self, inbound_data: dict):
+    def forward(self, inbound_data: dict):
         v = self._array[self._cursor]
 
         self._cursor += 1
@@ -60,7 +60,7 @@ class DataFrameSource(DataSource):
         self._data_frame = data_frame
         self._cursor = 0
 
-    def generate(self, inbound_data: dict) -> Dict[str, any]:
+    def forward(self, inbound_data: dict) -> Dict[str, any]:
         idx = self._data_frame.index[self._cursor]
         data = dict(self._data_frame.loc[idx, :])
 
@@ -77,7 +77,7 @@ class DataFrameSource(DataSource):
         self._cursor = 0
 
 
-class LambdaSource(DataSource):
+class Lambda(DataSource):
 
     def __init__(self, name: str, extract: Callable[[any], float], obj: any):
         super().__init__(name)
@@ -85,7 +85,7 @@ class LambdaSource(DataSource):
         self.extract = extract
         self.obj = obj
 
-    def generate(self, inbound_data: dict):
+    def forward(self, inbound_data: dict):
         return self.extract(self.obj)
 
     def has_next(self):

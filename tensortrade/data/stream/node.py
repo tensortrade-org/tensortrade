@@ -12,9 +12,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+References:
+    - https://github.com/tensorflow/tensorflow/blob/master/tensorflow/python/module/module.py
+    - https://github.com/tensorflow/tensorflow/blob/master/tensorflow/python/keras/engine/base_layer.py
+    - https://github.com/tensorflow/tensorflow/blob/master/tensorflow/python/keras/engine/node.py
+"""
+
+import collections
 
 from abc import abstractmethod
 from typing import List
+
+
+def _flatten(data, parent_key='', sep=':/'):
+    items = []
+    for k, v in data.items():
+        new_key = parent_key + sep + k if parent_key else k
+        if isinstance(v, collections.MutableMapping):
+            items.extend(_flatten(v, new_key, sep=sep).items())
+        else:
+            items.append((new_key, v))
+    return dict(items)
 
 
 class Node:
@@ -28,6 +47,15 @@ class Node:
         self._call_count = 0
         self._data = {}
         self._sep = sep
+        self.flatten = False
+
+    @property
+    def flatten(self) -> bool:
+        return self._flatten
+
+    @flatten.setter
+    def flatten(self, flatten: bool):
+        self._flatten = flatten
 
     @property
     def name(self):
@@ -78,14 +106,13 @@ class Node:
         self._call_count += 1
 
         if self._call_count < len(self.inbound):
-            pass
+            return
 
         self._call_count = 0
 
-        outbound_data = {self.name: self.generate(self._inbound_data)}
-
+        data = {self.name: self.forward(self._inbound_data)}
+        outbound_data = _flatten(data, sep=self._sep) if self.flatten else data
         self.propagate(outbound_data)
-
         return outbound_data
 
     def __call__(self, *inbound):
@@ -97,7 +124,7 @@ class Node:
         return self
 
     @abstractmethod
-    def generate(self, inbound_data: dict):
+    def forward(self, inbound_data: dict):
         raise NotImplementedError()
 
     @abstractmethod
@@ -114,15 +141,20 @@ class Node:
         for source in self.outbound:
             source.refresh()
 
+    def __str__(self):
+        return "<Node: name={}>".format(self.name)
+
+    def __repr__(self):
+        return str(self)
+
 
 class Value(Node):
 
     def __init__(self, name: str, value: float):
         super().__init__(name)
-
         self.value = value
 
-    def generate(self, inbound_data: dict):
+    def forward(self, inbound_data: dict):
         return self.value
 
     def has_next(self):
@@ -139,7 +171,7 @@ class Placeholder(Node):
 
         self.name = name
 
-    def generate(self, inbound_data: dict):
+    def forward(self, inbound_data: dict):
         return inbound_data[self.name]
 
     def has_next(self):
@@ -147,3 +179,4 @@ class Placeholder(Node):
 
     def reset(self):
         pass
+

@@ -3,12 +3,12 @@ import pandas as pd
 import numpy as np
 
 
-from tensortrade.data import ArraySource, DataFrameSource
+from tensortrade.data import Array, DataFrameSource
 
 
 def test_array_init():
 
-    array_ds = ArraySource('a', [1, 2, 3])
+    array_ds = Array('a', [1, 2, 3])
 
     assert array_ds
     assert array_ds._array == [1, 2, 3]
@@ -17,7 +17,7 @@ def test_array_init():
 
 def test_array_next():
 
-    array_ds = ArraySource('a', [1, 2, 3])
+    array_ds = Array('a', [1, 2, 3])
 
     next_value = array_ds.next()
 
@@ -25,7 +25,7 @@ def test_array_next():
 
 
 def test_array_reset():
-    array_ds = ArraySource('a', [1, 2, 3])
+    array_ds = Array('a', [1, 2, 3])
     assert array_ds.next() == {'a': 1}
     assert array_ds.next() == {'a': 2}
     assert array_ds.next() == {'a': 3}

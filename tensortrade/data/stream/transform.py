@@ -28,7 +28,7 @@ class BinOp(Node):
         super().__init__(name)
         self.op = op
 
-    def update(self, inbound_data: dict):
+    def forward(self, inbound_data: dict):
         left_name = self.inbound[0].name
         right_name = self.inbound[1].name
         left_value = inbound_data.get(left_name, 0)
@@ -54,7 +54,7 @@ class Reduce(Node):
         self.selector = selector
         self.func = func
 
-    def update(self, inbound_data):
+    def forward(self, inbound_data):
         keys = list(filter(self.selector, inbound_data.keys()))
         return functools.reduce(self.func, [inbound_data[k] for k in keys])
 
@@ -76,10 +76,12 @@ class Select(Node):
             self.selector = selector
 
         super().__init__(self.key or "select")
+        self.flatten = True
 
-    def update(self, inbound_data):
+    def forward(self, inbound_data):
         if not self.key:
             self.key = list(filter(self.selector, inbound_data.keys()))[0]
+            self.name = self.key
         return inbound_data[self.key]
 
     def has_next(self):
@@ -93,8 +95,9 @@ class Namespace(Node):
 
     def __init__(self, name: str):
         super().__init__(name)
+        self.flatten = True
 
-    def update(self, inbound_data: dict):
+    def forward(self, inbound_data: dict):
         return inbound_data
 
     def has_next(self):

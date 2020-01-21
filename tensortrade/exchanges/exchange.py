@@ -52,6 +52,7 @@ class Exchange(Node, Component, TimedIdentifiable):
         self._service = service
         self._options = options if options else ExchangeOptions()
         self._prices = None
+        self.flatten = True
 
     @property
     def options(self):
@@ -68,7 +69,7 @@ class Exchange(Node, Component, TimedIdentifiable):
         """
         return self._prices[str(trading_pair)] * trading_pair
 
-    def update(self, inbound_data: dict):
+    def forward(self, inbound_data: dict):
         self._prices = {}
 
         for k, v in inbound_data.items():

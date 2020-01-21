@@ -18,7 +18,7 @@ import pandas as pd
 from typing import List
 
 from tensortrade.base.core import Observable
-from tensortrade.data.stream import ArraySource, Node
+from tensortrade.data.stream import Array, Node
 
 
 class DataFeed(Observable):
@@ -38,12 +38,10 @@ class DataFeed(Observable):
             return self._names
 
         self._names = []
-
         for name in map(lambda n: n.name, self._nodes):
             for k in self._data.keys():
                 if k.startswith(name):
                     self._names += [k]
-
         return self._names
 
     @property
@@ -73,11 +71,11 @@ class DataFeed(Observable):
 
     def _next(self, node: Node):
         outbound_data = node.next()
-
         if outbound_data:
             self._data.update(outbound_data)
 
             for output_node in node.outbound:
+
                 self._next(output_node)
 
     def next(self):
@@ -118,6 +116,6 @@ class DataFeed(Observable):
         nodes = []
 
         for name in frame.columns:
-            nodes += [ArraySource(name, list(frame[name]))]
+            nodes += [Array(name, list(frame[name]))]
 
         return DataFeed(nodes)

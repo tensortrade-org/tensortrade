@@ -2,7 +2,7 @@
 import operator
 import pytest
 
-from tensortrade.data import DataFeed, DataSource, ArraySource
+from tensortrade.data import DataFeed, DataSource, Array
 from tensortrade.data.stream.transform import BinOp
 
 
@@ -32,8 +32,8 @@ def test_stream_adding():
 
 def test_multi_step_adding():
 
-    a1 = ArraySource('a1', [1, 2, 3])
-    a2 = ArraySource('a2', [4, 5, 6])
+    a1 = Array('a1', [1, 2, 3])
+    a2 = Array('a2', [4, 5, 6])
 
     t1 = BinOp('t1', operator.add)(a1, a2)
     t2 = BinOp('t2', operator.add)(t1, a2)

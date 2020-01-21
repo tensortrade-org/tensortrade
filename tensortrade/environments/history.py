@@ -22,47 +22,32 @@ class History(object):
 
     def __init__(self, window_size: int):
         self.window_size = window_size
-        self.observations = pd.DataFrame()
+        self.rows = pd.DataFrame()
 
-    def _flatten(self, observation: dict, parent_key='', sep=':/') -> dict:
-        items = []
-
-        for key, val in observation.items():
-            new_key = parent_key + sep + key if parent_key else key
-
-            if isinstance(val, collections.MutableMapping):
-                items.extend(self._flatten(val, new_key, sep=sep).items())
-            else:
-                items.append((new_key, val))
-
-        return dict(items)
-
-    def push(self, observation: dict):
+    def push(self, row: dict):
         """Saves an observation."""
-        flattened = self._flatten(observation)
+        self.rows = self.rows.append(row, ignore_index=True)
 
-        self.observations = self.observations.append(flattened, ignore_index=True)
-
-        if len(self.observations) > self.window_size:
-            self.observations = self.observations[-self.window_size:]
+        if len(self.rows) > self.window_size:
+            self.rows = self.rows[-self.window_size:]
 
     def observe(self) -> np.array:
-        """Returns the observation to be observed by the agent."""
-        observation = self.observations.copy()
+        """Returns the rows to be observed by the agent."""
+        rows = self.rows.copy()
 
-        if len(observation) < self.window_size:
-            size = self.window_size - len(observation)
-            padding = np.zeros((size, observation.shape[1]))
-            padding = pd.DataFrame(padding, columns=self.observations.columns)
-            observation = pd.concat([padding, observation], ignore_index=True, sort=False)
+        if len(rows) < self.window_size:
+            size = self.window_size - len(rows)
+            padding = np.zeros((size, rows.shape[1]))
+            padding = pd.DataFrame(padding, columns=self.rows.columns)
+            rows = pd.concat([padding, rows], ignore_index=True, sort=False)
 
-        if isinstance(observation, pd.DataFrame):
-            observation = observation.fillna(0, axis=1)
-            observation = observation.values
+        if isinstance(rows, pd.DataFrame):
+            rows = rows.fillna(0, axis=1)
+            rows = rows.values
 
-        observation = np.nan_to_num(observation)
+        rows = np.nan_to_num(rows)
 
-        return observation
+        return rows
 
     def reset(self):
-        self.observations = pd.DataFrame()
+        self.rows = pd.DataFrame()

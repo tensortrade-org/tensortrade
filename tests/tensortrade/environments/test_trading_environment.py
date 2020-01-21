@@ -9,7 +9,7 @@ from tensortrade.instruments import USD, BTC, ETH, LTC
 from tensortrade.rewards import SimpleProfit
 from tensortrade.wallets import Portfolio, Wallet
 from tensortrade.actions import ManagedRiskOrders
-from tensortrade.data import DataFeed, ArraySource
+from tensortrade.data import DataFeed, Array
 from tensortrade.data.stream.transform import Namespace
 from tensortrade.exchanges.services.execution.simulated import execute_order
 
@@ -26,14 +26,14 @@ def portfolio():
     df2 = df2.set_index("date")
 
     ex1 = Exchange("coinbase", service=execute_order)(
-        ArraySource("USD-BTC", list(df1['BTC:close'])),
-        ArraySource("USD-ETH", list(df1['ETH:close']))
+        Array("USD-BTC", list(df1['BTC:close'])),
+        Array("USD-ETH", list(df1['ETH:close']))
     )
 
     ex2 = Exchange("binance", service=execute_order)(
-        ArraySource("USD-BTC", list(df2['BTC:close'])),
-        ArraySource("USD-ETH", list(df2['ETH:close'])),
-        ArraySource("USD-LTC", list(df2['LTC:close']))
+        Array("USD-BTC", list(df2['BTC:close'])),
+        Array("USD-ETH", list(df2['ETH:close'])),
+        Array("USD-LTC", list(df2['LTC:close']))
     )
 
     p = Portfolio(USD, [
@@ -116,9 +116,9 @@ def test_runs_with_external_and_internal_data_feed(portfolio):
 
     nodes = []
     for name in coinbase_btc.columns:
-        nodes += [ArraySource(name, list(coinbase_btc[name]))]
+        nodes += [Array(name, list(coinbase_btc[name]))]
     for name in coinbase_eth.columns:
-        nodes += [ArraySource(name, list(coinbase_eth[name]))]
+        nodes += [Array(name, list(coinbase_eth[name]))]
     coinbase = Namespace("coinbase")(*nodes)
     feed = DataFeed([coinbase])
 
@@ -167,9 +167,9 @@ def test_runs_with__external_feed_only(portfolio):
 
     nodes = []
     for name in coinbase_btc.columns:
-        nodes += [ArraySource(name, list(coinbase_btc[name]))]
+        nodes += [Array(name, list(coinbase_btc[name]))]
     for name in coinbase_eth.columns:
-        nodes += [ArraySource(name, list(coinbase_eth[name]))]
+        nodes += [Array(name, list(coinbase_eth[name]))]
     coinbase = Namespace("coinbase")(*nodes)
     feed = DataFeed([coinbase])
 
