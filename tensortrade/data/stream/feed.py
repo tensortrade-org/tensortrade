@@ -25,6 +25,7 @@ class DataFeed(Observable):
 
     def __init__(self, nodes: List[Node]):
         super().__init__()
+
         self._names = None
         self._nodes = self.remove_duplicates(nodes)
         self._inputs = self.gather(self._nodes)

@@ -45,11 +45,11 @@ class Exchange(Node, Component, TimedIdentifiable):
 
     def __init__(self,
                  name: str,
-                 execution_service: Union[Callable, str],
+                 service: Union[Callable, str],
                  options: ExchangeOptions = None):
         super().__init__(name)
 
-        self._execution_service = execution_service
+        self._service = service
         self._options = options if options else ExchangeOptions()
         self._prices = None
 
@@ -95,7 +95,7 @@ class Exchange(Node, Component, TimedIdentifiable):
             order: The order to execute.
             portfolio: The portfolio to use.
         """
-        trade = self._execution_service(
+        trade = self._service(
             order=order,
             base_wallet=portfolio.get_wallet(self.id, order.pair.base),
             quote_wallet=portfolio.get_wallet(self.id, order.pair.quote),

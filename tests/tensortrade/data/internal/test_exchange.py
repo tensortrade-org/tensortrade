@@ -22,7 +22,7 @@ def test_exchange_feed():
     btc_price = ArraySource("USD-BTC", [7000, 7500, 8300])
     eth_price = ArraySource("USD-ETH", [200, 212, 400])
 
-    exchange = Exchange("coinbase", execution_service=execute_order)(btc_price, eth_price)
+    exchange = Exchange("coinbase", service=execute_order)(btc_price, eth_price)
 
     feed = DataFeed([exchange])
 

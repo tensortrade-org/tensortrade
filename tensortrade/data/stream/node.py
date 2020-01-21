@@ -78,11 +78,11 @@ class Node:
         self._call_count += 1
 
         if self._call_count < len(self.inbound):
-            return
+            pass
 
         self._call_count = 0
 
-        outbound_data = {self.name: self.update(self._inbound_data)}
+        outbound_data = {self.name: self.generate(self._inbound_data)}
 
         self.propagate(outbound_data)
 
@@ -97,7 +97,7 @@ class Node:
         return self
 
     @abstractmethod
-    def update(self, inbound_data: dict):
+    def generate(self, inbound_data: dict):
         raise NotImplementedError()
 
     @abstractmethod
@@ -122,7 +122,7 @@ class Value(Node):
 
         self.value = value
 
-    def update(self, inbound_data: dict):
+    def generate(self, inbound_data: dict):
         return self.value
 
     def has_next(self):
@@ -139,7 +139,7 @@ class Placeholder(Node):
 
         self.name = name
 
-    def update(self, inbound_data: dict):
+    def generate(self, inbound_data: dict):
         return inbound_data[self.name]
 
     def has_next(self):

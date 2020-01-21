@@ -14,12 +14,12 @@ from tensortrade.data import DataFeed, ArraySource
 
 def test_create_internal_data_feed():
 
-    ex1 = Exchange("coinbase", execution_service=execute_order)(
+    ex1 = Exchange("coinbase", service=execute_order)(
         ArraySource("USD-BTC", [7000, 7500, 8300]),
         ArraySource("USD-ETH", [200, 212, 400])
     )
 
-    ex2 = Exchange("binance", execution_service=execute_order)(
+    ex2 = Exchange("binance", service=execute_order)(
         ArraySource("USD-BTC", [7005, 7600, 8200]),
         ArraySource("USD-ETH", [201, 208, 402]),
         ArraySource("USD-LTC", [56, 52, 60])

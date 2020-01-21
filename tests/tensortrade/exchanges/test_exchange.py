@@ -4,12 +4,10 @@ import numpy as np
 from typing import List
 
 from tensortrade import TradingContext
-from tensortrade.data import DataFrameSource
+from tensortrade.data import DataFeed, DataFrameSource
 from tensortrade.trades import Trade
 from tensortrade.slippage import SlippageModel
-from tensortrade.exchanges import Exchange, get
-from tensortrade.exchanges.live import CCXTExchange
-from tensortrade.exchanges.simulated import SimulatedExchange
+from tensortrade.exchanges import Exchange
 from tensortrade.instruments import EUR, ETH
 
 
@@ -71,17 +69,6 @@ def test_injects_base_instrument():
         assert exchange._base_instrument == EUR
 
 
-def test_injects_string_initialized_action_scheme():
-
-    with TradingContext(**config):
-
-        exchange = get('simulated')
-
-        assert hasattr(exchange.context, 'credentials')
-        assert exchange.context.credentials == config['exchanges']['credentials']
-        assert exchange.context['credentials'] == config['exchanges']['credentials']
-
-
 def test_initialize_ccxt_from_config():
 
     config = {
@@ -136,9 +123,9 @@ def test_simulated_from_config():
         )
 
         exchange_ds = DataFrameSource('prices', df)
+        data_feed = DataFeed([exchange_ds])
 
-        exchange = SimulatedExchange(exchange_ds,
-                                     extract=lambda x: {EUR/ETH: x['close']})
+        exchange = Exchange('Exchange', lambda x: {EUR/ETH: x['close']})
 
         assert exchange._base_instrument == 'EURO'
         assert exchange._commission == 0.5
@@ -161,3 +148,4 @@ def test_exchange_with_data_source():
     data_frame = pd.Source(data, index=index, columns=columns)
 
     data_frame_ds = DataFrameSource('a1', data_frame)
+    data_feed = DataFeed([data_frame_ds])

@@ -15,7 +15,6 @@
 
 import pandas as pd
 
-from abc import abstractmethod
 from typing import Dict, List, Callable
 
 
@@ -28,14 +27,6 @@ class DataSource(TimeIndexed, Node):
     def __init__(self, name):
         super().__init__(name)
 
-    @abstractmethod
-    def generate(self, inbound_data: dict):
-        raise NotImplementedError
-
-    @abstractmethod
-    def reset(self):
-        raise NotImplementedError
-
 
 class ArraySource(DataSource):
 
@@ -45,7 +36,7 @@ class ArraySource(DataSource):
         self._array = array if array else []
         self._cursor = 0
 
-    def generate(self) -> any:
+    def generate(self, inbound_data: dict):
         v = self._array[self._cursor]
 
         self._cursor += 1
@@ -69,7 +60,7 @@ class DataFrameSource(DataSource):
         self._data_frame = data_frame
         self._cursor = 0
 
-    def generate(self) -> Dict[str, any]:
+    def generate(self, inbound_data: dict) -> Dict[str, any]:
         idx = self._data_frame.index[self._cursor]
         data = dict(self._data_frame.loc[idx, :])
 
@@ -94,7 +85,7 @@ class LambdaSource(DataSource):
         self.extract = extract
         self.obj = obj
 
-    def generate(self):
+    def generate(self, inbound_data: dict):
         return self.extract(self.obj)
 
     def has_next(self):

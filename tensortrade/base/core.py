@@ -6,6 +6,7 @@ from typing import Dict
 from .clock import Clock
 
 
+global_clock = Clock()
 objects = {}
 
 
@@ -26,6 +27,8 @@ class Identifiable(object, metaclass=ABCMeta):
 
 
 class TimeIndexed:
+
+    _clock = global_clock
 
     @property
     def clock(self) -> Clock:

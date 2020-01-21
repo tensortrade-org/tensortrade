@@ -25,12 +25,12 @@ def portfolio():
     df2 = df2.rename({"Unnamed: 0": "date"}, axis=1)
     df2 = df2.set_index("date")
 
-    ex1 = Exchange("coinbase", execution_service=execute_order)(
+    ex1 = Exchange("coinbase", service=execute_order)(
         ArraySource("USD-BTC", list(df1['BTC:close'])),
         ArraySource("USD-ETH", list(df1['ETH:close']))
     )
 
-    ex2 = Exchange("binance", execution_service=execute_order)(
+    ex2 = Exchange("binance", service=execute_order)(
         ArraySource("USD-BTC", list(df2['BTC:close'])),
         ArraySource("USD-ETH", list(df2['ETH:close'])),
         ArraySource("USD-LTC", list(df2['LTC:close']))
