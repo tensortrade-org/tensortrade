@@ -109,7 +109,7 @@ class ManagedRiskOrders(ActionScheme):
 
         price = exchange.quote_price(pair)
 
-        wallet_instrument = pair.base if side == TradeSide.BUY else pair.quote
+        wallet_instrument = side.instrument(pair)
         wallet = portfolio.get_wallet(exchange.id, instrument=wallet_instrument)
 
         size = (wallet.balance.size * size)
