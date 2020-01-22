@@ -14,9 +14,8 @@
 
 import numpy as np
 
-from tensortrade.data.stochastic.utils.brownian_motion import brownian_motion_log_returns
-from tensortrade.data.stochastic.utils.parameters import ModelParameters
-from tensortrade.data.stochastic.utils.helpers import generate
+from tensortrade.stochastic.processes.brownian_motion import brownian_motion_log_returns
+from tensortrade.stochastic.utils import ModelParameters, generate
 
 
 def cox_ingersoll_ross_levels(params):

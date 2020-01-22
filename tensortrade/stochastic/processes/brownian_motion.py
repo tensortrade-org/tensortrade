@@ -14,8 +14,7 @@
 
 import numpy as np
 
-from .parameters import ModelParameters
-from .helpers import convert_to_prices
+from tensortrade.stochastic.utils import ModelParameters, convert_to_prices
 
 
 def brownian_motion_log_returns(params: ModelParameters):

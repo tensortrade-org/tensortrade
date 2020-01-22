@@ -16,9 +16,8 @@ import random
 import numpy as np
 import scipy as sp
 
-from tensortrade.data.stochastic.processes.gbm import geometric_brownian_motion_log_returns
-from tensortrade.data.stochastic.utils.parameters import ModelParameters
-from tensortrade.data.stochastic.utils.helpers import generate
+from tensortrade.stochastic.processes.gbm import geometric_brownian_motion_log_returns
+from tensortrade.stochastic.utils import ModelParameters, generate
 
 
 # =============================================================================

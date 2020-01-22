@@ -1,10 +1,10 @@
 
 
-from tensortrade.data.stochastic import heston
+from tensortrade.stochastic import gbm
 
 
 def test_shape():
-    frame = heston(
+    frame = gbm(
         base_price=7000,
         base_volume=15000,
         start_date='2018-01-01',

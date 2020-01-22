@@ -16,9 +16,9 @@ import pandas as pd
 
 from stochastic.noise import GaussianNoise
 
-from tensortrade.data.stochastic.processes.heston import geometric_brownian_motion_jump_diffusion_levels
-from tensortrade.data.stochastic.utils.helpers import get_delta, scale_times_to_generate
-from tensortrade.data.stochastic.utils.parameters import ModelParameters, default
+from tensortrade.stochastic.processes.heston import geometric_brownian_motion_jump_diffusion_levels
+from tensortrade.stochastic.utils.helpers import get_delta, scale_times_to_generate
+from tensortrade.stochastic.utils.parameters import ModelParameters, default
 
 
 def merton(base_price: int = 1,

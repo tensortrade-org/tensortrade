@@ -22,7 +22,6 @@ from stochastic.noise import GaussianNoise
 from .parameters import ModelParameters, default
 
 
-
 def scale_times_to_generate(times_to_generate: int, time_frame: str):
 
     if 'MIN' in time_frame.upper():

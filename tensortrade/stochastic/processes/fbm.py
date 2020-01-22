@@ -17,7 +17,7 @@ import pandas as pd
 from stochastic.noise import GaussianNoise
 from stochastic.continuous import FractionalBrownianMotion
 
-from tensortrade.data.stochastic.utils.helpers import scale_times_to_generate
+from tensortrade.stochastic.utils import scale_times_to_generate
 
 
 def fbm(base_price: int = 1,

@@ -1,10 +1,9 @@
 
-
-from tensortrade.data.stochastic import gbm
+from tensortrade.stochastic import cox
 
 
 def test_shape():
-    frame = gbm(
+    frame = cox(
         base_price=7000,
         base_volume=15000,
         start_date='2018-01-01',

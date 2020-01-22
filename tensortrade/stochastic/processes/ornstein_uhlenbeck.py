@@ -17,9 +17,9 @@ import pandas as pd
 
 from stochastic.noise import GaussianNoise
 
-from tensortrade.data.stochastic.utils.brownian_motion import brownian_motion_log_returns
-from tensortrade.data.stochastic.utils.helpers import get_delta, scale_times_to_generate
-from tensortrade.data.stochastic.utils.parameters import ModelParameters, default
+from tensortrade.stochastic.processes.brownian_motion import brownian_motion_log_returns
+from tensortrade.stochastic.utils.helpers import get_delta, scale_times_to_generate
+from tensortrade.stochastic.utils.parameters import ModelParameters, default
 
 
 def ornstein_uhlenbeck_levels(params):
