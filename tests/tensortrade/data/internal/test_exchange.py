@@ -4,13 +4,13 @@ import pytest
 
 from tensortrade.exchanges.services.execution.simulated import execute_order
 from tensortrade.exchanges import Exchange
-from tensortrade.data import DataFeed, Array, Select
+from tensortrade.data import DataFeed, Stream, Select
 
 
 def test_price_ds():
 
-    btc_price = Array("USD-BTC", [7000, 7500, 8300])
-    eth_price = Array("USD-ETH", [200, 212, 400])
+    btc_price = Stream("USD-BTC", [7000, 7500, 8300])
+    eth_price = Stream("USD-ETH", [200, 212, 400])
 
     feed = DataFeed([btc_price, eth_price])
 
@@ -19,8 +19,8 @@ def test_price_ds():
 
 def test_exchange_feed():
 
-    btc_price = Array("USD-BTC", [7000, 7500, 8300])
-    eth_price = Array("USD-ETH", [200, 212, 400])
+    btc_price = Stream("USD-BTC", [7000, 7500, 8300])
+    eth_price = Stream("USD-ETH", [200, 212, 400])
 
     exchange = Exchange("coinbase", service=execute_order)(btc_price, eth_price)
 

@@ -8,20 +8,20 @@ from tensortrade.instruments import Quantity, USD, BTC
 from tensortrade.exchanges.services.execution.simulated import execute_order
 from tensortrade.exchanges import Exchange
 from tensortrade.data.internal import create_wallet_source
-from tensortrade.data import DataFeed, Array, Reduce
+from tensortrade.data import DataFeed, Stream, Reduce
 
 
 def test_exchange_with_wallets_feed():
 
     ex1 = Exchange("coinbase", service=execute_order)(
-        Array("USD-BTC", [7000, 7500, 8300]),
-        Array("USD-ETH", [200, 212, 400])
+        Stream("USD-BTC", [7000, 7500, 8300]),
+        Stream("USD-ETH", [200, 212, 400])
     )
 
     ex2 = Exchange("binance", service=execute_order)(
-        Array("USD-BTC", [7005, 7600, 8200]),
-        Array("USD-ETH", [201, 208, 402]),
-        Array("USD-LTC", [56, 52, 60])
+        Stream("USD-BTC", [7005, 7600, 8200]),
+        Stream("USD-ETH", [201, 208, 402]),
+        Stream("USD-LTC", [56, 52, 60])
     )
 
     wallet_btc = Wallet(ex1, 10 * BTC)

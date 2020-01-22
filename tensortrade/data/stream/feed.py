@@ -18,7 +18,7 @@ import pandas as pd
 from typing import List
 
 from tensortrade.base.core import Observable
-from tensortrade.data.stream import Array, Node
+from tensortrade.data.stream import Stream, Node
 
 
 class DataFeed(Observable):
@@ -116,6 +116,6 @@ class DataFeed(Observable):
         nodes = []
 
         for name in frame.columns:
-            nodes += [Array(name, list(frame[name]))]
+            nodes += [Stream(name, list(frame[name]))]
 
         return DataFeed(nodes)

@@ -2,14 +2,14 @@
 
 import operator
 
-from tensortrade.data import Array, DataFeed
+from tensortrade.data import Stream, DataFeed
 from tensortrade.data.stream.transform import BinOp, Select, Namespace
 
 
 def test_namespace():
 
-    a1 = Array("a1", [7, 8, 9])
-    a2 = Array("a2", [3, 2, 1])
+    a1 = Stream("a1", [7, 8, 9])
+    a2 = Stream("a2", [3, 2, 1])
 
     t1 = BinOp("t1", operator.mul)(a1, a2)
 
@@ -23,8 +23,8 @@ def test_namespace():
 
 
 def test_select():
-    a1 = Array("a1", [7, 8, 9])
-    a2 = Array("a2", [3, 2, 1])
+    a1 = Stream("a1", [7, 8, 9])
+    a2 = Stream("a2", [3, 2, 1])
 
     t1 = BinOp("t1", operator.mul)(a1, a2)
     a = Namespace("world")(a1, a2)

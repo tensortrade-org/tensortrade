@@ -13,11 +13,9 @@
 # limitations under the License.
 
 
-import operator
 import functools
 
-from abc import abstractmethod
-from typing import Union, Callable, List
+from typing import Union, Callable
 
 from .node import Node
 
@@ -99,6 +97,24 @@ class Namespace(Node):
 
     def forward(self, inbound_data: dict):
         return inbound_data
+
+    def has_next(self):
+        return True
+
+    def reset(self):
+        pass
+
+
+class Lambda(Node):
+
+    def __init__(self, name: str, extract: Callable[[any], float], obj: any):
+        super().__init__(name)
+
+        self.extract = extract
+        self.obj = obj
+
+    def forward(self, inbound_data: dict):
+        return self.extract(self.obj)
 
     def has_next(self):
         return True

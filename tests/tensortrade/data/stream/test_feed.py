@@ -2,15 +2,15 @@
 import operator
 import pytest
 
-from tensortrade.data import DataFeed, DataSource, Array
+from tensortrade.data import DataFeed, DataSource, Stream
 from tensortrade.data.stream.transform import BinOp
 
 
 def test_init():
     sources = [
-        Array('a1', [1, 2, 3]),
-        Array('a2', [4, 5, 6]),
-        Array('a3', [7, 8, 9])
+        Stream('a1', [1, 2, 3]),
+        Stream('a2', [4, 5, 6]),
+        Stream('a3', [7, 8, 9])
     ]
     feed = DataFeed(sources)
 
@@ -18,8 +18,8 @@ def test_init():
 
 
 def test_stream_adding():
-    a1 = Array('a1', [1, 2, 3])
-    a2 = Array('a2', [4, 5, 6])
+    a1 = Stream('a1', [1, 2, 3])
+    a2 = Stream('a2', [4, 5, 6])
 
     t1 = BinOp("a1+a2", operator.add)(a1, a2)
 
@@ -32,8 +32,8 @@ def test_stream_adding():
 
 def test_multi_step_adding():
 
-    a1 = Array('a1', [1, 2, 3])
-    a2 = Array('a2', [4, 5, 6])
+    a1 = Stream('a1', [1, 2, 3])
+    a2 = Stream('a2', [4, 5, 6])
 
     t1 = BinOp('t1', operator.add)(a1, a2)
     t2 = BinOp('t2', operator.add)(t1, a2)
