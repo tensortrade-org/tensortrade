@@ -1,4 +1,19 @@
+# Copyright 2019 The TensorTrade Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License
 
+
+from datetime import datetime
 from itertools import product
 from typing import Union, List, Dict
 
@@ -14,9 +29,11 @@ class Broker(OrderListener, TimeIndexed):
     """
 
     def __init__(self, exchanges: Union[List['Exchange'], 'Exchange']):
-        self._exchanges = exchanges if isinstance(exchanges, list) else [exchanges]
+        self.exchanges = exchanges
 
-        self.reset()
+        self._unexecuted = []
+        self._executed = {}
+        self._trades = {}
 
     @property
     def exchanges(self) -> List['Exchange']:
@@ -45,7 +62,7 @@ class Broker(OrderListener, TimeIndexed):
     def submit(self, order: Order):
         self._unexecuted += [order]
 
-    def cancel(self, order: Order, exchange: 'Exchange'):
+    def cancel(self, order: Order):
         if order.status == OrderStatus.CANCELLED:
             raise Warning(
                 'Cannot cancel order {} - order has already been cancelled.'.format(order.id))
@@ -56,27 +73,36 @@ class Broker(OrderListener, TimeIndexed):
 
         self._unexecuted.remove(order)
 
-        order.cancel(exchange)
+        order.cancel()
 
     def update(self):
         for order, exchange in product(self._unexecuted, self._exchanges):
             if order.is_executable_on(exchange):
-                print('Execute: ', order)
-
                 self._unexecuted.remove(order)
                 self._executed[order.id] = order
 
                 order.attach(self)
                 order.execute(exchange)
 
-    def on_fill(self, order: Order, exchange: 'Exchange', trade: 'Trade'):
-        print('Fill: ', trade)
+        for order in self._unexecuted + list(self._executed.values()):
+            order_expired = False
 
-        if trade.order_id in self._executed.keys() and trade not in self._trades:
+            if order.ttl_in_seconds:
+                seconds_passed = (datetime.now() - order.created_at).total_seconds()
+                order_expired = seconds_passed > order.ttl_in_seconds
+            elif order.ttl_in_steps:
+                steps_passed = self.clock.step - order.step
+                order_expired = steps_passed > order.ttl_in_steps
+
+            order_active = order.status not in [OrderStatus.FILLED, OrderStatus.CANCELLED]
+
+            if order_active and order_expired:
+                order.cancel()
+
+    def on_fill(self, order: Order, exchange: 'Exchange', trade: 'Trade'):
+        if trade.order_id in self._executed and trade not in self._trades:
             self._trades[trade.order_id] = self._trades.get(trade.order_id, [])
             self._trades[trade.order_id] += [trade]
-
-            print('Total traded: ', order.filled_size)
 
             if order.is_complete():
                 next_order = order.complete(exchange)

@@ -36,14 +36,6 @@ _Inspired by [Keras' guiding principles](https://github.com/keras-team/keras)._
 
 - **Easy extensibility.** New modules are simple to add (as new classes and functions), and existing modules provide ample examples. To be able to easily create new modules allows for total expressiveness, making TensorTrade suitable for advanced research and production use.
 
-## TensorTrade Partners
-
-TensorTrade is entirely community funded. We appreciate all of our great sponsors! If you would like to become a TensorTrade Partner, or sponsor the framework in any other way, visit the [Sponsorship section below](#sponsorship).
-
-<a href="https://capfol.io">
-  <img alt="Capfolio" src="https://user-images.githubusercontent.com/14098106/67627791-fc291d80-f817-11e9-8fc5-0f0a3d72c646.png" />
-</a>
-
 ## Getting Started
 
 You can get started testing on Google Colab or your local machine, by viewing our [many examples](https://github.com/notadamking/tensortrade/tree/master/examples)

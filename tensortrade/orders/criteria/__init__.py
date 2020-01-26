@@ -1,4 +1,5 @@
-from .criteria import Criteria
+from .criteria import Criteria, AndCriteria, NotCriteria, OrCriteria, XorCriteria, CriteriaBinOp
 
-from .hidden_limit import HiddenLimit
-from .stop_loss import StopLoss, StopDirection
+from .limit import Limit
+from .stop import Stop, StopDirection
+from .timed import Timed

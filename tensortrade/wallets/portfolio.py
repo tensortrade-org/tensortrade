@@ -1,10 +1,25 @@
-import pandas as pd
-import numpy as np
+# Copyright 2019 The TensorTrade Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License
 
-from typing import Callable, Tuple, Union, List, Dict, NewType
+import re
+import pandas as pd
+
+from typing import Callable, Tuple, Union, List
 
 from tensortrade import Component, TimedIdentifiable
 from tensortrade.instruments import Instrument, Quantity, TradingPair
+from tensortrade.data.stream.listeners import FeedListener
 
 from .wallet import Wallet
 
@@ -12,7 +27,7 @@ from .wallet import Wallet
 WalletType = Union['Wallet', Tuple['Exchange', Instrument, float]]
 
 
-class Portfolio(Component, TimedIdentifiable):
+class Portfolio(Component, TimedIdentifiable, FeedListener):
     """A portfolio of wallets on exchanges."""
 
     registered_name = "portfolio"
@@ -22,6 +37,8 @@ class Portfolio(Component, TimedIdentifiable):
                  wallets: List[WalletType] = None,
                  order_listener: 'OrderListener' = None,
                  performance_listener: Callable[[pd.DataFrame], None] = None):
+        super().__init__()
+
         wallets = wallets or []
 
         self._base_instrument = self.default('base_instrument', base_instrument)
@@ -33,8 +50,10 @@ class Portfolio(Component, TimedIdentifiable):
             self.add(wallet)
 
         self._initial_balance = self.base_balance
-        self._initial_net_worth = self.net_worth
-        self._performance = pd.DataFrame([], columns=['step', 'net_worth'], index=['step'])
+        self._initial_net_worth = None
+        self._net_worth = None
+        self._performance = None
+        self._keys = None
 
     @property
     def base_instrument(self) -> Instrument:
@@ -68,6 +87,23 @@ class Portfolio(Component, TimedIdentifiable):
         return list(self._wallets.values())
 
     @property
+    def exchanges(self) -> List['Exchange']:
+        exchanges = []
+        for w in self.wallets:
+            if w.exchange not in exchanges:
+                exchanges += [w.exchange]
+        return exchanges
+
+    @property
+    def exchange_pairs(self) -> List['Exchange']:
+        exchange_pairs = []
+
+        for w in self.wallets:
+            if w.instrument != self.base_instrument:
+                exchange_pairs += [(w.exchange, self.base_instrument/w.instrument)]
+        return exchange_pairs
+
+    @property
     def initial_balance(self) -> Quantity:
         """The initial balance of the base instrument over all wallets, set by calling `reset`."""
         return self._initial_balance
@@ -78,28 +114,17 @@ class Portfolio(Component, TimedIdentifiable):
         return self.balance(self._base_instrument)
 
     @property
+    def initial_net_worth(self):
+        return self._initial_net_worth
+
+    @property
     def net_worth(self) -> float:
         """Calculate the net worth of the active account on thenge.
 
         Returns:
             The total portfolio value of the active account on the exchange.
         """
-        net_worth = 0
-
-        if not self._wallets:
-            return net_worth
-
-        for wallet in self._wallets.values():
-            if wallet.instrument == self._base_instrument:
-                current_price = 1
-            else:
-                pair = TradingPair(self._base_instrument, wallet.instrument)
-                current_price = wallet.exchange.quote_price(pair)
-
-            wallet_balance = wallet.total_balance.size
-            net_worth += current_price * wallet_balance
-
-        return net_worth
+        return self._net_worth
 
     @property
     def profit_loss(self) -> float:
@@ -109,7 +134,7 @@ class Portfolio(Component, TimedIdentifiable):
             The percentage change in net worth since the last reset.
             i.e. A return value of 2 would indicate a 100% increase in net worth (e.g. $100 -> $200)
         """
-        return self.net_worth / self._initial_net_worth
+        return self.net_worth / self.initial_net_worth
 
     @property
     def performance(self) -> pd.DataFrame:
@@ -174,22 +199,44 @@ class Portfolio(Component, TimedIdentifiable):
     def remove_pair(self, exchange: 'Exchange', instrument: Instrument):
         self._wallets.pop((exchange.id, instrument.symbol), None)
 
-    def update(self):
-        performance = [[self.clock.step, self.net_worth] + [quantity.size for quantity in self.balances] +
-                       [quantity.size for quantity in self.locked_balances]]
+    @staticmethod
+    def find_keys(data: dict):
+        endings = [
+            ":/free",
+            ":/locked",
+            ":/total",
+            "worth"
+        ]
+        price_pattern = re.compile("\\w+:/([A-Z]{3,4}).([A-Z]{3,4})")
 
-        columns = ['step', 'net_worth'] + [quantity.instrument.symbol for quantity in self.balances] + \
-            ['{}_pending'.format(quantity.instrument.symbol) for quantity in self.locked_balances]
+        keys = []
+        for k in data.keys():
+            if any(k.endswith(end) for end in endings):
+                keys += [k]
+            elif price_pattern.match(k):
+                keys += [k]
+        return keys
 
-        performance_update = pd.DataFrame(performance, columns=columns)
+    def on_next(self, data: dict):
+        if not self._keys:
+            self._keys = self.find_keys(data)
 
-        self._performance = pd.concat(
-            [self._performance, performance_update], axis=0, sort=True).dropna()
+        index = pd.Index([self.clock.step], name="step")
+        performance_step = pd.DataFrame({k: data[k] for k in self._keys}, index=index)
+        net_worth = data['net_worth']
+        if self._performance is None:
+            self._performance = performance_step
+            self._initial_net_worth = net_worth
+            self._net_worth = net_worth
+        else:
+            self._performance = self._performance.append(performance_step)
+            self._net_worth = net_worth
 
         if self._performance_listener:
-            self._performance_listener(performance_update)
+            self._performance_listener(performance_step)
 
     def reset(self):
         self._initial_balance = self.base_balance
-        self._initial_net_worth = self.net_worth
-        self._performance = pd.DataFrame([], columns=['step', 'net_worth'], index=['step'])
+        self._initial_net_worth = None
+        self._net_worth = None
+        self._performance = None

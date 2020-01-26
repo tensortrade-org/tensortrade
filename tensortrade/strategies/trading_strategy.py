@@ -13,10 +13,9 @@
 # limitations under the License.
 
 import pandas as pd
-import numpy as np
 
 from abc import ABCMeta, abstractmethod
-from typing import Callable, Union, List
+from typing import Callable
 
 
 class TradingStrategy(object, metaclass=ABCMeta):
