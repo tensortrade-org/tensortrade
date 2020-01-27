@@ -110,7 +110,7 @@ class A2CAgent(Agent):
         wsce_loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
         optimizer = tf.keras.optimizers.Adam(lr=learning_rate)
 
-        transitions = memory.sample(batch_size)
+        transitions = memory.tail(batch_size)
         batch = A2CTransition(*zip(*transitions))
 
         states = tf.convert_to_tensor(batch.state)
