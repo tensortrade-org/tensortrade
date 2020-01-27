@@ -17,14 +17,25 @@ A2CTransition = namedtuple('A2CTransition', ['state', 'action', 'reward', 'done'
 
 class A2CAgent(Agent):
 
-    def __init__(self, env: 'TradingEnvironment', n_features: int):
+    def __init__(self,
+                 env: 'TradingEnvironment',
+                 shared_network: tf.keras.Model = None,
+                 actor_network: tf.keras.Model = None,
+                 critic_network: tf.keras.Model = None):
         self.env = env
-        self.n_features = n_features
         self.n_actions = env.action_space.n
-        self.window_size = env.window_size
+        self.observation_shape = env.observation_shape.shape
 
-        shared = tf.keras.Sequential([
-            tf.keras.layers.InputLayer(input_shape=(self.window_size, self.n_features)),
+        self.shared_network = shared_network or self._build_shared_network()
+        self.actor_network = actor_network = self._build_actor_network()
+        self.critic_network = critic_network = self._build_critic_network()
+
+        self.id = str(uuid.uuid4())
+        self.episode_id = None
+
+    def _build_shared_network(self):
+        network = tf.keras.Sequential([
+            tf.keras.layers.InputLayer(input_shape=self.observation_shape),
             tf.keras.layers.Conv1D(filters=64, kernel_size=6, padding="same", activation="tanh"),
             tf.keras.layers.MaxPooling1D(pool_size=2),
             tf.keras.layers.Conv1D(filters=32, kernel_size=3, padding="same", activation="tanh"),
@@ -32,22 +43,24 @@ class A2CAgent(Agent):
             tf.keras.layers.Flatten()
         ])
 
+        return network
+
+    def _build_actor_network(self):
         actor_head = tf.keras.Sequential([
             tf.keras.layers.Dense(50, activation='relu'),
-            tf.keras.layers.Dense(100, activation='relu')
+            tf.keras.layers.Dense(self.n_actions, activation='relu')
         ])
 
+        return tf.keras.Sequential([self.shared_network, actor_head])
+
+    def _build_critic_network(self):
         critic_head = tf.keras.Sequential([
             tf.keras.layers.Dense(50, activation='relu'),
             tf.keras.layers.Dense(25, activation='relu'),
             tf.keras.layers.Dense(1, activation='relu')
         ])
 
-        self.actor_network = tf.keras.Sequential([shared, actor_head])
-        self.critic_network = tf.keras.Sequential([shared, critic_head])
-
-        self.id = str(uuid.uuid4())
-        self.episode_id = None
+        return tf.keras.Sequential([self.shared_network, critic_head])
 
     def restore(self, path: str, **kwargs):
         actor_filename: str = kwargs.get('actor_filename', None)
@@ -107,11 +120,11 @@ class A2CAgent(Agent):
         values = tf.convert_to_tensor(batch.value)
 
         returns = []
-        discounted_r = 0
+        exp_weighted_return = 0
 
         for reward, done in zip(rewards[::-1], dones[::-1]):
-            discounted_r = reward + discount_factor * discounted_r * (1 - done)
-            returns += [discounted_r]
+            exp_weighted_return = reward + discount_factor * exp_weighted_return * (1 - done)
+            returns += [exp_weighted_return]
 
         returns = returns[::-1]
 
@@ -173,21 +186,21 @@ class A2CAgent(Agent):
 
                 memory.push(state, action, reward, next_state, done, value)
 
-                if done:
-                    state = self.env.reset()
-
                 state = next_state
                 steps_done += 1
+
+                if len(memory) < batch_size:
+                    continue
+
+                self._apply_gradient_descent(memory,
+                                             batch_size,
+                                             learning_rate,
+                                             discount_factor,
+                                             entropy_c)
 
                 if n_steps and steps_done >= n_steps:
                     if save_path and i % save_every == 0:
                         return self.save(save_path, episode=i)
 
-            self._apply_gradient_descent(memory,
-                                         batch_size,
-                                         learning_rate,
-                                         discount_factor,
-                                         entropy_c)
-
-        if save_path and i % save_every == 0:
-            self.save(save_path, episode=i)
+            if save_path and i % save_every == 0:
+                self.save(save_path, episode=i)

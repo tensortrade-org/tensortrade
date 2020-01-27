@@ -9,6 +9,7 @@ import random
 import numpy as np
 import tensorflow as tf
 
+from typing import Callable, Tuple
 from collections import namedtuple
 
 from tensortrade.agents import Agent, ReplayMemory
@@ -18,18 +19,34 @@ DQNTransition = namedtuple('DQNTransition', ['state', 'action', 'reward', 'next_
 
 class DQNAgent(Agent):
 
-    def __init__(self, env: 'TradingEnvironment', n_features: int):
+    def __init__(self,
+                 env: 'TradingEnvironment',
+                 policy_network: tf.keras.Model = None):
         self.env = env
-        self.n_features = n_features
         self.n_actions = env.action_space.n
-        self.window_size = env.window_size
+        self.observation_shape = env.observation_shape.shape
 
-        self.policy_network = self._make_policy_network()
+        self.policy_network = policy_network or self._build_policy_network()
+
         self.target_network = tf.keras.models.clone_model(self.policy_network)
         self.target_network.trainable = False
 
         self.id = str(uuid.uuid4())
         self.episode_id = None
+
+    def _build_policy_network(self):
+        network = tf.keras.Sequential([
+            tf.keras.layers.InputLayer(input_shape=self.observation_shape),
+            tf.keras.layers.Conv1D(filters=64, kernel_size=6, padding="same", activation="tanh"),
+            tf.keras.layers.MaxPooling1D(pool_size=2),
+            tf.keras.layers.Conv1D(filters=32, kernel_size=3, padding="same", activation="tanh"),
+            tf.keras.layers.MaxPooling1D(pool_size=2),
+            tf.keras.layers.Flatten(),
+            tf.keras.layers.Dense(self.n_actions, activation="sigmoid"),
+            tf.keras.layers.Dense(self.n_actions, activation="softmax")
+        ])
+
+        return network
 
     def restore(self, path: str, **kwargs):
         self.policy_network = tf.keras.models.load_model(path)
@@ -45,20 +62,6 @@ class DQNAgent(Agent):
             filename = "policy_network__" + self.id + ".hdf5"
 
         self.policy_network.save(path + filename)
-
-    def _make_policy_network(self):
-        model = tf.keras.Sequential([
-            tf.keras.layers.InputLayer(input_shape=(self.window_size, self.n_features)),
-            tf.keras.layers.Conv1D(filters=64, kernel_size=6, padding="same", activation="tanh"),
-            tf.keras.layers.MaxPooling1D(pool_size=2),
-            tf.keras.layers.Conv1D(filters=32, kernel_size=3, padding="same", activation="tanh"),
-            tf.keras.layers.MaxPooling1D(pool_size=2),
-            tf.keras.layers.Flatten(),
-            tf.keras.layers.Dense(self.n_actions, activation="sigmoid"),
-            tf.keras.layers.Dense(self.n_actions, activation="softmax")
-        ])
-
-        return model
 
     def get_action(self, state: np.ndarray, **kwargs) -> int:
         threshold: float = kwargs.get('threshold', 0)
@@ -95,8 +98,7 @@ class DQNAgent(Agent):
                 tf.math.reduce_max(self.target_network(next_state_batch), axis=1)
             )
 
-            expected_state_action_values = reward_batch + \
-                (discount_factor * next_state_values)
+            expected_state_action_values = reward_batch + (discount_factor * next_state_values)
             loss_value = loss(expected_state_action_values, state_action_values)
 
         variables = self.policy_network.trainable_variables
