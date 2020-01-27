@@ -31,7 +31,7 @@ from tensortrade.data import DataFeed, Select
 from tensortrade.data.internal import create_internal_feed
 from tensortrade.orders import Broker, Order
 from tensortrade.wallets import Portfolio
-from tensortrade.environments.history import History
+from tensortrade.environments import ObservationHistory
 
 
 class TradingEnvironment(gym.Env, TimeIndexed):
@@ -66,7 +66,7 @@ class TradingEnvironment(gym.Env, TimeIndexed):
             self._external_keys = self.feed.next().keys()
             self.feed.reset()
 
-        self.history = History(window_size=window_size)
+        self.history = ObservationHistory(window_size=window_size)
         self._broker = Broker(exchanges=self.portfolio.exchanges)
 
         self.clock = Clock()

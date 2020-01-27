@@ -14,7 +14,7 @@
 
 
 from tensortrade.orders.criteria import Criteria
-from tensortrade.trades import TradeSide
+from tensortrade.orders import TradeSide
 
 
 class Limit(Criteria):

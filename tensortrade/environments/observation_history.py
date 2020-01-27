@@ -18,7 +18,7 @@ import pandas as pd
 import numpy as np
 
 
-class History(object):
+class ObservationHistory(object):
 
     def __init__(self, window_size: int):
         self.window_size = window_size

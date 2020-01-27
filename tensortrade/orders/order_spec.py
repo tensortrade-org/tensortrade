@@ -16,8 +16,7 @@
 from typing import Callable
 
 from tensortrade.base import Identifiable
-from tensortrade.trades import TradeSide, TradeType
-from .order import Order
+from tensortrade.orders import Order, TradeSide, TradeType
 
 
 class OrderSpec(Identifiable):

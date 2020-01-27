@@ -15,7 +15,7 @@
 import numpy as np
 
 from tensortrade.slippage import SlippageModel
-from tensortrade.trades import Trade, TradeType, TradeSide
+from tensortrade.orders import Trade, TradeType, TradeSide
 
 
 class RandomUniformSlippageModel(SlippageModel):

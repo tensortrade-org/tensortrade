@@ -2,10 +2,9 @@
 import pytest
 import unittest.mock as mock
 
-from tensortrade.orders import Broker, OrderStatus, Order, OrderSpec
+from tensortrade.orders import Broker, OrderStatus, Order, OrderSpec, TradeSide, TradeType
 from tensortrade.orders.criteria import Stop
 from tensortrade.wallets import Wallet, Portfolio
-from tensortrade.trades import TradeSide, TradeType
 from tensortrade.instruments import USD, BTC, Quantity
 
 
@@ -173,7 +172,7 @@ def test_update_on_single_exchange_with_multiple_orders(mock_exchange_class):
 
 
 @mock.patch('tensortrade.exchanges.Exchange')
-@mock.patch('tensortrade.trades.Trade')
+@mock.patch('tensortrade.orders.Trade')
 def test_on_fill(mock_trade_class,
                  mock_exchange_class):
 
@@ -213,7 +212,7 @@ def test_on_fill(mock_trade_class,
 
 
 @mock.patch('tensortrade.exchanges.Exchange')
-@mock.patch('tensortrade.trades.Trade')
+@mock.patch('tensortrade.orders.Trade')
 def test_on_fill_with_complex_order(mock_trade_class,
                                     mock_exchange_class):
 

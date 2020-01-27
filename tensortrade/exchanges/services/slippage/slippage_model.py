@@ -16,7 +16,7 @@
 from abc import abstractmethod
 
 from tensortrade import Component
-from tensortrade.trades import Trade
+from tensortrade.orders import Trade
 
 
 class SlippageModel(Component):

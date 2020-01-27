@@ -1,6 +1,6 @@
 from tensortrade import TradingContext
 from tensortrade.rewards import get, RewardScheme
-from tensortrade.trades import Trade
+from tensortrade.orders import Trade
 
 
 class ConcreteRewardScheme(RewardScheme):

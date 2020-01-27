@@ -1,3 +1,4 @@
+from .observation_history import ObservationHistory
 from .trading_environment import TradingEnvironment
 
 from . import render

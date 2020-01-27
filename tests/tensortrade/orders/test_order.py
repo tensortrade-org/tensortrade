@@ -3,10 +3,9 @@ import unittest.mock as mock
 import re
 
 from tensortrade.instruments import *
-from tensortrade.orders import Order, OrderStatus, OrderSpec
+from tensortrade.orders import Order, OrderStatus, OrderSpec, TradeSide, TradeType
 from tensortrade.orders.criteria import Stop
 from tensortrade.wallets import Wallet, Portfolio
-from tensortrade.trades import TradeSide, TradeType
 
 
 @mock.patch('tensortrade.wallets.Portfolio')
@@ -241,7 +240,7 @@ def test_execute(mock_order_listener_class,
 
 
 @mock.patch('tensortrade.exchanges.Exchange')
-@mock.patch('tensortrade.trades.Trade')
+@mock.patch('tensortrade.orders.Trade')
 @mock.patch('tensortrade.orders.OrderListener')
 def test_fill(mock_order_listener_class,
               mock_trade_class,
@@ -281,7 +280,7 @@ def test_fill(mock_order_listener_class,
 
 
 @mock.patch('tensortrade.exchanges.Exchange')
-@mock.patch('tensortrade.trades.Trade')
+@mock.patch('tensortrade.orders.Trade')
 @mock.patch('tensortrade.orders.OrderListener')
 def test_complete_basic_order(mock_order_listener_class,
                               mock_trade_class,
@@ -322,7 +321,7 @@ def test_complete_basic_order(mock_order_listener_class,
 
 
 @mock.patch('tensortrade.exchanges.Exchange')
-@mock.patch('tensortrade.trades.Trade')
+@mock.patch('tensortrade.orders.Trade')
 def test_complete_complex_order(mock_trade_class,
                                 mock_exchange_class):
 
@@ -392,7 +391,7 @@ def test_complete_complex_order(mock_trade_class,
 
 
 @mock.patch('tensortrade.exchanges.Exchange')
-@mock.patch('tensortrade.trades.Trade')
+@mock.patch('tensortrade.orders.Trade')
 @mock.patch('tensortrade.orders.OrderListener')
 def test_cancel(mock_order_listener_class,
                 mock_trade_class,
@@ -498,16 +497,16 @@ def test_to_dict(mock_portfolio_class):
                   price=7000.00)
 
     d = {
-            "id": order.id,
-            "status": order.status,
-            "type": order.type,
-            "side": order.side,
-            "pair": order.pair,
-            "quantity": order.quantity,
-            "size": order.size,
-            "price": order.price,
-            "criteria": order.criteria,
-            "path_id": order.path_id
+        "id": order.id,
+        "status": order.status,
+        "type": order.type,
+        "side": order.side,
+        "pair": order.pair,
+        "quantity": order.quantity,
+        "size": order.size,
+        "price": order.price,
+        "criteria": order.criteria,
+        "path_id": order.path_id
     }
 
     assert order.to_dict() == d
@@ -526,16 +525,16 @@ def test_to_json(mock_portfolio_class):
                   price=7000.00)
 
     d = {
-            "id": order.id,
-            "status": order.status,
-            "type": order.type,
-            "side": order.side,
-            "pair": order.pair,
-            "quantity": order.quantity,
-            "size": order.size,
-            "price": order.price,
-            "criteria": order.criteria,
-            "path_id": order.path_id
+        "id": order.id,
+        "status": order.status,
+        "type": order.type,
+        "side": order.side,
+        "pair": order.pair,
+        "quantity": order.quantity,
+        "size": order.size,
+        "price": order.price,
+        "criteria": order.criteria,
+        "path_id": order.path_id
     }
 
     d = {k: str(v) for k, v in d.items()}
@@ -584,5 +583,3 @@ def test_str(mock_portfolio_class):
     assert string
 
     assert string == pattern.fullmatch(string).string
-
-
