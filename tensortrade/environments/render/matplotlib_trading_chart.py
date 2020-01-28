@@ -20,7 +20,7 @@ import matplotlib.pyplot as plt
 from matplotlib import style
 from pandas.plotting import register_matplotlib_converters
 
-from tensortrade.trades import TradeSide
+from tensortrade.orders import TradeSide
 
 style.use('ggplot')
 register_matplotlib_converters()

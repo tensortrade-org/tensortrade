@@ -3,7 +3,7 @@ import unittest.mock as mock
 
 from tensortrade.orders.criteria import Criteria, Limit, Stop, Timed
 from tensortrade.instruments import USD, BTC
-from tensortrade.trades.trade import TradeSide
+from tensortrade.orders import TradeSide
 
 
 @mock.patch('tensortrade.exchanges.Exchange')

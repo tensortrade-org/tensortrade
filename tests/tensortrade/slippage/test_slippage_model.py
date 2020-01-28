@@ -1,7 +1,7 @@
 
 from tensortrade import TradingContext
 from tensortrade.slippage import SlippageModel
-from tensortrade.trades import Trade
+from tensortrade.orders import Trade
 
 
 class ConcreteSlippageModel(SlippageModel):

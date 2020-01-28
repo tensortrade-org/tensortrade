@@ -2,8 +2,7 @@
 import re
 import unittest.mock as mock
 
-from tensortrade.orders import OrderSpec
-from tensortrade.trades import TradeSide, TradeType
+from tensortrade.orders import OrderSpec, TradeSide, TradeType
 from tensortrade.instruments import USD, BTC, Quantity
 from tensortrade.wallets import Portfolio, Wallet
 
