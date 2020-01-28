@@ -13,8 +13,9 @@
 # limitations under the License.
 
 
-import logging
 import gym
+import uuid
+import logging
 import numpy as np
 
 from gym.spaces import Discrete, Space, Box
@@ -36,6 +37,9 @@ from tensortrade.environments import ObservationHistory
 
 class TradingEnvironment(gym.Env, TimeIndexed):
     """A trading environments made for use with Gym-compatible reinforcement learning algorithms."""
+
+    agent_id: str = None
+    episode_id: str = None
 
     def __init__(self,
                  portfolio: Union[Portfolio, str],
@@ -74,7 +78,7 @@ class TradingEnvironment(gym.Env, TimeIndexed):
         self.observation_space = None
         self.viewer = None
 
-        self._enable_logger = kwargs.get('enable_logger', True)
+        self._enable_logger = kwargs.get('enable_logger', False)
         self._observation_dtype = kwargs.get('dtype', np.float32)
         self._observation_lows = kwargs.get('observation_lows', 0)
         self._observation_highs = kwargs.get('observation_highs', 1)
@@ -214,6 +218,8 @@ class TradingEnvironment(gym.Env, TimeIndexed):
         Returns:
             The episode's initial observation.
         """
+        self.episode_id = uuid.uuid4()
+
         self.clock.reset()
         self.feed.reset()
         self.action_scheme.reset()

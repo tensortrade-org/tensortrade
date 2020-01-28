@@ -24,7 +24,7 @@ class DQNAgent(Agent):
                  policy_network: tf.keras.Model = None):
         self.env = env
         self.n_actions = env.action_space.n
-        self.observation_shape = env.observation_shape.shape
+        self.observation_shape = env.observation_space.shape
 
         self.policy_network = policy_network or self._build_policy_network()
 
@@ -107,7 +107,7 @@ class DQNAgent(Agent):
 
     def train(self,
               n_steps: int = None,
-              n_episodes: int = 1e8,
+              n_episodes: int = None,
               save_every: int = None,
               save_path: str = None,
               callback: callable = None,
@@ -122,9 +122,14 @@ class DQNAgent(Agent):
         memory_capacity: int = kwargs.get('memory_capacity', 1000)
 
         memory = ReplayMemory(memory_capacity, transition_type=DQNTransition)
+        episode = 0
         steps_done = 0
+        stop_training = False
 
-        for i in range(n_episodes):
+        if n_steps and not n_episodes:
+            n_episodes = np.iinfo(np.int32).max
+
+        while episode < n_episodes and not stop_training:
             self.episode_id = str(uuid.uuid4())
             state = self.env.reset()
             done = False
@@ -147,14 +152,14 @@ class DQNAgent(Agent):
                 self._apply_gradient_descent(memory, batch_size, learning_rate, discount_factor)
 
                 if n_steps and steps_done >= n_steps:
-                    if save_path and i % save_every == 0:
-                        self.save(save_path, episode=i)
+                    done = True
+                    stop_training = True
 
-                    return
-
-            if i % update_target_every == 0:
+            if episode % update_target_every == 0:
                 self.target_network = tf.keras.models.clone_model(self.policy_network)
                 self.target_network.trainable = False
 
-            if save_path and i % save_every == 0:
-                self.save(save_path, episode=i)
+            is_checkpoint = save_every and episode % save_every == 0
+
+            if save_path and (is_checkpoint or episode == n_episodes):
+                self.save(save_path, episode=episode)

@@ -24,7 +24,7 @@ class A2CAgent(Agent):
                  critic_network: tf.keras.Model = None):
         self.env = env
         self.n_actions = env.action_space.n
-        self.observation_shape = env.observation_shape.shape
+        self.observation_shape = env.observation_space.shape
 
         self.shared_network = shared_network or self._build_shared_network()
         self.actor_network = actor_network = self._build_actor_network()
@@ -96,9 +96,7 @@ class A2CAgent(Agent):
             return np.random.choice(self.n_actions)
         else:
             logits = self.actor_network(state[None, :], training=False)
-            action = tf.squeeze(tf.random.categorical(logits, 1), axis=-1)
-
-            return tf.squeeze(action, axis=-1)
+            return tf.squeeze(tf.squeeze(tf.random.categorical(logits, 1), axis=-1), axis=-1)
 
     def _apply_gradient_descent(self,
                                 memory: ReplayMemory,
@@ -123,7 +121,7 @@ class A2CAgent(Agent):
         exp_weighted_return = 0
 
         for reward, done in zip(rewards[::-1], dones[::-1]):
-            exp_weighted_return = reward + discount_factor * exp_weighted_return * (1 - done)
+            exp_weighted_return = reward + discount_factor * exp_weighted_return * (1 - int(done))
             returns += [exp_weighted_return]
 
         returns = returns[::-1]
@@ -152,7 +150,7 @@ class A2CAgent(Agent):
 
     def train(self,
               n_steps: int = None,
-              n_episodes: int = 1e8,
+              n_episodes: int = None,
               save_every: int = None,
               save_path: str = None,
               callback: callable = None,
@@ -167,9 +165,14 @@ class A2CAgent(Agent):
         memory_capacity: int = kwargs.get('memory_capacity', 1000)
 
         memory = ReplayMemory(memory_capacity, transition_type=A2CTransition)
+        episode = 0
         steps_done = 0
+        stop_training = False
 
-        for i in range(n_episodes):
+        if n_steps and not n_episodes:
+            n_episodes = np.iinfo(np.int32).max
+
+        while episode < n_episodes and not stop_training:
             self.episode_id = str(uuid.uuid4())
             state = self.env.reset()
             done = False
@@ -184,7 +187,7 @@ class A2CAgent(Agent):
                 value = self.critic_network(state[None, :], training=False)
                 value = tf.squeeze(value, axis=1)
 
-                memory.push(state, action, reward, next_state, done, value)
+                memory.push(state, action, reward, done, value)
 
                 state = next_state
                 steps_done += 1
@@ -199,8 +202,10 @@ class A2CAgent(Agent):
                                              entropy_c)
 
                 if n_steps and steps_done >= n_steps:
-                    if save_path and i % save_every == 0:
-                        return self.save(save_path, episode=i)
+                    done = True
+                    stop_training = True
 
-            if save_path and i % save_every == 0:
-                self.save(save_path, episode=i)
+            is_checkpoint = save_every and episode % save_every == 0
+
+            if save_path and (is_checkpoint or episode == n_episodes):
+                self.save(save_path, episode=episode)
