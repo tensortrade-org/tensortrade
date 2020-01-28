@@ -18,8 +18,7 @@ from itertools import product
 from gym.spaces import Discrete
 
 from tensortrade.actions import ActionScheme
-from tensortrade.trades import TradeSide, TradeType
-from tensortrade.orders import Order, OrderListener
+from tensortrade.orders import Order, OrderListener, TradeSide, TradeType
 from tensortrade.instruments import USD, BTC
 
 

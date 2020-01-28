@@ -3,10 +3,9 @@ import pytest
 import unittest.mock as mock
 
 
-from tensortrade.orders import OrderListener, Order
+from tensortrade.orders import OrderListener, Order, TradeType, TradeSide
 from tensortrade.instruments import USD, BTC
 from tensortrade.wallets import Wallet, Portfolio
-from tensortrade.trades import TradeType, TradeSide
 
 
 @pytest.fixture
@@ -115,7 +114,7 @@ def test_on_cancel(mock_exchange_class,
 
 
 @mock.patch('tensortrade.exchanges.Exchange')
-@mock.patch('tensortrade.trades.Trade')
+@mock.patch('tensortrade.orders.Trade')
 def test_on_fill(mock_trade_class,
                  mock_exchange_class,
                  fill_listener):
@@ -148,7 +147,7 @@ def test_on_fill(mock_trade_class,
 
 
 @mock.patch('tensortrade.exchanges.Exchange')
-@mock.patch('tensortrade.trades.Trade')
+@mock.patch('tensortrade.orders.Trade')
 def test_on_complete(mock_trade_class,
                      mock_exchange_class,
                      complete_listener):

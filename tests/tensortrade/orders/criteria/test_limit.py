@@ -3,7 +3,7 @@ import unittest.mock as mock
 
 from tensortrade.orders.criteria import Limit
 from tensortrade.instruments import USD, BTC
-from tensortrade.trades.trade import TradeSide
+from tensortrade.orders import TradeSide
 
 
 def test_init():

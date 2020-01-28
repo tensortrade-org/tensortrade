@@ -13,9 +13,8 @@
 # limitations under the License
 
 
-from tensortrade.orders import Order, OrderSpec
+from tensortrade.orders import Order, OrderSpec, TradeSide, TradeType
 from tensortrade.orders.criteria import Stop, Limit
-from tensortrade.trades import TradeSide, TradeType
 
 
 def market_order(step: int,

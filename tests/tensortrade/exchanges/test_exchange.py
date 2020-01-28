@@ -5,7 +5,7 @@ from typing import List
 
 from tensortrade import TradingContext
 from tensortrade.data import DataFeed, DataFrameSource
-from tensortrade.trades import Trade
+from tensortrade.orders import Trade
 from tensortrade.slippage import SlippageModel
 from tensortrade.exchanges import Exchange
 from tensortrade.instruments import EUR, ETH

@@ -19,8 +19,7 @@ from itertools import product
 from gym.spaces import Discrete
 
 from tensortrade.actions import ActionScheme
-from tensortrade.trades import TradeSide, TradeType
-from tensortrade.orders import Order, OrderListener, risk_managed_order
+from tensortrade.orders import TradeSide, TradeType, Order, OrderListener, risk_managed_order
 
 
 class ManagedRiskOrders(ActionScheme):

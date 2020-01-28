@@ -19,7 +19,7 @@ from typing import Callable
 from tensortrade.base import TimedIdentifiable
 from tensortrade.base.exceptions import InvalidOrderQuantity, InsufficientFunds
 from tensortrade.instruments import Quantity, Price
-from tensortrade.trades import Trade, TradeSide, TradeType
+from tensortrade.orders import Trade, TradeSide, TradeType
 
 
 class OrderStatus(Enum):

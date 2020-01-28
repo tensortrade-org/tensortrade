@@ -9,7 +9,7 @@ from tensortrade.rewards import RiskAdjustedReturns
 from tensortrade.features import FeatureTransformer, FeaturePipeline
 from tensortrade.wallets import Portfolio, Wallet
 from tensortrade.instruments import USD, BTC
-from tensortrade.trades import TradeSide, TradeType
+from tensortrade.orders import TradeSide, TradeType
 from tensortrade.environments import TradingEnvironment
 from typing import Union, List
 

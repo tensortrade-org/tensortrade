@@ -4,8 +4,7 @@ from tensortrade.base.exceptions import InsufficientFunds
 from tensortrade.wallets import Wallet
 from tensortrade.instruments import Quantity, Price
 from tensortrade.exchanges import ExchangeOptions
-from tensortrade.orders import Order
-from tensortrade.trades import Trade, TradeType, TradeSide
+from tensortrade.orders import Order, Trade, TradeType, TradeSide
 
 
 def contain_price(price: float, options: 'ExchangeOptions') -> float:
