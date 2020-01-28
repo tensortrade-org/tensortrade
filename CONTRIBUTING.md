@@ -75,4 +75,4 @@ Here's a quick guide to submitting your improvements:
 
 ## Adding new examples
 
-Even if you don't contribute to the TensorTrade source code, if you have an application of TensorTrade that is concise and powerful, please consider adding it to our collection of examples. [Existing examples](https://github.com/notadamking/tensortrader/tree/master/examples) show idiomatic TensorTrade code: make sure to keep your own script in the same spirit.
+Even if you don't contribute to the TensorTrade source code, if you have an application of TensorTrade that is concise and powerful, please consider adding it to our collection of examples. [Existing examples](./examples) show idiomatic TensorTrade code: make sure to keep your own script in the same spirit.
