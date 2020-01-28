@@ -4,6 +4,8 @@ from typing import Callable
 
 from .exchange import Exchange, ExchangeOptions
 
+from . import services
+
 
 _registry = {
     'simulated': None,
