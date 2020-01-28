@@ -9,8 +9,7 @@ from tensortrade.instruments import USD, BTC, ETH, LTC
 from tensortrade.rewards import SimpleProfit
 from tensortrade.wallets import Portfolio, Wallet
 from tensortrade.actions import ManagedRiskOrders
-from tensortrade.data import DataFeed, Stream
-from tensortrade.data.stream.transform import Namespace
+from tensortrade.data import DataFeed, Stream, Module
 from tensortrade.exchanges.services.execution.simulated import execute_order
 
 
@@ -114,13 +113,14 @@ def test_runs_with_external_and_internal_data_feed(portfolio):
         **{k: "ETH:" + k for k in ['open', 'high', 'low', 'close', 'volume']}
     )
 
-    nodes = []
-    for name in coinbase_btc.columns:
-        nodes += [Stream(name, list(coinbase_btc[name]))]
-    for name in coinbase_eth.columns:
-        nodes += [Stream(name, list(coinbase_eth[name]))]
-    coinbase = Namespace("coinbase")(*nodes)
-    feed = DataFeed([coinbase])
+    with Module("coinbase") as coinbase:
+        nodes = []
+        for name in coinbase_btc.columns:
+            nodes += [Stream(name, list(coinbase_btc[name]))]
+        for name in coinbase_eth.columns:
+            nodes += [Stream(name, list(coinbase_eth[name]))]
+
+    feed = DataFeed()(coinbase)
 
     action_scheme = ManagedRiskOrders()
     reward_scheme = SimpleProfit()
@@ -166,12 +166,13 @@ def test_runs_with__external_feed_only(portfolio):
     )
 
     nodes = []
-    for name in coinbase_btc.columns:
-        nodes += [Stream(name, list(coinbase_btc[name]))]
-    for name in coinbase_eth.columns:
-        nodes += [Stream(name, list(coinbase_eth[name]))]
-    coinbase = Namespace("coinbase")(*nodes)
-    feed = DataFeed([coinbase])
+    with Module("coinbase") as coinbase:
+        for name in coinbase_btc.columns:
+            nodes += [Stream(name, list(coinbase_btc[name]))]
+        for name in coinbase_eth.columns:
+            nodes += [Stream(name, list(coinbase_eth[name]))]
+
+    feed = DataFeed()(coinbase)
 
     action_scheme = ManagedRiskOrders()
     reward_scheme = SimpleProfit()

@@ -17,7 +17,8 @@ from typing import Callable, Union
 
 from tensortrade.base import Component, TimedIdentifiable
 from tensortrade.instruments import TradingPair, Price
-from tensortrade.data import Node
+from tensortrade.data import Module
+from tensortrade.data import Forward
 
 
 class ExchangeOptions:
@@ -37,7 +38,7 @@ class ExchangeOptions:
         self.is_live = is_live
 
 
-class Exchange(Node, Component, TimedIdentifiable):
+class Exchange(Module, Component, TimedIdentifiable):
     """An abstract exchange for use within a trading environment."""
 
     registered_name = "exchanges"
@@ -51,11 +52,17 @@ class Exchange(Node, Component, TimedIdentifiable):
         self._service = service
         self._options = options if options else ExchangeOptions()
         self._prices = None
-        self.flatten = True
 
     @property
     def options(self):
         return self._options
+
+    def build(self):
+        self._prices = {}
+
+        for node in self.inputs:
+            pair = "".join([c if c.isalnum() else "/" for c in node.name])
+            self._prices[pair] = Forward(node)
 
     def quote_price(self, trading_pair: 'TradingPair') -> 'Price':
         """The quote price of a trading pair on the exchange, denoted in the base instrument.
@@ -66,16 +73,7 @@ class Exchange(Node, Component, TimedIdentifiable):
         Returns:
             The quote price of the specified trading pair, denoted in the base instrument.
         """
-        return self._prices[str(trading_pair)] * trading_pair
-
-    def forward(self, inbound_data: dict):
-        self._prices = {}
-
-        for k, v in inbound_data.items():
-            pair = "".join([c if c.isalnum() else "/" for c in k])
-            self._prices[pair] = v
-
-        return inbound_data
+        return self._prices[str(trading_pair)].value * trading_pair
 
     def is_pair_tradable(self, trading_pair: 'TradingPair') -> bool:
         """Whether or not the specified trading pair is tradable on this exchange.
