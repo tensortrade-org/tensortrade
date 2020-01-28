@@ -38,7 +38,7 @@ setup(
     long_description_content_type='text/markdown',
     author='Adam King',
     author_email='adamjking3@gmail.com',
-    url='https://github.com/notadamking/tensortrade',
+    url='https://github.com/tensortrade-org/tensortrade',
     packages=[
         package for package in find_packages(exclude=('tests', 'docs'))
         if package.startswith('tensortrade')
@@ -53,29 +53,17 @@ setup(
         'sympy==1.4'
     ],
     extras_require={
-        'tf': ['tensorflow==1.13.1'],
-        'tf-gpu': ['tensorflow-gpu==1.13.1'],
-        'tensorforce': ['tensorforce==0.5.2'],
-        'baselines': ['stable-baselines==2.8.0', 'mpi4py'],
-        'ta': ['ta==0.4.7'],
-        'ta-lib': ['ta-lib==0.4.17'],
+        'tf': ['tensorflow==2.1.0'],
         'stochastic': ['stochastic==0.4.0'],
         'matplotlib': ['matplotlib==3.1.1'],
         'ccxt': ['ccxt==1.18.1220'],
-        'all-framework': ['tensorflow==1.13.1',
-                          'tensorforce==0.5.2',
-                          'stable-baselines==2.8.0',
-                          'mpi4py',
-                          'ta==0.4.7',
-                          'ta-lib==0.4.17',
+        'all-framework': ['tensorflow==2.1.0',
                           'stochastic==0.4.0',
                           'ccxt==1.18.1220',
                           'matplotlib==3.1.1'
                           ],
         'tests': ['pytest==5.1.1'],
-        'all-tests': ['tensorflow==1.13.1',
-                      'tensorforce==0.5.2',
-                      'ta==0.4.7',
+        'all-tests': ['tensorflow==2.1.0',
                       'stochastic==0.4.0',
                       'ccxt==1.18.1220',
                       'pytest==5.1.1',
