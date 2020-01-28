@@ -14,7 +14,7 @@
 
 ---
 
-**TensorTrade is still in Alpha, meaning it should not be used in production systems yet, and it may contain bugs.**
+**TensorTrade is still in Beta, meaning it should be used very cautiously if used in production, as it may contain bugs.**
 
 TensorTrade is an open source Python framework for building, training, evaluating, and deploying robust trading algorithms using reinforcement learning. The framework focuses on being highly composable and extensible, to allow the system to scale from simple trading strategies on a single CPU, to complex investment strategies run on a distribution of HPC machines.
 
