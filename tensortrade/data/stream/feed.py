@@ -13,24 +13,33 @@
 # limitations under the License.
 
 
+from typing import List
+
 from tensortrade.data.stream import Node
 
 
 class DataFeed(Node):
 
-    def __init__(self):
+    def __init__(self, nodes: List[Node] = None):
         super().__init__("")
+
         self.process = None
         self.compiled = False
+
+        if nodes:
+            self.__call__(*nodes)
 
     @staticmethod
     def _gather(node, vertices, edges):
         if node not in vertices:
             vertices += [node]
+
             for input_node in node.inputs:
                 edges += [(input_node, node)]
+
             for input_node in node.inputs:
                 DataFeed._gather(input_node, vertices, edges)
+
         return edges
 
     def gather(self):
@@ -43,6 +52,7 @@ class DataFeed(Node):
 
         starting = list(S.difference(T))
         process = starting.copy()
+
         while len(starting) > 0:
             start = starting.pop()
 
@@ -55,20 +65,23 @@ class DataFeed(Node):
 
             if start not in process:
                 process += [start]
+
         return process
 
     def compile(self):
         edges = self.gather()
-        self.process = self.toposort(edges)
 
+        self.process = self.toposort(edges)
         self.compiled = True
         self.reset()
 
     def run(self):
         if not self.compiled:
             self.compile()
+
         for node in self.process:
             node.run()
+
         super().run()
 
     def forward(self):
@@ -88,9 +101,11 @@ class DataFeed(Node):
     def __add__(self, other):
         if isinstance(other, DataFeed):
             nodes = list(set(self.inputs + other.inputs))
-            feed = DataFeed()(*nodes)
+            feed = DataFeed(nodes)
+
             for listener in self.listeners + other.listeners:
                 feed.attach(listener)
+
             return feed
 
     def reset(self):

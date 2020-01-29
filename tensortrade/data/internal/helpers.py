@@ -11,8 +11,8 @@ from tensortrade.wallets import Portfolio
 def create_internal_feed(portfolio: 'Portfolio'):
 
     base_symbol = portfolio.base_instrument.symbol
-
     sources = []
+
     for wallet in portfolio.wallets:
         symbol = wallet.instrument.symbol
         sources += [wallet.exchange]
@@ -27,6 +27,7 @@ def create_internal_feed(portfolio: 'Portfolio'):
 
     sources += [net_worth]
 
-    feed = DataFeed()(*sources)
+    feed = DataFeed(sources)
     feed.attach(portfolio)
+
     return feed

@@ -27,6 +27,7 @@ class Node(Observable):
 
     def __init__(self, name: str):
         super().__init__()
+
         self._name = name
         self.inputs = []
 
@@ -51,15 +52,19 @@ class Node(Observable):
 
     def __call__(self, *inputs):
         self.inputs = []
+
         for node in inputs:
             if isinstance(node, Module):
                 if not node.built:
                     with node:
                         node.build()
+
                     node.built = True
+
                 self.inputs += node.flatten()
             else:
                 self.inputs += [node]
+
         return self
 
     def run(self):
@@ -91,12 +96,14 @@ class Module(Node):
 
     def __init__(self, name: str):
         super().__init__(name)
+
         self.submodules = []
         self.variables = []
         self.built = False
 
     def add_node(self, node: 'Node'):
         node.name = self.name + ":/" + node.name
+
         if isinstance(node, Module):
             self.submodules += [node]
         else:
@@ -107,8 +114,10 @@ class Module(Node):
 
     def flatten(self):
         nodes = [node for node in self.variables]
+
         for module in self.submodules:
             nodes += module.flatten()
+
         return nodes
 
     def __enter__(self):
