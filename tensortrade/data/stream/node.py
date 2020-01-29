@@ -19,43 +19,19 @@ References:
     - https://github.com/tensorflow/tensorflow/blob/master/tensorflow/python/keras/engine/node.py
 """
 
-import collections
-
 from abc import abstractmethod
-from typing import List
+from tensortrade.base.core import Observable
 
 
-def _flatten(data, parent_key='', sep=':/'):
-    items = []
-    for k, v in data.items():
-        new_key = parent_key + sep + k if parent_key else k
-        if isinstance(v, collections.MutableMapping):
-            items.extend(_flatten(v, new_key, sep=sep).items())
-        else:
-            items.append((new_key, v))
-    return dict(items)
+class Node(Observable):
 
-
-class Node:
-
-    def __init__(self, name: str, sep: str = ":/"):
+    def __init__(self, name: str):
+        super().__init__()
         self._name = name
-        self._inputs = []
-        self._inbound = []
-        self._outbound = []
-        self._inbound_data = {}
-        self._call_count = 0
-        self._data = {}
-        self._sep = sep
-        self.flatten = False
+        self.inputs = []
 
-    @property
-    def flatten(self) -> bool:
-        return self._flatten
-
-    @flatten.setter
-    def flatten(self, flatten: bool):
-        self._flatten = flatten
+        if len(Module.CONTEXTS) > 0:
+            Module.CONTEXTS[-1].add_node(self)
 
     @property
     def name(self):
@@ -66,65 +42,31 @@ class Node:
         self._name = name
 
     @property
-    def inbound(self):
-        return self._inbound
+    def value(self):
+        return self._value
 
-    @inbound.setter
-    def inbound(self, inbound: List['Node']):
-        self._inbound = inbound
+    @value.setter
+    def value(self, value: float):
+        self._value = value
 
-    @property
-    def outbound(self):
-        return self._outbound
-
-    @outbound.setter
-    def outbound(self, outbound: List['Node']):
-        self._outbound = outbound
-
-    def gather(self) -> List['Node']:
-        if len(self.inbound) == 0:
-            return [self]
-
-        starting = []
-
-        for node in self.inbound:
-            starting += node.gather()
-
-        return starting
-
-    def subscribe(self, node: 'Node'):
-        self.outbound += [node]
-
-    def push(self, inbound_data: dict):
-        self._inbound_data.update(inbound_data)
-
-    def propagate(self, data: dict):
-        for node in self.outbound:
-            node.push(data)
-
-    def next(self):
-        self._call_count += 1
-
-        if self._call_count < len(self.inbound):
-            return
-
-        self._call_count = 0
-
-        data = {self.name: self.forward(self._inbound_data)}
-        outbound_data = _flatten(data, sep=self._sep) if self.flatten else data
-        self.propagate(outbound_data)
-        return outbound_data
-
-    def __call__(self, *inbound):
-        self.inbound = list(inbound)
-
-        for node in self.inbound:
-            node.subscribe(self)
-
+    def __call__(self, *inputs):
+        self.inputs = []
+        for node in inputs:
+            if isinstance(node, Module):
+                if not node.built:
+                    with node:
+                        node.build()
+                    node.built = True
+                self.inputs += node.flatten()
+            else:
+                self.inputs += [node]
         return self
 
+    def run(self):
+        self.value = self.forward()
+
     @abstractmethod
-    def forward(self, inbound_data: dict):
+    def forward(self):
         raise NotImplementedError()
 
     @abstractmethod
@@ -135,14 +77,50 @@ class Node:
     def has_next(self):
         raise NotImplementedError()
 
-    def refresh(self):
-        self.reset()
-
-        for source in self.outbound:
-            source.refresh()
-
     def __str__(self):
-        return "<Node: name={}>".format(self.name)
+        return "<Node: name={}, type={}>".format(self.name,
+                                                 str(self.__class__.__name__).lower())
 
     def __repr__(self):
         return str(self)
+
+
+class Module(Node):
+
+    CONTEXTS = []
+
+    def __init__(self, name: str):
+        super().__init__(name)
+        self.submodules = []
+        self.variables = []
+        self.built = False
+
+    def add_node(self, node: 'Node'):
+        node.name = self.name + ":/" + node.name
+        if isinstance(node, Module):
+            self.submodules += [node]
+        else:
+            self.variables += [node]
+
+    def build(self):
+        pass
+
+    def flatten(self):
+        nodes = [node for node in self.variables]
+        for module in self.submodules:
+            nodes += module.flatten()
+        return nodes
+
+    def __enter__(self):
+        self.CONTEXTS += [self]
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.CONTEXTS.pop()
+        return self
+
+    def forward(self):
+        return
+
+    def reset(self):
+        pass

@@ -32,7 +32,7 @@ def test_exchange_with_wallets_feed():
     wallet_usd += Quantity(USD, 400, path_id="fake_id")
     wallet_usd_ds = create_wallet_source(wallet_usd, include_worth=False)
 
-    feed = DataFeed([ex1, ex2, wallet_btc_ds, wallet_usd_ds])
+    feed = DataFeed()(ex1, ex2, wallet_btc_ds, wallet_usd_ds)
 
     assert feed.next() == {
         "coinbase:/USD-BTC": 7000,

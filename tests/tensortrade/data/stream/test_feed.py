@@ -2,7 +2,7 @@
 import operator
 import pytest
 
-from tensortrade.data import DataFeed, DataSource, Stream
+from tensortrade.data import DataFeed, Stream
 from tensortrade.data.stream.transform import BinOp
 
 
@@ -12,7 +12,7 @@ def test_init():
         Stream('a2', [4, 5, 6]),
         Stream('a3', [7, 8, 9])
     ]
-    feed = DataFeed(sources)
+    feed = DataFeed()(*sources)
 
     assert feed
 
@@ -23,7 +23,7 @@ def test_stream_adding():
 
     t1 = BinOp("a1+a2", operator.add)(a1, a2)
 
-    feed = DataFeed([a1, a2, t1])
+    feed = DataFeed()(t1, a1, a2)
 
     output = feed.next()
 
@@ -38,12 +38,12 @@ def test_multi_step_adding():
     t1 = BinOp('t1', operator.add)(a1, a2)
     t2 = BinOp('t2', operator.add)(t1, a2)
 
-    feed = DataFeed([a1, a2, t1, t2])
+    feed = DataFeed()(a1, a2, t1, t2)
 
     output = feed.next()
     assert output == {'a1': 1, 'a2': 4, 't1': 5, 't2': 9}
 
-    feed = DataFeed([a1, a2, t2])
+    feed = DataFeed()(a1, a2, t2)
 
     output = feed.next()
     assert output == {'a1': 1, 'a2': 4, 't2': 9}

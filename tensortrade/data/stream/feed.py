@@ -13,109 +13,86 @@
 # limitations under the License.
 
 
-import pandas as pd
-
-from typing import List
-
-from tensortrade.base.core import Observable
-from tensortrade.data.stream import Stream, Node
+from tensortrade.data.stream import Node
 
 
-class DataFeed(Observable):
+class DataFeed(Node):
 
-    def __init__(self, nodes: List[Node]):
-        super().__init__()
+    def __init__(self):
+        super().__init__("")
+        self.process = None
+        self.compiled = False
 
-        self._names = None
-        self._nodes = self.remove_duplicates(nodes)
-        self._inputs = self.gather(self._nodes)
-        self._data = {}
+    @staticmethod
+    def _gather(node, vertices, edges):
+        if node not in vertices:
+            vertices += [node]
+            for input_node in node.inputs:
+                edges += [(input_node, node)]
+            for input_node in node.inputs:
+                DataFeed._gather(input_node, vertices, edges)
+        return edges
+
+    def gather(self):
+        return self._gather(self, [], [])
+
+    @staticmethod
+    def toposort(edges):
+        S = set([s for s, t in edges])
+        T = set([t for s, t in edges])
+
+        starting = list(S.difference(T))
+        process = starting.copy()
+        while len(starting) > 0:
+            start = starting.pop()
+
+            edges = list(filter(lambda e: e[0] != start, edges))
+
+            S = set([s for s, t in edges])
+            T = set([t for s, t in edges])
+
+            starting += [v for v in S.difference(T) if v not in starting]
+
+            if start not in process:
+                process += [start]
+        return process
+
+    def compile(self):
+        edges = self.gather()
+        self.process = self.toposort(edges)
+
+        self.compiled = True
         self.reset()
 
-    @property
-    def names(self):
-        if self._names:
-            return self._names
+    def run(self):
+        if not self.compiled:
+            self.compile()
+        for node in self.process:
+            node.run()
+        super().run()
 
-        self._names = []
-        for name in map(lambda n: n.name, self._nodes):
-            for k in self._data.keys():
-                if k.startswith(name):
-                    self._names += [k]
-        return self._names
-
-    @property
-    def inputs(self) -> List[Node]:
-        return self._inputs
-
-    @staticmethod
-    def remove_duplicates(nodes: List['Node']) -> List['Node']:
-        node_list = []
-
-        for node in nodes:
-            if node not in node_list:
-                node_list += [node]
-
-        return node_list
-
-    @staticmethod
-    def gather(nodes: List[Node]):
-        starting = []
-
-        for node in nodes:
-            for start_node in node.gather():
-                if start_node not in starting:
-                    starting += [start_node]
-
-        return starting
-
-    def _next(self, node: Node):
-        outbound_data = node.next()
-        if outbound_data:
-            self._data.update(outbound_data)
-
-            for output_node in node.outbound:
-
-                self._next(output_node)
+    def forward(self):
+        return {node.name: node.value for node in self.inputs}
 
     def next(self):
-        self._data = {}
-
-        for node in self.inputs:
-            self._next(node)
-
-        feed_data = {name: self._data[name] for name in self.names}
+        self.run()
 
         for listener in self.listeners:
-            listener.on_next(feed_data)
+            listener.on_next(self.value)
 
-        return feed_data
+        return self.value
 
     def has_next(self) -> bool:
-        for node in self.inputs:
-            if not node.has_next():
-                return False
-        return True
+        return all(node.has_next() for node in self.process)
 
     def __add__(self, other):
         if isinstance(other, DataFeed):
-            feed = DataFeed(self._nodes + other._nodes)
-            listeners = self.listeners + other.listeners
-
-            for listener in listeners:
+            nodes = list(set(self.inputs + other.inputs))
+            feed = DataFeed()(*nodes)
+            for listener in self.listeners + other.listeners:
                 feed.attach(listener)
-
             return feed
 
     def reset(self):
-        for node in self.inputs:
-            node.refresh()
-
-    @staticmethod
-    def from_frame(frame: pd.DataFrame) -> 'DataFeed':
-        nodes = []
-
-        for name in frame.columns:
-            nodes += [Stream(name, list(frame[name]))]
-
-        return DataFeed(nodes)
+        for node in self.process:
+            node.reset()

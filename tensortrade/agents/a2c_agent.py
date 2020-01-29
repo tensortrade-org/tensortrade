@@ -27,8 +27,8 @@ class A2CAgent(Agent):
         self.observation_shape = env.observation_space.shape
 
         self.shared_network = shared_network or self._build_shared_network()
-        self.actor_network = actor_network = self._build_actor_network()
-        self.critic_network = critic_network = self._build_critic_network()
+        self.actor_network = actor_network or self._build_actor_network()
+        self.critic_network = critic_network or self._build_critic_network()
 
         self.id = str(uuid.uuid4())
         self.episode_id = None
