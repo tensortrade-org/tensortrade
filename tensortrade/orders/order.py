@@ -146,7 +146,7 @@ class Order(TimedIdentifiable):
     def execute(self, exchange: 'Exchange'):
         self.status = OrderStatus.OPEN
 
-        instrument = self.pair.base if self.side == TradeSide.BUY else self.pair.quote
+        instrument = self.side.instrument(self.pair)
         wallet = self.portfolio.get_wallet(exchange.id, instrument=instrument)
 
         if self.path_id not in wallet.locked.keys():

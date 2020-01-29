@@ -23,7 +23,7 @@ def market_order(step: int,
                  price: float,
                  size: float,
                  portfolio: 'Portfolio'):
-    instrument = pair.base if side == TradeSide.BUY else pair.quote
+    instrument = side.instrument(pair)
     order = Order(step=step,
                   side=side,
                   trade_type=TradeType.MARKET,
@@ -44,7 +44,7 @@ def limit_order(step: int,
                 portfolio: 'Portfolio',
                 ttl_in_seconds: int = None,
                 ttl_in_steps: int = None):
-    instrument = pair.base if side == TradeSide.BUY else pair.quote
+    instrument = side.unstrument(pair)
     order = Order(step=step,
                   side=side,
                   trade_type=TradeType.LIMIT,
@@ -67,7 +67,7 @@ def hidden_limit_order(step: int,
                        portfolio: 'Portfolio',
                        ttl_in_seconds: int = None,
                        ttl_in_steps: int = None):
-    instrument = pair.base if side == TradeSide.BUY else pair.quote
+    instrument = side.instrument(pair)
     order = Order(step=step,
                   side=side,
                   trade_type=TradeType.MARKET,
@@ -94,7 +94,7 @@ def risk_managed_order(step: int,
                        portfolio: 'Portfolio',
                        ttl_in_seconds: int = None,
                        ttl_in_steps: int = None):
-    instrument = pair.base if side == TradeSide.BUY else pair.quote
+    instrument = side.instrument(pair)
     order = Order(step=step,
                   side=side,
                   trade_type=trade_type,

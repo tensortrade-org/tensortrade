@@ -88,7 +88,7 @@ class DynamicOrders(ActionScheme):
 
         ((exchange, pair), (side, criteria, size)) = self.actions[action]
 
-        instrument = pair.base if side == TradeSide.BUY else pair.quote
+        instrument = side.instrument(pair)
         wallet = portfolio.get_wallet(exchange.id, instrument=instrument)
         price = exchange.quote_price(instrument)
         size = min(wallet.balance.size, (wallet.balance.size * size))
