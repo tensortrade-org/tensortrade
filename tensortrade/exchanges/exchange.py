@@ -16,7 +16,7 @@
 from typing import Callable, Union
 
 from tensortrade.base import Component, TimedIdentifiable
-from tensortrade.instruments import TradingPair, Price
+from tensortrade.instruments import TradingPair
 from tensortrade.data import Module
 from tensortrade.data import Forward
 
@@ -73,7 +73,7 @@ class Exchange(Module, Component, TimedIdentifiable):
         Returns:
             The quote price of the specified trading pair, denoted in the base instrument.
         """
-        return self._prices[str(trading_pair)].value * trading_pair
+        return self._prices[str(trading_pair)].value
 
     def is_pair_tradable(self, trading_pair: 'TradingPair') -> bool:
         """Whether or not the specified trading pair is tradable on this exchange.

@@ -2,7 +2,7 @@
 from tensortrade.base import Clock
 from tensortrade.base.exceptions import InsufficientFunds
 from tensortrade.wallets import Wallet
-from tensortrade.instruments import Quantity, Price
+from tensortrade.instruments import Quantity
 from tensortrade.exchanges import ExchangeOptions
 from tensortrade.orders import Order, Trade, TradeType, TradeSide
 

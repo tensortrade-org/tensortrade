@@ -134,28 +134,6 @@ def test_init_from_wallet_tuples(exchange):
     assert len(portfolio.wallets) == 2
 
 
-def test_net_worth(portfolio_locked):
-
-    net_worth = 10000 + (7117.00 * 1) + (143.00 * 10) + (0.22 * 5000)
-
-    assert portfolio_locked.net_worth == net_worth
-
-
-def test_profit_loss(portfolio_locked):
-    print(portfolio_locked.clock.step)
-    initial_net_worth = 10000 + (7117.00 * 1) + (143.00 * 10) + (0.22 * 5000)
-    assert portfolio_locked.net_worth == initial_net_worth
-
-    portfolio_locked.clock.increment()
-    net_worth = 10000 + (6750.00 * 1) + (135.00 * 10) + (0.30 * 5000)
-    assert portfolio_locked.net_worth == net_worth
-
-    assert portfolio_locked.profit_loss == net_worth / initial_net_worth
-
-    print(portfolio_locked.clock.step)
-    # portfolio_locked.clock.reset()
-
-
 def test_balance(portfolio_locked):
 
     assert portfolio_locked.balance(USD) == 9850
@@ -224,66 +202,3 @@ def test_remove_pair(portfolio, exchange):
     portfolio.remove_pair(exchange, BTC)
 
     assert wallet_btc not in portfolio.wallets
-
-
-def test_update(portfolio_locked):
-    print(portfolio_locked.clock.step)
-
-    portfolio_locked.clock.increment()
-    portfolio_locked.update()
-
-    print(portfolio_locked.clock.step)
-
-    data = {
-        "step": 1,
-        "net_worth": 10000 + (6750.00 * 1) + (135.00 * 10) + (0.30 * 5000),
-        "USD": 9850,
-        "BTC": 0.25,
-        "ETH": 3,
-        "XRP": 4738,
-        "USD_pending": 150,
-        "BTC_pending": 0.75,
-        "ETH_pending": 7,
-        "XRP_pending": 262
-    }
-
-    performance = portfolio_locked.performance
-
-    assert data == dict(performance.iloc[0])
-
-    # portfolio_locked.clock.reset()
-
-
-def test_reset(portfolio_locked):
-    print(portfolio_locked.clock.step)
-
-    portfolio_locked.clock.increment()
-    portfolio_locked.update()
-
-    print(portfolio_locked.clock.step)
-
-    data = {
-        "step": 1,
-        "net_worth": 10000 + (6750.00 * 1) + (135.00 * 10) + (0.30 * 5000),
-        "USD": 9850,
-        "BTC": 0.25,
-        "ETH": 3,
-        "XRP": 4738,
-        "USD_pending": 150,
-        "BTC_pending": 0.75,
-        "ETH_pending": 7,
-        "XRP_pending": 262
-    }
-
-    performance = portfolio_locked.performance
-    assert data == dict(performance.iloc[0])
-
-    assert portfolio_locked._initial_balance != portfolio_locked.base_balance
-    assert portfolio_locked._initial_net_worth != portfolio_locked.net_worth
-    assert not portfolio_locked.performance.isna().any().any()
-
-    portfolio_locked.reset()
-
-    assert portfolio_locked._initial_balance == portfolio_locked.base_balance
-    assert portfolio_locked._initial_net_worth == portfolio_locked.net_worth
-    assert portfolio_locked.performance.isna().any().any()

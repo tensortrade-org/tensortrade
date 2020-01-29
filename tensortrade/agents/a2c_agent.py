@@ -138,6 +138,7 @@ class A2CAgent(Agent):
 
             actions = tf.cast(actions, tf.int32)
             logits = self.actor_network(states)
+            print(actions)
             policy_loss_value = wsce_loss(actions, logits, sample_weight=advantages)
 
             probs = tf.nn.softmax(logits)
@@ -185,7 +186,7 @@ class A2CAgent(Agent):
                 next_state, reward, done, _ = self.env.step(action)
 
                 value = self.critic_network(state[None, :], training=False)
-                value = tf.squeeze(value, axis=1)
+                value = tf.squeeze(value, axis=-1)
 
                 memory.push(state, action, reward, done, value)
 

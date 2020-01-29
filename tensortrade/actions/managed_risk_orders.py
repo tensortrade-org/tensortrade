@@ -32,8 +32,7 @@ class ManagedRiskOrders(ActionScheme):
                  take_profit_percentages: Union[List[float], float] = [0.01, 0.02, 0.03],
                  trade_sizes: Union[List[float], int] = 10,
                  trade_type: TradeType = TradeType.MARKET,
-                 ttl_in_seconds: int = None,
-                 ttl_in_steps: int = None,
+                 duration: int = None,
                  order_listener: OrderListener = None):
         """
         Arguments:
@@ -50,8 +49,7 @@ class ManagedRiskOrders(ActionScheme):
             'take_profit_percentages', take_profit_percentages)
         self.trade_sizes = self.default('trade_sizes', trade_sizes)
         self.trade_type = self.default('trade_type', trade_type)
-        self.ttl_in_seconds = self.default('ttl_in_seconds', ttl_in_seconds)
-        self.ttl_in_steps = self.default('ttl_in_steps', ttl_in_steps)
+        self.duration = self.default('duration', duration)
         self._order_listener = self.default('order_listener', order_listener)
 
         generator = product(self.stop_loss_percentages,
@@ -128,8 +126,7 @@ class ManagedRiskOrders(ActionScheme):
             'up_percent': take_profit,
             'portfolio': portfolio,
             'trade_type': self.trade_type,
-            'ttl_in_seconds': self.ttl_in_seconds,
-            'ttl_in_steps': self.ttl_in_steps,
+            'end': exchange.clock.step + self.duration
         }
 
         order = risk_managed_order(**params)

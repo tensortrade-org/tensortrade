@@ -70,13 +70,18 @@ class Instrument:
 # Crypto-currency
 BTC = Instrument('BTC', 8, 'Bitcoin')
 ETH = Instrument('ETH', 8, 'Ethereum')
+XRP = Instrument('XRP', 2, 'XRP')
 BCH = Instrument('BCH', 8, 'Bitcoin Cash')
 LTC = Instrument('LTC', 2, 'Litecoin')
-XRP = Instrument('XRP', 2, 'XRP')
+ETC = Instrument('ETC', 1, 'Ethereum Classic')
+XLM = Instrument('XLM', 2, 'Stellar Lumens')
+LINK = Instrument('LINK', 2, 'Chainlink')
+ATOM = Instrument('ATOM', 2, 'Cosmos')
+DAI = Instrument('DAI', 2, 'Dai')
 
 
 # Fiat Currency
-USD = Instrument('USD', 2, 'U.S. Dollar')
+USD = Instrument('USD', 2, 'United States Dollar')
 EUR = Instrument('EUR', 2, 'Euro')
 
 

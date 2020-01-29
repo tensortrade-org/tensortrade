@@ -1,9 +1,7 @@
 
 import pytest
-import pandas as pd
 
 from tensortrade.base.exceptions import InsufficientFunds, IncompatibleInstrumentOperation
-from tensortrade.data import DataFeed, DataFrameSource
 from tensortrade.exchanges import Exchange
 from tensortrade.wallets import Wallet
 from tensortrade.instruments import USD, BTC, Quantity
@@ -12,13 +10,6 @@ from tensortrade.instruments import USD, BTC, Quantity
 path_id = "f4cfeeae-a3e4-42e9-84b9-a24ccd2eebeb"
 other_id = "7f3de243-0474-48d9-bf44-ca55ae07a70e"
 
-PRICE_COLUMN = "close"
-data_frame = pd.read_csv("tests/data/input/coinbase-1h-btc-usd.csv")
-data_frame.columns = map(str.lower, data_frame.columns)
-data_frame = data_frame.rename(columns={'volume btc': 'volume'})
-
-exchange_ds = DataFrameSource('Frame', data_frame)
-exchange_feed = DataFeed([exchange_ds])
 
 exchange = Exchange('Exchange', lambda x: x)
 

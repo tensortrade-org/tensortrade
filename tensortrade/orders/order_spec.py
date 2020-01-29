@@ -45,8 +45,8 @@ class OrderSpec(Identifiable):
                      portfolio=order.portfolio,
                      price=order.price,
                      criteria=self.criteria,
-                     ttl_in_seconds=order.ttl_in_seconds,
-                     ttl_in_steps=order.ttl_in_steps,
+                     start=order.start,
+                     end=order.end,
                      path_id=order.path_id)
 
     def to_dict(self):
