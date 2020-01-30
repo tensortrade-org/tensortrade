@@ -126,7 +126,7 @@ class ManagedRiskOrders(ActionScheme):
             'up_percent': take_profit,
             'portfolio': portfolio,
             'trade_type': self.trade_type,
-            'end': exchange.clock.step + self.duration
+            'end': exchange.clock.step + self.duration if self.duration else None
         }
 
         order = risk_managed_order(**params)
