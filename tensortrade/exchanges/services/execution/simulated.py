@@ -18,21 +18,20 @@ def contain_size(size: float, options: 'ExchangeOptions') -> float:
 def execute_buy_order(order: 'Order',
                       base_wallet: 'Wallet',
                       quote_wallet: 'Wallet',
-                      current_price: float,
+                      current_price: 'Price',
                       options: 'ExchangeOptions',
                       exchange_id: str,
                       clock: 'Clock') -> 'Trade':
-    price = contain_price(current_price, options)
+    price = contain_price(current_price.rate, options) * order.pair
 
-    if order.type == TradeType.LIMIT and order.price.rate < current_price:
+    if order.type == TradeType.LIMIT and order.price.rate < current_price.rate:
         return None
 
     commission = Quantity(order.pair.base, order.size * options.commission, order.path_id)
     size = contain_size(order.size - commission.size, options)
 
     if order.type == TradeType.MARKET:
-        scale = order.price.rate / price
-        print(scale * order.size - commission.size)
+        scale = order.price.rate / price.rate
         size = contain_size(scale * order.size - commission.size, options)
 
     base_wallet -= commission
@@ -45,7 +44,7 @@ def execute_buy_order(order: 'Order',
         quantity = Quantity(order.pair.base, balance.size, order.path_id)
         base_wallet -= quantity
 
-    quote_size = (order.price.rate / price) * (size / price)
+    quote_size = (order.price.rate / price.rate) * (size / price.rate)
     quote_wallet += Quantity(order.pair.quote, quote_size, order.path_id)
 
     trade = Trade(order_id=order.id,
@@ -64,27 +63,27 @@ def execute_buy_order(order: 'Order',
 def execute_sell_order(order: 'Order',
                        base_wallet: 'Wallet',
                        quote_wallet: 'Wallet',
-                       current_price: float,
+                       current_price: 'Price',
                        options: 'ExchangeOptions',
                        exchange_id: str,
                        clock: 'Clock') -> 'Trade':
-    price = contain_price(current_price, options)
+    price = contain_price(current_price.rate, options) * order.pair
 
-    if order.type == TradeType.LIMIT and order.price.rate > current_price:
+    if order.type == TradeType.LIMIT and order.price.rate > current_price.rate:
         return None
 
     commission = Quantity(order.pair.base, order.size * options.commission, order.path_id)
     size = contain_size(order.size - commission.size, options)
 
     try:
-        quote_size = size / price * (price / order.price.rate)
+        quote_size = size / price.rate * (price.rate / order.price.rate)
         quote_wallet -= Quantity(order.pair.quote, quote_size, order.path_id)
     except InsufficientFunds:
         balance = quote_wallet.locked[order.path_id]
         quote_size = balance.size
         quote_wallet -= Quantity(order.pair.quote, quote_size, order.path_id)
 
-    base_size = quote_size * price / (price / order.price.rate)
+    base_size = quote_size * price.rate / (price.rate / order.price.rate)
     quantity = Quantity(order.pair.base, base_size, order.path_id)
 
     base_wallet += quantity
@@ -106,7 +105,7 @@ def execute_sell_order(order: 'Order',
 def execute_order(order: 'Order',
                   base_wallet: 'Wallet',
                   quote_wallet: 'Wallet',
-                  current_price: float,
+                  current_price: 'Price',
                   options: 'Options',
                   exchange_id: str,
                   clock: 'Clock') -> 'Trade':

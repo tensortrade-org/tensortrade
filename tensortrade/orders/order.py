@@ -236,7 +236,7 @@ class Order(TimedIdentifiable):
             "quantity": str(self.quantity),
             "size": float(self.size),
             "filled_size": self.filled_size,
-            "price": float(self.price),
+            "price": float(self.price.rate),
             "criteria": str(self.criteria),
             "path_id": str(self.path_id),
             "created_at": str(self.created_at)

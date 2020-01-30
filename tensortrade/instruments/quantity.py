@@ -187,11 +187,12 @@ class Quantity:
 
 class Price:
 
-    def __init__(self, rate, pair: 'TradingPair'):
+    def __init__(self, rate: float, pair: 'TradingPair'):
         self._pair = pair
 
         if rate < 0:
             raise InvalidNegativeQuantity(rate)
+
         self.rate = rate
 
     @property
@@ -502,7 +503,7 @@ class Price:
 
         return price
 
-    def __str__(self):
+    def __str__(self) -> str:
         s = "{0:." + str(self.pair.base.precision) + "f}" + " {1}"
         s = s.format(self.rate, self.pair)
         return s

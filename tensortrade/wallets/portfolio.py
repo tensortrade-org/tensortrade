@@ -201,13 +201,13 @@ class Portfolio(Component, TimedIdentifiable, FeedListener):
 
     @staticmethod
     def find_keys(data: dict):
+        price_pattern = re.compile("\\w+:/([A-Z]{3,4}).([A-Z]{3,4})")
         endings = [
             ":/free",
             ":/locked",
             ":/total",
             "worth"
         ]
-        price_pattern = re.compile("\\w+:/([A-Z]{3,4}).([A-Z]{3,4})")
 
         keys = []
         for k in data.keys():
@@ -215,6 +215,7 @@ class Portfolio(Component, TimedIdentifiable, FeedListener):
                 keys += [k]
             elif price_pattern.match(k):
                 keys += [k]
+
         return keys
 
     def on_next(self, data: dict):
@@ -222,8 +223,12 @@ class Portfolio(Component, TimedIdentifiable, FeedListener):
             self._keys = self.find_keys(data)
 
         index = pd.Index([self.clock.step], name="step")
-        performance_step = pd.DataFrame({k: data[k] for k in self._keys}, index=index)
+        performance_data = {k: data[k] for k in self._keys}
+        performance_data['base_symbol'] = self.base_instrument.symbol
+        performance_step = pd.DataFrame(performance_data, index=index)
+        
         net_worth = data['net_worth']
+
         if self._performance is None:
             self._performance = performance_step
             self._initial_net_worth = net_worth

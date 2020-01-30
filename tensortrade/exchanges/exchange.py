@@ -97,7 +97,7 @@ class Exchange(Module, Component, TimedIdentifiable):
             order=order,
             base_wallet=portfolio.get_wallet(self.id, order.pair.base),
             quote_wallet=portfolio.get_wallet(self.id, order.pair.quote),
-            current_price=self.quote_price(order.pair).rate,
+            current_price=self.quote_price(order.pair),
             options=self.options,
             exchange_id=self.id,
             clock=self.clock
