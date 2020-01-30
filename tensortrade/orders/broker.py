@@ -77,7 +77,9 @@ class Broker(OrderListener, TimeIndexed):
 
     def update(self):
         for order, exchange in product(self._unexecuted, self._exchanges):
-            if order.is_executable_on(exchange) and self.clock.step >= order.start:
+            is_executable = order.is_executable_on(exchange) and self.clock.step >= order.start
+
+            if order in self._unexecuted and is_executable:
                 self._unexecuted.remove(order)
                 self._executed[order.id] = order
 

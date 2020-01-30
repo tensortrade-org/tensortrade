@@ -13,7 +13,7 @@ install:
 
 script:
   - mypy .
-  - pytest
+  - pytest -s .
 
 notifications:
   webhooks:
