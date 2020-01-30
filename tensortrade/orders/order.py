@@ -18,7 +18,7 @@ from typing import Callable
 
 from tensortrade.base import TimedIdentifiable
 from tensortrade.base.exceptions import InvalidOrderQuantity, InsufficientFunds
-from tensortrade.instruments import Quantity, Price
+from tensortrade.instruments import Quantity
 from tensortrade.orders import Trade, TradeSide, TradeType
 
 
@@ -51,11 +51,11 @@ class Order(TimedIdentifiable):
                  pair: 'TradingPair',
                  quantity: 'Quantity',
                  portfolio: 'Portfolio',
-                 price: 'Price',
+                 price: float,
                  criteria: Callable[['Order', 'Exchange'], bool] = None,
                  path_id: str = None,
-                 ttl_in_seconds: int = None,
-                 ttl_in_steps: int = None):
+                 start: int = None,
+                 end: int = None):
         super().__init__()
 
         if quantity.size == 0:
@@ -70,8 +70,8 @@ class Order(TimedIdentifiable):
         self.price = price
         self.criteria = criteria
         self.path_id = path_id or self.id
-        self.ttl_in_seconds = ttl_in_seconds
-        self.ttl_in_steps = ttl_in_steps
+        self.start = start or step
+        self.end = end
         self.status = OrderStatus.PENDING
 
         self.filled_size = 0
@@ -87,14 +87,14 @@ class Order(TimedIdentifiable):
     def size(self) -> float:
         if self.pair.base is self.quantity.instrument:
             return self.quantity.size
-        return self.quantity.size * self.price.rate
+        return self.quantity.size * self.price
 
     @property
-    def price(self) -> 'Price':
+    def price(self) -> float:
         return self._price
 
     @price.setter
-    def price(self, price: 'Price'):
+    def price(self, price: float):
         self._price = price
 
     @property
@@ -236,7 +236,7 @@ class Order(TimedIdentifiable):
             "quantity": str(self.quantity),
             "size": float(self.size),
             "filled_size": self.filled_size,
-            "price": float(self.price.rate),
+            "price": float(self.price),
             "criteria": str(self.criteria),
             "path_id": str(self.path_id),
             "created_at": str(self.created_at)

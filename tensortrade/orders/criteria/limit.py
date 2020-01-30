@@ -27,8 +27,8 @@ class Limit(Criteria):
     def check(self, order: 'Order', exchange: 'Exchange') -> bool:
         price = exchange.quote_price(order.pair)
 
-        buy_satisfied = (order.side == TradeSide.BUY and price.rate <= self.limit_price)
-        sell_satisfied = (order.side == TradeSide.SELL and price.rate >= self.limit_price)
+        buy_satisfied = (order.side == TradeSide.BUY and price <= self.limit_price)
+        sell_satisfied = (order.side == TradeSide.SELL and price >= self.limit_price)
 
         return buy_satisfied or sell_satisfied
 

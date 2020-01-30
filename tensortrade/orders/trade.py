@@ -48,7 +48,7 @@ class Trade(TimedIdentifiable):
                  side: TradeSide,
                  trade_type: TradeType,
                  quantity: 'Quantity',
-                 price: 'Price',
+                 price: float,
                  commission: 'Quantity'):
         """
         Arguments:
@@ -91,7 +91,7 @@ class Trade(TimedIdentifiable):
         if self.pair.base is self.quantity.instrument:
             return round(self.quantity.size, self.pair.base.precision)
 
-        return round(self.quantity.size * self.price.rate, self.pair.base.precision)
+        return round(self.quantity.size * self.price, self.pair.base.precision)
 
     @property
     def price(self) -> float:
@@ -150,7 +150,7 @@ class Trade(TimedIdentifiable):
                 'type': str(self.type),
                 'size': float(self.size),
                 'quantity': str(self.quantity),
-                'price': float(self.price.rate),
+                'price': float(self.price),
                 'commission': str(self.commission),
                 "created_at": str(self.created_at)
                 }

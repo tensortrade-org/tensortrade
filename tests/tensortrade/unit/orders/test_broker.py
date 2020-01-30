@@ -64,7 +64,7 @@ def test_cancel_unexecuted_order(mock_order_class,
 
     broker.cancel(order)
     assert order not in broker.unexecuted
-    order.cancel.assert_called_once_with(exchange)
+    order.cancel.assert_called_once_with()
 
 
 @mock.patch('tensortrade.orders.Order')
@@ -108,6 +108,8 @@ def test_update_on_single_exchange_with_single_order(mock_order_class,
 
     order = mock_order_class.return_value
     order.id = "fake_id"
+    order.start = 0
+    order.end = None
     order.is_executable_on = mock.Mock(side_effect=[False, True])
     order.attach = mock.Mock(return_value=None)
 
@@ -137,7 +139,8 @@ def test_update_on_single_exchange_with_multiple_orders(mock_exchange_class):
     broker = Broker(exchange)
 
     # Submit order 1
-    o1 = Order(side=TradeSide.BUY,
+    o1 = Order(step=0,
+               side=TradeSide.BUY,
                trade_type=TradeType.MARKET,
                pair=USD / BTC,
                quantity=5200.00 * USD,
@@ -147,7 +150,8 @@ def test_update_on_single_exchange_with_multiple_orders(mock_exchange_class):
     broker.submit(o1)
 
     # Submit order 2
-    o2 = Order(side=TradeSide.BUY,
+    o2 = Order(step=0,
+               side=TradeSide.BUY,
                trade_type=TradeType.MARKET,
                pair=USD / BTC,
                quantity=230.00 * USD,
@@ -184,7 +188,8 @@ def test_on_fill(mock_trade_class,
     wallets = [Wallet(exchange, 10000 * USD), Wallet(exchange, 0 * BTC)]
     portfolio = Portfolio(USD, wallets)
 
-    order = Order(side=TradeSide.BUY,
+    order = Order(step=0,
+                  side=TradeSide.BUY,
                   trade_type=TradeType.MARKET,
                   pair=USD / BTC,
                   quantity=5200.00 * USD,
@@ -226,7 +231,8 @@ def test_on_fill_with_complex_order(mock_trade_class,
 
     side = TradeSide.BUY
 
-    order = Order(side=TradeSide.BUY,
+    order = Order(step=0,
+                  side=TradeSide.BUY,
                   trade_type=TradeType.MARKET,
                   pair=USD / BTC,
                   quantity=5200.00 * USD,

@@ -1,6 +1,7 @@
 
-import unittest.mock as mock
 import re
+import numpy as np
+import unittest.mock as mock
 
 from tensortrade.instruments import *
 from tensortrade.orders import Order, OrderStatus, OrderSpec, TradeSide, TradeType
@@ -57,7 +58,6 @@ def test_properties(mock_portfolio_class):
     assert not order.is_sell
     assert not order.is_market_order
     assert order.is_limit_order
-    assert order.created_at == 0
 
 
 @mock.patch('tensortrade.exchanges.Exchange')
@@ -440,15 +440,15 @@ def test_cancel(mock_order_listener_class,
 
     assert order.status == OrderStatus.PARTIALLY_FILLED
     assert base_wallet.balance == 4800.00 * USD
-    assert base_wallet.locked[order.path_id] == 7.42 * USD
+    assert round(base_wallet.locked[order.path_id].size, 2) == 7.42
     assert quote_wallet.balance == 0 * BTC
-    assert quote_wallet.locked[order.path_id] == 0.73925519 * BTC
+    assert round(quote_wallet.locked[order.path_id].size, 8) == 0.73925519
     order.cancel()
 
     listener.on_cancel.assert_called_once_with(order)
-    assert base_wallet.balance == 4807.42 * USD
+    assert round(base_wallet.balance.size, 2) == 4807.42
     assert order.path_id not in base_wallet.locked
-    assert quote_wallet.balance == 0.73925519 * BTC
+    assert round(quote_wallet.balance.size, 8) == 0.73925519
     assert order.path_id not in quote_wallet.locked
 
 
@@ -484,7 +484,7 @@ def test_release(mock_exchange_class):
 
 
 @mock.patch('tensortrade.wallets.Portfolio')
-def test_to_dict(mock_portfolio_class):
+def test_to_json(mock_portfolio_class):
 
     portfolio = mock_portfolio_class.return_value
 
@@ -497,47 +497,21 @@ def test_to_dict(mock_portfolio_class):
                   price=7000.00)
 
     d = {
-        "id": order.id,
-        "status": order.status,
-        "type": order.type,
-        "side": order.side,
-        "pair": order.pair,
-        "quantity": order.quantity,
-        "size": order.size,
-        "price": order.price,
-        "criteria": order.criteria,
-        "path_id": order.path_id
+        "id": str(order.id),
+        "step": int(order.step),
+        "status": str(order.status),
+        "type": str(order.type),
+        "side": str(order.side),
+        "base_symbol": str(order.pair.base.symbol),
+        "quote_symbol": str(order.pair.quote.symbol),
+        "quantity": str(order.quantity),
+        "size": float(order.size),
+        "filled_size": order.filled_size,
+        "price": float(order.price),
+        "criteria": str(order.criteria),
+        "path_id": str(order.path_id),
+        "created_at": str(order.created_at)
     }
-
-    assert order.to_dict() == d
-
-
-@mock.patch('tensortrade.wallets.Portfolio')
-def test_to_json(mock_portfolio_class):
-
-    portfolio = mock_portfolio_class.return_value
-
-    order = Order(side=TradeSide.BUY,
-                  trade_type=TradeType.MARKET,
-                  pair=USD / BTC,
-                  quantity=5200.00 * USD,
-                  portfolio=portfolio,
-                  price=7000.00)
-
-    d = {
-        "id": order.id,
-        "status": order.status,
-        "type": order.type,
-        "side": order.side,
-        "pair": order.pair,
-        "quantity": order.quantity,
-        "size": order.size,
-        "price": order.price,
-        "criteria": order.criteria,
-        "path_id": order.path_id
-    }
-
-    d = {k: str(v) for k, v in d.items()}
 
     assert order.to_json() == d
 
@@ -549,7 +523,8 @@ def test_iadd(mock_portfolio_class, mock_order_spec_class):
     portfolio = mock_portfolio_class.return_value
 
     # Market order
-    order = Order(side=TradeSide.BUY,
+    order = Order(step=0,
+                  side=TradeSide.BUY,
                   trade_type=TradeType.MARKET,
                   pair=USD / BTC,
                   quantity=5000.00 * USD,
@@ -570,7 +545,8 @@ def test_str(mock_portfolio_class):
 
     portfolio = mock_portfolio_class.return_value
 
-    order = Order(side=TradeSide.BUY,
+    order = Order(step=0,
+                  side=TradeSide.BUY,
                   trade_type=TradeType.MARKET,
                   pair=USD / BTC,
                   quantity=5200.00 * USD,

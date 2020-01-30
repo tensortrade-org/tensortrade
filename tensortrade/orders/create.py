@@ -20,7 +20,7 @@ from tensortrade.orders.criteria import Stop, Limit
 def market_order(step: int,
                  side: 'TradeSide',
                  pair: 'TradingPair',
-                 price: 'Price',
+                 price: float,
                  size: float,
                  portfolio: 'Portfolio'):
     instrument = side.instrument(pair)
@@ -39,11 +39,11 @@ def market_order(step: int,
 def limit_order(step: int,
                 side: 'TradeSide',
                 pair: 'TradingPair',
-                price: 'Price',
+                price: float,
                 size: float,
                 portfolio: 'Portfolio',
-                ttl_in_seconds: int = None,
-                ttl_in_steps: int = None):
+                start: int = None,
+                end: int = None):
     instrument = side.unstrument(pair)
     order = Order(step=step,
                   side=side,
@@ -51,8 +51,8 @@ def limit_order(step: int,
                   pair=pair,
                   price=price,
                   quantity=(size * instrument),
-                  ttl_in_seconds=ttl_in_seconds,
-                  ttl_in_steps=ttl_in_steps,
+                  start=start,
+                  end=end,
                   portfolio=portfolio
                   )
 
@@ -62,11 +62,11 @@ def limit_order(step: int,
 def hidden_limit_order(step: int,
                        side: 'TradeSide',
                        pair: 'TradingPair',
-                       price: 'Price',
+                       price: float,
                        size: float,
                        portfolio: 'Portfolio',
-                       ttl_in_seconds: int = None,
-                       ttl_in_steps: int = None):
+                       start: int = None,
+                       end: int = None):
     instrument = side.instrument(pair)
     order = Order(step=step,
                   side=side,
@@ -74,8 +74,8 @@ def hidden_limit_order(step: int,
                   pair=pair,
                   price=price,
                   quantity=(size * instrument),
-                  ttl_in_seconds=ttl_in_seconds,
-                  ttl_in_steps=ttl_in_steps,
+                  start=start,
+                  end=end,
                   portfolio=portfolio,
                   criteria=Limit(limit_price=price)
                   )
@@ -87,21 +87,21 @@ def risk_managed_order(step: int,
                        side: 'TradeSide',
                        trade_type: 'TradeType',
                        pair: 'TradingPair',
-                       price: 'Price',
+                       price: float,
                        size: float,
                        down_percent: float,
                        up_percent: float,
                        portfolio: 'Portfolio',
-                       ttl_in_seconds: int = None,
-                       ttl_in_steps: int = None):
+                       start: int = None,
+                       end: int = None):
     instrument = side.instrument(pair)
     order = Order(step=step,
                   side=side,
                   trade_type=trade_type,
                   pair=pair,
                   price=price,
-                  ttl_in_seconds=ttl_in_seconds,
-                  ttl_in_steps=ttl_in_steps,
+                  start=start,
+                  end=end,
                   quantity=(size * instrument),
                   portfolio=portfolio)
 

@@ -1,7 +1,7 @@
 
 import pytest
 
-from tensortrade.instruments import Instrument, TradingPair, Quantity
+from tensortrade.instruments import Instrument, Quantity
 from tensortrade.base.exceptions import InvalidTradingPair
 
 

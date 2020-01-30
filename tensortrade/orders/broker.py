@@ -77,7 +77,7 @@ class Broker(OrderListener, TimeIndexed):
 
     def update(self):
         for order, exchange in product(self._unexecuted, self._exchanges):
-            if order.is_executable_on(exchange):
+            if order.is_executable_on(exchange) and self.clock.step >= order.start:
                 self._unexecuted.remove(order)
                 self._executed[order.id] = order
 
@@ -85,14 +85,7 @@ class Broker(OrderListener, TimeIndexed):
                 order.execute(exchange)
 
         for order in self._unexecuted + list(self._executed.values()):
-            order_expired = False
-
-            if order.ttl_in_seconds:
-                seconds_passed = (datetime.now() - order.created_at).total_seconds()
-                order_expired = seconds_passed > order.ttl_in_seconds
-            elif order.ttl_in_steps:
-                steps_passed = self.clock.step - order.step
-                order_expired = steps_passed > order.ttl_in_steps
+            order_expired = (self.clock.step >= order.end) if order.end else False
 
             order_active = order.status not in [OrderStatus.FILLED, OrderStatus.CANCELLED]
 

@@ -8,7 +8,7 @@ from tensortrade.instruments import USD, BTC
 
 class ConcreteCriteria(Criteria):
 
-    def call(self, order: 'Order', exchange: 'Exchange'):
+    def check(self, order: 'Order', exchange: 'Exchange') -> bool:
         return True
 
 
