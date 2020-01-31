@@ -64,7 +64,7 @@ class RiskAdjustedReturns(RewardScheme):
 
     def get_reward(self, portfolio: 'Portfolio') -> float:
         """Return the reward corresponding to the selected risk-adjusted return metric."""
-        returns = portfolio.performance['net_worth'].diff()
+        returns = portfolio.performance['net_worth'].pct_change()
 
         risk_adjusted_return = self._return_algorithm(returns)
 
