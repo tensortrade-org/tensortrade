@@ -19,8 +19,7 @@ from itertools import product
 from gym.spaces import Discrete
 
 from tensortrade.actions import ActionScheme
-from tensortrade.trades import TradeSide, TradeType
-from tensortrade.orders import Order, OrderListener, risk_managed_order
+from tensortrade.orders import TradeSide, TradeType, Order, OrderListener, risk_managed_order
 
 
 class ManagedRiskOrders(ActionScheme):
@@ -33,8 +32,7 @@ class ManagedRiskOrders(ActionScheme):
                  take_profit_percentages: Union[List[float], float] = [0.01, 0.02, 0.03],
                  trade_sizes: Union[List[float], int] = 10,
                  trade_type: TradeType = TradeType.MARKET,
-                 ttl_in_seconds: int = None,
-                 ttl_in_steps: int = None,
+                 duration: int = None,
                  order_listener: OrderListener = None):
         """
         Arguments:
@@ -51,8 +49,7 @@ class ManagedRiskOrders(ActionScheme):
             'take_profit_percentages', take_profit_percentages)
         self.trade_sizes = self.default('trade_sizes', trade_sizes)
         self.trade_type = self.default('trade_type', trade_type)
-        self.ttl_in_seconds = self.default('ttl_in_seconds', ttl_in_seconds)
-        self.ttl_in_steps = self.default('ttl_in_steps', ttl_in_steps)
+        self.duration = self.default('duration', duration)
         self._order_listener = self.default('order_listener', order_listener)
 
         generator = product(self.stop_loss_percentages,
@@ -110,7 +107,7 @@ class ManagedRiskOrders(ActionScheme):
 
         price = exchange.quote_price(pair)
 
-        wallet_instrument = pair.base if side == TradeSide.BUY else pair.quote
+        wallet_instrument = side.instrument(pair)
         wallet = portfolio.get_wallet(exchange.id, instrument=wallet_instrument)
 
         size = (wallet.balance.size * size)
@@ -129,14 +126,15 @@ class ManagedRiskOrders(ActionScheme):
             'up_percent': take_profit,
             'portfolio': portfolio,
             'trade_type': self.trade_type,
-            'ttl_in_seconds': self.ttl_in_seconds,
-            'ttl_in_steps': self.ttl_in_steps,
+            'end': exchange.clock.step + self.duration if self.duration else None
         }
 
         order = risk_managed_order(**params)
 
         if self._order_listener is not None:
             order.attach(self._order_listener)
+
+        return order
 
     def reset(self):
         pass

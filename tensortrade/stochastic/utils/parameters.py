@@ -13,7 +13,7 @@
 # limitations under the License
 
 
-import random
+from random import uniform
 
 
 class ModelParameters:
@@ -65,24 +65,24 @@ class ModelParameters:
 
 def default(base_price, t_gen, delta):
     return ModelParameters(
-                    all_s0=base_price,
-                    all_r0=0.5,
-                    all_time=t_gen,
-                    all_delta=delta,
-                    all_sigma=0.125,
-                    gbm_mu=0.058,
-                    jumps_lamda=0.00125,
-                    jumps_sigma=0.001,
-                    jumps_mu=-0.2,
-                    cir_a=3.0,
-                    cir_mu=0.5,
-                    cir_rho=0.5,
-                    ou_a=3.0,
-                    ou_mu=0.5,
-                    heston_a=0.25,
-                    heston_mu=0.35,
-                    heston_vol0=0.06125
-                )
+        all_s0=base_price,
+        all_r0=0.5,
+        all_time=t_gen,
+        all_delta=delta,
+        all_sigma=0.125,
+        gbm_mu=0.058,
+        jumps_lamda=0.00125,
+        jumps_sigma=0.001,
+        jumps_mu=-0.2,
+        cir_a=3.0,
+        cir_mu=0.5,
+        cir_rho=0.5,
+        ou_a=3.0,
+        ou_mu=0.5,
+        heston_a=0.25,
+        heston_mu=0.35,
+        heston_vol0=0.06125
+    )
 
 
 def random(base_price, t_gen, delta):
@@ -91,17 +91,17 @@ def random(base_price, t_gen, delta):
         all_r0=0.5,
         all_time=t_gen,
         all_delta=delta,
-        all_sigma=random.uniform(0.1, 0.8),
-        gbm_mu=random.uniform(-0.3, 0.6),
-        jumps_lamda=random.uniform(0.0071, 0.6),
-        jumps_sigma=random.uniform(-0.03, 0.04),
-        jumps_mu=random.uniform(-0.2, 0.2),
+        all_sigma=uniform(0.1, 0.8),
+        gbm_mu=uniform(-0.3, 0.6),
+        jumps_lamda=uniform(0.0071, 0.6),
+        jumps_sigma=uniform(-0.03, 0.04),
+        jumps_mu=uniform(-0.2, 0.2),
         cir_a=3.0,
         cir_mu=0.5,
         cir_rho=0.5,
         ou_a=3.0,
         ou_mu=0.5,
-        heston_a=random.uniform(1, 5),
-        heston_mu=random.uniform(0.156, 0.693),
+        heston_a=uniform(1, 5),
+        heston_mu=uniform(0.156, 0.693),
         heston_vol0=0.06125
     )

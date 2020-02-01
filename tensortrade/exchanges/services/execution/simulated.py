@@ -2,10 +2,9 @@
 from tensortrade.base import Clock
 from tensortrade.base.exceptions import InsufficientFunds
 from tensortrade.wallets import Wallet
-from tensortrade.instruments import Quantity, Price
+from tensortrade.instruments import Quantity
 from tensortrade.exchanges import ExchangeOptions
-from tensortrade.orders import Order
-from tensortrade.trades import Trade, TradeType, TradeSide
+from tensortrade.orders import Order, Trade, TradeType, TradeSide
 
 
 def contain_price(price: float, options: 'ExchangeOptions') -> float:
@@ -25,15 +24,14 @@ def execute_buy_order(order: 'Order',
                       clock: 'Clock') -> 'Trade':
     price = contain_price(current_price, options)
 
-    if order.type == TradeType.LIMIT and order.price.rate < current_price:
+    if order.type == TradeType.LIMIT and order.price < current_price:
         return None
 
     commission = Quantity(order.pair.base, order.size * options.commission, order.path_id)
     size = contain_size(order.size - commission.size, options)
 
     if order.type == TradeType.MARKET:
-        scale = order.price.rate / price
-        print(scale * order.size - commission.size)
+        scale = order.price / price
         size = contain_size(scale * order.size - commission.size, options)
 
     base_wallet -= commission
@@ -46,7 +44,7 @@ def execute_buy_order(order: 'Order',
         quantity = Quantity(order.pair.base, balance.size, order.path_id)
         base_wallet -= quantity
 
-    quote_size = (order.price.rate / price) * (size / price)
+    quote_size = (order.price / price) * (size / price)
     quote_wallet += Quantity(order.pair.quote, quote_size, order.path_id)
 
     trade = Trade(order_id=order.id,
@@ -71,21 +69,21 @@ def execute_sell_order(order: 'Order',
                        clock: 'Clock') -> 'Trade':
     price = contain_price(current_price, options)
 
-    if order.type == TradeType.LIMIT and order.price.rate > current_price:
+    if order.type == TradeType.LIMIT and order.price > current_price:
         return None
 
     commission = Quantity(order.pair.base, order.size * options.commission, order.path_id)
     size = contain_size(order.size - commission.size, options)
 
     try:
-        quote_size = size / price * (price / order.price.rate)
+        quote_size = size / price * (price / order.price)
         quote_wallet -= Quantity(order.pair.quote, quote_size, order.path_id)
     except InsufficientFunds:
         balance = quote_wallet.locked[order.path_id]
         quote_size = balance.size
         quote_wallet -= Quantity(order.pair.quote, quote_size, order.path_id)
 
-    base_size = quote_size * price / (price / order.price.rate)
+    base_size = quote_size * price / (price / order.price)
     quantity = Quantity(order.pair.base, base_size, order.path_id)
 
     base_wallet += quantity

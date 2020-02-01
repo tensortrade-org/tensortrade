@@ -17,7 +17,7 @@ import functools
 
 from typing import Union, Callable
 
-from .node import Node
+from .node import Node, Module
 
 
 class BinOp(Node):
@@ -26,13 +26,8 @@ class BinOp(Node):
         super().__init__(name)
         self.op = op
 
-    def forward(self, inbound_data: dict):
-        left_name = self.inbound[0].name
-        right_name = self.inbound[1].name
-        left_value = inbound_data.get(left_name, 0)
-        right_value = inbound_data.get(right_name, 0)
-
-        return self.op(left_value, right_value)
+    def forward(self):
+        return self.op(self.inputs[0].value, self.inputs[1].value)
 
     def has_next(self):
         return True
@@ -45,16 +40,12 @@ class Reduce(Node):
 
     def __init__(self,
                  name: str,
-                 selector: Callable[[str], bool],
                  func: Callable[[float, float], float]):
         super().__init__(name)
-
-        self.selector = selector
         self.func = func
 
-    def forward(self, inbound_data):
-        keys = list(filter(self.selector, inbound_data.keys()))
-        return functools.reduce(self.func, [inbound_data[k] for k in keys])
+    def forward(self):
+        return functools.reduce(self.func, [node.value for node in self.inputs])
 
     def has_next(self):
         return True
@@ -67,36 +58,19 @@ class Select(Node):
 
     def __init__(self, selector: Union[Callable[[str], bool], str]):
         if isinstance(selector, str):
-            name = selector
-            self.key = name
+            self.key = selector
+            self.selector = lambda x: x.name == selector
         else:
             self.key = None
             self.selector = selector
-
         super().__init__(self.key or "select")
-        self.flatten = True
+        self._node = None
 
-    def forward(self, inbound_data):
-        if not self.key:
-            self.key = list(filter(self.selector, inbound_data.keys()))[0]
-            self.name = self.key
-        return inbound_data[self.key]
-
-    def has_next(self):
-        return True
-
-    def reset(self):
-        pass
-
-
-class Namespace(Node):
-
-    def __init__(self, name: str):
-        super().__init__(name)
-        self.flatten = True
-
-    def forward(self, inbound_data: dict):
-        return inbound_data
+    def forward(self):
+        if not self._node:
+            self._node = list(filter(self.selector, self.inputs))[0]
+            self.name = self._node.name
+        return self._node.value
 
     def has_next(self):
         return True
@@ -109,11 +83,10 @@ class Lambda(Node):
 
     def __init__(self, name: str, extract: Callable[[any], float], obj: any):
         super().__init__(name)
-
         self.extract = extract
         self.obj = obj
 
-    def forward(self, inbound_data: dict):
+    def forward(self):
         return self.extract(self.obj)
 
     def has_next(self):
@@ -121,3 +94,27 @@ class Lambda(Node):
 
     def reset(self):
         pass
+
+
+class Forward(Lambda):
+
+    def __init__(self, node: 'Node'):
+        super().__init__(
+            name=node.name,
+            extract=lambda x: x.value,
+            obj=node
+        )
+        self(node)
+
+
+class Condition(Module):
+
+    def __init__(self, name: str, condition: Callable[['Node'], bool]):
+        super().__init__(name)
+        self.condition = condition
+
+    def build(self):
+        self.variables = list(filter(self.condition, self.inputs))
+
+    def has_next(self):
+        return True

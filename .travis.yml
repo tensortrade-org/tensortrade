@@ -11,7 +11,8 @@ python:
 install:
   - pip install -e .[all-tests]
 
-script: pytest
+script:
+  - pytest
 
 notifications:
   webhooks:

@@ -15,8 +15,7 @@
 
 from numbers import Number
 
-from tensortrade.base.exceptions import InvalidTradingPair, IncompatibleTradingPairOperation
-from tensortrade.instruments.quantity import Price
+from tensortrade.base.exceptions import InvalidTradingPair
 
 
 class TradingPair:
@@ -40,11 +39,6 @@ class TradingPair:
 
     def __hash__(self):
         return hash(str(self))
-
-    def __rmul__(self, other):
-        if not isinstance(other, Number):
-            raise IncompatibleTradingPairOperation(other, self)
-        return Price(other, self)
 
     def __eq__(self, other):
         if isinstance(other, TradingPair):

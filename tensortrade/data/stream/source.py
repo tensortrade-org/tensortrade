@@ -21,15 +21,12 @@ class Stream(Node):
 
     def __init__(self, name: str, array: List[any] = None):
         super().__init__(name)
-
         self._array = array if array else []
         self._cursor = 0
 
-    def forward(self, inbound_data: dict):
+    def forward(self):
         v = self._array[self._cursor]
-
         self._cursor += 1
-
         return v
 
     def has_next(self) -> bool:

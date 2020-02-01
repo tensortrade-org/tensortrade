@@ -16,8 +16,7 @@
 from typing import Callable
 
 from tensortrade.base import Identifiable
-from tensortrade.trades import TradeSide, TradeType
-from .order import Order
+from tensortrade.orders import Order, TradeSide, TradeType
 
 
 class OrderSpec(Identifiable):
@@ -33,7 +32,7 @@ class OrderSpec(Identifiable):
         self.criteria = criteria
 
     def create_order(self, order: 'Order', exchange: 'Exchange') -> 'Order':
-        wallet_instrument = self.pair.base if self.side == TradeSide.BUY else self.pair.quote
+        wallet_instrument = self.side.instrument(self.pair)
 
         wallet = order.portfolio.get_wallet(exchange.id, instrument=wallet_instrument)
         quantity = wallet.locked.get(order.path_id, 0)
@@ -46,8 +45,8 @@ class OrderSpec(Identifiable):
                      portfolio=order.portfolio,
                      price=order.price,
                      criteria=self.criteria,
-                     ttl_in_seconds=order.ttl_in_seconds,
-                     ttl_in_steps=order.ttl_in_steps,
+                     start=order.start,
+                     end=order.end,
                      path_id=order.path_id)
 
     def to_dict(self):

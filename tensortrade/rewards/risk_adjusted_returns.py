@@ -44,14 +44,17 @@ class RiskAdjustedReturns(RewardScheme):
     def _sharpe_ratio(self, returns: pd.Series) -> float:
         """Return the sharpe ratio for a given series of a returns.
 
-        https://en.wikipedia.org/wiki/Sharpe_ratio
+        References:
+            - https://en.wikipedia.org/wiki/Sharpe_ratio
         """
         return (returns.mean() - self._risk_free_rate) / (returns.std() + 1E-9)
 
     def _sortino_ratio(self, returns: pd.Series) -> float:
         """Return the sortino ratio for a given series of a returns.
 
-        https://en.wikipedia.org/wiki/Sortino_ratio
+
+        References:
+            - https://en.wikipedia.org/wiki/Sortino_ratio
         """
         downside_returns = returns.copy()
 
@@ -64,7 +67,7 @@ class RiskAdjustedReturns(RewardScheme):
 
     def get_reward(self, portfolio: 'Portfolio') -> float:
         """Return the reward corresponding to the selected risk-adjusted return metric."""
-        returns = portfolio.performance['net_worth'].diff()
+        returns = portfolio.performance['net_worth'].pct_change()
 
         risk_adjusted_return = self._return_algorithm(returns)
 
