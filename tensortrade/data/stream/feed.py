@@ -99,14 +99,16 @@ class DataFeed(Node):
         return all(node.has_next() for node in self.process)
 
     def __add__(self, other):
-        if isinstance(other, DataFeed):
-            nodes = list(set(self.inputs + other.inputs))
-            feed = DataFeed(nodes)
+        if not isinstance(other, DataFeed):
+            raise TypeError(f'can only concatenate DataFeed (not "{type(other).__name__}") to DataFeed.')
 
-            for listener in self.listeners + other.listeners:
-                feed.attach(listener)
+        nodes = self.inputs + other.inputs
+        feed = DataFeed(nodes)
 
-            return feed
+        for listener in self.listeners + other.listeners:
+            feed.attach(listener)
+
+        return feed
 
     def reset(self):
         for node in self.process:
