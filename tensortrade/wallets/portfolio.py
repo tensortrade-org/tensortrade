@@ -226,7 +226,7 @@ class Portfolio(Component, TimedIdentifiable, FeedListener):
         performance_data = {k: data[k] for k in self._keys}
         performance_data['base_symbol'] = self.base_instrument.symbol
         performance_step = pd.DataFrame(performance_data, index=index)
-        
+
         net_worth = data['net_worth']
 
         if self._performance is None:
@@ -245,3 +245,6 @@ class Portfolio(Component, TimedIdentifiable, FeedListener):
         self._initial_net_worth = None
         self._net_worth = None
         self._performance = None
+
+        for wallet in self._wallets.values():
+            wallet.reset()

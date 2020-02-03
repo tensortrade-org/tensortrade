@@ -107,7 +107,6 @@ class Quantity:
                         right: Union['Quantity', float, int],
                         bool_op: operator) -> bool:
         left, right = Quantity.validate(left, right)
-
         boolean = bool_op(left.size, right.size)
 
         if not isinstance(boolean, bool):
@@ -120,7 +119,6 @@ class Quantity:
                         right: Union['Quantity', float, int],
                         op: operator) -> 'Quantity':
         left, right = Quantity.validate(left, right)
-
         size = op(left._size, right._size)
         return Quantity(left.instrument, size, left.path_id)
 

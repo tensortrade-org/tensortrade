@@ -24,6 +24,7 @@ class Wallet(Identifiable):
 
     def __init__(self, exchange: 'Exchange', quantity: 'Quantity'):
         self._exchange = exchange
+        self._initial_size = quantity.size
         self._instrument = quantity.instrument
         self._balance = quantity
         self._locked = {}
@@ -88,6 +89,10 @@ class Wallet(Identifiable):
 
             if quantity is not None:
                 self += quantity.size * self.instrument
+
+    def reset(self):
+        self._balance = Quantity(self._instrument, self._initial_size)
+        self._locked = {}
 
     def __iadd__(self, quantity: 'Quantity') -> 'Wallet':
         if quantity.is_locked:
