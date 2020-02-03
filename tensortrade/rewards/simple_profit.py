@@ -32,7 +32,8 @@ class SimpleProfit(RewardScheme):
             portfolio: The portfolio being used by the environment.
 
         Returns:
-            The incremental increase in net worth over the previous `window_size` timesteps.
+            The cumulative percentage change in net worth over the previous `window_size` timesteps.
         """
-        returns = portfolio.performance['net_worth'].diff()
-        return sum(returns[-self.window_size:])
+        returns = portfolio.performance['net_worth'].pct_change()
+        returns = (1 + returns[-self.window_size:]).cumprod() - 1
+        return returns.iloc[-1]
