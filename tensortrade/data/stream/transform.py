@@ -63,13 +63,16 @@ class Select(Node):
         else:
             self.key = None
             self.selector = selector
+
         super().__init__(self.key or "select")
+
         self._node = None
 
     def forward(self):
         if not self._node:
             self._node = list(filter(self.selector, self.inputs))[0]
             self.name = self._node.name
+
         return self._node.value
 
     def has_next(self):
