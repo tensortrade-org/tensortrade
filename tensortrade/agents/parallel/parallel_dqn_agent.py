@@ -109,6 +109,8 @@ class ParallelDQNAgent(Agent):
         model_update_queue = ParallelQueue()
         done_queue = ParallelQueue()
 
+        print('====      AGENT ID: {}      ===='.format(self.id))
+
         trainers = [self._start_trainer_process(self.create_env,
                                                 memory_queue,
                                                 model_update_queue,

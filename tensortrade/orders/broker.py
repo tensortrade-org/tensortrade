@@ -88,7 +88,6 @@ class Broker(OrderListener, TimeIndexed):
 
         for order in self._unexecuted + list(self._executed.values()):
             order_expired = (self.clock.step >= order.end) if order.end else False
-
             order_active = order.status not in [OrderStatus.FILLED, OrderStatus.CANCELLED]
 
             if order_active and order_expired:

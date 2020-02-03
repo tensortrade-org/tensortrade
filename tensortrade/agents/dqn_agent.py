@@ -31,8 +31,7 @@ class DQNAgent(Agent):
         self.target_network = tf.keras.models.clone_model(self.policy_network)
         self.target_network.trainable = False
 
-        self.id = str(uuid.uuid4())
-        self.episode_id = None
+        self.env.agent_id = self.id
 
     def _build_policy_network(self):
         network = tf.keras.Sequential([
@@ -129,12 +128,13 @@ class DQNAgent(Agent):
         if n_steps and not n_episodes:
             n_episodes = np.iinfo(np.int32).max
 
+        print('====      AGENT ID: {}      ===='.format(self.id))
+
         while episode < n_episodes and not stop_training:
-            self.episode_id = str(uuid.uuid4())
             state = self.env.reset()
             done = False
 
-            print('====      EPISODE ID: {}      ===='.format(self.episode_id))
+            print('====      EPISODE ID: {}      ===='.format(self.env.episode_id))
 
             while not done:
                 threshold = eps_end + (eps_start - eps_end) * np.exp(-steps_done / eps_decay_steps)

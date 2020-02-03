@@ -30,8 +30,7 @@ class A2CAgent(Agent):
         self.actor_network = actor_network or self._build_actor_network()
         self.critic_network = critic_network or self._build_critic_network()
 
-        self.id = str(uuid.uuid4())
-        self.episode_id = None
+        self.env.agent_id = self.id
 
     def _build_shared_network(self):
         network = tf.keras.Sequential([
@@ -138,7 +137,6 @@ class A2CAgent(Agent):
 
             actions = tf.cast(actions, tf.int32)
             logits = self.actor_network(states)
-            print(actions)
             policy_loss_value = wsce_loss(actions, logits, sample_weight=advantages)
 
             probs = tf.nn.softmax(logits)
@@ -173,12 +171,13 @@ class A2CAgent(Agent):
         if n_steps and not n_episodes:
             n_episodes = np.iinfo(np.int32).max
 
+        print('====      AGENT ID: {}      ===='.format(self.id))
+
         while episode < n_episodes and not stop_training:
-            self.episode_id = str(uuid.uuid4())
             state = self.env.reset()
             done = False
 
-            print('====      EPISODE ID: {}      ===='.format(self.episode_id))
+            print('====      EPISODE ID: {}      ===='.format(self.env.episode_id))
 
             while not done:
                 threshold = eps_end + (eps_start - eps_end) * np.exp(-steps_done / eps_decay_steps)
