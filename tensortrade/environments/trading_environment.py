@@ -107,8 +107,8 @@ class TradingEnvironment(gym.Env, TimeIndexed):
 
         if not self.feed:
             self.feed = create_internal_feed(self.portfolio)
-
-        self.feed = self.feed + create_internal_feed(self.portfolio)
+        else:
+            self.feed = self.feed + create_internal_feed(self.portfolio)
 
         initial_obs = self.feed.next()
         n_features = len(initial_obs.keys()) if self.use_internal else len(self._external_keys)
