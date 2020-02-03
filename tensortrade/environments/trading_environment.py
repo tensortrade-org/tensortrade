@@ -96,7 +96,10 @@ class TradingEnvironment(gym.Env, TimeIndexed):
         Sets the observation space and the action space of the environment.
         Creates the internal feed and sets initialization for different components.
         """
-        for component in [self._broker, self.portfolio, self.action_scheme, self.reward_scheme]:
+        components = [self._broker, self.portfolio, self.action_scheme,
+                      self.reward_scheme] + self.portfolio.exchanges
+
+        for component in components:
             component.clock = self.clock
 
         self.action_scheme.set_pairs(exchange_pairs=self.portfolio.exchange_pairs)

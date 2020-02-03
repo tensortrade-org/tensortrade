@@ -18,11 +18,11 @@ from typing import List, Tuple
 from itertools import product
 from gym.spaces import Discrete
 
-from tensortrade import Component
+from tensortrade import Component, TimeIndexed
 from tensortrade.orders import Order
 
 
-class ActionScheme(Component, metaclass=ABCMeta):
+class ActionScheme(Component, TimeIndexed, metaclass=ABCMeta):
     """A discrete action scheme for determining the action to take at each timestep within a trading environments."""
 
     registered_name = "actions"
