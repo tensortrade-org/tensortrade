@@ -46,7 +46,7 @@ class DynamicOrders(ActionScheme):
         self._trade_type = self.default('trade_type', trade_type)
         self._order_listener = self.default('order_listener', order_listener)
 
-        actions = [None]
+        actions = []
 
         for criteria, size in product(self._criteria, self._trade_sizes):
             actions += [(TradeSide.BUY, criteria, size)]
@@ -90,7 +90,7 @@ class DynamicOrders(ActionScheme):
 
         instrument = side.instrument(pair)
         wallet = portfolio.get_wallet(exchange.id, instrument=instrument)
-        price = exchange.quote_price(instrument)
+        price = exchange.quote_price(pair)
         size = min(wallet.balance.size, (wallet.balance.size * size))
 
         if size < 10 ** -instrument.precision:
