@@ -20,7 +20,7 @@ class SimpleProfit(RewardScheme):
     """A simple reward scheme that rewards the agent for incremental increases in net worth."""
 
     def __init__(self, window_size: int = 1):
-        self.window_size = window_size
+        self.window_size = self.default('window_size', window_size)
 
     def reset(self):
         pass
