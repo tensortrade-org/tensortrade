@@ -22,7 +22,7 @@ from tensortrade.orders import Order, OrderListener, TradeSide, TradeType
 from tensortrade.instruments import USD, BTC
 
 
-class DynamicOrders(ActionScheme):
+class SimpleOrders(ActionScheme):
     """A discrete action scheme that determines actions based on a list of
     trading pairs, order criteria, and trade sizes."""
 
@@ -30,6 +30,7 @@ class DynamicOrders(ActionScheme):
                  criteria: Union[List['OrderCriteria'], 'OrderCriteria'] = None,
                  trade_sizes: Union[List[float], int] = 10,
                  trade_type: TradeType = TradeType.MARKET,
+                 durations: Union[List[int], int] = None,
                  order_listener: OrderListener = None):
         """
         Arguments:
@@ -43,16 +44,14 @@ class DynamicOrders(ActionScheme):
         """
         self.criteria = self.default('criteria', criteria)
         self.trade_sizes = self.default('trade_sizes', trade_sizes)
+        self.durations = self.default('durations', durations)
         self._trade_type = self.default('trade_type', trade_type)
         self._order_listener = self.default('order_listener', order_listener)
 
-        actions = []
-
-        for criteria, size in product(self._criteria, self._trade_sizes):
-            actions += [(TradeSide.BUY, criteria, size)]
-            actions += [(TradeSide.SELL, criteria, size)]
-
-        self.actions = actions
+        self.actions = list(product(self._criteria,
+                                    self._trade_sizes,
+                                    self._durations,
+                                    [TradeSide.BUY, TradeSide.SELL]))
 
     @property
     def action_space(self) -> Discrete:
@@ -82,30 +81,42 @@ class DynamicOrders(ActionScheme):
         self._trade_sizes = trade_sizes if isinstance(trade_sizes, list) else [
             (x + 1) / trade_sizes for x in range(trade_sizes)]
 
+    @property
+    def durations(self) -> List[int]:
+        """A list of durations to select from when submitting an order."""
+        return self._durations
+
+    @durations.setter
+    def durations(self, durations: Union[List[int], int]):
+        self._durations = durations if isinstance(durations, list) else [durations]
+
     def get_order(self, action: int, portfolio: 'Portfolio') -> Order:
         if action == 0:
             return None
 
-        ((exchange, pair), (side, criteria, size)) = self.actions[action]
+        ((exchange, pair), (criteria, size, duration, side)) = self.actions[action]
 
-        instrument = side.instrument(pair)
-        wallet = portfolio.get_wallet(exchange.id, instrument=instrument)
         price = exchange.quote_price(pair)
-        size = min(wallet.balance.size, (wallet.balance.size * size))
 
-        if size < 10 ** -instrument.precision:
+        wallet_instrument = side.instrument(pair)
+        wallet = portfolio.get_wallet(exchange.id, instrument=wallet_instrument)
+
+        size = (wallet.balance.size * size)
+        size = min(wallet.balance.size, size)
+
+        if size < 10 ** -pair.base.precision:
             return None
 
-        quantity = size * instrument
-
-        order = Order(step=exchange.clock.step,
+        instrument = side.instrument(pair)
+        order = Order(step=self.clock.step,
                       side=side,
                       trade_type=self._trade_type,
                       pair=pair,
                       price=price,
-                      quantity=quantity,
-                      portfolio=portfolio,
-                      criteria=criteria)
+                      quantity=(size*instrument),
+                      criteria=criteria,
+                      end=self.clock.step + duration if duration else None,
+                      portfolio=portfolio)
 
         if self._order_listener is not None:
             order.attach(self._order_listener)

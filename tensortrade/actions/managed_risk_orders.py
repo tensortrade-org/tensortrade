@@ -31,8 +31,8 @@ class ManagedRiskOrders(ActionScheme):
                  stop_loss_percentages: Union[List[float], float] = [0.02, 0.04, 0.06],
                  take_profit_percentages: Union[List[float], float] = [0.01, 0.02, 0.03],
                  trade_sizes: Union[List[float], int] = 10,
+                 durations: Union[List[int], int] = None,
                  trade_type: TradeType = TradeType.MARKET,
-                 duration: int = None,
                  order_listener: OrderListener = None):
         """
         Arguments:
@@ -48,15 +48,15 @@ class ManagedRiskOrders(ActionScheme):
         self.take_profit_percentages = self.default(
             'take_profit_percentages', take_profit_percentages)
         self.trade_sizes = self.default('trade_sizes', trade_sizes)
-        self.trade_type = self.default('trade_type', trade_type)
-        self.duration = self.default('duration', duration)
+        self.durations = self.default('durations', durations)
+        self._trade_type = self.default('trade_type', trade_type)
         self._order_listener = self.default('order_listener', order_listener)
 
-        generator = product(self.stop_loss_percentages,
-                            self.take_profit_percentages,
-                            self.trade_sizes,
-                            [TradeSide.BUY, TradeSide.SELL])
-        self.actions = list(generator)
+        self.actions = list(product(self._stop_loss_percentages,
+                                    self._take_profit_percentages,
+                                    self._trade_sizes,
+                                    self._durations,
+                                    [TradeSide.BUY, TradeSide.SELL]))
 
     @property
     def action_space(self) -> Discrete:
@@ -99,11 +99,20 @@ class ManagedRiskOrders(ActionScheme):
         self._trade_sizes = trade_sizes if isinstance(trade_sizes, list) else [
             (x + 1) / trade_sizes for x in range(trade_sizes)]
 
+    @property
+    def durations(self) -> List[int]:
+        """A list of durations to select from when submitting an order."""
+        return self._durations
+
+    @durations.setter
+    def durations(self, durations: Union[List[int], int]):
+        self._durations = durations if isinstance(durations, list) else [durations]
+
     def get_order(self, action: int, portfolio: 'Portfolio') -> Order:
         if action == 0:
             return None
 
-        ((exchange, pair), (stop_loss, take_profit, size, side)) = self.actions[action]
+        ((exchange, pair), (stop_loss, take_profit, size, duration, side)) = self.actions[action]
 
         price = exchange.quote_price(pair)
 
@@ -125,8 +134,8 @@ class ManagedRiskOrders(ActionScheme):
             'down_percent': stop_loss,
             'up_percent': take_profit,
             'portfolio': portfolio,
-            'trade_type': self.trade_type,
-            'end': self.clock.step + self.duration if self.duration else None
+            'trade_type': self._trade_type,
+            'end': self.clock.step + duration if duration else None
         }
 
         order = risk_managed_order(**params)
