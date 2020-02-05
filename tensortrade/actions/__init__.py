@@ -1,10 +1,10 @@
 from .action_scheme import ActionScheme, AddActions
-from .dynamic_orders import DynamicOrders
+from .simple_orders import SimpleOrders
 from .managed_risk_orders import ManagedRiskOrders
 
 
 _registry = {
-    'dynamic': DynamicOrders,
+    'simple': SimpleOrders,
     'managed-risk': ManagedRiskOrders,
 }
 

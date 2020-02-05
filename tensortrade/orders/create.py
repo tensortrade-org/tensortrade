@@ -30,8 +30,7 @@ def market_order(step: int,
                   pair=pair,
                   price=price,
                   quantity=(size * instrument),
-                  portfolio=portfolio
-                  )
+                  portfolio=portfolio)
 
     return order
 
@@ -44,7 +43,7 @@ def limit_order(step: int,
                 portfolio: 'Portfolio',
                 start: int = None,
                 end: int = None):
-    instrument = side.unstrument(pair)
+    instrument = side.instrument(pair)
     order = Order(step=step,
                   side=side,
                   trade_type=TradeType.LIMIT,
@@ -53,8 +52,7 @@ def limit_order(step: int,
                   quantity=(size * instrument),
                   start=start,
                   end=end,
-                  portfolio=portfolio
-                  )
+                  portfolio=portfolio)
 
     return order
 
@@ -77,8 +75,7 @@ def hidden_limit_order(step: int,
                   start=start,
                   end=end,
                   portfolio=portfolio,
-                  criteria=Limit(limit_price=price)
-                  )
+                  criteria=Limit(limit_price=price))
 
     return order
 
