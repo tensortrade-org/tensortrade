@@ -9,8 +9,12 @@ from tensortrade.actions import DynamicOrders, ManagedRiskOrders
 warnings.filterwarnings("ignore")
 
 
-def test_dynamic_actions():
-    assert isinstance(actions.get('dynamic'), DynamicOrders)
+# def test_dynamic_actions():
+#     assert isinstance(actions.get('dynamic'), DynamicOrders)
+
+
+def test_simple_actions():
+    assert isinstance(actions.get('simple'), SimpleOrders)
 
 
 def test_managed_risk_actions():
