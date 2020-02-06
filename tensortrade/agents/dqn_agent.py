@@ -168,6 +168,8 @@ class DQNAgent(Agent):
             if save_path and (is_checkpoint or episode == n_episodes - 1):
                 self.save(save_path, episode=episode)
 
+            episode += 1
+
             mean_reward = total_reward / steps_done
 
             return mean_reward
