@@ -133,6 +133,7 @@ class A2CAgent(Agent):
         optimizer.apply_gradients(zip(gradients, self.critic_network.trainable_variables))
 
         with tf.GradientTape() as tape:
+            returns = tf.reshape(returns, [batch_size, 1])
             advantages = returns - values
 
             actions = tf.cast(actions, tf.int32)
