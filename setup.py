@@ -68,6 +68,7 @@ setup(
                       'stochastic>=0.4.0',
                       'ccxt>=1.18.1220',
                       'pytest>=5.1.1',
+                      'plotly>=4.5.0',
                       ],
         'docs': ['sphinx',
                  'sphinx_rtd_theme',
