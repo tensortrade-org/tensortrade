@@ -4,12 +4,10 @@ References:
     - https://pytorch.org/tutorials/intermediate/reinforcement_q_learning.html#dqn-algorithm
 """
 
-import uuid
 import random
 import numpy as np
 import tensorflow as tf
 
-from typing import Callable, Tuple
 from collections import namedtuple
 
 from tensortrade.agents import Agent, ReplayMemory
@@ -119,6 +117,7 @@ class DQNAgent(Agent):
         eps_decay_steps: int = kwargs.get('eps_decay_steps', 200)
         update_target_every: int = kwargs.get('update_target_every', 2)
         memory_capacity: int = kwargs.get('memory_capacity', 1000)
+        render_interval: int = kwargs.get('render_interval', 10)  # in steps, None for episode end render only
 
         memory = ReplayMemory(memory_capacity, transition_type=DQNTransition)
         episode = 0
@@ -134,8 +133,6 @@ class DQNAgent(Agent):
             state = self.env.reset()
             done = False
 
-            print('====      EPISODE ID: {}      ===='.format(self.env.episode_id))
-
             while not done:
                 threshold = eps_end + (eps_start - eps_end) * np.exp(-steps_done / eps_decay_steps)
                 action = self.get_action(state, threshold=threshold)
@@ -146,6 +143,8 @@ class DQNAgent(Agent):
                 state = next_state
                 steps_done += 1
 
+                # self.env.render()
+
                 if len(memory) < batch_size:
                     continue
 
@@ -155,6 +154,9 @@ class DQNAgent(Agent):
                     done = True
                     stop_training = True
 
+                if render_interval is not None and steps_done % render_interval == 0:
+                    self.env.render(episode + 1)
+
             if episode % update_target_every == 0:
                 self.target_network = tf.keras.models.clone_model(self.policy_network)
                 self.target_network.trainable = False
@@ -163,3 +165,6 @@ class DQNAgent(Agent):
 
             if save_path and (is_checkpoint or episode == n_episodes):
                 self.save(save_path, episode=episode)
+
+            self.env.render(episode + 1)
+            # self.env.viewer.save(f'episode_{episode}_step_{steps_done}')

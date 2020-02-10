@@ -10,16 +10,17 @@
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
-# limitations under the License.
+# limitations under the License
 
 
 import gym
 import uuid
 import logging
 import numpy as np
+import pandas as pd
 
-from gym.spaces import Discrete, Space, Box
-from typing import Union, Tuple, List, Dict
+from gym.spaces import Discrete, Box
+from typing import Union, Tuple, Dict
 
 import tensortrade.actions as actions
 import tensortrade.rewards as rewards
@@ -28,12 +29,13 @@ import tensortrade.wallets as wallets
 from tensortrade.base import TimeIndexed, Clock
 from tensortrade.actions import ActionScheme
 from tensortrade.rewards import RewardScheme
-from tensortrade.data import DataFeed, Select
+from tensortrade.data import DataFeed
 from tensortrade.data.internal import create_internal_feed
-from tensortrade.orders import Broker, Order
+from tensortrade.orders import Broker
 from tensortrade.wallets import Portfolio
 from tensortrade.environments import ObservationHistory
 
+from tensortrade.environments.render.plotly_stock_chart import PlotlyTradingChart
 
 class TradingEnvironment(gym.Env, TimeIndexed):
     """A trading environments made for use with Gym-compatible reinforcement learning algorithms."""
@@ -47,7 +49,11 @@ class TradingEnvironment(gym.Env, TimeIndexed):
                  reward_scheme: Union[RewardScheme, str],
                  feed: DataFeed = None,
                  window_size: int = 1,
-                 use_internal=True,
+                 use_internal: bool = True,
+                 render_mode: str = 'human',
+                 chart_height: int = 800,
+                 render_interval: int = 4,
+                 price_history: pd.DataFrame = None,
                  **kwargs):
         """
         Arguments:
@@ -55,6 +61,12 @@ class TradingEnvironment(gym.Env, TimeIndexed):
             action_scheme:  The component for transforming an action into an `Order` at each timestep.
             reward_scheme: The component for determining the reward at each timestep.
             feed (optional): The pipeline of features to pass the observations through.
+            render_mode (optional): rendering mode, 'human' or 'log'. None for no rendering.
+            render_interval (optional): int, the number of steps between chart
+                redraws. Default None to render at the end.
+            chart_height (optioanl): int, the chart height for 'human' mode.
+            price_history (optional): OHLCV price history feed used for rendering
+                the chart. Required if render_mode is 'human'.
             kwargs (optional): Additional arguments for tuning the environments, logging, etc.
         """
         super().__init__()
@@ -65,6 +77,10 @@ class TradingEnvironment(gym.Env, TimeIndexed):
         self.feed = feed
         self.window_size = window_size
         self.use_internal = use_internal
+        assert render_mode in ['human', 'log', None]
+        self.render_mode = render_mode
+        self._render_interval = render_interval
+        self._price_history = price_history
 
         if self.feed:
             self._external_keys = self.feed.next().keys()
@@ -76,7 +92,8 @@ class TradingEnvironment(gym.Env, TimeIndexed):
         self.clock = Clock()
         self.action_space = None
         self.observation_space = None
-        self.viewer = None
+        self.render_mode = render_mode
+        self.viewer = PlotlyTradingChart(height=chart_height) if self.render_mode == 'human' else None
 
         self._enable_logger = kwargs.get('enable_logger', False)
         self._observation_dtype = kwargs.get('dtype', np.float32)
@@ -161,6 +178,14 @@ class TradingEnvironment(gym.Env, TimeIndexed):
         self._reward_scheme = rewards.get(reward_scheme) if isinstance(
             reward_scheme, str) else reward_scheme
 
+    @property
+    def price_history(self) -> pd.DataFrame:
+        return self._price_history
+
+    @price_history.setter
+    def price_history(self, price_history):
+        self._price_history = price_history
+
     def step(self, action: int) -> Tuple[np.array, float, bool, dict]:
         """Run one timestep within the environments based on the specified action.
 
@@ -222,7 +247,6 @@ class TradingEnvironment(gym.Env, TimeIndexed):
             The episode's initial observation.
         """
         self.episode_id = uuid.uuid4()
-
         self.clock.reset()
         self.feed.reset()
         self.action_scheme.reset()
@@ -244,17 +268,26 @@ class TradingEnvironment(gym.Env, TimeIndexed):
 
         return obs
 
-    def render(self, mode='none'):
-        """Renders the environment via matplotlib."""
+    def render(self, episode, mode='human'):
+        """Renders the environment as charts or log.
+
+        Arguments:
+            episode: int, 1-based sequence number.
+        """
         if mode == 'log':
             self.logger.info('Performance: ' + str(self._portfolio.performance))
-        elif mode == 'chart':
-            if self.viewer is None:
-                raise NotImplementedError()
+        elif mode == 'human':
+            current_step = self.clock.step - 1
 
-            self.viewer.render(self.clock.step - 1,
-                               self._portfolio.performance,
-                               self._broker.trades)
+            trades = []
+            for trade in self._broker.trades.values():
+                trades.append(trade[0].to_dict())
+            self.viewer.render(title=f'Episode: {episode} - Step: {current_step}',
+                               price_history=self._price_history[self._price_history.index < current_step],
+                               # price_history=self._price_history[self._price_history.index < step],
+                               net_worth=self._portfolio.performance.net_worth,
+                               performance=self._portfolio.performance.drop(columns=['base_symbol']),
+                               trades=trades)
 
     def close(self):
         """Utility method to clean environment before closing."""

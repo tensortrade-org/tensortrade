@@ -4,13 +4,13 @@ import warnings
 import tensortrade.actions as actions
 import tensortrade.rewards as rewards
 
-from tensortrade.actions import DynamicOrders, ManagedRiskOrders
+from tensortrade.actions import SimpleOrders, ManagedRiskOrders
 
 warnings.filterwarnings("ignore")
 
 
 def test_dynamic_actions():
-    assert isinstance(actions.get('dynamic'), DynamicOrders)
+    assert isinstance(actions.get('simple'), SimpleOrders)
 
 
 def test_managed_risk_actions():
