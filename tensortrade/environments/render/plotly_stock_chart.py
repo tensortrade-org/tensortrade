@@ -17,7 +17,6 @@ import os
 import pandas as pd
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
-from IPython.display import display
 
 
 class PlotlyTradingChart:
