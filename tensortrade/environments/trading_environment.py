@@ -80,8 +80,9 @@ class TradingEnvironment(gym.Env, TimeIndexed):
 
         self._enable_logger = kwargs.get('enable_logger', False)
         self._observation_dtype = kwargs.get('dtype', np.float32)
-        self._observation_lows = kwargs.get('observation_lows', 0)
-        self._observation_highs = kwargs.get('observation_highs', 1)
+        self._observation_lows = kwargs.get('observation_lows', -np.iinfo(np.int32).max)
+        self._observation_highs = kwargs.get('observation_highs', np.iinfo(np.int32).max)
+        self._max_allowed_loss = kwargs.get('max_allowed_loss', 0.1)
 
         if self._enable_logger:
             self.logger = logging.getLogger(kwargs.get('logger_name', __name__))
@@ -188,6 +189,7 @@ class TradingEnvironment(gym.Env, TimeIndexed):
         self.history.push(obs_row)
 
         obs = self.history.observe()
+        obs = obs.astype(self._observation_dtype)
 
         reward = self.reward_scheme.get_reward(self._portfolio)
         reward = np.nan_to_num(reward)
@@ -195,7 +197,7 @@ class TradingEnvironment(gym.Env, TimeIndexed):
         if np.bitwise_not(np.isfinite(reward)):
             raise ValueError('Reward returned by the reward scheme must by a finite float.')
 
-        done = (self.portfolio.profit_loss < 0.1) or not self.feed.has_next()
+        done = (self.portfolio.profit_loss < self._max_allowed_loss) or not self.feed.has_next()
 
         info = {
             'step': self.clock.step,
