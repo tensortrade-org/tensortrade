@@ -80,7 +80,7 @@ class PlotlyTradingChart:
                 i['font'] = dict(size=12)
             self.fig.update_layout(font=dict(size=12))
             self._base_annotations = self.fig.layout.annotations
-            display(self.fig)
+            display(self.fig)  # Jupyter notebook function
 
     def _create_trade_annotations(self, trades, max_step):
         annotations = []
