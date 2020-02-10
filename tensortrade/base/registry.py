@@ -6,11 +6,11 @@ _REGISTRY = {}
 
 
 MAJOR_COMPONENTS = [
-    'exchanges',
     'actions',
     'rewards',
-    'features',
-    'slippage'
+    'portfolio',
+    'exchanges',
+    'slippage',
 ]
 
 

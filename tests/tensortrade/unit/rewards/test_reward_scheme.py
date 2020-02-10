@@ -20,7 +20,7 @@ config = {
 
 def test_injects_reward_scheme_with_context():
 
-    with TradingContext(**config):
+    with TradingContext(config):
 
         reward_scheme = ConcreteRewardScheme()
 
@@ -31,7 +31,7 @@ def test_injects_reward_scheme_with_context():
 
 def test_injects_string_intialized_reward_scheme():
 
-    with TradingContext(**config):
+    with TradingContext(config):
 
         reward_scheme = get('simple')
 

@@ -16,13 +16,14 @@ def test_is_trading_context_class_there():
 
 
 def test_has_config_attribute():
-    c = TradingContext()
+    c = TradingContext({
+        "test": True,
+        "exchanges": {"test": True},
+        "actions": {"test": True},
+        "rewards": {"test": True},
+    })
 
     assert hasattr(c, 'shared')
-    assert hasattr(c, 'exchanges')
-    assert hasattr(c, 'actions')
-    assert hasattr(c, 'rewards')
-    assert hasattr(c, 'features')
 
 
 config = {
@@ -36,40 +37,40 @@ config = {
 
 
 def test_init():
-    c = TradingContext(base_instrument=config['base_instrument'],
-                       instruments=config['instruments'])
+    c = TradingContext({"base_instrument": config['base_instrument'],
+                        "instruments": config['instruments']})
     assert c.shared.get('base_instrument') == 'EURO'
     assert c.shared.get('instruments') == ['BTC', 'ETH']
 
 
 def test_init_with_kwargs():
-    c = TradingContext(**config)
+    c = TradingContext(config)
     assert c.shared.get('base_instrument') == 'EURO'
     assert c.shared.get('instruments') == ['BTC', 'ETH']
 
 
 def test_context_creation():
 
-    with td.TradingContext(**config) as tc1:
+    with td.TradingContext(config) as tc1:
         assert tc1.data == config
 
-        with td.TradingContext(**config) as tc2:
+        with td.TradingContext(config) as tc2:
             assert TradingContext.get_context() == tc2
 
         assert TradingContext.get_context() == tc1
 
 
 def test_get_context_from_tensor_trade_level():
-    with td.TradingContext(**config) as tc:
+    with td.TradingContext(config) as tc:
         assert get_context() == tc
 
 
 def test_context_within_context():
 
-    with td.TradingContext(**config) as tc1:
+    with td.TradingContext(config) as tc1:
         assert get_context() == tc1
 
-        with td.TradingContext(**config) as tc2:
+        with td.TradingContext(config) as tc2:
             assert get_context() == tc2
 
         assert get_context() == tc1
@@ -77,7 +78,7 @@ def test_context_within_context():
 
 def test_context_retains_data_outside_with():
 
-    with td.TradingContext(**config) as tc:
+    with td.TradingContext(config) as tc:
         assert tc.data == config
 
     assert tc.data == config
@@ -96,11 +97,10 @@ def test_create_trading_context_from_json():
     }
 
     with td.TradingContext.from_json(path) as tc:
-
         assert tc.shared['base_instrument'] == "EURO"
         assert tc.shared['instruments'] == ["BTC", "ETH"]
-        assert tc.actions == actions
-        assert tc.exchanges == exchanges
+        assert tc._config['actions'] == actions
+        assert tc._config['exchanges'] == exchanges
 
 
 def test_create_trading_context_from_yaml():
@@ -119,5 +119,5 @@ def test_create_trading_context_from_yaml():
 
         assert tc.shared['base_instrument'] == "EURO"
         assert tc.shared['instruments'] == ["BTC", "ETH"]
-        assert tc.actions == actions
-        assert tc.exchanges == exchanges
+        assert tc._config['actions'] == actions
+        assert tc._config['exchanges'] == exchanges
