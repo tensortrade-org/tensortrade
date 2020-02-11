@@ -133,6 +133,7 @@ class A2CAgent(Agent):
         optimizer.apply_gradients(zip(gradients, self.critic_network.trainable_variables))
 
         with tf.GradientTape() as tape:
+            returns = tf.reshape(returns, [batch_size, 1])
             advantages = returns - values
 
             actions = tf.cast(actions, tf.int32)
@@ -214,6 +215,8 @@ class A2CAgent(Agent):
             if save_path and (is_checkpoint or episode == n_episodes):
                 self.save(save_path, episode=episode)
 
-            mean_reward = total_reward / steps_done
+            episode += 1
 
-            return mean_reward
+        mean_reward = total_reward / steps_done
+
+        return mean_reward
