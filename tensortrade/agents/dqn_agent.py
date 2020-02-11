@@ -129,10 +129,15 @@ class DQNAgent(Agent):
             n_episodes = np.iinfo(np.int32).max
 
         print('====      AGENT ID: {}      ===='.format(self.id))
+        self.env.render()  # show initial empty chart
 
         while episode < n_episodes and not stop_training:
             state = self.env.reset()
             done = False
+
+            print('====      EPISODE ID ({}/{}): {}      ===='.format(episode + 1,
+                                                                      n_episodes,
+                                                                      self.env.episode_id))
 
             while not done:
                 threshold = eps_end + (eps_start - eps_end) * np.exp(-steps_done / eps_decay_steps)
@@ -144,8 +149,6 @@ class DQNAgent(Agent):
                 state = next_state
                 total_reward += reward
                 steps_done += 1
-
-                # self.env.render()
 
                 if len(memory) < batch_size:
                     continue
