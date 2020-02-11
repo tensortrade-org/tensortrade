@@ -153,7 +153,7 @@ class A2CAgent(Agent):
               save_every: int = None,
               save_path: str = None,
               callback: callable = None,
-              **kwargs):
+              **kwargs) -> float:
         batch_size: int = kwargs.get('batch_size', 128)
         discount_factor: float = kwargs.get('discount_factor', 0.9999)
         learning_rate: float = kwargs.get('learning_rate', 0.0001)
@@ -166,6 +166,7 @@ class A2CAgent(Agent):
         memory = ReplayMemory(memory_capacity, transition_type=A2CTransition)
         episode = 0
         steps_done = 0
+        total_reward = 0
         stop_training = False
 
         if n_steps and not n_episodes:
@@ -177,7 +178,9 @@ class A2CAgent(Agent):
             state = self.env.reset()
             done = False
 
-            print('====      EPISODE ID: {}      ===='.format(self.env.episode_id))
+            print('====      EPISODE ID ({}/{}): {}      ===='.format(episode + 1,
+                                                                      n_episodes,
+                                                                      self.env.episode_id))
 
             while not done:
                 threshold = eps_end + (eps_start - eps_end) * np.exp(-steps_done / eps_decay_steps)
@@ -190,6 +193,7 @@ class A2CAgent(Agent):
                 memory.push(state, action, reward, done, value)
 
                 state = next_state
+                total_reward += reward
                 steps_done += 1
 
                 if len(memory) < batch_size:
@@ -209,3 +213,7 @@ class A2CAgent(Agent):
 
             if save_path and (is_checkpoint or episode == n_episodes):
                 self.save(save_path, episode=episode)
+
+            mean_reward = total_reward / steps_done
+
+            return mean_reward

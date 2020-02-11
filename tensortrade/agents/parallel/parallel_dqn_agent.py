@@ -25,7 +25,7 @@ class ParallelDQNAgent(Agent):
         self.model.restore(path, **kwargs)
 
     def save(self, path: str, **kwargs):
-        self.model.save(path, **kwargs)
+        self.model.save(path, agent_id=self.id, **kwargs)
 
     def get_action(self, state: np.ndarray, **kwargs) -> int:
         return self.model.get_action(state, **kwargs)
@@ -94,7 +94,7 @@ class ParallelDQNAgent(Agent):
               save_every: int = None,
               save_path: str = None,
               callback: callable = None,
-              **kwargs):
+              **kwargs) -> float:
         n_envs: int = kwargs.get('n_envs', mp.cpu_count())
         batch_size: int = kwargs.get('batch_size', 128)
         discount_factor: float = kwargs.get('discount_factor', 0.9999)
@@ -102,7 +102,7 @@ class ParallelDQNAgent(Agent):
         eps_start: float = kwargs.get('eps_start', 0.9)
         eps_end: float = kwargs.get('eps_end', 0.05)
         eps_decay_steps: int = kwargs.get('eps_decay_steps', 2000)
-        update_target_every: int = kwargs.get('update_target_every', 2)
+        update_target_every: int = kwargs.get('update_target_every', 1000)
         memory_capacity: int = kwargs.get('memory_capacity', 10000)
 
         memory_queue = ParallelQueue()
@@ -135,6 +135,11 @@ class ParallelDQNAgent(Agent):
         while done_queue.qsize() < n_envs:
             time.sleep(5)
 
+        total_reward = 0
+
+        while done_queue.qsize() > 0:
+            total_reward += done_queue.get()
+
         for queue in [memory_queue, model_update_queue, done_queue]:
             queue.close()
 
@@ -146,3 +151,7 @@ class ParallelDQNAgent(Agent):
 
         for trainer in trainers:
             trainer.join()
+
+        mean_reward = total_reward / n_envs
+
+        return mean_reward

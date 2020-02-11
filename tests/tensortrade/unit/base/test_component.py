@@ -29,7 +29,7 @@ class DataMessageComponent(Component):
 class WorthMessageComponent(DataMessageComponent):
 
     def __init__(self, name, value):
-        super(WorthMessageComponent, self).__init__({name: value})
+        super(WorthMessageComponent, self).__init__(data={name: value})
         self.name = name
         self.value = value
 
@@ -82,7 +82,6 @@ def test_no_context_injected_outside_with():
     value = 'the time and effort.'
     instance = WorthMessageComponent(name=name, value=value)
 
-    assert instance.context
     assert instance.name == name
     assert instance.value == value
 
@@ -95,7 +94,7 @@ config = {
 
 def test_injects_concrete_tensor_trade_component_with_context():
 
-    with td.TradingContext(**config):
+    with td.TradingContext(config):
 
         name = 'TensorTrade'
         value = 'the time and effort.'
@@ -106,7 +105,7 @@ def test_injects_concrete_tensor_trade_component_with_context():
 
 def test_inject_multiple_components_with_context():
 
-    with td.TradingContext(**config):
+    with td.TradingContext(config):
         name = 'TensorTrade'
         value = 'the time and effort.'
         instance = WorthMessageComponent(name=name, value=value)
@@ -127,7 +126,7 @@ def test_injects_component_space():
         **config
     }
 
-    with td.TradingContext(**c) as c:
+    with td.TradingContext(c) as c:
         name = 'TensorTrade'
         value = 'the time and effort.'
         instance = WorthMessageComponent(name=name, value=value)
@@ -154,7 +153,7 @@ def test_only_name_registered_component_space():
         **config
     }
 
-    with td.TradingContext(**c) as c:
+    with td.TradingContext(c) as c:
         name = 'TensorTrade'
         value = 'the time and effort.'
         instance = WorthMessageComponent(name=name, value=value)
@@ -182,7 +181,7 @@ def test_inject_contexts_at_different_levels():
         **config
     }
 
-    with td.TradingContext(**c1):
+    with td.TradingContext(c1):
         name = 'TensorTrade'
         value = 'the time and effort.'
         instance1 = WorthMessageComponent(name=name, value=value)
@@ -192,7 +191,7 @@ def test_inject_contexts_at_different_levels():
         assert hasattr(win1.context, 'plans_var')
         assert hasattr(lose1.context, 'plans_var')
 
-        with td.TradingContext(**c2):
+        with td.TradingContext(c2):
             name = 'TensorTrade'
             value = 'the time and effort.'
             instance2 = WorthMessageComponent(name=name, value=value)

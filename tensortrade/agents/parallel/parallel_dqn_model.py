@@ -41,12 +41,13 @@ class ParallelDQNModel:
         self.target_network.trainable = False
 
     def save(self, path: str, **kwargs):
+        agent_id: int = kwargs.get('agent_id', 'No_ID')
         episode: int = kwargs.get('episode', None)
 
         if episode:
-            filename = "policy_network__" + self.id + "__" + str(episode).zfill(3) + ".hdf5"
+            filename = "policy_network__" + agent_id + "__" + str(episode).zfill(3) + ".hdf5"
         else:
-            filename = "policy_network__" + self.id + ".hdf5"
+            filename = "policy_network__" + agent_id + ".hdf5"
 
         self.policy_network.save(path + filename)
 
