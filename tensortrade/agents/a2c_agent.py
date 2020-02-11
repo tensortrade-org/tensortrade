@@ -214,6 +214,6 @@ class A2CAgent(Agent):
             if save_path and (is_checkpoint or episode == n_episodes):
                 self.save(save_path, episode=episode)
 
-            mean_reward = total_reward / steps_done
+        mean_reward = total_reward / steps_done
 
-            return mean_reward
+        return mean_reward
