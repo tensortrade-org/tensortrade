@@ -2,11 +2,9 @@ import threading
 import json
 import yaml
 
-from typing import Union, List
 from collections import UserDict
 
 from .registry import registered_names, get_major_component_names
-from tensortrade.instruments import Instrument, USD
 
 
 class TradingContext(UserDict):
@@ -18,10 +16,6 @@ class TradingContext(UserDict):
 
     Arguments:
         shared: A context that is shared between all components that are made under the overarching `TradingContext`.
-        exchanges: A context that is specific to components with a registered name of `exchanges`.
-        actions: A context that is specific to components with a registered name of `actions`.
-        rewards: A context that is specific to components with a registered name of `rewards`.
-        features: A context that is specific to components with a registered name of `features`.
 
     Warnings:
         If there is a conflict in the contexts of different components because
@@ -36,8 +30,8 @@ class TradingContext(UserDict):
     """
     contexts = threading.local()
 
-    def __init__(self, base_instrument: Instrument = USD, **config):
-        super().__init__(base_instrument=base_instrument, **config)
+    def __init__(self, config: dict):
+        super().__init__(**config)
 
         for name in registered_names():
             if name not in get_major_component_names():
@@ -46,15 +40,10 @@ class TradingContext(UserDict):
         config_items = {k: config[k] for k in config.keys()
                         if k not in registered_names()}
 
+        self._config = config
         self._shared = config.get('shared', {})
-        self._exchanges = config.get('exchanges', {})
-        self._actions = config.get('actions', {})
-        self._rewards = config.get('rewards', {})
-        self._features = config.get('features', {})
-        self._slippage = config.get('slippage', {})
 
         self._shared = {
-            'base_instrument': base_instrument,
             **self._shared,
             **config_items
         }
@@ -62,26 +51,6 @@ class TradingContext(UserDict):
     @property
     def shared(self) -> dict:
         return self._shared
-
-    @property
-    def exchanges(self) -> dict:
-        return self._exchanges
-
-    @property
-    def actions(self) -> dict:
-        return self._actions
-
-    @property
-    def rewards(self) -> dict:
-        return self._rewards
-
-    @property
-    def features(self) -> dict:
-        return self._features
-
-    @property
-    def slippage(self) -> dict:
-        return self._slippage
 
     def __enter__(self):
         """Adds a new context to the context stack.
@@ -99,7 +68,7 @@ class TradingContext(UserDict):
     @classmethod
     def get_contexts(cls):
         if not hasattr(cls.contexts, 'stack'):
-            cls.contexts.stack = [TradingContext()]
+            cls.contexts.stack = [TradingContext({})]
 
         return cls.contexts.stack
 
@@ -113,33 +82,25 @@ class TradingContext(UserDict):
         with open(path, "rb") as fp:
             config = json.load(fp)
 
-        return TradingContext(**config)
+        return TradingContext(config)
 
     @classmethod
     def from_yaml(cls, path: str):
         with open(path, "rb") as fp:
             config = yaml.load(fp, Loader=yaml.FullLoader)
 
-        return TradingContext(**config)
+        return TradingContext(config)
 
 
 class Context(UserDict):
     """A context that is injected into every instance of a class that is
     a subclass of component.
-
-    Arguments:
-        base_instrument: The exchange symbol of the instrument to store/measure value in.
     """
 
-    def __init__(self, base_instrument: Instrument = USD, **kwargs):
-        super(Context, self).__init__(base_instrument=base_instrument, **kwargs)
+    def __init__(self, **kwargs):
+        super(Context, self).__init__(**kwargs)
 
-        self._base_instrument = base_instrument
         self.__dict__ = {**self.__dict__, **self.data}
-
-    @property
-    def base_instrument(self) -> Instrument:
-        return self._base_instrument
 
     def __str__(self):
         data = ['{}={}'.format(k, getattr(self, k)) for k in self.__slots__]

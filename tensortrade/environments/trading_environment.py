@@ -52,7 +52,6 @@ class TradingEnvironment(gym.Env, TimeIndexed):
                  use_internal: bool = True,
                  render_mode: str = 'human',
                  chart_height: int = 800,
-                 render_interval: int = 4,
                  price_history: pd.DataFrame = None,
                  **kwargs):
         """
@@ -62,8 +61,6 @@ class TradingEnvironment(gym.Env, TimeIndexed):
             reward_scheme: The component for determining the reward at each timestep.
             feed (optional): The pipeline of features to pass the observations through.
             render_mode (optional): rendering mode, 'human' or 'log'. None for no rendering.
-            render_interval (optional): int, the number of steps between chart
-                redraws. Default None to render at the end.
             chart_height (optioanl): int, the chart height for 'human' mode.
             price_history (optional): OHLCV price history feed used for rendering
                 the chart. Required if render_mode is 'human'.
@@ -79,7 +76,6 @@ class TradingEnvironment(gym.Env, TimeIndexed):
         self.use_internal = use_internal
         assert render_mode in ['human', 'log', None]
         self.render_mode = render_mode
-        self._render_interval = render_interval
         self._price_history = price_history
 
         if self.feed:
@@ -97,8 +93,9 @@ class TradingEnvironment(gym.Env, TimeIndexed):
 
         self._enable_logger = kwargs.get('enable_logger', False)
         self._observation_dtype = kwargs.get('dtype', np.float32)
-        self._observation_lows = kwargs.get('observation_lows', 0)
-        self._observation_highs = kwargs.get('observation_highs', 1)
+        self._observation_lows = kwargs.get('observation_lows', -np.iinfo(np.int32).max)
+        self._observation_highs = kwargs.get('observation_highs', np.iinfo(np.int32).max)
+        self._max_allowed_loss = kwargs.get('max_allowed_loss', 0.1)
 
         if self._enable_logger:
             self.logger = logging.getLogger(kwargs.get('logger_name', __name__))
@@ -213,6 +210,7 @@ class TradingEnvironment(gym.Env, TimeIndexed):
         self.history.push(obs_row)
 
         obs = self.history.observe()
+        obs = obs.astype(self._observation_dtype)
 
         reward = self.reward_scheme.get_reward(self._portfolio)
         reward = np.nan_to_num(reward)
@@ -220,7 +218,7 @@ class TradingEnvironment(gym.Env, TimeIndexed):
         if np.bitwise_not(np.isfinite(reward)):
             raise ValueError('Reward returned by the reward scheme must by a finite float.')
 
-        done = (self.portfolio.profit_loss < 0.1) or not self.feed.has_next()
+        done = (self.portfolio.profit_loss < self._max_allowed_loss) or not self.feed.has_next()
 
         info = {
             'step': self.clock.step,
@@ -268,11 +266,11 @@ class TradingEnvironment(gym.Env, TimeIndexed):
 
         return obs
 
-    def render(self, episode, mode='human'):
+    def render(self, episode: int = None, mode: str = 'human'):
         """Renders the environment as charts or log.
 
         Arguments:
-            episode: int, 1-based sequence number.
+            episode: the number of the current episode being rendered (1-based).
         """
         if mode == 'log':
             self.logger.info('Performance: ' + str(self._portfolio.performance))

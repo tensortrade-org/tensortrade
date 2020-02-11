@@ -108,20 +108,21 @@ class DQNAgent(Agent):
               save_every: int = None,
               save_path: str = None,
               callback: callable = None,
-              **kwargs):
+              **kwargs) -> float:
         batch_size: int = kwargs.get('batch_size', 128)
         discount_factor: float = kwargs.get('discount_factor', 0.9999)
         learning_rate: float = kwargs.get('learning_rate', 0.0001)
         eps_start: float = kwargs.get('eps_start', 0.9)
         eps_end: float = kwargs.get('eps_end', 0.05)
         eps_decay_steps: int = kwargs.get('eps_decay_steps', 200)
-        update_target_every: int = kwargs.get('update_target_every', 2)
+        update_target_every: int = kwargs.get('update_target_every', 1000)
         memory_capacity: int = kwargs.get('memory_capacity', 1000)
         render_interval: int = kwargs.get('render_interval', 10)  # in steps, None for episode end render only
 
         memory = ReplayMemory(memory_capacity, transition_type=DQNTransition)
         episode = 0
         steps_done = 0
+        total_reward = 0
         stop_training = False
 
         if n_steps and not n_episodes:
@@ -141,6 +142,7 @@ class DQNAgent(Agent):
                 memory.push(state, action, reward, next_state, done)
 
                 state = next_state
+                total_reward += reward
                 steps_done += 1
 
                 # self.env.render()
@@ -157,14 +159,18 @@ class DQNAgent(Agent):
                 if render_interval is not None and steps_done % render_interval == 0:
                     self.env.render(episode + 1)
 
-            if episode % update_target_every == 0:
-                self.target_network = tf.keras.models.clone_model(self.policy_network)
-                self.target_network.trainable = False
+                if steps_done % update_target_every == 0:
+                    self.target_network = tf.keras.models.clone_model(self.policy_network)
+                    self.target_network.trainable = False
 
             is_checkpoint = save_every and episode % save_every == 0
 
-            if save_path and (is_checkpoint or episode == n_episodes):
+            if save_path and (is_checkpoint or episode == n_episodes - 1):
                 self.save(save_path, episode=episode)
 
             self.env.render(episode + 1)
             # self.env.viewer.save(f'episode_{episode}_step_{steps_done}')
+
+            mean_reward = total_reward / steps_done
+
+            return mean_reward

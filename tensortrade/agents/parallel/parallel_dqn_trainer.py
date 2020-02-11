@@ -38,6 +38,7 @@ class ParallelDQNTrainer(Process):
     def run(self):
         episode = 0
         steps_done = 0
+        total_reward = 0
         stop_training = False
 
         while episode < self.n_episodes and not stop_training:
@@ -50,7 +51,7 @@ class ParallelDQNTrainer(Process):
             state = self.env.reset()
             done = False
 
-            print('====      EPISODE ID ({}/{}): {}      ===='.format(episode,
+            print('====      EPISODE ID ({}/{}): {}      ===='.format(episode + 1,
                                                                       self.n_episodes,
                                                                       self.env.episode_id))
 
@@ -63,15 +64,18 @@ class ParallelDQNTrainer(Process):
                 self.memory_queue.put((state, action, reward, next_state, done))
 
                 state = next_state
+                total_reward += reward
                 steps_done += 1
 
                 if self.n_steps and steps_done >= self.n_steps:
                     stop_training = True
                     done = True
 
-            if episode % self.update_target_every == 0:
-                self.agent.update_target_network()
+                if steps_done % self.update_target_every == 0:
+                    self.agent.update_target_network()
 
             episode += 1
 
-        self.done_queue.put(self.env.portfolio.performance)
+        mean_reward = total_reward / steps_done
+
+        self.done_queue.put(mean_reward)

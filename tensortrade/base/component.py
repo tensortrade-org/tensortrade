@@ -11,10 +11,11 @@ class InitContextMeta(ABCMeta):
     """Metaclass that executes `__init__` of instance in it's base."""
 
     def __call__(cls, *args, **kwargs):
+        context = TradingContext.get_context()
         registered_name = get_registry()[cls]
-        tc = TradingContext.get_context()
-        data = tc.data.get(registered_name, {})
-        config = {**tc.shared, **data}
+
+        data = context.data.get(registered_name, {})
+        config = {**context.shared, **data}
 
         instance = cls.__new__(cls, *args, **kwargs)
         setattr(instance, 'context', Context(**config))
