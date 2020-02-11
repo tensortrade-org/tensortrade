@@ -56,7 +56,7 @@ class PlotlyTradingChart:
             fig = make_subplots(
                 rows=4, cols=1, shared_xaxes=True, vertical_spacing=0.03,
                 row_heights=[0.55, 0.15, 0.15, 0.15],
-                subplot_titles = [None, None, 'Performance', 'Net Worth']
+                # subplot_titles = ['', 'Volume', 'Performance', 'Net Worth']
             )
             fig.add_trace(go.Candlestick(name='Price', xaxis='x1', yaxis='y1',
                                          showlegend=False), row=1, col=1)
@@ -74,7 +74,11 @@ class PlotlyTradingChart:
 
             fig.update_xaxes(linecolor='Grey', gridcolor='Gainsboro')
             fig.update_yaxes(linecolor='Grey', gridcolor='Gainsboro')
-            fig.update_xaxes(title_text="Step", title_standoff=5, title_font={ 'size': 10 }, row=4)
+            fig.update_xaxes(title_text='Price', row=1)
+            fig.update_xaxes(title_text='Volume', row=2)
+            fig.update_xaxes(title_text='Performance', row=3)
+            fig.update_xaxes(title_text='Net Worth', row=4)
+            fig.update_xaxes(title_standoff=7, title_font=dict(size=12))
 
             self.fig = go.FigureWidget(fig)
             self._price_chart = self.fig.data[0]
