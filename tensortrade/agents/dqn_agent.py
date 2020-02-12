@@ -172,7 +172,6 @@ class DQNAgent(Agent):
                 self.save(save_path, episode=episode)
 
             self.env.render(episode + 1)
-            # self.env.viewer.save(f'episode_{episode}_step_{steps_done}')
 
             mean_reward = total_reward / steps_done
 

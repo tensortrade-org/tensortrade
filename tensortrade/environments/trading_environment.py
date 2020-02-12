@@ -51,8 +51,6 @@ class TradingEnvironment(gym.Env, TimeIndexed):
                  window_size: int = 1,
                  use_internal: bool = True,
                  render_mode: str = 'human',
-                 chart_height: int = 800,
-                 price_history: pd.DataFrame = None,
                  **kwargs):
         """
         Arguments:
@@ -76,7 +74,8 @@ class TradingEnvironment(gym.Env, TimeIndexed):
         self.use_internal = use_internal
         assert render_mode in ['human', 'log', None]
         self.render_mode = render_mode
-        self._price_history = price_history
+        chart_height: int = kwargs.get('chart_height', 800)
+        self._price_history: pd.DataFrame  = kwargs.get('price_history', None)
 
         if self.feed:
             self._external_keys = self.feed.next().keys()
@@ -88,7 +87,6 @@ class TradingEnvironment(gym.Env, TimeIndexed):
         self.clock = Clock()
         self.action_space = None
         self.observation_space = None
-        self.render_mode = render_mode
         self.viewer = PlotlyTradingChart(height=chart_height) if self.render_mode == 'human' else None
 
         self._enable_logger = kwargs.get('enable_logger', False)
@@ -282,7 +280,6 @@ class TradingEnvironment(gym.Env, TimeIndexed):
                 trades.append(trade[0].to_dict())
             self.viewer.render(title=f'Episode: {episode} - Step: {current_step}',
                                price_history=self._price_history[self._price_history.index < current_step],
-                               # price_history=self._price_history[self._price_history.index < step],
                                net_worth=self._portfolio.performance.net_worth,
                                performance=self._portfolio.performance.drop(columns=['base_symbol']),
                                trades=trades)
