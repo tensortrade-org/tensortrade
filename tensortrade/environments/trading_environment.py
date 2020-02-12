@@ -250,6 +250,8 @@ class TradingEnvironment(gym.Env, TimeIndexed):
         self.portfolio.reset()
         self.history.reset()
         self._broker.reset()
+        if isinstance(self.viewer, PlotlyTradingChart):
+            self.viewer.reset()
 
         obs_row = self.feed.next()
 

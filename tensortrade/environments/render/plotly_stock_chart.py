@@ -51,6 +51,7 @@ class PlotlyTradingChart:
         self._performance_chart = None
         self._net_worth_chart = None
         self._base_annotations = None
+        self._last_trade_step = 0
 
     def _create_figure(self, performance_keys):
             fig = make_subplots(
@@ -91,9 +92,19 @@ class PlotlyTradingChart:
             self._base_annotations = self.fig.layout.annotations
             display(self.fig)  # Jupyter notebook function
 
-    def _create_trade_annotations(self, trades, max_step):
+    def _create_trade_annotations(self, trades: dict):
+        """Creates annotations of the new trades added after the last one in the
+        chart.
+        """
         annotations = []
         for trade in trades:
+            step = trade['step']
+
+            if step <= self._last_trade_step:
+                continue
+
+            self._last_trade_step = step
+
             side = trade['side'].value
             if side == 'buy':
                 color = 'DarkGreen'
@@ -108,7 +119,7 @@ class PlotlyTradingChart:
 
             hovertext += ' {} @ {}'.format(trade['size'], trade['price'])
             annotation = go.layout.Annotation(
-                x=trade['step'] - 1, y=trade['price'],
+                x=self._last_trade_step - 1, y=trade['price'],
                 ax=0, ay=ay, xref='x1', yref='y1', showarrow=True,
                 arrowhead=2, arrowcolor=color, arrowwidth=4,
                 arrowsize=0.8, hovertext=hovertext, opacity=0.6
@@ -127,8 +138,7 @@ class PlotlyTradingChart:
             low=price_history['low'],
             close=price_history['close']
         ))
-        ann = self._create_trade_annotations(trades, price_history.shape[0])
-        self.fig.layout.annotations = self._base_annotations + ann
+        self.fig.layout.annotations += self._create_trade_annotations(trades)
 
         self._volume_chart.update({ 'y': price_history['volume'] })
 
@@ -137,6 +147,10 @@ class PlotlyTradingChart:
 
         self._net_worth_chart.update({ 'y': net_worth })  # net worth
         self.fig.layout.title = title
+
+    def reset(self):
+        self._last_trade_step = 0
+        self.fig.layout.annotations = self._base_annotations
 
     def save(self, filename: str, directory: str = 'charts', fmt: str = 'png'):
         """Saves the current chart to a file.
