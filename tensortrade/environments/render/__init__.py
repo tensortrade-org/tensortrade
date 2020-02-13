@@ -1,7 +1,13 @@
 import importlib
+from .abstract_renderer import AbstractRenderer
+from .screen_logger import ScreenLogger
+from .file_logger import FileLogger
 
 
-_registry = {}
+_registry = {
+    'screen': ScreenLogger,
+    'file': FileLogger,
+}
 
 
 if importlib.util.find_spec("matplotlib") is not None:

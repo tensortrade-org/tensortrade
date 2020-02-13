@@ -14,12 +14,16 @@
 
 
 import os
+from datetime import datetime
 import pandas as pd
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
+from IPython.display import display, clear_output
+
+from tensortrade.environments.render import AbstractRenderer
 
 
-class PlotlyTradingChart:
+class PlotlyTradingChart(AbstractRenderer):
     """
     Trading visualization for TensorTrade using Plotly.
 
@@ -42,7 +46,8 @@ class PlotlyTradingChart:
     https://plot.ly/python/reference/#candlestick
     https://plot.ly/python/#chart-events
     """
-    def __init__(self, height: int = 800):
+    def __init__(self, height: int = 800, datefmt: str = '%Y-%m-%d %H:%M:%S'):
+        self._datefmt = datefmt
         self._height = height
 
         self.fig = None
@@ -52,45 +57,52 @@ class PlotlyTradingChart:
         self._net_worth_chart = None
         self._base_annotations = None
         self._last_trade_step = 0
+        self._show_chart = True
+
+    @property
+    def can_save(self):
+        return False  # to change after testing the saving functionality
+
+    @property
+    def can_reset(self):
+        return True
 
     def _create_figure(self, performance_keys):
-            fig = make_subplots(
-                rows=4, cols=1, shared_xaxes=True, vertical_spacing=0.03,
-                row_heights=[0.55, 0.15, 0.15, 0.15],
-                # subplot_titles = ['', 'Volume', 'Performance', 'Net Worth']
-            )
-            fig.add_trace(go.Candlestick(name='Price', xaxis='x1', yaxis='y1',
-                                         showlegend=False), row=1, col=1)
-            fig.update_layout(xaxis_rangeslider_visible=False)
+        fig = make_subplots(
+            rows=4, cols=1, shared_xaxes=True, vertical_spacing=0.03,
+            row_heights=[0.55, 0.15, 0.15, 0.15],
+        )
+        fig.add_trace(go.Candlestick(name='Price', xaxis='x1', yaxis='y1',
+                                     showlegend=False), row=1, col=1)
+        fig.update_layout(xaxis_rangeslider_visible=False)
 
-            fig.add_trace(go.Bar(name='Volume', showlegend=False,
-                                 marker={ 'color': 'DodgerBlue' }),
-                          row=2, col=1)
+        fig.add_trace(go.Bar(name='Volume', showlegend=False,
+                             marker={ 'color': 'DodgerBlue' }),
+                      row=2, col=1)
 
-            for k in performance_keys:
-                fig.add_trace(go.Scatter(mode='lines', name=k), row=3, col=1)
+        for k in performance_keys:
+            fig.add_trace(go.Scatter(mode='lines', name=k), row=3, col=1)
 
-            fig.add_trace(go.Scatter(mode='lines', name='Net Worth', marker={ 'color': 'DarkGreen' }),
-                          row=4, col=1)
+        fig.add_trace(go.Scatter(mode='lines', name='Net Worth', marker={ 'color': 'DarkGreen' }),
+                      row=4, col=1)
 
-            fig.update_xaxes(linecolor='Grey', gridcolor='Gainsboro')
-            fig.update_yaxes(linecolor='Grey', gridcolor='Gainsboro')
-            fig.update_xaxes(title_text='Price', row=1)
-            fig.update_xaxes(title_text='Volume', row=2)
-            fig.update_xaxes(title_text='Performance', row=3)
-            fig.update_xaxes(title_text='Net Worth', row=4)
-            fig.update_xaxes(title_standoff=7, title_font=dict(size=12))
+        fig.update_xaxes(linecolor='Grey', gridcolor='Gainsboro')
+        fig.update_yaxes(linecolor='Grey', gridcolor='Gainsboro')
+        fig.update_xaxes(title_text='Price', row=1)
+        fig.update_xaxes(title_text='Volume', row=2)
+        fig.update_xaxes(title_text='Performance', row=3)
+        fig.update_xaxes(title_text='Net Worth', row=4)
+        fig.update_xaxes(title_standoff=7, title_font=dict(size=12))
 
-            self.fig = go.FigureWidget(fig)
-            self._price_chart = self.fig.data[0]
-            self._volume_chart = self.fig.data[1]
-            self._performance_chart = self.fig.data[2]
-            self._net_worth_chart = self.fig.data[-1]
+        self.fig = go.FigureWidget(fig)
+        self._price_chart = self.fig.data[0]
+        self._volume_chart = self.fig.data[1]
+        self._performance_chart = self.fig.data[2]
+        self._net_worth_chart = self.fig.data[-1]
 
-            self.fig.update_annotations({'font': { 'size': 12 } })
-            self.fig.update_layout(template='plotly_white', height=self._height, margin=dict(t=50))
-            self._base_annotations = self.fig.layout.annotations
-            display(self.fig)  # Jupyter notebook function
+        self.fig.update_annotations({'font': { 'size': 12 } })
+        self.fig.update_layout(template='plotly_white', height=self._height, margin=dict(t=50))
+        self._base_annotations = self.fig.layout.annotations
 
     def _create_trade_annotations(self, trades: dict):
         """Creates annotations of the new trades added after the last one in the
@@ -128,10 +140,30 @@ class PlotlyTradingChart:
 
         return tuple(annotations)
 
-    def render(self, title: str, price_history: pd.DataFrame, net_worth: pd.Series, performance: pd.DataFrame, trades):
+    def _create_title(self, episode, max_episodes, step, max_steps):
+        """Creates the chart title. Override or assign this method to callable
+        to change the title format.
+        """
+        return 'Episode: {}/{} - Step: {}/{} @ {}'.format(
+            episode + 1,
+            max_episodes,
+            step,
+            max_steps,
+            datetime.now().strftime(self._datefmt)
+        )
+
+    def render(self, episode: int, max_episodes: int, step: int, max_steps: int,
+               price_history: pd.DataFrame, net_worth: pd.Series,
+               performance: pd.DataFrame, trades
+               ):
         if self.fig is None:
             self._create_figure(performance.keys())
 
+        if self._show_chart:  # ensure chart visibility through notebook cell reruns
+            display(self.fig)
+            self._show_chart = False
+
+        self.fig.layout.title = self._create_title(episode, max_episodes, step, max_steps)
         self._price_chart.update(dict(
             open=price_history['open'],
             high=price_history['high'],
@@ -145,14 +177,19 @@ class PlotlyTradingChart:
         for trace in self.fig.select_traces(row=3):
             trace.update({ 'y': performance[trace.name] })
 
-        self._net_worth_chart.update({ 'y': net_worth })  # net worth
-        self.fig.layout.title = title
+        self._net_worth_chart.update({ 'y': net_worth })
 
     def reset(self):
         self._last_trade_step = 0
-        self.fig.layout.annotations = self._base_annotations
+        if self.fig is None:
+            return
 
-    def save(self, filename: str, directory: str = 'charts', fmt: str = 'png'):
+        self.fig.layout.annotations = self._base_annotations
+        clear_output(wait=True)  # Jupyter notebook function
+        self._show_chart = True
+
+
+    def save(self, filename: str, path: str = 'charts', format: str = 'png'):
         """Saves the current chart to a file.
 
         Note:
@@ -160,15 +197,15 @@ class PlotlyTradingChart:
 
         Arguments:
             filename: str, primary part of the image file name (e.g. "mountain" in "mountain.png".
-            directory: str, directory to save to.
+            path: str, path to save to.
             fmt: str, the image format to save.
         """
         valid_formats = ['png', 'jpeg', 'webp', 'svg', 'pdf', 'eps']
-        if fmt not in valid_formats:
-            raise ValueError("Acceptable formats are '{}'. Found '{}'".format("', '".join(valid_formats), fmt))
+        if format not in valid_formats:
+            raise ValueError("Acceptable formats are '{}'. Found '{}'".format("', '".join(valid_formats), format))
 
-        if directory is not None and not os.path.exists(directory):
-            os.mkdir(directory)
+        if path is not None and not os.path.exists(path):
+            os.mkdir(path)
 
-        path = os.path.join(directory, filename + '.' + fmt)
-        self.fig.write_image(path)
+        pathname = os.path.join(path, filename + '.' + format)
+        self.fig.write_image(pathname)

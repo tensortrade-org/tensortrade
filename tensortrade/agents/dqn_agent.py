@@ -121,7 +121,7 @@ class DQNAgent(Agent):
 
         memory = ReplayMemory(memory_capacity, transition_type=DQNTransition)
         episode = 0
-        steps_done = 0
+        # steps_done = 0
         total_reward = 0
         stop_training = False
 
@@ -129,15 +129,13 @@ class DQNAgent(Agent):
             n_episodes = np.iinfo(np.int32).max
 
         print('====      AGENT ID: {}      ===='.format(self.id))
-        self.env.render()  # show initial empty chart
+        self.env.max_episodes = n_episodes
+        self.env.max_steps = n_steps
 
         while episode < n_episodes and not stop_training:
             state = self.env.reset()
             done = False
-
-            print('====      EPISODE ID ({}/{}): {}      ===='.format(episode + 1,
-                                                                      n_episodes,
-                                                                      self.env.episode_id))
+            steps_done = 0
 
             while not done:
                 threshold = eps_end + (eps_start - eps_end) * np.exp(-steps_done / eps_decay_steps)
@@ -157,10 +155,9 @@ class DQNAgent(Agent):
 
                 if n_steps and steps_done >= n_steps:
                     done = True
-                    stop_training = True
 
                 if render_interval is not None and steps_done % render_interval == 0:
-                    self.env.render(episode + 1)
+                    self.env.render(episode)
 
                 if steps_done % update_target_every == 0:
                     self.target_network = tf.keras.models.clone_model(self.policy_network)
@@ -171,8 +168,10 @@ class DQNAgent(Agent):
             if save_path and (is_checkpoint or episode == n_episodes - 1):
                 self.save(save_path, episode=episode)
 
-            self.env.render(episode + 1)
+            self.env.render(episode)  # render final state at episode end
 
-            mean_reward = total_reward / steps_done
+            episode += 1
 
-            return mean_reward
+        mean_reward = total_reward / steps_done
+
+        return mean_reward

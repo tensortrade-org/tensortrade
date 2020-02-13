@@ -20,7 +20,7 @@ import numpy as np
 import pandas as pd
 
 from gym.spaces import Discrete, Box
-from typing import Union, Tuple, Dict
+from typing import Union, List, Tuple, Dict
 
 import tensortrade.actions as actions
 import tensortrade.rewards as rewards
@@ -37,6 +37,7 @@ from tensortrade.environments import ObservationHistory
 
 from tensortrade.environments.render.plotly_stock_chart import PlotlyTradingChart
 
+
 class TradingEnvironment(gym.Env, TimeIndexed):
     """A trading environments made for use with Gym-compatible reinforcement learning algorithms."""
 
@@ -50,7 +51,7 @@ class TradingEnvironment(gym.Env, TimeIndexed):
                  feed: DataFeed = None,
                  window_size: int = 1,
                  use_internal: bool = True,
-                 render_mode: str = 'human',
+                 renderer: Union[str, List['AbstractRenderer']] = 'human',
                  **kwargs):
         """
         Arguments:
@@ -72,9 +73,6 @@ class TradingEnvironment(gym.Env, TimeIndexed):
         self.feed = feed
         self.window_size = window_size
         self.use_internal = use_internal
-        assert render_mode in ['human', 'log', None]
-        self.render_mode = render_mode
-        chart_height: int = kwargs.get('chart_height', 800)
         self._price_history: pd.DataFrame  = kwargs.get('price_history', None)
 
         if self.feed:
@@ -87,7 +85,11 @@ class TradingEnvironment(gym.Env, TimeIndexed):
         self.clock = Clock()
         self.action_space = None
         self.observation_space = None
-        self.viewer = PlotlyTradingChart(height=chart_height) if self.render_mode == 'human' else None
+
+        if renderer == 'human':
+            self._renderer = [PlotlyTradingChart()]
+        else:
+            self._renderer = renderer if renderer else []
 
         self._enable_logger = kwargs.get('enable_logger', False)
         self._observation_dtype = kwargs.get('dtype', np.float32)
@@ -99,9 +101,28 @@ class TradingEnvironment(gym.Env, TimeIndexed):
             self.logger = logging.getLogger(kwargs.get('logger_name', __name__))
             self.logger.setLevel(kwargs.get('log_level', logging.DEBUG))
 
+        self._max_episodes = None
+        self._max_steps = None
+
         logging.getLogger('tensorflow').disabled = kwargs.get('disable_tensorflow_logger', True)
 
         self.compile()
+
+    @property
+    def max_episodes(self) -> int:
+        return self._max_episodes
+
+    @max_episodes.setter
+    def max_episodes(self, max_episodes: int):
+        self._max_episodes = max_episodes
+
+    @property
+    def max_steps(self) -> int:
+        return self._max_steps
+
+    @max_steps.setter
+    def max_steps(self, max_steps: int):
+        self._max_steps = max_steps
 
     def compile(self):
         """
@@ -250,8 +271,12 @@ class TradingEnvironment(gym.Env, TimeIndexed):
         self.portfolio.reset()
         self.history.reset()
         self._broker.reset()
-        if isinstance(self.viewer, PlotlyTradingChart):
-            self.viewer.reset()
+        for r in self._renderer:
+            if r.can_reset:
+                r.reset()
+
+        # if isinstance(self.viewer, PlotlyTradingChart):
+        #     self.viewer.reset()
 
         obs_row = self.feed.next()
 
@@ -266,25 +291,26 @@ class TradingEnvironment(gym.Env, TimeIndexed):
 
         return obs
 
-    def render(self, episode: int = None, mode: str = 'human'):
+    def render(self, episode: int, mode: str = 'human'):
         """Renders the environment as charts or log.
 
         Arguments:
             episode: the number of the current episode being rendered (1-based).
         """
-        if mode == 'log':
-            self.logger.info('Performance: ' + str(self._portfolio.performance))
-        elif mode == 'human':
-            current_step = self.clock.step - 1
+        trades = []
+        for trade in self._broker.trades.values():
+            trades.append(trade[0].to_dict())
 
-            trades = []
-            for trade in self._broker.trades.values():
-                trades.append(trade[0].to_dict())
-            self.viewer.render(title=f'Episode: {episode} - Step: {current_step}',
-                               price_history=self._price_history[self._price_history.index < current_step],
-                               net_worth=self._portfolio.performance.net_worth,
-                               performance=self._portfolio.performance.drop(columns=['base_symbol']),
-                               trades=trades)
+        current_step = self.clock.step - 1
+        for r in self._renderer:
+            r.render(episode=episode, max_episodes=self._max_episodes,
+                     step=current_step, max_steps= self._max_steps,
+                     price_history=self._price_history[self._price_history.index < current_step],
+                     net_worth=self._portfolio.performance.net_worth,
+                     performance=self._portfolio.performance.drop(columns=['base_symbol']),
+                     trades=trades
+                     )
+            return
 
     def close(self):
         """Utility method to clean environment before closing."""
