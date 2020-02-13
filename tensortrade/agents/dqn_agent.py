@@ -121,7 +121,6 @@ class DQNAgent(Agent):
 
         memory = ReplayMemory(memory_capacity, transition_type=DQNTransition)
         episode = 0
-        # steps_done = 0
         total_reward = 0
         stop_training = False
 
