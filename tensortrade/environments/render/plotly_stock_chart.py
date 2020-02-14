@@ -124,7 +124,6 @@ class PlotlyTradingChart(BaseRenderer):
             else:
                 raise ValueError(f"Valid trade side values are 'buy' and 'sell'. Found '{trade.side.value}'.")
 
-            # hovertext += 'S {}: {} @ {} {}'.format(trade.step, trade.size, trade.price, trade.)
             hovertext = 'Step {step} [{datetime}]<br>{side} {qty} {quote_instrument} @ {price} {base_instrument} {type}<br>Total: {size} {quote_instrument} - Comm: {commission}'.format(
                 step=trade.step,
                 datetime=price_history.iloc[trade.step - 1]['datetime'],
@@ -134,7 +133,7 @@ class PlotlyTradingChart(BaseRenderer):
                 quote_instrument=trade.quote_instrument,
                 price=trade.price,
                 base_instrument=trade.base_instrument,
-                type=trade.type.value.upper(), #trade.quantity,#, trade.base_symbol
+                type=trade.type.value.upper(),
                 commission=trade.commission
             )
             annotation = go.layout.Annotation(
