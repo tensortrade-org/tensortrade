@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License
 
-
 import os
 from datetime import datetime
 from collections import OrderedDict
@@ -21,10 +20,10 @@ from plotly.subplots import make_subplots
 import plotly.graph_objects as go
 from IPython.display import display, clear_output
 
-from tensortrade.environments.render import AbstractRenderer
+from tensortrade.environments.render import BaseRenderer
 
 
-class PlotlyTradingChart(AbstractRenderer):
+class PlotlyTradingChart(BaseRenderer):
     """
     Trading visualization for TensorTrade using Plotly.
 
@@ -105,7 +104,7 @@ class PlotlyTradingChart(AbstractRenderer):
         self.fig.update_layout(template='plotly_white', height=self._height, margin=dict(t=50))
         self._base_annotations = self.fig.layout.annotations
 
-    def _create_trade_annotations(self, trades: OrderedDict):
+    def _create_trade_annotations(self, trades: OrderedDict, price_history: pd.DataFrame):
         """Creates annotations of the new trades after the last one in the chart."""
         annotations = []
         for trade in reversed(trades.values()):
@@ -116,21 +115,34 @@ class PlotlyTradingChart(AbstractRenderer):
 
             if trade.side.value == 'buy':
                 color = 'DarkGreen'
-                hovertext = 'Buy'
+                # hovertext = 'Buy'
                 ay = 15
             elif trade.side.value == 'sell':
                 color = 'FireBrick'
-                hovertext = 'Sell'
+                # hovertext = 'Sell'
                 ay = -15
             else:
                 raise ValueError(f"Valid trade side values are 'buy' and 'sell'. Found '{trade.side.value}'.")
 
-            hovertext += ' {} @ {}'.format(trade.size, trade.price)
+            # hovertext += 'S {}: {} @ {} {}'.format(trade.step, trade.size, trade.price, trade.)
+            hovertext = 'Step {step} [{datetime}]<br>{side} {qty} {quote_instrument} @ {price} {base_instrument} {type}<br>Total: {size} {quote_instrument} - Comm: {commission}'.format(
+                step=trade.step,
+                datetime=price_history.iloc[trade.step - 1]['datetime'],
+                side=trade.side.value.upper(),
+                qty=round(trade.size/trade.price, trade.pair.quote.precision),
+                size=trade.size,
+                quote_instrument=trade.quote_instrument,
+                price=trade.price,
+                base_instrument=trade.base_instrument,
+                type=trade.type.value.upper(), #trade.quantity,#, trade.base_symbol
+                commission=trade.commission
+            )
             annotation = go.layout.Annotation(
                 x=trade.step - 1, y=trade.price,
                 ax=0, ay=ay, xref='x1', yref='y1', showarrow=True,
                 arrowhead=2, arrowcolor=color, arrowwidth=4,
-                arrowsize=0.8, hovertext=hovertext, opacity=0.6
+                arrowsize=0.8, hovertext=hovertext, opacity=0.6,
+                hoverlabel=dict(bgcolor=color)
                 )
             annotations.append(annotation)
 
@@ -168,7 +180,7 @@ class PlotlyTradingChart(AbstractRenderer):
             low=price_history['low'],
             close=price_history['close']
         ))
-        self.fig.layout.annotations += self._create_trade_annotations(trades)
+        self.fig.layout.annotations += self._create_trade_annotations(trades, price_history)
 
         self._volume_chart.update({ 'y': price_history['volume'] })
 

@@ -18,7 +18,7 @@ from tensortrade.base import Identifiable
 import pandas as pd
 
 
-class AbstractRenderer(Identifiable, metaclass=ABCMeta):
+class BaseRenderer(Identifiable, metaclass=ABCMeta):
 
     def __init__(self):
         self._max_episodes = None

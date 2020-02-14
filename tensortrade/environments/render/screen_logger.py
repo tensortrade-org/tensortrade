@@ -16,13 +16,13 @@
 from datetime import datetime
 import pandas as pd
 
-from tensortrade.environments.render import AbstractRenderer
+from tensortrade.environments.render import BaseRenderer
 
 
 DEFAULT_FORMAT = '[%(asctime)-15s] %(message)s'
 
 
-class ScreenLogger(AbstractRenderer):
+class ScreenLogger(BaseRenderer):
     def __init__(self, datefmt: str = '%Y-%m-%d %H:%M:%S'):
         self.format = datefmt
 

@@ -1,5 +1,5 @@
 import importlib
-from .abstract_renderer import AbstractRenderer
+from .base_renderer import BaseRenderer
 from .screen_logger import ScreenLogger
 from .file_logger import FileLogger
 

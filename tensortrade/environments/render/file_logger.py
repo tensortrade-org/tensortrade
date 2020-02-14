@@ -18,14 +18,14 @@ from datetime import datetime
 import logging
 import pandas as pd
 
-from tensortrade.environments.render import AbstractRenderer
+from tensortrade.environments.render import BaseRenderer
 
 
 DEFAULT_FORMAT = '[%(asctime)-15s] %(message)s'
 DEFAULT_DATEFMT = '%Y-%m-%d %H:%M:%S'
 
 
-class FileLogger(AbstractRenderer):
+class FileLogger(BaseRenderer):
     def __init__(self, filename: str = None, path: str = 'log', format=None, datefmt: str = None, error: str = 'create'):
         if path and not os.path.exists(path):
             if error == 'create':
