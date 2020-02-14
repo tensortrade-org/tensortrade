@@ -15,6 +15,7 @@
 
 import os
 from datetime import datetime
+from collections import OrderedDict
 import pandas as pd
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
@@ -104,40 +105,37 @@ class PlotlyTradingChart(AbstractRenderer):
         self.fig.update_layout(template='plotly_white', height=self._height, margin=dict(t=50))
         self._base_annotations = self.fig.layout.annotations
 
-    def _create_trade_annotations(self, trades: dict):
-        """Creates annotations of the new trades added after the last one in the
-        chart.
-        """
+    def _create_trade_annotations(self, trades: OrderedDict):
+        """Creates annotations of the new trades after the last one in the chart."""
         annotations = []
-        for trade in trades:
-            step = trade['step']
+        for trade in reversed(trades.values()):
+            trade = trade[0]
 
-            if step <= self._last_trade_step:
-                continue
+            if trade.step <= self._last_trade_step:
+                break
 
-            self._last_trade_step = step
-
-            side = trade['side'].value
-            if side == 'buy':
+            if trade.side.value == 'buy':
                 color = 'DarkGreen'
                 hovertext = 'Buy'
                 ay = 15
-            elif side == 'sell':
+            elif trade.side.value == 'sell':
                 color = 'FireBrick'
                 hovertext = 'Sell'
                 ay = -15
             else:
-                raise ValueError(f"Trade side '{side}' is invalid. Valid values are 'buy' and 'sell'.")
+                raise ValueError(f"Valid trade side values are 'buy' and 'sell'. Found '{trade.side.value}'.")
 
-            hovertext += ' {} @ {}'.format(trade['size'], trade['price'])
+            hovertext += ' {} @ {}'.format(trade.size, trade.price)
             annotation = go.layout.Annotation(
-                x=self._last_trade_step - 1, y=trade['price'],
+                x=trade.step - 1, y=trade.price,
                 ax=0, ay=ay, xref='x1', yref='y1', showarrow=True,
                 arrowhead=2, arrowcolor=color, arrowwidth=4,
                 arrowsize=0.8, hovertext=hovertext, opacity=0.6
                 )
             annotations.append(annotation)
 
+        if trades:
+            self._last_trade_step = trades[list(trades)[-1]][0].step
         return tuple(annotations)
 
     def _create_title(self, episode, max_episodes, step, max_steps):
@@ -185,7 +183,7 @@ class PlotlyTradingChart(AbstractRenderer):
             return
 
         self.fig.layout.annotations = self._base_annotations
-        clear_output(wait=True)  # Jupyter notebook function
+        clear_output(wait=True)
         self._show_chart = True
 
 

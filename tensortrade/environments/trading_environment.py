@@ -275,9 +275,6 @@ class TradingEnvironment(gym.Env, TimeIndexed):
             if r.can_reset:
                 r.reset()
 
-        # if isinstance(self.viewer, PlotlyTradingChart):
-        #     self.viewer.reset()
-
         obs_row = self.feed.next()
 
         if not self.use_internal:
@@ -297,10 +294,6 @@ class TradingEnvironment(gym.Env, TimeIndexed):
         Arguments:
             episode: the number of the current episode being rendered (1-based).
         """
-        trades = []
-        for trade in self._broker.trades.values():
-            trades.append(trade[0].to_dict())
-
         current_step = self.clock.step - 1
         for r in self._renderer:
             r.render(episode=episode, max_episodes=self._max_episodes,
@@ -308,7 +301,7 @@ class TradingEnvironment(gym.Env, TimeIndexed):
                      price_history=self._price_history[self._price_history.index < current_step],
                      net_worth=self._portfolio.performance.net_worth,
                      performance=self._portfolio.performance.drop(columns=['base_symbol']),
-                     trades=trades
+                     trades=self._broker.trades
                      )
             return
 

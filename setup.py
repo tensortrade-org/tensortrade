@@ -56,6 +56,7 @@ setup(
         'tf': ['tensorflow>=2.1.0'],
         'stochastic': ['stochastic>=0.4.0'],
         'matplotlib': ['matplotlib>=3.1.1'],
+        'plotly': ['plotly>=4.5.0'],
         'ccxt': ['ccxt>=1.18.1220'],
         'all-framework': ['tensorflow>=2.1.0',
                           'stochastic>=0.4.0',

@@ -12,13 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License
 
-
-from datetime import datetime
 from itertools import product
 from typing import Union, List, Dict
+from collections import OrderedDict
 
 from tensortrade.base.core import TimeIndexed
-
 from .order import Order, OrderStatus
 from .order_listener import OrderListener
 
@@ -33,7 +31,7 @@ class Broker(OrderListener, TimeIndexed):
 
         self._unexecuted = []
         self._executed = {}
-        self._trades = {}
+        self._trades = OrderedDict()
 
     @property
     def exchanges(self) -> List['Exchange']:
@@ -107,4 +105,4 @@ class Broker(OrderListener, TimeIndexed):
     def reset(self):
         self._unexecuted = []
         self._executed = {}
-        self._trades = {}
+        self._trades = OrderedDict()
