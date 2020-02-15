@@ -272,8 +272,7 @@ class TradingEnvironment(gym.Env, TimeIndexed):
         self.history.reset()
         self._broker.reset()
         for r in self._renderer:
-            if r.can_reset:
-                r.reset()
+            r.reset()
 
         obs_row = self.feed.next()
 

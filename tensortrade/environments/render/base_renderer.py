@@ -25,14 +25,6 @@ class BaseRenderer(Identifiable, metaclass=ABCMeta):
         self._max_steps = None
 
     @abstractmethod
-    def can_save(self) -> bool:
-        raise NotImplementedError()
-
-    @abstractmethod
-    def can_reset(self) -> bool:
-        raise NotImplementedError()
-
-    @abstractmethod
     def render(self, episode: int, max_episodes: int, step: int, max_steps: int,
                price_history: pd.DataFrame, net_worth: pd.Series,
                performance: pd.DataFrame, trades
@@ -40,7 +32,7 @@ class BaseRenderer(Identifiable, metaclass=ABCMeta):
         raise NotImplementedError()
 
     def save(self):
-        raise NotImplementedError()
+        pass
 
     def reset(self):
-        raise NotImplementedError()
+        pass

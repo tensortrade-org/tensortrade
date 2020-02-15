@@ -50,14 +50,6 @@ class FileLogger(BaseRenderer):
         self._logger.addHandler(handler)
 
     @property
-    def can_save(self) -> bool:
-        return False
-
-    @property
-    def can_reset(self) -> bool:
-        return False
-
-    @property
     def log_file(self) -> str:
         return self._logger.handlers[0].baseFilename
 

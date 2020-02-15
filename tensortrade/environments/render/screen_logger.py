@@ -26,14 +26,6 @@ class ScreenLogger(BaseRenderer):
     def __init__(self, datefmt: str = '%Y-%m-%d %H:%M:%S'):
         self.format = datefmt
 
-    @property
-    def can_save(self) -> bool:
-        return False
-
-    @property
-    def can_reset(self) -> bool:
-        return False
-
     def render(self, episode: int, max_episodes: int, step: int, max_steps: int,
                price_history: pd.DataFrame, net_worth: pd.Series,
                performance: pd.DataFrame, trades

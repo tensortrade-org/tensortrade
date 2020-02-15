@@ -59,14 +59,6 @@ class PlotlyTradingChart(BaseRenderer):
         self._last_trade_step = 0
         self._show_chart = True
 
-    @property
-    def can_save(self):
-        return False  # to change after testing the saving functionality
-
-    @property
-    def can_reset(self):
-        return True
-
     def _create_figure(self, performance_keys):
         fig = make_subplots(
             rows=4, cols=1, shared_xaxes=True, vertical_spacing=0.03,
@@ -115,16 +107,14 @@ class PlotlyTradingChart(BaseRenderer):
 
             if trade.side.value == 'buy':
                 color = 'DarkGreen'
-                # hovertext = 'Buy'
                 ay = 15
             elif trade.side.value == 'sell':
                 color = 'FireBrick'
-                # hovertext = 'Sell'
                 ay = -15
             else:
                 raise ValueError(f"Valid trade side values are 'buy' and 'sell'. Found '{trade.side.value}'.")
 
-            hovertext = 'Step {step} [{datetime}]<br>{side} {qty} {quote_instrument} @ {price} {base_instrument} {type}<br>Total: {size} {quote_instrument} - Comm: {commission}'.format(
+            hovertext = 'Step {step} [{datetime}]<br>{side} {qty} {quote_instrument} @ {price} {base_instrument} {type}<br>Total: {size} {base_instrument} - Comm.: {commission}'.format(
                 step=trade.step,
                 datetime=price_history.iloc[trade.step - 1]['datetime'],
                 side=trade.side.value.upper(),
@@ -147,6 +137,7 @@ class PlotlyTradingChart(BaseRenderer):
 
         if trades:
             self._last_trade_step = trades[list(trades)[-1]][0].step
+
         return tuple(annotations)
 
     def _create_title(self, episode, max_episodes, step, max_steps):
