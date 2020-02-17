@@ -1,9 +1,24 @@
+# Copyright 2019 The TensorTrade Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License
+
+
 """
 References:
     - http://inoryy.com/post/tensorflow2-deep-reinforcement-learning/#agent-interface
 """
 
-import uuid
+
 import random
 import numpy as np
 import tensorflow as tf
@@ -133,6 +148,7 @@ class A2CAgent(Agent):
         optimizer.apply_gradients(zip(gradients, self.critic_network.trainable_variables))
 
         with tf.GradientTape() as tape:
+            returns = tf.reshape(returns, [batch_size, 1])
             advantages = returns - values
 
             actions = tf.cast(actions, tf.int32)
@@ -214,6 +230,8 @@ class A2CAgent(Agent):
             if save_path and (is_checkpoint or episode == n_episodes):
                 self.save(save_path, episode=episode)
 
-            mean_reward = total_reward / steps_done
+            episode += 1
 
-            return mean_reward
+        mean_reward = total_reward / steps_done
+
+        return mean_reward
