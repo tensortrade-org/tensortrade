@@ -2,11 +2,9 @@ import threading
 import json
 import yaml
 
-from typing import Union, List
 from collections import UserDict
 
 from .registry import registered_names, get_major_component_names
-from tensortrade.instruments import Instrument, USD
 
 
 class TradingContext(UserDict):
