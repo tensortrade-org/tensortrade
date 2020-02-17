@@ -28,17 +28,10 @@ class PlotlyTradingChart(BaseRenderer):
     Trading visualization for TensorTrade using Plotly.
 
     Possible Future Enhancements:
-    - Make the renderes modular with standard interface (render, save, ...).
-      Create a renderer and configure one or more renders and attach them to the
-      environement. All available renderers to be used for output.
     - Saving images without using Orca.
-    - Let the environmemt pass only newly added data points since last render
-      to add to the existing ones for performance. Alternatively, find data diff
-      internally and add new ones (hint: panads .from_dict() could be used for
-      better performance here).
     - Limit displayed step range for the case of a large number of steps and let
       the shown part of the chart slide after filling that range to keep showing
-      recent data when added.
+      recent data as it's being added.
 
     References:
     https://plot.ly/python/figurewidget/
