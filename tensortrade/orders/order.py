@@ -131,7 +131,7 @@ class Order(TimedIdentifiable):
         return self.criteria is None or self.criteria(self, exchange)
 
     def is_complete(self):
-        return self.remaining_size == 0
+        return self.remaining_size == 0 or self.status == OrderStatus.CANCELLED
 
     def add_order_spec(self, order_spec: 'OrderSpec') -> 'Order':
         self._specs = [order_spec] + self._specs
@@ -174,6 +174,7 @@ class Order(TimedIdentifiable):
 
         self.filled_size += fill_size
         self.remaining_size -= fill_size
+        self._trades += [trade]
 
         for listener in self._listeners or []:
             listener.on_fill(self, exchange, trade)
