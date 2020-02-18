@@ -15,7 +15,7 @@ class TestRiskAdjustedReturns:
     def test_sharpe_ratio(self, net_worths):
         scheme = RiskAdjustedReturns(return_algorithm='sharpe', risk_free_rate=0)
 
-        returns = net_worths.diff()
+        returns = net_worths.pct_change()
 
         sharpe_ratio = scheme._sharpe_ratio(returns)
 
@@ -31,7 +31,7 @@ class TestRiskAdjustedReturns:
             target_returns=0
         )
 
-        returns = net_worths.diff()
+        returns = net_worths.pct_change()
 
         sortino_ratio = scheme._sortino_ratio(returns)
 

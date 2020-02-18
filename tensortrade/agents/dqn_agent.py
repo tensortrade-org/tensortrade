@@ -1,18 +1,30 @@
+# Copyright 2019 The TensorTrade Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """
 References:
     - https://towardsdatascience.com/deep-reinforcement-learning-build-a-deep-q-network-dqn-to-play-cartpole-with-tensorflow-2-and-gym-8e105744b998
     - https://pytorch.org/tutorials/intermediate/reinforcement_q_learning.html#dqn-algorithm
 """
 
-import uuid
 import random
 import numpy as np
 import tensorflow as tf
-
-from typing import Callable, Tuple
 from collections import namedtuple
 
 from tensortrade.agents import Agent, ReplayMemory
+
 
 DQNTransition = namedtuple('DQNTransition', ['state', 'action', 'reward', 'next_state', 'done'])
 
@@ -119,10 +131,10 @@ class DQNAgent(Agent):
         eps_decay_steps: int = kwargs.get('eps_decay_steps', 200)
         update_target_every: int = kwargs.get('update_target_every', 1000)
         memory_capacity: int = kwargs.get('memory_capacity', 1000)
+        render_interval: int = kwargs.get('render_interval', 50)  # in steps, None for episode end render only
 
         memory = ReplayMemory(memory_capacity, transition_type=DQNTransition)
         episode = 0
-        steps_done = 0
         total_reward = 0
         stop_training = False
 
@@ -130,14 +142,13 @@ class DQNAgent(Agent):
             n_episodes = np.iinfo(np.int32).max
 
         print('====      AGENT ID: {}      ===='.format(self.id))
+        self.env.max_episodes = n_episodes
+        self.env.max_steps = n_steps
 
         while episode < n_episodes and not stop_training:
             state = self.env.reset()
             done = False
-
-            print('====      EPISODE ID ({}/{}): {}      ===='.format(episode + 1,
-                                                                      n_episodes,
-                                                                      self.env.episode_id))
+            steps_done = 0
 
             while not done:
                 threshold = eps_end + (eps_start - eps_end) * np.exp(-steps_done / eps_decay_steps)
@@ -157,7 +168,9 @@ class DQNAgent(Agent):
 
                 if n_steps and steps_done >= n_steps:
                     done = True
-                    stop_training = True
+
+                if render_interval is not None and steps_done % render_interval == 0:
+                    self.env.render(episode)
 
                 if steps_done % update_target_every == 0:
                     self.target_network = tf.keras.models.clone_model(self.policy_network)
@@ -168,6 +181,10 @@ class DQNAgent(Agent):
             if save_path and (is_checkpoint or episode == n_episodes - 1):
                 self.save(save_path, episode=episode)
 
-            mean_reward = total_reward / steps_done
+            self.env.render(episode)  # render final state at episode end
 
-            return mean_reward
+            episode += 1
+
+        mean_reward = total_reward / steps_done
+
+        return mean_reward

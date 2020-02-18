@@ -10,16 +10,17 @@
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
-# limitations under the License.
+# limitations under the License
 
 
 import gym
 import uuid
 import logging
 import numpy as np
+import pandas as pd
 
-from gym.spaces import Discrete, Space, Box
-from typing import Union, Tuple, List, Dict
+from gym.spaces import Discrete, Box
+from typing import Union, List, Tuple, Dict
 
 import tensortrade.actions as actions
 import tensortrade.rewards as rewards
@@ -28,11 +29,13 @@ import tensortrade.wallets as wallets
 from tensortrade.base import TimeIndexed, Clock
 from tensortrade.actions import ActionScheme
 from tensortrade.rewards import RewardScheme
-from tensortrade.data import DataFeed, Select
+from tensortrade.data import DataFeed
 from tensortrade.data.internal import create_internal_feed
-from tensortrade.orders import Broker, Order
+from tensortrade.orders import Broker
 from tensortrade.wallets import Portfolio
 from tensortrade.environments import ObservationHistory
+
+from tensortrade.environments.render.plotly_stock_chart import PlotlyTradingChart
 
 
 class TradingEnvironment(gym.Env, TimeIndexed):
@@ -47,7 +50,8 @@ class TradingEnvironment(gym.Env, TimeIndexed):
                  reward_scheme: Union[RewardScheme, str],
                  feed: DataFeed = None,
                  window_size: int = 1,
-                 use_internal=True,
+                 use_internal: bool = True,
+                 renderer: Union[str, List['AbstractRenderer']] = 'human',
                  **kwargs):
         """
         Arguments:
@@ -55,6 +59,10 @@ class TradingEnvironment(gym.Env, TimeIndexed):
             action_scheme:  The component for transforming an action into an `Order` at each timestep.
             reward_scheme: The component for determining the reward at each timestep.
             feed (optional): The pipeline of features to pass the observations through.
+            render_mode (optional): rendering mode, 'human' or 'log'. None for no rendering.
+            chart_height (optioanl): int, the chart height for 'human' mode.
+            price_history (optional): OHLCV price history feed used for rendering
+                the chart. Required if render_mode is 'human'.
             kwargs (optional): Additional arguments for tuning the environments, logging, etc.
         """
         super().__init__()
@@ -65,6 +73,7 @@ class TradingEnvironment(gym.Env, TimeIndexed):
         self.feed = feed
         self.window_size = window_size
         self.use_internal = use_internal
+        self._price_history: pd.DataFrame  = kwargs.get('price_history', None)
 
         if self.feed:
             self._external_keys = self.feed.next().keys()
@@ -76,7 +85,11 @@ class TradingEnvironment(gym.Env, TimeIndexed):
         self.clock = Clock()
         self.action_space = None
         self.observation_space = None
-        self.viewer = None
+
+        if renderer == 'human':
+            self._renderer = [PlotlyTradingChart()]
+        else:
+            self._renderer = renderer if renderer else []
 
         self._enable_logger = kwargs.get('enable_logger', False)
         self._observation_dtype = kwargs.get('dtype', np.float32)
@@ -88,9 +101,28 @@ class TradingEnvironment(gym.Env, TimeIndexed):
             self.logger = logging.getLogger(kwargs.get('logger_name', __name__))
             self.logger.setLevel(kwargs.get('log_level', logging.DEBUG))
 
+        self._max_episodes = None
+        self._max_steps = None
+
         logging.getLogger('tensorflow').disabled = kwargs.get('disable_tensorflow_logger', True)
 
         self.compile()
+
+    @property
+    def max_episodes(self) -> int:
+        return self._max_episodes
+
+    @max_episodes.setter
+    def max_episodes(self, max_episodes: int):
+        self._max_episodes = max_episodes
+
+    @property
+    def max_steps(self) -> int:
+        return self._max_steps
+
+    @max_steps.setter
+    def max_steps(self, max_steps: int):
+        self._max_steps = max_steps
 
     def compile(self):
         """
@@ -162,6 +194,14 @@ class TradingEnvironment(gym.Env, TimeIndexed):
         self._reward_scheme = rewards.get(reward_scheme) if isinstance(
             reward_scheme, str) else reward_scheme
 
+    @property
+    def price_history(self) -> pd.DataFrame:
+        return self._price_history
+
+    @price_history.setter
+    def price_history(self, price_history):
+        self._price_history = price_history
+
     def step(self, action: int) -> Tuple[np.array, float, bool, dict]:
         """Run one timestep within the environments based on the specified action.
 
@@ -224,7 +264,6 @@ class TradingEnvironment(gym.Env, TimeIndexed):
             The episode's initial observation.
         """
         self.episode_id = uuid.uuid4()
-
         self.clock.reset()
         self.feed.reset()
         self.action_scheme.reset()
@@ -232,6 +271,8 @@ class TradingEnvironment(gym.Env, TimeIndexed):
         self.portfolio.reset()
         self.history.reset()
         self._broker.reset()
+        for r in self._renderer:
+            r.reset()
 
         obs_row = self.feed.next()
 
@@ -246,17 +287,22 @@ class TradingEnvironment(gym.Env, TimeIndexed):
 
         return obs
 
-    def render(self, mode='none'):
-        """Renders the environment via matplotlib."""
-        if mode == 'log':
-            self.logger.info('Performance: ' + str(self._portfolio.performance))
-        elif mode == 'chart':
-            if self.viewer is None:
-                raise NotImplementedError()
+    def render(self, episode: int, mode: str = 'human'):
+        """Renders the environment as charts or log.
 
-            self.viewer.render(self.clock.step - 1,
-                               self._portfolio.performance,
-                               self._broker.trades)
+        Arguments:
+            episode: the number of the current episode being rendered (1-based).
+        """
+        current_step = self.clock.step - 1
+        for r in self._renderer:
+            r.render(episode=episode, max_episodes=self._max_episodes,
+                     step=current_step, max_steps= self._max_steps,
+                     price_history=self._price_history[self._price_history.index < current_step],
+                     net_worth=self._portfolio.performance.net_worth,
+                     performance=self._portfolio.performance.drop(columns=['base_symbol']),
+                     trades=self._broker.trades
+                     )
+            return
 
     def close(self):
         """Utility method to clean environment before closing."""
