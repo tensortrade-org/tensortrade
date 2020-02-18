@@ -13,31 +13,32 @@ def net_worths():
 class TestRiskAdjustedReturns:
 
     def test_sharpe_ratio(self, net_worths):
-        scheme = RiskAdjustedReturns(return_algorithm='sharpe', risk_free_rate=0)
+        scheme = RiskAdjustedReturns(return_algorithm='sharpe',
+                                     risk_free_rate=0,
+                                     window_size=1)
 
-        returns = net_worths.pct_change()
+        returns = net_worths[-2:].pct_change().dropna()
 
+        expected_ratio = (np.mean(returns) + 1E-9) / (np.std(returns) + 1E-9)
         sharpe_ratio = scheme._sharpe_ratio(returns)
-
-        expected_ratio = returns.mean() / (returns.std() + 1E-9)
 
         assert sharpe_ratio == expected_ratio
 
-    @pytest.mark.skip("Needs to be reevaluated.")
     def test_sortino_ratio(self, net_worths):
-        scheme = RiskAdjustedReturns(
-            return_algorithm='sortino',
-            risk_free_rate=0,
-            target_returns=0
-        )
+        scheme = RiskAdjustedReturns(return_algorithm='sortino',
+                                     risk_free_rate=0,
+                                     target_returns=0,
+                                     window_size=1)
 
-        returns = net_worths.pct_change()
+        returns = net_worths[-2:].pct_change().dropna()
 
+        downside_returns = returns.copy()
+        downside_returns[returns < 0] = returns ** 2
+
+        expected_return = np.mean(returns)
+        downside_std = np.sqrt(np.std(downside_returns))
+
+        expected_ratio = (expected_return + 1E-9) / (downside_std + 1E-9)
         sortino_ratio = scheme._sortino_ratio(returns)
-
-        expected_return = returns.mean()
-        downside_std = returns[returns < 0].std()
-
-        expected_ratio = expected_return / downside_std
 
         assert sortino_ratio == expected_ratio

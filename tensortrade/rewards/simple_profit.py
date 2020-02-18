@@ -34,6 +34,6 @@ class SimpleProfit(RewardScheme):
         Returns:
             The cumulative percentage change in net worth over the previous `window_size` timesteps.
         """
-        returns = portfolio.performance['net_worth'].pct_change()
+        returns = portfolio.performance['net_worth'].pct_change().dropna()
         returns = (1 + returns[-self.window_size:]).cumprod() - 1
         return returns.iloc[-1]
