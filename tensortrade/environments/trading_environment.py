@@ -16,6 +16,7 @@
 import gym
 import uuid
 import logging
+import importlib
 import numpy as np
 import pandas as pd
 
@@ -35,8 +36,6 @@ from tensortrade.orders import Broker
 from tensortrade.wallets import Portfolio
 from tensortrade.environments import ObservationHistory
 
-from tensortrade.environments.render.plotly_stock_chart import PlotlyTradingChart
-
 
 class TradingEnvironment(gym.Env, TimeIndexed):
     """A trading environments made for use with Gym-compatible reinforcement learning algorithms."""
@@ -51,7 +50,7 @@ class TradingEnvironment(gym.Env, TimeIndexed):
                  feed: DataFeed = None,
                  window_size: int = 1,
                  use_internal: bool = True,
-                 renderer: Union[str, List['AbstractRenderer']] = 'human',
+                 renderer: Union[str, List['BaseRenderer']] = None,
                  **kwargs):
         """
         Arguments:
@@ -73,7 +72,7 @@ class TradingEnvironment(gym.Env, TimeIndexed):
         self.feed = feed
         self.window_size = window_size
         self.use_internal = use_internal
-        self._price_history: pd.DataFrame  = kwargs.get('price_history', None)
+        self._price_history: pd.DataFrame = kwargs.get('price_history', None)
 
         if self.feed:
             self._external_keys = self.feed.next().keys()
@@ -86,10 +85,12 @@ class TradingEnvironment(gym.Env, TimeIndexed):
         self.action_space = None
         self.observation_space = None
 
-        if renderer == 'human':
-            self._renderer = [PlotlyTradingChart()]
+        if renderer == 'human' and importlib.util.find_spec("plotly") is not None:
+            from tensortrade.environments.render.plotly_stock_chart import PlotlyTradingChart
+
+            self._renderers = renderer or [PlotlyTradingChart()]
         else:
-            self._renderer = renderer if renderer else []
+            self._renderers = renderer or []
 
         self._enable_logger = kwargs.get('enable_logger', False)
         self._observation_dtype = kwargs.get('dtype', np.float32)
@@ -271,7 +272,7 @@ class TradingEnvironment(gym.Env, TimeIndexed):
         self.portfolio.reset()
         self.history.reset()
         self._broker.reset()
-        for r in self._renderer:
+        for r in self._renderers:
             r.reset()
 
         obs_row = self.feed.next()
@@ -294,17 +295,19 @@ class TradingEnvironment(gym.Env, TimeIndexed):
             episode: the number of the current episode being rendered (1-based).
         """
         current_step = self.clock.step - 1
-        for r in self._renderer:
-            r.render(episode=episode, max_episodes=self._max_episodes,
-                     step=current_step, max_steps= self._max_steps,
-                     price_history=self._price_history[self._price_history.index < current_step],
-                     net_worth=self._portfolio.performance.net_worth,
-                     performance=self._portfolio.performance.drop(columns=['base_symbol']),
-                     trades=self._broker.trades
-                     )
-            return
+
+        for renderer in self._renderers:
+            renderer.render(episode=episode,
+                            max_episodes=self._max_episodes,
+                            step=current_step,
+                            max_steps=self._max_steps,
+                            price_history=self._price_history[self._price_history.index < current_step],
+                            net_worth=self._portfolio.performance.net_worth,
+                            performance=self._portfolio.performance.drop(columns=['base_symbol']),
+                            trades=self._broker.trades)
 
     def close(self):
         """Utility method to clean environment before closing."""
-        if self.viewer is not None:
-            self.viewer.close()
+        for renderer in self._renderers:
+            if callable(hasattr(renderer, 'close', None)):
+                renderer.close()  # pylint: disable=no-member
