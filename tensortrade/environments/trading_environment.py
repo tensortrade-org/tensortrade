@@ -35,6 +35,7 @@ from tensortrade.data.internal import create_internal_feed
 from tensortrade.orders import Broker
 from tensortrade.wallets import Portfolio
 from tensortrade.environments import ObservationHistory
+from tensortrade.environments.render import get
 
 
 class TradingEnvironment(gym.Env, TimeIndexed):
@@ -50,7 +51,7 @@ class TradingEnvironment(gym.Env, TimeIndexed):
                  feed: DataFeed = None,
                  window_size: int = 1,
                  use_internal: bool = True,
-                 renderer: Union[str, List['BaseRenderer']] = None,
+                 renderer: Union[str, List[str], List['BaseRenderer']] = 'screenlog',
                  **kwargs):
         """
         Arguments:
@@ -58,10 +59,10 @@ class TradingEnvironment(gym.Env, TimeIndexed):
             action_scheme:  The component for transforming an action into an `Order` at each timestep.
             reward_scheme: The component for determining the reward at each timestep.
             feed (optional): The pipeline of features to pass the observations through.
-            render_mode (optional): rendering mode, 'human' or 'log'. None for no rendering.
-            chart_height (optioanl): int, the chart height for 'human' mode.
+            renderer (optional): singe or list of renderers for output by name or objects.
+                String Values: 'screenlog', 'filelog', or 'plotly'. None for no rendering.
             price_history (optional): OHLCV price history feed used for rendering
-                the chart. Required if render_mode is 'human'.
+                the chart. Required if render_mode is 'plotly'.
             kwargs (optional): Additional arguments for tuning the environments, logging, etc.
         """
         super().__init__()
@@ -85,12 +86,16 @@ class TradingEnvironment(gym.Env, TimeIndexed):
         self.action_space = None
         self.observation_space = None
 
-        if renderer == 'human' and importlib.util.find_spec("plotly") is not None:
-            from tensortrade.environments.render.plotly_stock_chart import PlotlyTradingChart
+        if not renderer:
+            renderer = []
+        elif type(renderer) is not list:
+            renderer = [renderer]
 
-            self._renderers = renderer or [PlotlyTradingChart()]
-        else:
-            self._renderers = renderer or []
+        self._renderer = []
+        for r in renderer:
+            if isinstance(r, str):
+                r = get(r)
+            self._renderer.append(r)
 
         self._enable_logger = kwargs.get('enable_logger', False)
         self._observation_dtype = kwargs.get('dtype', np.float32)
@@ -273,7 +278,7 @@ class TradingEnvironment(gym.Env, TimeIndexed):
         self.history.reset()
         self._broker.reset()
 
-        for renderer in self._renderers:
+        for renderer in self._renderer:
             renderer.reset()
 
         obs_row = self.feed.next()
@@ -289,15 +294,15 @@ class TradingEnvironment(gym.Env, TimeIndexed):
 
         return obs
 
-    def render(self, episode: int, mode: str = 'human'):
-        """Renders the environment as charts or log.
+    def render(self, episode: int, mode: str = 'screenlog'):
+        """Renders the environment.
 
         Arguments:
             episode: the number of the current episode being rendered (1-based).
         """
         current_step = self.clock.step - 1
 
-        for renderer in self._renderers:
+        for renderer in self._renderer:
             renderer.render(episode=episode,
                             max_episodes=self._max_episodes,
                             step=current_step,
@@ -309,6 +314,6 @@ class TradingEnvironment(gym.Env, TimeIndexed):
 
     def close(self):
         """Utility method to clean environment before closing."""
-        for renderer in self._renderers:
+        for renderer in self._renderer:
             if callable(hasattr(renderer, 'close', None)):
                 renderer.close()  # pylint: disable=no-member
