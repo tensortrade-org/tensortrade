@@ -59,7 +59,7 @@ class TradingEnvironment(gym.Env, TimeIndexed):
             action_scheme:  The component for transforming an action into an `Order` at each timestep.
             reward_scheme: The component for determining the reward at each timestep.
             feed (optional): The pipeline of features to pass the observations through.
-            renderer (optional): singe or list of renderers for output by name or objects.
+            renderer (optional): single or list of renderers for output by name or as objects.
                 String Values: 'screenlog', 'filelog', or 'plotly'. None for no rendering.
             price_history (optional): OHLCV price history feed used for rendering
                 the chart. Required if render_mode is 'plotly'.
