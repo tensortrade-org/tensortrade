@@ -61,7 +61,6 @@ class RiskAdjustedReturns(RewardScheme):
     def _sortino_ratio(self, returns: pd.Series) -> float:
         """Return the sortino ratio for a given series of a returns.
 
-
         References:
             - https://en.wikipedia.org/wiki/Sortino_ratio
         """
