@@ -51,7 +51,7 @@ class TradingEnvironment(gym.Env, TimeIndexed):
                  feed: DataFeed = None,
                  window_size: int = 1,
                  use_internal: bool = True,
-                 renderer: Union[str, List[str], List['BaseRenderer']] = 'screenlog',
+                 renderers: Union[str, List[str], List['BaseRenderer']] = 'screenlog',
                  **kwargs):
         """
         Arguments:
@@ -59,7 +59,7 @@ class TradingEnvironment(gym.Env, TimeIndexed):
             action_scheme:  The component for transforming an action into an `Order` at each timestep.
             reward_scheme: The component for determining the reward at each timestep.
             feed (optional): The pipeline of features to pass the observations through.
-            renderer (optional): single or list of renderers for output by name or as objects.
+            renderers (optional): single or list of renderers for output by name or as objects.
                 String Values: 'screenlog', 'filelog', or 'plotly'. None for no rendering.
             price_history (optional): OHLCV price history feed used for rendering
                 the chart. Required if render_mode is 'plotly'.
@@ -86,16 +86,16 @@ class TradingEnvironment(gym.Env, TimeIndexed):
         self.action_space = None
         self.observation_space = None
 
-        if not renderer:
-            renderer = []
-        elif type(renderer) is not list:
-            renderer = [renderer]
+        if not renderers:
+            renderers = []
+        elif type(renderers) is not list:
+            renderers = [renderers]
 
-        self._renderer = []
-        for r in renderer:
-            if isinstance(r, str):
-                r = get(r)
-            self._renderer.append(r)
+        self._renderers = []
+        for renderer in renderers:
+            if isinstance(renderer, str):
+                renderer = get(renderer)
+            self._renderers.append(renderer)
 
         self._enable_logger = kwargs.get('enable_logger', False)
         self._observation_dtype = kwargs.get('dtype', np.float32)
@@ -278,7 +278,7 @@ class TradingEnvironment(gym.Env, TimeIndexed):
         self.history.reset()
         self._broker.reset()
 
-        for renderer in self._renderer:
+        for renderer in self._renderers:
             renderer.reset()
 
         obs_row = self.feed.next()
@@ -302,7 +302,7 @@ class TradingEnvironment(gym.Env, TimeIndexed):
         """
         current_step = self.clock.step - 1
 
-        for renderer in self._renderer:
+        for renderer in self._renderers:
             renderer.render(episode=episode,
                             max_episodes=self._max_episodes,
                             step=current_step,
@@ -314,6 +314,6 @@ class TradingEnvironment(gym.Env, TimeIndexed):
 
     def close(self):
         """Utility method to clean environment before closing."""
-        for renderer in self._renderer:
+        for renderer in self._renderers:
             if callable(hasattr(renderer, 'close', None)):
                 renderer.close()  # pylint: disable=no-member
