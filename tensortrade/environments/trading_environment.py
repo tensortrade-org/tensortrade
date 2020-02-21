@@ -141,8 +141,9 @@ class TradingEnvironment(gym.Env, TimeIndexed):
         for component in components:
             component.clock = self.clock
 
-        self.action_scheme.set_pairs(self.portfolio.exchange_pairs)
-        self.action_space = Discrete(len(self.action_scheme))
+        self.action_scheme.exchange_pairs = self.portfolio.exchange_pairs
+        self.action_scheme.compile()
+        self.action_space = self.action_scheme.action_space
 
         if not self.feed:
             self.feed = create_internal_feed(self.portfolio)
