@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License
 
-
 from abc import ABCMeta, abstractmethod
-from tensortrade.base import Identifiable
+from datetime import datetime
 import pandas as pd
+
+from tensortrade.base import Identifiable
 
 
 class BaseRenderer(Identifiable, metaclass=ABCMeta):
@@ -24,10 +25,24 @@ class BaseRenderer(Identifiable, metaclass=ABCMeta):
         self._max_episodes = None
         self._max_steps = None
 
+    def _create_log_entry(self, episode: int = None, max_episodes: int = None,
+                         step: int = None, max_steps: int = None,
+                         date_format='%Y-%m-%d %H:%M:%S %p'):
+        log_entry = '[{}]'.format(datetime.now().strftime(date_format))
+
+        if episode is not None:
+            log_entry += f' Episode: {episode + 1}' + (f'/{max_episodes}' if max_episodes else '')
+
+        if step is not None:
+            log_entry += f' Step: {step}' + (f'/{max_steps}' if max_steps else '')
+
+        return log_entry
+
     @abstractmethod
-    def render(self, episode: int, max_episodes: int, step: int, max_steps: int,
-               price_history: pd.DataFrame, net_worth: pd.Series,
-               performance: pd.DataFrame, trades
+    def render(self, episode: int = None, max_episodes: int = None,
+               step: int = None, max_steps: int = None,
+               price_history: pd.DataFrame = None, net_worth: pd.Series = None,
+               performance: pd.DataFrame = None, trades: 'OrderedDict' = None
                ):
         raise NotImplementedError()
 
