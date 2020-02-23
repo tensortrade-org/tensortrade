@@ -102,6 +102,7 @@ class TradingEnvironment(gym.Env, TimeIndexed):
         self._observation_lows = kwargs.get('observation_lows', -np.iinfo(np.int32).max)
         self._observation_highs = kwargs.get('observation_highs', np.iinfo(np.int32).max)
         self._max_allowed_loss = kwargs.get('max_allowed_loss', 0.1)
+        self._drop_n_frames = kwargs.get('drop_n_frames', 0)
 
         if self._enable_logger:
             self.logger = logging.getLogger(kwargs.get('logger_name', __name__))
@@ -160,6 +161,7 @@ class TradingEnvironment(gym.Env, TimeIndexed):
         )
 
         self.feed.reset()
+        self._rewind()
 
     @property
     def portfolio(self) -> Portfolio:
@@ -272,6 +274,7 @@ class TradingEnvironment(gym.Env, TimeIndexed):
         self.episode_id = uuid.uuid4()
         self.clock.reset()
         self.feed.reset()
+        self._rewind()
         self.action_scheme.reset()
         self.reward_scheme.reset()
         self.portfolio.reset()
@@ -317,3 +320,7 @@ class TradingEnvironment(gym.Env, TimeIndexed):
         for renderer in self._renderers:
             if callable(hasattr(renderer, 'close')):
                 renderer.close()  # pylint: disable=no-member
+
+    def _rewind(self):
+        if self._drop_n_frames > 0:
+            for i in range(self._drop_n_frames): self.feed.next()
