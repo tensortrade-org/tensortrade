@@ -16,7 +16,6 @@
 import gym
 import uuid
 import logging
-import importlib
 import numpy as np
 import pandas as pd
 
@@ -294,23 +293,33 @@ class TradingEnvironment(gym.Env, TimeIndexed):
 
         return obs
 
-    def render(self, episode: int, mode: str = 'screenlog'):
+    def render(self, episode: int = None):
         """Renders the environment.
 
         Arguments:
-            episode: the number of the current episode being rendered (1-based).
+            episode: Current episode number (0-based).
         """
         current_step = self.clock.step - 1
 
         for renderer in self._renderers:
+            price_history = None if self._price_history is None else self._price_history[self._price_history.index < current_step]
             renderer.render(episode=episode,
                             max_episodes=self._max_episodes,
                             step=current_step,
                             max_steps=self._max_steps,
-                            price_history=self._price_history[self._price_history.index < current_step],
+                            price_history=price_history,
                             net_worth=self._portfolio.performance.net_worth,
                             performance=self._portfolio.performance.drop(columns=['base_symbol']),
                             trades=self._broker.trades)
+
+    def save(self):
+        """Saves the environment.
+
+        Arguments:
+            episode: Current episode number (0-based).
+        """
+        for renderer in self._renderers:
+            renderer.save()
 
     def close(self):
         """Utility method to clean environment before closing."""

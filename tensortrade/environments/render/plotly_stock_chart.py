@@ -13,7 +13,7 @@
 # limitations under the License
 
 import os
-from datetime import datetime
+from typing import Union
 from collections import OrderedDict
 import pandas as pd
 from plotly.subplots import make_subplots
@@ -21,6 +21,7 @@ import plotly.graph_objects as go
 from IPython.display import display, clear_output
 
 from tensortrade.environments.render import BaseRenderer
+from tensortrade.environments.utils.helpers import create_auto_file_name, check_path
 
 
 class PlotlyTradingChart(BaseRenderer):
@@ -34,14 +35,49 @@ class PlotlyTradingChart(BaseRenderer):
       recent data as it's being added.
 
     References:
+    https://plot.ly/python-api-reference/generated/plotly.graph_objects.Figure.html
     https://plot.ly/python/figurewidget/
     https://plot.ly/python/subplots/
     https://plot.ly/python/reference/#candlestick
     https://plot.ly/python/#chart-events
     """
-    def __init__(self, height: int = 800, datefmt: str = '%Y-%m-%d %H:%M:%S'):
-        self._datefmt = datefmt
+    def __init__(self, display: bool = True, height: int=None,
+                 timestamp_format: str = '%Y-%m-%d %H:%M:%S',
+                 save_format: str=None, path: str = 'charts',
+                 filename_prefix='chart_', auto_open_html=False,
+                 include_plotlyjs: Union[bool, str]='cdn'
+                 ):
+        """
+        Arguments:
+            display: True to display the chart on the screen, False for not.
+            height: Chart height in pixels. Affects both display and saved file
+                charts. Set to None for 100% height. Default is None.
+            save_format: A format to save the chart to. Acceptable formats are
+                html, png, jpeg, webp, svg, pdf, eps. All the formats except for
+                'html' require Orca. Default is None for no saving.
+            path: The path to save the char to if save_format is not None. The folder
+                will be created if not found.
+            filename_prefix: A string that precedes automatically-created file name
+                when charts are saved. Default 'chart_'.
+            timestamp_format: The format of the date shown in the chart title.
+            auto_open_html: Works for save_format='html' only. True to automatically
+                open the saved chart HTML file in the default browser, False otherwise.
+            include_plotlyjs: Whether to include/load the plotly.js library in the saved
+                file. 'cdn' results in a smaller file by loading the library online but
+                requires an Internet connect while True includes the library resulting
+                in much larger file sizes. False to not include the library. For more
+                details, refer to https://plot.ly/python-api-reference/generated/plotly.graph_objects.Figure.html
+        """
         self._height = height
+        self._timestamp_format = timestamp_format
+        self._save_format = save_format
+        self._path = path
+        self._filename_prefix = filename_prefix
+        self._include_plotlyjs = include_plotlyjs
+        self._auto_open_html = auto_open_html
+
+        if self._save_format and self._path and not os.path.exists(path):
+            os.mkdir(path)
 
         self.fig = None
         self._price_chart = None
@@ -62,7 +98,7 @@ class PlotlyTradingChart(BaseRenderer):
         fig.update_layout(xaxis_rangeslider_visible=False)
 
         fig.add_trace(go.Bar(name='Volume', showlegend=False,
-                             marker={ 'color': 'DodgerBlue' }),
+                             marker={'color': 'DodgerBlue'}),
                       row=2, col=1)
 
         for k in performance_keys:
@@ -85,7 +121,7 @@ class PlotlyTradingChart(BaseRenderer):
         self._performance_chart = self.fig.data[2]
         self._net_worth_chart = self.fig.data[-1]
 
-        self.fig.update_annotations({'font': { 'size': 12 } })
+        self.fig.update_annotations({'font': {'size': 12}})
         self.fig.update_layout(template='plotly_white', height=self._height, margin=dict(t=50))
         self._base_annotations = self.fig.layout.annotations
 
@@ -133,30 +169,31 @@ class PlotlyTradingChart(BaseRenderer):
 
         return tuple(annotations)
 
-    def _create_title(self, episode, max_episodes, step, max_steps):
-        """Creates the chart title. Override or assign this method to callable
-        to change the title format.
-        """
-        return 'Episode: {}/{} - Step: {}/{} @ {}'.format(
-            episode + 1,
-            max_episodes,
-            step,
-            max_steps,
-            datetime.now().strftime(self._datefmt)
-        )
-
-    def render(self, episode: int, max_episodes: int, step: int, max_steps: int,
-               price_history: pd.DataFrame, net_worth: pd.Series,
-               performance: pd.DataFrame, trades
+    def render(self, episode: int = None, max_episodes: int = None,
+               step: int = None, max_steps: int = None,
+               price_history: pd.DataFrame = None, net_worth: pd.Series = None,
+               performance: pd.DataFrame = None, trades: 'OrderedDict' = None
                ):
-        if self.fig is None:
+        if price_history is None:
+            raise ValueError("render() is missing required positional argument 'price_history'.")
+
+        if net_worth is None:
+            raise ValueError("render() is missing required positional argument 'net_worth'.")
+
+        if performance is None:
+            raise ValueError("render() is missing required positional argument 'performance'.")
+
+        if trades is None:
+            raise ValueError("render() is missing required positional argument 'trades'.")
+
+        if not self.fig:
             self._create_figure(performance.keys())
 
         if self._show_chart:  # ensure chart visibility through notebook cell reruns
             display(self.fig)
             self._show_chart = False
 
-        self.fig.layout.title = self._create_title(episode, max_episodes, step, max_steps)
+        self.fig.layout.title = self._create_log_entry(episode, max_episodes, step, max_steps)
         self._price_chart.update(dict(
             open=price_history['open'],
             high=price_history['high'],
@@ -165,12 +202,12 @@ class PlotlyTradingChart(BaseRenderer):
         ))
         self.fig.layout.annotations += self._create_trade_annotations(trades, price_history)
 
-        self._volume_chart.update({ 'y': price_history['volume'] })
+        self._volume_chart.update({'y': price_history['volume']})
 
         for trace in self.fig.select_traces(row=3):
-            trace.update({ 'y': performance[trace.name] })
+            trace.update({'y': performance[trace.name]})
 
-        self._net_worth_chart.update({ 'y': net_worth })
+        self._net_worth_chart.update({'y': net_worth})
 
     def reset(self):
         self._last_trade_step = 0
@@ -181,24 +218,29 @@ class PlotlyTradingChart(BaseRenderer):
         clear_output(wait=True)
         self._show_chart = True
 
-
-    def save(self, filename: str, path: str = 'charts', format: str = 'png'):
+    def save(self):
         """Saves the current chart to a file.
 
         Note:
-        This feature requires Orca to be installed and the server running.
+        All formats other than HTML require Orca installed and server running.
 
         Arguments:
             filename: str, primary part of the image file name (e.g. "mountain" in "mountain.png".
-            path: str, path to save to.
-            fmt: str, the image format to save.
+            path: The path to save the chart to.
+            format: The chart format to save.
         """
-        valid_formats = ['png', 'jpeg', 'webp', 'svg', 'pdf', 'eps']
-        if format not in valid_formats:
-            raise ValueError("Acceptable formats are '{}'. Found '{}'".format("', '".join(valid_formats), format))
+        if not self._save_format:
+            return
+        else:
+            valid_formats = ['html', 'png', 'jpeg', 'webp', 'svg', 'pdf', 'eps']
+            if self._save_format not in valid_formats:
+                raise ValueError("Acceptable formats are '{}'. Found '{}'".format("', '".join(valid_formats), self._save_format))
 
-        if path is not None and not os.path.exists(path):
-            os.mkdir(path)
+        check_path(self._path)
 
-        pathname = os.path.join(path, filename + '.' + format)
-        self.fig.write_image(pathname)
+        filename = create_auto_file_name(self._filename_prefix, self._save_format)
+        filename = os.path.join(self._path, filename)
+        if self._save_format == 'html':
+            self.fig.write_html(file=filename, include_plotlyjs='cdn', auto_open=self._auto_open_html)
+        else:
+            self.fig.write_image(filename)
