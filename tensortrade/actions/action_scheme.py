@@ -39,7 +39,7 @@ class ActionScheme(Component, TimeIndexed, metaclass=ABCMeta):
         self._exchange_pairs = exchange_pairs
 
     @property
-    def action_space(self):
+    def action_space(self) -> Space:
         return self._action_space
 
     @abstractmethod

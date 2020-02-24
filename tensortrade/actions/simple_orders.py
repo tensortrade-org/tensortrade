@@ -19,7 +19,6 @@ from gym.spaces import Discrete
 
 from tensortrade.actions import ActionScheme
 from tensortrade.orders import Order, OrderListener, TradeSide, TradeType
-from tensortrade.instruments import USD, BTC
 
 
 class SimpleOrders(ActionScheme):

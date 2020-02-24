@@ -12,9 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License
 
-import tensortrade.orders.create as create
 
-from typing import Union, List, Tuple
+from typing import Union, List
 from itertools import product
 from gym.spaces import Discrete
 
@@ -110,7 +109,7 @@ class ManagedRiskOrders(ActionScheme):
         self._action_space = Discrete(len(self.actions))
 
     def get_order(self, action: int, portfolio: 'Portfolio') -> Order:
-        print(self.actions)
+
         if action == 0:
             return None
 
