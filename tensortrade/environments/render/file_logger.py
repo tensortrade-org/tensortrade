@@ -12,40 +12,43 @@
 # See the License for the specific language governing permissions and
 # limitations under the License
 
-
 import os
-from datetime import datetime
 import logging
 import pandas as pd
 
 from tensortrade.environments.render import BaseRenderer
+from tensortrade.environments.utils.helpers import create_auto_file_name, check_path
 
-
-DEFAULT_FORMAT = '[%(asctime)-15s] %(message)s'
-DEFAULT_DATEFMT = '%Y-%m-%d %H:%M:%S'
+DEFAULT_LOG_FORMAT = '[%(asctime)-15s] %(message)s'
+DEFAULT_TIMESTAMP_FORMAT = '%Y-%m-%d %H:%M:%S'
 
 
 class FileLogger(BaseRenderer):
-    def __init__(self, filename: str = None, path: str = 'log', format=None, datefmt: str = None, error: str = 'create'):
-        if path and not os.path.exists(path):
-            if error == 'create':
-                os.mkdir(path)
-            elif error == 'raise':
-                raise OSError(f"Path '{path}' not found.")
-            else:
-                raise ValueError(f"Acceptable 'error' values are 'create' or 'raise'. Found '{error}'.")
+    def __init__(self, filename: str = None, path: str = 'log', log_format=None,
+                 timestamp_format: str = None):
+        """
+        Arguments:
+            filename: The file name of the log file. If omitted, a file name will be
+                created automatically.
+            path: The path to save the log files to. None to save to same script directory.
+            log_format: The log entry format as per Python logging. None for default. For
+                more details, refer to https://docs.python.org/3/library/logging.html
+            timestamp_format: The format of the timestamp of the log entry. Node for default.
+        """
+        check_path(path)
 
         if not filename:
-            filename = 'log_{}.log'.format(datetime.now().strftime('%Y%m%d_%H_%M_%S'))
+            filename = create_auto_file_name('log_', 'log')
 
         self._logger = logging.getLogger(self.id)
         self._logger.setLevel(logging.INFO)
 
-        pathname = os.path.join(path, filename) if path else filename
-        handler = logging.FileHandler(pathname)
+        if path:
+            filename = os.path.join(path, filename)
+        handler = logging.FileHandler(filename)
         handler.setFormatter(logging.Formatter(
-            format if format is not None else DEFAULT_FORMAT,
-            datefmt=datefmt if datefmt is not None else DEFAULT_DATEFMT
+            log_format if log_format is not None else DEFAULT_LOG_FORMAT,
+            datefmt=timestamp_format if timestamp_format is not None else DEFAULT_TIMESTAMP_FORMAT
             ))
         self._logger.addHandler(handler)
 
@@ -53,14 +56,10 @@ class FileLogger(BaseRenderer):
     def log_file(self) -> str:
         return self._logger.handlers[0].baseFilename
 
-    def render(self, episode: int, max_episodes: int, step: int, max_steps: int,
-               price_history: pd.DataFrame, net_worth: pd.Series,
-               performance: pd.DataFrame, trades
+    def render(self, episode: int = None, max_episodes: int = None,
+               step: int = None, max_steps: int = None,
+               price_history: pd.DataFrame = None, net_worth: pd.Series = None,
+               performance: pd.DataFrame = None, trades: 'OrderedDict' = None
                ):
-        self._logger.info('Episode: {}/{} - Step: {}/{} - Performance:\n{}'.format(
-            episode + 1,
-            max_episodes,
-            step,
-            max_steps,
-            str(performance)
-        ))
+        log_entry = self._create_log_entry(episode, max_episodes, step, max_steps)
+        self._logger.info('{} - Performance:\n{}'.format(log_entry, str(performance)))

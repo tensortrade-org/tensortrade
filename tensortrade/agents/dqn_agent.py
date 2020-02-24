@@ -181,7 +181,10 @@ class DQNAgent(Agent):
             if save_path and (is_checkpoint or episode == n_episodes - 1):
                 self.save(save_path, episode=episode)
 
-            self.env.render(episode)  # render final state at episode end
+            if not render_interval or steps_done < n_steps:
+                self.env.render(episode)  # render final state at episode end if not rendered earlier
+
+            self.env.save()
 
             episode += 1
 

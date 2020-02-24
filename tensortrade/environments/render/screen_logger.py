@@ -12,28 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License
 
-
-from datetime import datetime
 import pandas as pd
 
 from tensortrade.environments.render import BaseRenderer
-
 
 DEFAULT_FORMAT = '[%(asctime)-15s] %(message)s'
 
 
 class ScreenLogger(BaseRenderer):
-    def __init__(self, datefmt: str = '%Y-%m-%d %H:%M:%S'):
-        self.format = datefmt
+    def __init__(self, date_format: str = '%Y-%m-%d %-I:%M:%S %p'):
+        self._date_format = date_format
 
-    def render(self, episode: int, max_episodes: int, step: int, max_steps: int,
-               price_history: pd.DataFrame, net_worth: pd.Series,
-               performance: pd.DataFrame, trades
+    def render(self, episode: int = None, max_episodes: int = None,
+               step: int = None, max_steps: int = None,
+               price_history: pd.DataFrame = None, net_worth: pd.Series = None,
+               performance: pd.DataFrame = None, trades: 'OrderedDict' = None
                ):
-        print('[{}] Episode: {}/{} - Step: {}/{}'.format(
-            datetime.now().strftime(self.format),
-            episode + 1,
-            max_episodes,
-            step,
-            max_steps
-        ))
+        print(self._create_log_entry(episode, max_episodes, step, max_steps, date_format=self._date_format))
