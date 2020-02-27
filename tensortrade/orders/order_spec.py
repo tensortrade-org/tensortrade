@@ -38,6 +38,7 @@ class OrderSpec(Identifiable):
         quantity = wallet.locked.get(order.path_id, 0)
 
         return Order(step=exchange.clock.step,
+                     exchange_name=order.exchange_name,
                      side=self.side,
                      trade_type=self.type,
                      pair=self.pair,

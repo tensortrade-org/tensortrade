@@ -18,9 +18,13 @@ from tensortrade.base import Identifiable
 from tensortrade.base.exceptions import InsufficientFunds
 from tensortrade.instruments import Quantity
 
+from .ledger import Ledger, Transaction
+
 
 class Wallet(Identifiable):
     """A wallet stores the balance of a specific instrument on a specific exchange."""
+
+    ledger = Ledger()
 
     def __init__(self, exchange: 'Exchange', quantity: 'Quantity'):
         self._exchange = exchange
@@ -83,16 +87,12 @@ class Wallet(Identifiable):
     def locked(self) -> Dict[str, 'Quantity']:
         return self._locked
 
-    def deallocate(self, path_id: str):
+    def deallocate(self, path_id: str, reason: str = "DEALLOCATE"):
         if path_id in self.locked.keys():
             quantity = self.locked.pop(path_id, None)
 
             if quantity is not None:
-                self += quantity.size * self.instrument
-
-    def reset(self):
-        self._balance = Quantity(self._instrument, self._initial_size)
-        self._locked = {}
+                self += (quantity.size * self.instrument).reason(reason)
 
     def __iadd__(self, quantity: 'Quantity') -> 'Wallet':
         if quantity.is_locked:
@@ -103,18 +103,45 @@ class Wallet(Identifiable):
         else:
             self._balance += quantity
 
+        self.ledger.commit(Transaction(
+            self.exchange.clock.step,
+            self.exchange.name,
+            self.instrument,
+            "DEPOSIT",
+            quantity.path_id,
+            quantity.memo,
+            quantity,
+            self.balance,
+            self.locked_balance
+        ))
         return self
 
     def __isub__(self, quantity: 'Quantity') -> 'Wallet':
         if quantity.is_locked and self.locked[quantity.path_id]:
             if quantity > self.locked[quantity.path_id]:
-                raise InsufficientFunds(self.locked[quantity.path_id], quantity.size)
+                raise InsufficientFunds(self.locked[quantity.path_id], quantity)
             self._locked[quantity.path_id] -= quantity
         elif not quantity.is_locked:
             if quantity > self._balance:
-                raise InsufficientFunds(self.balance, quantity.size)
+                raise InsufficientFunds(self.balance, quantity)
             self._balance -= quantity
+
+        self.ledger.commit(Transaction(
+            self.exchange.clock.step,
+            self.exchange.name,
+            self.instrument,
+            "WITHDRAW",
+            quantity.path_id,
+            quantity.memo,
+            quantity,
+            self.balance,
+            self.locked_balance
+        ))
         return self
+
+    def reset(self):
+        self._balance = Quantity(self._instrument, self._initial_size)
+        self._locked = {}
 
     def __str__(self):
         return '<Wallet: balance={}, locked={}>'.format(self.balance, self.locked_balance)

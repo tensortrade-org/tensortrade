@@ -15,88 +15,52 @@
 
 from abc import abstractmethod, ABCMeta
 from typing import List, Tuple
-from itertools import product
-from gym.spaces import Discrete
+from gym.spaces import Space
 
 from tensortrade import Component, TimeIndexed
 from tensortrade.orders import Order
 
 
 class ActionScheme(Component, TimeIndexed, metaclass=ABCMeta):
-    """A discrete action scheme for determining the action to take at each timestep within a trading environments."""
+    """An action scheme for determining the action to take at each time step within a trading environment."""
 
     registered_name = "actions"
 
     def __init__(self):
-        pass
+        self._action_space = None
+        self._exchange_pairs = None
 
     @property
-    def actions(self):
-        return self._actions
+    def exchange_pairs(self):
+        return self._exchange_pairs
 
-    @actions.setter
-    def actions(self, actions):
-        self._actions = actions
+    @exchange_pairs.setter
+    def exchange_pairs(self, exchange_pairs: List[Tuple['Exchange', 'TradingPair']]):
+        self._exchange_pairs = exchange_pairs
 
-    def set_pairs(self, exchange_pairs: List[Tuple['Exchange', 'Pair']]):
-        self.actions = list(product(exchange_pairs, self.actions))
-        self.actions = [None] + self.actions
-
-    def __len__(self) -> int:
-        """The discrete action space produced by the action scheme."""
-        return len(self.actions)
-
-    def reset(self):
-        """An optional reset method, which will be called each time the environment is reset."""
-        pass
-
-    def __add__(self, other):
-        return AddActions(self, other)
+    @property
+    def action_space(self) -> Space:
+        return self._action_space
 
     @abstractmethod
-    def get_order(self, action: int, portfolio: 'Portfolio') -> Order:
+    def compile(self):
+        raise NotImplementedError()
+
+    @abstractmethod
+    def get_order(self, action: any, portfolio: 'Portfolio') -> Order:
         """Get the order to be executed on the exchange based on the action provided.
 
         Arguments:
-            action: The action to be converted into an order.
-            exchange: The exchange the action will be executed on.
-            portfolio: The portfolio of wallets used to execute the action.
+            action : any
+                The action to be converted into an order.
+            portfolio : 'Portfolio'
+                The portfolio the environment is operating on.
 
         Returns:
             The order to be executed on the exchange this time step.
         """
         raise NotImplementedError()
 
-
-class AddActions(ActionScheme):
-
-    def __init__(self, left: ActionScheme, right: ActionScheme):
-        super().__init__()
-        self.left = left
-        self.right = right
-
-        self.actions = [None]
-
-    def set_pairs(self, exchange_pairs):
-        self.left.set_pairs(exchange_pairs)
-        self.right.set_pairs(exchange_pairs)
-
-        left_size = len(self.left.actions)
-        right_size = len(self.right.actions)
-
-        self.actions += [("left", i) for i in range(1, left_size)]
-        self.actions += [("right", i) for i in range(1, right_size)]
-
-    def get_order(self, action, portfolio):
-        if action == 0:
-            return None
-
-        side, action = self.actions[action]
-
-        if side == "left":
-            order = self.left.get_order(action, portfolio)
-            return order
-
-        order = self.right.get_order(action, portfolio)
-
-        return order
+    def reset(self):
+        """An optional reset method, which will be called each time the environment is reset."""
+        pass

@@ -12,9 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License
 
-import tensortrade.orders.create as create
 
-from typing import Union, List, Tuple
+from typing import Union, List
 from itertools import product
 from gym.spaces import Discrete
 
@@ -44,6 +43,7 @@ class ManagedRiskOrders(ActionScheme):
             (e.g. '[1, 1/3]' = 100% or 33% of balance is tradable. '4' = 25%, 50%, 75%, or 100% of balance is tradable.)
             order_listener (optional): An optional listener for order events executed by this action scheme.
         """
+        super().__init__()
         self.stop_loss_percentages = self.default('stop_loss_percentages', stop_loss_percentages)
         self.take_profit_percentages = self.default(
             'take_profit_percentages', take_profit_percentages)
@@ -51,17 +51,6 @@ class ManagedRiskOrders(ActionScheme):
         self.durations = self.default('durations', durations)
         self._trade_type = self.default('trade_type', trade_type)
         self._order_listener = self.default('order_listener', order_listener)
-
-        self.actions = list(product(self._stop_loss_percentages,
-                                    self._take_profit_percentages,
-                                    self._trade_sizes,
-                                    self._durations,
-                                    [TradeSide.BUY, TradeSide.SELL]))
-
-    @property
-    def action_space(self) -> Discrete:
-        """The discrete action space produced by the action scheme."""
-        return Discrete(len(self.actions))
 
     @property
     def stop_loss_percentages(self) -> List[float]:
@@ -108,18 +97,30 @@ class ManagedRiskOrders(ActionScheme):
     def durations(self, durations: Union[List[int], int]):
         self._durations = durations if isinstance(durations, list) else [durations]
 
+    def compile(self):
+        self.actions = list(product(self._stop_loss_percentages,
+                                    self._take_profit_percentages,
+                                    self._trade_sizes,
+                                    self._durations,
+                                    [TradeSide.BUY, TradeSide.SELL]))
+        self.actions = list(product(self.exchange_pairs, self.actions))
+        self.actions = [None] + self.actions
+
+        self._action_space = Discrete(len(self.actions))
+
     def get_order(self, action: int, portfolio: 'Portfolio') -> Order:
+
         if action == 0:
             return None
 
-        ((exchange, pair), (stop_loss, take_profit, size, duration, side)) = self.actions[action]
+        ((exchange, pair), (stop_loss, take_profit, prop, duration, side)) = self.actions[action]
 
         price = exchange.quote_price(pair)
 
         wallet_instrument = side.instrument(pair)
         wallet = portfolio.get_wallet(exchange.id, instrument=wallet_instrument)
 
-        size = (wallet.balance.size * size)
+        size = (wallet.balance.size * prop)
         size = min(wallet.balance.size, size)
 
         if size < 10 ** -pair.base.precision:
@@ -128,6 +129,7 @@ class ManagedRiskOrders(ActionScheme):
         params = {
             'step': self.clock.step,
             'side': side,
+            'exchange_name': exchange.name,
             'pair': pair,
             'price': price,
             'size': size,

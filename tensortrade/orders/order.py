@@ -46,6 +46,7 @@ class Order(TimedIdentifiable):
 
     def __init__(self,
                  step: int,
+                 exchange_name: str,
                  side: TradeSide,
                  trade_type: TradeType,
                  pair: 'TradingPair',
@@ -62,6 +63,7 @@ class Order(TimedIdentifiable):
             raise InvalidOrderQuantity(quantity)
 
         self.step = step
+        self.exchange_name = exchange_name
         self.side = side
         self.type = trade_type
         self.pair = pair
@@ -126,12 +128,12 @@ class Order(TimedIdentifiable):
         return self.type == TradeType.MARKET
 
     def is_executable_on(self, exchange: 'Exchange'):
-        if not exchange.is_pair_tradable(self.pair):
+        if not exchange.is_pair_tradable(self.pair) or exchange.name != self.exchange_name:
             return False
         return self.criteria is None or self.criteria(self, exchange)
 
     def is_complete(self):
-        return self.remaining_size == 0 or self.status == OrderStatus.CANCELLED
+        return round(self.remaining_size, self.base_instrument.precision) == 0 or self.status == OrderStatus.CANCELLED
 
     def add_order_spec(self, order_spec: 'OrderSpec') -> 'Order':
         self._specs = [order_spec] + self._specs
@@ -151,13 +153,15 @@ class Order(TimedIdentifiable):
 
         if self.path_id not in wallet.locked.keys():
             try:
-                wallet -= self.size * instrument
+                wallet -= self.quantity.free().reason("REMOVE FOR ALLOCATION")
             except InsufficientFunds:
-                size = wallet.balance.size
-                wallet -= size * instrument
-                self.quantity = Quantity(instrument, size, path_id=self.path_id)
 
-            wallet += self.quantity
+                wallet -= wallet.balance.free().reason("REMOVE FOR ALLOCATION (INSUFFICIENT FUNDS)")
+                self.quantity = wallet.balance.free().lock_for(self.path_id)
+                self.filled_size = 0
+                self.remaining_size = self.size
+
+            wallet += self.quantity.reason("LOCK FOR ORDER")
 
         if self.portfolio.order_listener:
             self.attach(self.portfolio.order_listener)
@@ -170,7 +174,7 @@ class Order(TimedIdentifiable):
     def fill(self, exchange: 'Exchange', trade: Trade):
         self.status = OrderStatus.PARTIALLY_FILLED
 
-        fill_size = round(trade.size + trade.commission.size, self.pair.base.precision)
+        fill_size = trade.size + trade.commission.size
 
         self.filled_size += fill_size
         self.remaining_size -= fill_size
@@ -193,7 +197,7 @@ class Order(TimedIdentifiable):
 
         self._listeners = []
 
-        return order or self.release()
+        return order or self.release("COMPLETE ORDER")
 
     def cancel(self):
         self.status = OrderStatus.CANCELLED
@@ -202,16 +206,17 @@ class Order(TimedIdentifiable):
             listener.on_cancel(self)
 
         self._listeners = []
-        self.release()
+        self.release("CANCEL ORDER")
 
-    def release(self):
+    def release(self, reason: str = "DEALLOCATE"):
         for wallet in self.portfolio.wallets:
-            wallet.deallocate(self.path_id)
+            wallet.deallocate(self.path_id, reason + " (RELEASE {})".format(wallet.instrument))
 
     def to_dict(self):
         return {
             "id": self.id,
             "step": self.step,
+            "exchange_name": self.exchange_name,
             "status": self.status,
             "type": self.type,
             "side": self.side,
@@ -229,6 +234,7 @@ class Order(TimedIdentifiable):
         return {
             "id": str(self.id),
             "step": int(self.step),
+            "exchange_name": str(self.exchange_name),
             "status": str(self.status),
             "type": str(self.type),
             "side": str(self.side),
@@ -236,7 +242,7 @@ class Order(TimedIdentifiable):
             "quote_symbol": str(self.pair.quote.symbol),
             "quantity": str(self.quantity),
             "size": float(self.size),
-            "filled_size": self.filled_size,
+            "filled_size": float(self.filled_size),
             "price": float(self.price),
             "criteria": str(self.criteria),
             "path_id": str(self.path_id),
