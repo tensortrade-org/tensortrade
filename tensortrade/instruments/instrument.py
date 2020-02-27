@@ -67,23 +67,34 @@ class Instrument:
         return str(self)
 
 
-# Crypto-currency
+# Crypto
 BTC = Instrument('BTC', 8, 'Bitcoin')
 ETH = Instrument('ETH', 8, 'Ethereum')
-XRP = Instrument('XRP', 2, 'XRP')
+XRP = Instrument('XRP', 8, 'XRP')
+NEO = Instrument('NEO', 8, 'NEO')
 BCH = Instrument('BCH', 8, 'Bitcoin Cash')
-LTC = Instrument('LTC', 2, 'Litecoin')
-ETC = Instrument('ETC', 1, 'Ethereum Classic')
-XLM = Instrument('XLM', 2, 'Stellar Lumens')
-LINK = Instrument('LINK', 2, 'Chainlink')
-ATOM = Instrument('ATOM', 2, 'Cosmos')
-DAI = Instrument('DAI', 2, 'Dai')
+LTC = Instrument('LTC', 8, 'Litecoin')
+ETC = Instrument('ETC', 8, 'Ethereum Classic')
+XLM = Instrument('XLM', 8, 'Stellar Lumens')
+LINK = Instrument('LINK', 8, 'Chainlink')
+ATOM = Instrument('ATOM', 8, 'Cosmos')
+DAI = Instrument('DAI', 8, 'Dai')
+USDT = Instrument('USDT', 8, 'Tether')
 
-
-# Fiat Currency
-USD = Instrument('USD', 2, 'United States Dollar')
+# FX
+USD = Instrument('USD', 2, 'U.S. Dollar')
 EUR = Instrument('EUR', 2, 'Euro')
+JPY = Instrument('JPY', 2, 'Japanese Yen')
+KWN = Instrument('KWN', 2, 'Korean Won')
+AUD = Instrument('EUR', 2, 'Australian Dollar')
 
+# Commodities
+XAU = Instrument('XAU', 2, 'Gold futures')
+XAG = Instrument('XAG', 2, 'Silver futures')
 
-# Hard Currency
-GOLD = Instrument('XAU', 1, 'Gold')
+# Stocks
+
+AAPL = Instrument('AAPL', 2, 'Apple stock')
+MSFT = Instrument('MSFT', 2, 'Microsoft stock')
+TSLA = Instrument('TSLA', 2, 'Tesla stock')
+AMZN = Instrument('AMZN', 2, 'Amazon stock')
