@@ -22,7 +22,7 @@ from tensortrade.orders import Order
 
 
 class ActionScheme(Component, TimeIndexed, metaclass=ABCMeta):
-    """A discrete action scheme for determining the action to take at each timestep within a trading environments."""
+    """An action scheme for determining the action to take at each time step within a trading environment."""
 
     registered_name = "actions"
 
@@ -47,13 +47,14 @@ class ActionScheme(Component, TimeIndexed, metaclass=ABCMeta):
         raise NotImplementedError()
 
     @abstractmethod
-    def get_order(self, action: int, portfolio: 'Portfolio') -> Order:
+    def get_order(self, action: any, portfolio: 'Portfolio') -> Order:
         """Get the order to be executed on the exchange based on the action provided.
 
         Arguments:
-            action: The action to be converted into an order.
-            exchange: The exchange the action will be executed on.
-            portfolio: The portfolio of wallets used to execute the action.
+            action : any
+                The action to be converted into an order.
+            portfolio : 'Portfolio'
+                The portfolio the environment is operating on.
 
         Returns:
             The order to be executed on the exchange this time step.
