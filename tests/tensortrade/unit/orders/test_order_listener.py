@@ -69,11 +69,13 @@ def test_on_execute(mock_exchange_class,
                     execute_listener):
     exchange = mock_exchange_class.return_value
     exchange.id = "fake_id"
+    exchange.name = "coinbase"
 
     wallets = [Wallet(exchange, 10000 * USD), Wallet(exchange, 0 * BTC)]
     portfolio = Portfolio(USD, wallets)
 
     order = Order(step=0,
+                  exchange_name="coinbase",
                   side=TradeSide.BUY,
                   trade_type=TradeType.MARKET,
                   pair=USD / BTC,
@@ -94,11 +96,13 @@ def test_on_cancel(mock_exchange_class,
 
     exchange = mock_exchange_class.return_value
     exchange.id = "fake_exchange_id"
+    exchange.name = "coinbase"
 
     wallets = [Wallet(exchange, 10000 * USD), Wallet(exchange, 0 * BTC)]
     portfolio = Portfolio(USD, wallets)
 
     order = Order(step=0,
+                  exchange_name="coinbase",
                   side=TradeSide.BUY,
                   trade_type=TradeType.MARKET,
                   pair=USD / BTC,
@@ -121,11 +125,13 @@ def test_on_fill(mock_trade_class,
 
     exchange = mock_exchange_class.return_value
     exchange.id = "fake_exchange_id"
+    exchange.name = "coinbase"
 
     wallets = [Wallet(exchange, 10000 * USD), Wallet(exchange, 0 * BTC)]
     portfolio = Portfolio(USD, wallets)
 
     order = Order(step=0,
+                  exchange_name="coinbase",
                   side=TradeSide.BUY,
                   trade_type=TradeType.MARKET,
                   pair=USD / BTC,
@@ -154,11 +160,13 @@ def test_on_complete(mock_trade_class,
 
     exchange = mock_exchange_class.return_value
     exchange.id = "fake_exchange_id"
+    exchange.name = "coinbase"
 
     wallets = [Wallet(exchange, 10000 * USD), Wallet(exchange, 0 * BTC)]
     portfolio = Portfolio(USD, wallets)
 
     order = Order(step=0,
+                  exchange_name="coinbase",
                   side=TradeSide.BUY,
                   trade_type=TradeType.MARKET,
                   pair=USD / BTC,

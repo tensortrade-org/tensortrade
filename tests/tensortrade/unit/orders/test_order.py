@@ -15,6 +15,7 @@ def test_init(mock_portfolio_class):
     portfolio = mock_portfolio_class.return_value
 
     order = Order(step=0,
+                  exchange_name="coinbase",
                   side=TradeSide.BUY,
                   trade_type=TradeType.MARKET,
                   pair=USD/BTC,
@@ -40,6 +41,7 @@ def test_properties(mock_portfolio_class):
     portfolio = mock_portfolio_class.return_value
 
     order = Order(step=0,
+                  exchange_name="coinbase",
                   side=TradeSide.BUY,
                   trade_type=TradeType.LIMIT,
                   pair=USD/BTC,
@@ -65,10 +67,12 @@ def test_properties(mock_portfolio_class):
 def test_is_executable_on(mock_portfolio_class, mock_exchange_class):
 
     exchange = mock_exchange_class.return_value
+    exchange.name = "coinbase"
     portfolio = mock_portfolio_class.return_value
 
     # Market order
     order = Order(step=0,
+                  exchange_name="coinbase",
                   side=TradeSide.BUY,
                   trade_type=TradeType.MARKET,
                   pair=USD/BTC,
@@ -84,6 +88,7 @@ def test_is_executable_on(mock_portfolio_class, mock_exchange_class):
 
     # Limit order
     order = Order(step=0,
+                  exchange_name="coinbase",
                   side=TradeSide.BUY,
                   trade_type=TradeType.LIMIT,
                   pair=USD/BTC,
@@ -99,6 +104,7 @@ def test_is_executable_on(mock_portfolio_class, mock_exchange_class):
 
     # Stop Order
     order = Order(step=0,
+                  exchange_name="coinbase",
                   side=TradeSide.SELL,
                   trade_type=TradeType.LIMIT,
                   pair=USD/BTC,
@@ -121,6 +127,7 @@ def test_is_complete(mock_portfolio_class):
 
     # Market order
     order = Order(step=0,
+                  exchange_name="coinbase",
                   side=TradeSide.BUY,
                   trade_type=TradeType.MARKET,
                   pair=USD / BTC,
@@ -142,6 +149,7 @@ def test_add_order_spec(mock_portfolio_class, mock_order_spec_class):
 
     # Market order
     order = Order(step=0,
+                  exchange_name="coinbase",
                   side=TradeSide.BUY,
                   trade_type=TradeType.MARKET,
                   pair=USD / BTC,
@@ -164,6 +172,7 @@ def test_attach(mock_portfolio_class, mock_order_listener_class):
 
     portfolio = mock_portfolio_class.return_value
     order = Order(step=0,
+                  exchange_name="coinbase",
                   side=TradeSide.BUY,
                   trade_type=TradeType.MARKET,
                   pair=USD / BTC,
@@ -184,6 +193,7 @@ def test_attach(mock_portfolio_class, mock_order_listener_class):
 def test_detach(mock_portfolio_class, mock_order_listener_class):
     portfolio = mock_portfolio_class.return_value
     order = Order(step=0,
+                  exchange_name="coinbase",
                   side=TradeSide.BUY,
                   trade_type=TradeType.MARKET,
                   pair=USD / BTC,
@@ -213,6 +223,7 @@ def test_execute(mock_order_listener_class,
     portfolio = Portfolio(USD, wallets)
 
     order = Order(step=0,
+                  exchange_name="coinbase",
                   side=TradeSide.BUY,
                   trade_type=TradeType.MARKET,
                   pair=USD / BTC,
@@ -253,6 +264,7 @@ def test_fill(mock_order_listener_class,
     portfolio = Portfolio(USD, wallets)
 
     order = Order(step=0,
+                  exchange_name="coinbase",
                   side=TradeSide.BUY,
                   trade_type=TradeType.MARKET,
                   pair=USD / BTC,
@@ -293,6 +305,7 @@ def test_complete_basic_order(mock_order_listener_class,
     portfolio = Portfolio(USD, wallets)
 
     order = Order(step=0,
+                  exchange_name="coinbase",
                   side=TradeSide.BUY,
                   trade_type=TradeType.MARKET,
                   pair=USD / BTC,
@@ -334,6 +347,7 @@ def test_complete_complex_order(mock_trade_class,
     side = TradeSide.BUY
 
     order = Order(step=0,
+                  exchange_name="coinbase",
                   side=TradeSide.BUY,
                   trade_type=TradeType.MARKET,
                   pair=USD / BTC,
@@ -404,6 +418,7 @@ def test_cancel(mock_order_listener_class,
     portfolio = Portfolio(USD, wallets)
 
     order = Order(step=0,
+                  exchange_name="coinbase",
                   side=TradeSide.BUY,
                   trade_type=TradeType.MARKET,
                   pair=USD / BTC,
@@ -462,6 +477,7 @@ def test_release(mock_exchange_class):
     portfolio = Portfolio(USD, wallets)
 
     order = Order(step=0,
+                  exchange_name="coinbase",
                   side=TradeSide.BUY,
                   trade_type=TradeType.MARKET,
                   pair=USD / BTC,
@@ -489,6 +505,7 @@ def test_to_json(mock_portfolio_class):
     portfolio = mock_portfolio_class.return_value
 
     order = Order(step=0,
+                  exchange_name="coinbase",
                   side=TradeSide.BUY,
                   trade_type=TradeType.MARKET,
                   pair=USD / BTC,
@@ -499,6 +516,7 @@ def test_to_json(mock_portfolio_class):
     d = {
         "id": str(order.id),
         "step": int(order.step),
+        "exchange_name": str(order.exchange_name),
         "status": str(order.status),
         "type": str(order.type),
         "side": str(order.side),
@@ -506,7 +524,7 @@ def test_to_json(mock_portfolio_class):
         "quote_symbol": str(order.pair.quote.symbol),
         "quantity": str(order.quantity),
         "size": float(order.size),
-        "filled_size": order.filled_size,
+        "filled_size": float(order.filled_size),
         "price": float(order.price),
         "criteria": str(order.criteria),
         "path_id": str(order.path_id),
@@ -524,6 +542,7 @@ def test_iadd(mock_portfolio_class, mock_order_spec_class):
 
     # Market order
     order = Order(step=0,
+                  exchange_name="coinbase",
                   side=TradeSide.BUY,
                   trade_type=TradeType.MARKET,
                   pair=USD / BTC,
@@ -546,6 +565,7 @@ def test_str(mock_portfolio_class):
     portfolio = mock_portfolio_class.return_value
 
     order = Order(step=0,
+                  exchange_name="coinbase",
                   side=TradeSide.BUY,
                   trade_type=TradeType.MARKET,
                   pair=USD / BTC,

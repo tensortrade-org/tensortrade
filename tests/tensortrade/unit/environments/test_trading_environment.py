@@ -145,7 +145,7 @@ def test_runs_with_external_and_internal_data_feed(portfolio):
     assert obs.shape == (50, n_features)
 
 
-def test_runs_with__external_feed_only(portfolio):
+def test_runs_with_external_feed_only(portfolio):
 
     df = pd.read_csv("tests/data/input/coinbase_(BTC,ETH)USD_d.csv").tail(100)
     df = df.rename({"Unnamed: 0": "date"}, axis=1)
@@ -172,7 +172,7 @@ def test_runs_with__external_feed_only(portfolio):
         for name in coinbase_eth.columns:
             nodes += [Stream(name, list(coinbase_eth[name]))]
 
-    feed = DataFeed()(coinbase)
+    feed = DataFeed([coinbase])
 
     action_scheme = ManagedRiskOrders()
     reward_scheme = SimpleProfit()

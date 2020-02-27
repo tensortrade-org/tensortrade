@@ -132,6 +132,7 @@ def test_update_on_single_exchange_with_multiple_orders(mock_exchange_class):
 
     exchange = mock_exchange_class.return_value
     exchange.id = "fake_exchange_id"
+    exchange.name = "coinbase"
 
     wallets = [Wallet(exchange, 10000 * USD), Wallet(exchange, 0 * BTC)]
     portfolio = Portfolio(USD, wallets)
@@ -140,6 +141,7 @@ def test_update_on_single_exchange_with_multiple_orders(mock_exchange_class):
 
     # Submit order 1
     o1 = Order(step=0,
+               exchange_name="coinbase",
                side=TradeSide.BUY,
                trade_type=TradeType.MARKET,
                pair=USD / BTC,
@@ -151,6 +153,7 @@ def test_update_on_single_exchange_with_multiple_orders(mock_exchange_class):
 
     # Submit order 2
     o2 = Order(step=0,
+               exchange_name="coinbase",
                side=TradeSide.BUY,
                trade_type=TradeType.MARKET,
                pair=USD / BTC,
@@ -182,6 +185,7 @@ def test_on_fill(mock_trade_class,
 
     exchange = mock_exchange_class.return_value
     exchange.id = "fake_exchange_id"
+    exchange.name = "coinbase"
 
     broker = Broker(exchange)
 
@@ -189,6 +193,7 @@ def test_on_fill(mock_trade_class,
     portfolio = Portfolio(USD, wallets)
 
     order = Order(step=0,
+                  exchange_name="coinbase",
                   side=TradeSide.BUY,
                   trade_type=TradeType.MARKET,
                   pair=USD / BTC,
@@ -223,6 +228,7 @@ def test_on_fill_with_complex_order(mock_trade_class,
 
     exchange = mock_exchange_class.return_value
     exchange.id = "fake_exchange_id"
+    exchange.name = "coinbase"
 
     broker = Broker(exchange)
 
@@ -232,6 +238,7 @@ def test_on_fill_with_complex_order(mock_trade_class,
     side = TradeSide.BUY
 
     order = Order(step=0,
+                  exchange_name="coinbase",
                   side=TradeSide.BUY,
                   trade_type=TradeType.MARKET,
                   pair=USD / BTC,
