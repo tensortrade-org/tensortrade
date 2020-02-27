@@ -33,6 +33,7 @@ class Quantity:
         self._size = size
         self._instrument = instrument
         self._path_id = path_id
+        self._memo = None
 
     @property
     def size(self) -> float:
@@ -57,6 +58,14 @@ class Quantity:
     @path_id.setter
     def path_id(self, path_id: str):
         self._path_id = path_id
+
+    @property
+    def memo(self) -> str:
+        return self._memo
+
+    def reason(self, memo):
+        self._memo = memo
+        return self
 
     @property
     def is_locked(self) -> bool:

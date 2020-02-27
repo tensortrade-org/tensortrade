@@ -81,6 +81,7 @@ def hidden_limit_order(step: int,
 
 
 def risk_managed_order(step: int,
+                       exchange_name: str,
                        side: 'TradeSide',
                        trade_type: 'TradeType',
                        pair: 'TradingPair',
@@ -92,7 +93,9 @@ def risk_managed_order(step: int,
                        start: int = None,
                        end: int = None):
     instrument = side.instrument(pair)
+
     order = Order(step=step,
+                  exchange_name=exchange_name,
                   side=side,
                   trade_type=trade_type,
                   pair=pair,
@@ -103,10 +106,12 @@ def risk_managed_order(step: int,
                   portfolio=portfolio)
 
     risk_criteria = Stop("down", down_percent) ^ Stop("up", up_percent)
-    risk_management = OrderSpec(side=TradeSide.SELL if side == TradeSide.BUY else TradeSide.BUY,
-                                trade_type=TradeType.MARKET,
-                                pair=pair,
-                                criteria=risk_criteria)
+    risk_management = OrderSpec(
+        side=TradeSide.SELL if side == TradeSide.BUY else TradeSide.BUY,
+        trade_type=TradeType.MARKET,
+        pair=pair,
+        criteria=risk_criteria
+    )
 
     order += risk_management
 

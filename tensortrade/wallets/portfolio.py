@@ -95,6 +95,10 @@ class Portfolio(Component, TimedIdentifiable, FeedListener):
         return exchanges
 
     @property
+    def ledger(self) -> 'Ledger':
+        return Wallet.ledger
+
+    @property
     def exchange_pairs(self) -> List['Exchange']:
         exchange_pairs = []
 
@@ -246,5 +250,6 @@ class Portfolio(Component, TimedIdentifiable, FeedListener):
         self._net_worth = None
         self._performance = None
 
+        self.ledger.reset()
         for wallet in self._wallets.values():
             wallet.reset()

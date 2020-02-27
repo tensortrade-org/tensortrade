@@ -89,9 +89,8 @@ class Trade(TimedIdentifiable):
     @property
     def size(self) -> float:
         if self.pair.base is self.quantity.instrument:
-            return round(self.quantity.size, self.pair.base.precision)
-
-        return round(self.quantity.size * self.price, self.pair.base.precision)
+            return self.quantity.size
+        return self.quantity.size * self.price
 
     @property
     def price(self) -> float:
