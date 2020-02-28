@@ -19,7 +19,6 @@ from gym.spaces import Discrete
 
 from tensortrade.actions import ActionScheme
 from tensortrade.orders import Order, OrderListener, TradeSide, TradeType
-from tensortrade.instruments import USD, BTC
 
 
 class SimpleOrders(ActionScheme):
@@ -47,16 +46,6 @@ class SimpleOrders(ActionScheme):
         self.durations = self.default('durations', durations)
         self._trade_type = self.default('trade_type', trade_type)
         self._order_listener = self.default('order_listener', order_listener)
-
-        self.actions = list(product(self._criteria,
-                                    self._trade_sizes,
-                                    self._durations,
-                                    [TradeSide.BUY, TradeSide.SELL]))
-
-    @property
-    def action_space(self) -> Discrete:
-        """The discrete action space produced by the action scheme."""
-        return Discrete(len(self.actions))
 
     @property
     def criteria(self) -> List['OrderCriteria']:
@@ -90,25 +79,35 @@ class SimpleOrders(ActionScheme):
     def durations(self, durations: Union[List[int], int]):
         self._durations = durations if isinstance(durations, list) else [durations]
 
+    def compile(self):
+        self.actions = list(product(self._criteria,
+                                    self._trade_sizes,
+                                    self._durations,
+                                    [TradeSide.BUY, TradeSide.SELL]))
+        self.actions = list(product(self.exchange_pairs, self.actions))
+        self.actions = [None] + self.actions
+
+        self._action_space = Discrete(len(self.actions))
+
     def get_order(self, action: int, portfolio: 'Portfolio') -> Order:
         if action == 0:
             return None
 
-        ((exchange, pair), (criteria, size, duration, side)) = self.actions[action]
+        ((exchange, pair), (criteria, prop, duration, side)) = self.actions[action]
 
         price = exchange.quote_price(pair)
 
-        wallet_instrument = side.instrument(pair)
-        wallet = portfolio.get_wallet(exchange.id, instrument=wallet_instrument)
+        instrument = side.instrument(pair)
+        wallet = portfolio.get_wallet(exchange.id, instrument=instrument)
 
-        size = (wallet.balance.size * size)
+        size = (wallet.balance.size * prop)
         size = min(wallet.balance.size, size)
 
-        if size < 10 ** -pair.base.precision:
+        if size < 10 ** -instrument.precision:
             return None
 
-        instrument = side.instrument(pair)
         order = Order(step=self.clock.step,
+                      exchange_name=exchange.name,
                       side=side,
                       trade_type=self._trade_type,
                       pair=pair,

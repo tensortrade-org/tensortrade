@@ -1,4 +1,4 @@
-from .action_scheme import ActionScheme, AddActions
+from .action_scheme import ActionScheme
 from .simple_orders import SimpleOrders
 from .managed_risk_orders import ManagedRiskOrders
 
