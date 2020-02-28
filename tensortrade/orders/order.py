@@ -85,6 +85,8 @@ class Order(TimedIdentifiable):
 
         self.quantity.lock_for(self.path_id)
 
+
+
     @property
     def size(self) -> float:
         if self.pair.base is self.quantity.instrument:
@@ -152,14 +154,17 @@ class Order(TimedIdentifiable):
         wallet = self.portfolio.get_wallet(exchange.id, instrument=instrument)
 
         if self.path_id not in wallet.locked.keys():
+            print(self)
             try:
                 wallet -= self.quantity.free().reason("REMOVE FOR ALLOCATION")
-            except InsufficientFunds:
 
+            except InsufficientFunds:
+                reason = "REMOVE FOR ALLOCATION (INSUFFICIENT FUNDS)"
                 wallet -= wallet.balance.free().reason("REMOVE FOR ALLOCATION (INSUFFICIENT FUNDS)")
                 self.quantity = wallet.balance.free().lock_for(self.path_id)
                 self.filled_size = 0
                 self.remaining_size = self.size
+
 
             wallet += self.quantity.reason("LOCK FOR ORDER")
 
