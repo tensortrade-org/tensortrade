@@ -131,10 +131,10 @@ class Order(TimedIdentifiable):
         return self.criteria is None or self.criteria(self, exchange)
 
     def is_complete(self):
-        return self.remaining_size == 0 or self.status == OrderStatus.CANCELLED
+        return self.remaining_size == 0
 
     def add_order_spec(self, order_spec: 'OrderSpec') -> 'Order':
-        self._specs = [order_spec] + self._specs
+        self._specs += [order_spec]
         return self
 
     def attach(self, listener: 'OrderListener'):
@@ -236,7 +236,7 @@ class Order(TimedIdentifiable):
             "quote_symbol": str(self.pair.quote.symbol),
             "quantity": str(self.quantity),
             "size": float(self.size),
-            "filled_size": self.filled_size,
+            "filled_size": float(self.filled_size),
             "price": float(self.price),
             "criteria": str(self.criteria),
             "path_id": str(self.path_id),
