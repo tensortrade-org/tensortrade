@@ -68,6 +68,7 @@ class PlotlyTradingChart(BaseRenderer):
                 in much larger file sizes. False to not include the library. For more
                 details, refer to https://plot.ly/python-api-reference/generated/plotly.graph_objects.Figure.html
         """
+        self._display = display
         self._height = height
         self._timestamp_format = timestamp_format
         self._save_format = save_format
@@ -86,7 +87,7 @@ class PlotlyTradingChart(BaseRenderer):
         self._net_worth_chart = None
         self._base_annotations = None
         self._last_trade_step = 0
-        self._show_chart = True
+        self._redraw_chart = True
 
     def _create_figure(self, performance_keys):
         fig = make_subplots(
@@ -189,9 +190,9 @@ class PlotlyTradingChart(BaseRenderer):
         if not self.fig:
             self._create_figure(performance.keys())
 
-        if self._show_chart:  # ensure chart visibility through notebook cell reruns
+        if self._display and self._redraw_chart:  # ensure chart visibility through notebook cell reruns
             display(self.fig)
-            self._show_chart = False
+            self._redraw_chart = False
 
         self.fig.layout.title = self._create_log_entry(episode, max_episodes, step, max_steps)
         self._price_chart.update(dict(
@@ -216,7 +217,7 @@ class PlotlyTradingChart(BaseRenderer):
 
         self.fig.layout.annotations = self._base_annotations
         clear_output(wait=True)
-        self._show_chart = True
+        self._redraw_chart = True
 
     def save(self):
         """Saves the current chart to a file.
