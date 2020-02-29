@@ -1,5 +1,6 @@
 
 import ssl
+import pytest
 
 ssl._create_default_https_context = ssl._create_unverified_context
 
@@ -22,15 +23,16 @@ def test_smoke():
     bitstamp_eth = cdd.fetch("Bitstamp", "USD", "ETH", "1h")
     bitstamp_ltc = cdd.fetch("Bitstamp", "USD", "LTC", "1h")
 
+    steps = 20
     coinbase = Exchange("coinbase", service=execute_order)(
-        Stream("USD-BTC", list(coinbase_btc['close'][-100:])),
-        Stream("USD-ETH", list(coinbase_eth['close'][-100:]))
+        Stream("USD-BTC", list(coinbase_btc['close'][-steps:])),
+        Stream("USD-ETH", list(coinbase_eth['close'][-steps:]))
     )
 
     bitstamp = Exchange("bitstamp", service=execute_order)(
-        Stream("USD-BTC", list(bitstamp_btc['close'][-100:])),
-        Stream("USD-ETH", list(bitstamp_eth['close'][-100:])),
-        Stream("USD-LTC", list(bitstamp_ltc['close'][-100:]))
+        Stream("USD-BTC", list(bitstamp_btc['close'][-steps:])),
+        Stream("USD-ETH", list(bitstamp_eth['close'][-steps:])),
+        Stream("USD-LTC", list(bitstamp_ltc['close'][-steps:]))
     )
 
     portfolio = Portfolio(USD, [
@@ -39,9 +41,9 @@ def test_smoke():
     ])
 
     action_scheme = ManagedRiskOrders(
-        durations=[1, 100, 50],
-        stop_loss_percentages=[0.02, 0.04, 0.06],
-        take_profit_percentages=[0.01, 0.02, 0.03],
+        durations=[4],
+        stop_loss_percentages=[0.01],
+        take_profit_percentages=[0.01],
         trade_sizes=[0.1]
     )
 
@@ -58,3 +60,5 @@ def test_smoke():
         obs, reward, done, info = env.step(action)
 
     portfolio.ledger.as_frame().to_clipboard(index=False)
+
+    pytest.fail("Failed.")

@@ -33,6 +33,9 @@ class Quantity:
         self._size = size
         self._instrument = instrument
         self._path_id = path_id
+
+        self._src = None
+        self._tgt = None
         self._memo = None
 
     @property
@@ -60,10 +63,20 @@ class Quantity:
         self._path_id = path_id
 
     @property
+    def src(self):
+        return self._src
+
+    @property
+    def tgt(self):
+        return self._tgt
+
+    @property
     def memo(self) -> str:
         return self._memo
 
-    def reason(self, memo):
+    def info(self, src: str = None, tgt: str = None, memo: str = None):
+        self._src = src
+        self._tgt = tgt
         self._memo = memo
         return self
 

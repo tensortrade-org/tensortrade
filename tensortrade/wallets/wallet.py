@@ -87,13 +87,6 @@ class Wallet(Identifiable):
     def locked(self) -> Dict[str, 'Quantity']:
         return self._locked
 
-    def deallocate(self, path_id: str, reason: str = "DEALLOCATE"):
-        if path_id in self.locked.keys():
-            quantity = self.locked.pop(path_id, None)
-
-            if quantity is not None:
-                self += (quantity.size * self.instrument).reason(reason)
-
     def __iadd__(self, quantity: 'Quantity') -> 'Wallet':
         if quantity.is_locked:
             if quantity.path_id not in self.locked.keys():
@@ -105,10 +98,9 @@ class Wallet(Identifiable):
 
         self.ledger.commit(Transaction(
             self.exchange.clock.step,
-            self.exchange.name,
-            self.instrument,
-            "DEPOSIT",
             quantity.path_id,
+            quantity.src,
+            quantity.tgt,
             quantity.memo,
             quantity,
             self.balance,
@@ -128,10 +120,9 @@ class Wallet(Identifiable):
 
         self.ledger.commit(Transaction(
             self.exchange.clock.step,
-            self.exchange.name,
-            self.instrument,
-            "WITHDRAW",
             quantity.path_id,
+            quantity.src,
+            quantity.tgt,
             quantity.memo,
             quantity,
             self.balance,

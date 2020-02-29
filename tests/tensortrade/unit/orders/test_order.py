@@ -9,16 +9,20 @@ from tensortrade.orders.criteria import Stop
 from tensortrade.wallets import Wallet, Portfolio
 
 
+@mock.patch('tensortrade.exchanges.ExchangePair')
 @mock.patch('tensortrade.wallets.Portfolio')
-def test_init(mock_portfolio_class):
+def test_init(mock_portfolio_class, mock_exchange_pair):
 
     portfolio = mock_portfolio_class.return_value
 
+    exchange_pair = mock_exchange_pair.return_value
+    exchange_pair.pair = USD/BTC
+    exchange_pair.exchange = "coinbase"
+
     order = Order(step=0,
-                  exchange_name="coinbase",
+                  exchange_pair=exchange_pair,
                   side=TradeSide.BUY,
                   trade_type=TradeType.MARKET,
-                  pair=USD/BTC,
                   quantity=5000 * USD,
                   price=7000,
                   portfolio=portfolio)

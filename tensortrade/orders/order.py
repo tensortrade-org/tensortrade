@@ -13,12 +13,14 @@
 # limitations under the License
 
 
+import uuid
+
 from enum import Enum
 from typing import Callable
 
 from tensortrade.base import TimedIdentifiable
 from tensortrade.base.exceptions import InvalidOrderQuantity, InsufficientFunds
-from tensortrade.instruments import Quantity
+from tensortrade.instruments import Quantity, ExchangePair
 from tensortrade.orders import Trade, TradeSide, TradeType
 
 
@@ -46,10 +48,9 @@ class Order(TimedIdentifiable):
 
     def __init__(self,
                  step: int,
-                 exchange_name: str,
                  side: TradeSide,
                  trade_type: TradeType,
-                 pair: 'TradingPair',
+                 exchange_pair: 'ExchangePair',
                  quantity: 'Quantity',
                  portfolio: 'Portfolio',
                  price: float,
@@ -63,15 +64,14 @@ class Order(TimedIdentifiable):
             raise InvalidOrderQuantity(quantity)
 
         self.step = step
-        self.exchange_name = exchange_name
         self.side = side
         self.type = trade_type
-        self.pair = pair
+        self.exchange_pair = exchange_pair
         self.quantity = quantity
         self.portfolio = portfolio
         self.price = price
         self.criteria = criteria
-        self.path_id = path_id or self.id
+        self.path_id = path_id or str(uuid.uuid4())
         self.start = start or step
         self.end = end
         self.status = OrderStatus.PENDING
@@ -83,13 +83,28 @@ class Order(TimedIdentifiable):
         self._listeners = []
         self._trades = []
 
+        wallet = portfolio.get_wallet(
+            self.exchange_pair.exchange.id,
+            self.side.instrument(self.exchange_pair.pair)
+        )
+
         self.quantity.lock_for(self.path_id)
 
-
+        if self.path_id not in wallet.locked.keys():
+            wallet -= self.quantity.free().info(
+                src="{}:{}/free".format(exchange_pair.exchange.name, quantity.instrument),
+                tgt="",
+                memo="REMOVE FOR ALLOCATION"
+            )
+            wallet += self.quantity.info(
+                src="",
+                tgt="{}:{}/locked".format(exchange_pair.exchange.name, quantity.instrument),
+                memo="LOCK FOR ORDER"
+            )
 
     @property
     def size(self) -> float:
-        if self.pair.base is self.quantity.instrument:
+        if self.base_instrument is self.quantity.instrument:
             return self.quantity.size
         return self.quantity.size * self.price
 
@@ -102,12 +117,16 @@ class Order(TimedIdentifiable):
         self._price = price
 
     @property
+    def pair(self):
+        return self.exchange_pair.pair
+
+    @property
     def base_instrument(self) -> 'Instrument':
-        return self.pair.base
+        return self.exchange_pair.pair.base
 
     @property
     def quote_instrument(self) -> 'Instrument':
-        return self.pair.quote
+        return self.exchange_pair.pair.quote
 
     @property
     def trades(self):
@@ -129,10 +148,21 @@ class Order(TimedIdentifiable):
     def is_market_order(self) -> bool:
         return self.type == TradeType.MARKET
 
-    def is_executable_on(self, exchange: 'Exchange'):
-        if not exchange.is_pair_tradable(self.pair) or exchange.name != self.exchange_name:
-            return False
-        return self.criteria is None or self.criteria(self, exchange)
+    def is_executable(self):
+        is_satisfied = self.criteria is None or self.criteria(self, self.exchange_pair.exchange)
+        clock = self.exchange_pair.exchange.clock
+        return is_satisfied and clock.step >= self.start
+
+    def is_expired(self):
+        if self.end:
+            return self.exchange_pair.exchange.clock.step >= self.end
+        return False
+
+    def is_cancelled(self):
+        return self.status == OrderStatus.CANCELLED
+
+    def is_active(self):
+        return self.status not in [OrderStatus.FILLED, OrderStatus.CANCELLED]
 
     def is_complete(self):
         return round(self.remaining_size, self.base_instrument.precision) == 0 or self.status == OrderStatus.CANCELLED
@@ -147,36 +177,18 @@ class Order(TimedIdentifiable):
     def detach(self, listener: 'OrderListener'):
         self._listeners.remove(listener)
 
-    def execute(self, exchange: 'Exchange'):
+    def execute(self):
         self.status = OrderStatus.OPEN
-
-        instrument = self.side.instrument(self.pair)
-        wallet = self.portfolio.get_wallet(exchange.id, instrument=instrument)
-
-        if self.path_id not in wallet.locked.keys():
-            print(self)
-            try:
-                wallet -= self.quantity.free().reason("REMOVE FOR ALLOCATION")
-
-            except InsufficientFunds:
-                reason = "REMOVE FOR ALLOCATION (INSUFFICIENT FUNDS)"
-                wallet -= wallet.balance.free().reason("REMOVE FOR ALLOCATION (INSUFFICIENT FUNDS)")
-                self.quantity = wallet.balance.free().lock_for(self.path_id)
-                self.filled_size = 0
-                self.remaining_size = self.size
-
-
-            wallet += self.quantity.reason("LOCK FOR ORDER")
 
         if self.portfolio.order_listener:
             self.attach(self.portfolio.order_listener)
 
         for listener in self._listeners or []:
-            listener.on_execute(self, exchange)
+            listener.on_execute(self)
 
-        exchange.execute_order(self, self.portfolio)
+        self.exchange_pair.exchange.execute_order(self, self.portfolio)
 
-    def fill(self, exchange: 'Exchange', trade: Trade):
+    def fill(self, trade: Trade):
         self.status = OrderStatus.PARTIALLY_FILLED
 
         fill_size = trade.size + trade.commission.size
@@ -186,23 +198,22 @@ class Order(TimedIdentifiable):
         self._trades += [trade]
 
         for listener in self._listeners or []:
-            listener.on_fill(self, exchange, trade)
+            listener.on_fill(self, trade)
 
-    def complete(self, exchange: 'Exchange') -> 'Order':
+    def complete(self) -> 'Order':
         self.status = OrderStatus.FILLED
 
         order = None
 
         if self._specs:
             order_spec = self._specs.pop()
-            order = order_spec.create_order(self, exchange)
+            order = order_spec.create_order(self)
 
         for listener in self._listeners or []:
-            listener.on_complete(self, exchange)
+            listener.on_complete(self)
 
         self._listeners = []
-
-        return order or self.release("COMPLETE ORDER")
+        return order or self.release("COMPLETED")
 
     def cancel(self):
         self.status = OrderStatus.CANCELLED
@@ -211,21 +222,39 @@ class Order(TimedIdentifiable):
             listener.on_cancel(self)
 
         self._listeners = []
-        self.release("CANCEL ORDER")
 
-    def release(self, reason: str = "DEALLOCATE"):
+        self.release("CANCELLED")
+
+    def release(self, reason: str = ""):
+
         for wallet in self.portfolio.wallets:
-            wallet.deallocate(self.path_id, reason + " (RELEASE {})".format(wallet.instrument))
+
+            if self.path_id in wallet.locked.keys():
+
+                quantity = wallet.locked[self.path_id]
+
+                if quantity is not None:
+                    wallet -= quantity.info(
+                        src="{}:{}/locked".format(wallet.exchange.name, wallet.instrument),
+                        tgt="".format(wallet.exchange.name, wallet.instrument),
+                        memo="DEALLOCATE {} ({})".format(wallet.instrument, reason)
+                    )
+                    wallet += quantity.free().info(
+                        src="",
+                        tgt="{}:{}/free".format(wallet.exchange.name, wallet.instrument),
+                        memo="RESTORE BALANCE {} ({})".format(wallet.instrument, reason)
+                    )
+
+                wallet.locked.pop(self.path_id, None)
 
     def to_dict(self):
         return {
             "id": self.id,
             "step": self.step,
-            "exchange_name": self.exchange_name,
+            "exchange_pair": str(self.exchange_pair),
             "status": self.status,
             "type": self.type,
             "side": self.side,
-            "pair": self.pair,
             "quantity": self.quantity,
             "size": self.size,
             "filled_size": self.filled_size,
@@ -239,12 +268,12 @@ class Order(TimedIdentifiable):
         return {
             "id": str(self.id),
             "step": int(self.step),
-            "exchange_name": str(self.exchange_name),
+            "exchange_pair": str(self.exchange_pair),
             "status": str(self.status),
             "type": str(self.type),
             "side": str(self.side),
-            "base_symbol": str(self.pair.base.symbol),
-            "quote_symbol": str(self.pair.quote.symbol),
+            "base_symbol": str(self.exchange_pair.pair.base.symbol),
+            "quote_symbol": str(self.exchange_pair.pair.quote.symbol),
             "quantity": str(self.quantity),
             "size": float(self.size),
             "filled_size": float(self.filled_size),

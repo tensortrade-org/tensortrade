@@ -104,7 +104,7 @@ class Exchange(Module, Component, TimedIdentifiable):
         )
 
         if trade:
-            order.fill(self, trade)
+            order.fill(trade)
 
     def has_next(self):
         return True

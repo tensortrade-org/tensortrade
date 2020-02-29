@@ -19,15 +19,15 @@ from tensortrade.orders.criteria import Stop, Limit
 
 def market_order(step: int,
                  side: 'TradeSide',
-                 pair: 'TradingPair',
+                 exchange_pair: 'ExchangePair',
                  price: float,
                  size: float,
                  portfolio: 'Portfolio'):
-    instrument = side.instrument(pair)
+    instrument = side.instrument(exchange_pair.pair)
     order = Order(step=step,
                   side=side,
                   trade_type=TradeType.MARKET,
-                  pair=pair,
+                  exchange_pair=exchange_pair,
                   price=price,
                   quantity=(size * instrument),
                   portfolio=portfolio)
@@ -37,17 +37,17 @@ def market_order(step: int,
 
 def limit_order(step: int,
                 side: 'TradeSide',
-                pair: 'TradingPair',
+                exchange_pair: 'ExchangePair',
                 price: float,
                 size: float,
                 portfolio: 'Portfolio',
                 start: int = None,
                 end: int = None):
-    instrument = side.instrument(pair)
+    instrument = side.instrument(exchange_pair.pair)
     order = Order(step=step,
                   side=side,
                   trade_type=TradeType.LIMIT,
-                  pair=pair,
+                  exchange_pair=exchange_pair,
                   price=price,
                   quantity=(size * instrument),
                   start=start,
@@ -59,17 +59,17 @@ def limit_order(step: int,
 
 def hidden_limit_order(step: int,
                        side: 'TradeSide',
-                       pair: 'TradingPair',
+                       exchange_pair: 'ExchangePair',
                        price: float,
                        size: float,
                        portfolio: 'Portfolio',
                        start: int = None,
                        end: int = None):
-    instrument = side.instrument(pair)
+    instrument = side.instrument(exchange_pair.pair)
     order = Order(step=step,
                   side=side,
                   trade_type=TradeType.MARKET,
-                  pair=pair,
+                  exchange_pair=exchange_pair,
                   price=price,
                   quantity=(size * instrument),
                   start=start,
@@ -81,10 +81,9 @@ def hidden_limit_order(step: int,
 
 
 def risk_managed_order(step: int,
-                       exchange_name: str,
                        side: 'TradeSide',
                        trade_type: 'TradeType',
-                       pair: 'TradingPair',
+                       exchange_pair: 'ExchangePair',
                        price: float,
                        size: float,
                        down_percent: float,
@@ -92,13 +91,12 @@ def risk_managed_order(step: int,
                        portfolio: 'Portfolio',
                        start: int = None,
                        end: int = None):
-    instrument = side.instrument(pair)
+    instrument = side.instrument(exchange_pair.pair)
 
     order = Order(step=step,
-                  exchange_name=exchange_name,
                   side=side,
                   trade_type=trade_type,
-                  pair=pair,
+                  exchange_pair=exchange_pair,
                   price=price,
                   start=start,
                   end=end,
@@ -109,7 +107,7 @@ def risk_managed_order(step: int,
     risk_management = OrderSpec(
         side=TradeSide.SELL if side == TradeSide.BUY else TradeSide.BUY,
         trade_type=TradeType.MARKET,
-        pair=pair,
+        exchange_pair=exchange_pair,
         criteria=risk_criteria
     )
 

@@ -19,7 +19,7 @@ import logging
 import numpy as np
 import pandas as pd
 
-from gym.spaces import Discrete, Box
+from gym.spaces import Box
 from typing import Union, List, Tuple, Dict
 
 import tensortrade.actions as actions
@@ -79,7 +79,7 @@ class TradingEnvironment(gym.Env, TimeIndexed):
             self.feed.reset()
 
         self.history = ObservationHistory(window_size=window_size)
-        self._broker = Broker(exchanges=self.portfolio.exchanges)
+        self._broker = Broker()
 
         self.clock = Clock()
         self.action_space = None

@@ -67,7 +67,6 @@ class Trade(TimedIdentifiable):
             (e.g. 10000 represents $10,000.00 if the `base_instrument` is "USD").
         """
         super().__init__()
-
         self.order_id = order_id
         self.exchange_id = exchange_id
         self.step = step

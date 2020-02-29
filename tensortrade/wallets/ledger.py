@@ -7,10 +7,9 @@ from collections import namedtuple
 
 Transaction = namedtuple('Transaction', [
     'step',
-    'exchange_name',
-    'instrument',
-    'operation',
     'poid',
+    'src',
+    'tgt',
     'memo',
     'amount',
     'free',

@@ -15,6 +15,10 @@ class ExchangePair:
     def pair(self):
         return self._pair
 
+    @property
+    def price(self):
+        return self.exchange.quote_price(self.pair)
+
     def __hash__(self):
         return hash(str(self))
 
@@ -26,3 +30,6 @@ class ExchangePair:
 
     def __str__(self):
         return "{}:{}".format(self.exchange.name, self.pair)
+
+    def __repr__(self):
+        return str(self)
