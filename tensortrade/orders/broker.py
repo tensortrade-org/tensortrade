@@ -53,12 +53,6 @@ class Broker(OrderListener, TimeIndexed):
             raise Warning(
                 'Cannot cancel order {} - order has already been cancelled.'.format(order.id))
 
-        """
-        if order.status != OrderStatus.PENDING:
-            raise Warning(
-                'Cannot cancel order {} - order has already been executed.'.format(order.id))
-        """
-
         if order in self._unexecuted:
             self._unexecuted.remove(order)
 
@@ -67,11 +61,6 @@ class Broker(OrderListener, TimeIndexed):
     def update(self):
 
         for order in self._unexecuted:
-            """
-            if order.is_active() and order.is_expired():
-                self.cancel(order)
-            """
-
             if order.is_executable():
                 self._unexecuted.remove(order)
                 self._executed[order.id] = order
