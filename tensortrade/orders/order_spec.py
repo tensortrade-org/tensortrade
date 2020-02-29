@@ -37,7 +37,10 @@ class OrderSpec(Identifiable):
 
         exchange = order.exchange_pair.exchange
         wallet = order.portfolio.get_wallet(exchange.id, instrument=wallet_instrument)
-        quantity = wallet.locked.get(order.path_id, 0)
+        quantity = wallet.locked.get(order.path_id, None)
+
+        if not quantity or quantity.size == 0:
+            return None
 
         return Order(step=exchange.clock.step,
                      side=self.side,

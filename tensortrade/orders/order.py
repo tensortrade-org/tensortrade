@@ -71,7 +71,7 @@ class Order(TimedIdentifiable):
         self.price = price
         self.criteria = criteria
         self.path_id = path_id or str(uuid.uuid4())
-        self.quantity = quantity.lock_for(self.path_id)
+        self.quantity = quantity
         self.start = start or step
         self.end = end
         self.status = OrderStatus.PENDING
@@ -89,12 +89,16 @@ class Order(TimedIdentifiable):
         )
 
         if self.path_id not in wallet.locked.keys():
-            wallet.lock(self.quantity, self, "LOCK FOR ORDER")
+            self.quantity = wallet.lock(quantity, self, "LOCK FOR ORDER")
 
     @property
     def size(self) -> float:
+        if not self.quantity or self.quantity is None:
+            return -1
+
         if self.base_instrument is self.quantity.instrument:
             return self.quantity.size
+
         return self.quantity.size * self.price
 
     @property
@@ -161,9 +165,9 @@ class Order(TimedIdentifiable):
             self.exchange_pair.exchange.id,
             self.side.instrument(self.exchange_pair.pair)
         )
-        quantity = wallet.locked[self.path_id]
+        quantity = wallet.locked.get(self.path_id, None)
 
-        return quantity.size == 0 or self.filled_size >= self.size
+        return (quantity and quantity.size == 0) or self.filled_size >= self.size
 
     def add_order_spec(self, order_spec: 'OrderSpec') -> 'Order':
         self._specs += [order_spec]
@@ -230,7 +234,7 @@ class Order(TimedIdentifiable):
                 quantity = wallet.locked[self.path_id]
 
                 if quantity is not None:
-                    wallet.unlock(quantity, self.path_id, reason)
+                    wallet.unlock(quantity, reason)
 
                 wallet.locked.pop(self.path_id, None)
 

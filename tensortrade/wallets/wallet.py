@@ -15,7 +15,7 @@
 from typing import Dict, Tuple
 
 from tensortrade.base import Identifiable
-from tensortrade.base.exceptions import InsufficientFunds, DoubleLockedQuantity, DoubleUnlockedQuantity
+from tensortrade.base.exceptions import InsufficientFunds, DoubleLockedQuantity, DoubleUnlockedQuantity, QuantityNotLocked
 from tensortrade.instruments import Quantity
 
 from .ledger import Ledger
@@ -95,7 +95,13 @@ class Wallet(Identifiable):
             raise InsufficientFunds(self.balance, quantity)
 
         self._balance -= quantity
-        self._locked[quantity.path_id] += quantity.lock_for(order)
+
+        quantity = quantity.lock_for(order)
+
+        if quantity.path_id not in self._locked:
+            self._locked[quantity.path_id] = quantity
+        else:
+            self._locked[quantity.path_id] += quantity
 
         self.ledger.commit(wallet=self,
                            quantity=quantity,
@@ -108,6 +114,9 @@ class Wallet(Identifiable):
     def unlock(self, quantity: 'Quantity', reason: str):
         if not quantity.is_locked:
             raise DoubleUnlockedQuantity(quantity)
+
+        if quantity.path_id not in self._locked:
+            raise QuantityNotLocked(quantity)
 
         if quantity > self._locked[quantity.path_id]:
             raise InsufficientFunds(self.locked[quantity.path_id], quantity)
@@ -125,7 +134,7 @@ class Wallet(Identifiable):
 
     def deposit(self, quantity: 'Quantity', reason: str):
         if quantity.is_locked:
-            if quantity.path_id not in self.locked.keys():
+            if quantity.path_id not in self._locked:
                 self._locked[quantity.path_id] = quantity
             else:
                 self._locked[quantity.path_id] += quantity
@@ -141,7 +150,7 @@ class Wallet(Identifiable):
         return quantity
 
     def withdraw(self, quantity: 'Quantity', reason: str):
-        if quantity.is_locked and self.locked[quantity.path_id]:
+        if quantity.is_locked and self.locked.get(quantity.path_id, False):
             if quantity > self.locked[quantity.path_id]:
                 raise InsufficientFunds(self.locked[quantity.path_id], quantity)
 

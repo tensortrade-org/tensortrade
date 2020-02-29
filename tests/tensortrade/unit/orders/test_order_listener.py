@@ -16,7 +16,7 @@ def execute_listener():
         def __init__(self):
             self.listened = False
 
-        def on_execute(self, order: 'Order', exchange: 'Exchange'):
+        def on_execute(self, order: 'Order'):
             self.listened = True
 
     return ExecuteListener()
@@ -30,7 +30,7 @@ def fill_listener():
         def __init__(self):
             self.listened = False
 
-        def on_fill(self, order: 'Order', exchange: 'Exchange', trade: 'Trade'):
+        def on_fill(self, order: 'Order', trade: 'Trade'):
             self.listened = True
 
     return FillListener()
@@ -75,7 +75,7 @@ def test_on_execute(mock_exchange_class,
     portfolio = Portfolio(USD, wallets)
 
     order = Order(step=0,
-                  exchange_name="coinbase",
+                  exchange_pair="coinbase",
                   side=TradeSide.BUY,
                   trade_type=TradeType.MARKET,
                   pair=USD / BTC,

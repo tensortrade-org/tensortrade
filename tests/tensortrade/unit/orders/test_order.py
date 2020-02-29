@@ -240,7 +240,7 @@ def test_execute(mock_order_listener_class,
     order.attach(listener)
 
     assert order.status == OrderStatus.PENDING
-    order.execute(exchange)
+    order.execute()
     assert order.status == OrderStatus.OPEN
 
     wallet_usd = portfolio.get_wallet(exchange.id, USD)
@@ -251,7 +251,7 @@ def test_execute(mock_order_listener_class,
     assert order.path_id in wallet_usd.locked.keys()
     assert wallet_btc.balance == 0 * BTC
 
-    listener.on_execute.assert_called_once_with(order, exchange)
+    listener.on_execute.assert_called_once_with(order)
 
 
 @mock.patch('tensortrade.exchanges.Exchange')

@@ -49,6 +49,15 @@ class DoubleUnlockedQuantity(Exception):
         )
 
 
+class QuantityNotLocked(Exception):
+
+    def __init(self, quantity, *args):
+        super().__init__(
+            "Cannot unlock quantity that has not been locked in this wallet: {}.".format(quantity),
+            *args
+        )
+
+
 # =============================================================================
 # Price Exceptions
 # =============================================================================
