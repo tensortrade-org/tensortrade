@@ -232,10 +232,11 @@ class PlotlyTradingChart(BaseRenderer):
         """
         if not self._save_format:
             return
-        else:
-            valid_formats = ['html', 'png', 'jpeg', 'webp', 'svg', 'pdf', 'eps']
-            if self._save_format not in valid_formats:
-                raise ValueError("Acceptable formats are '{}'. Found '{}'".format("', '".join(valid_formats), self._save_format))
+
+        valid_formats = ['html', 'png', 'jpeg', 'webp', 'svg', 'pdf', 'eps']
+        if self._save_format not in valid_formats:
+            raise ValueError("Acceptable formats are '{}'. Found '{}'".format(
+                "', '".join(valid_formats), self._save_format))
 
         check_path(self._path)
 
