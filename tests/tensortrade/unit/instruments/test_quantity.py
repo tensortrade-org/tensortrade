@@ -47,8 +47,7 @@ def test_locking():
     q.path_id = path_id
     assert q.is_locked
 
-    q = Quantity(BTC, 10000)
-    q.lock_for(path_id)
+    q = Quantity(BTC, 10000).lock_for(path_id)
     assert q.is_locked
 
 

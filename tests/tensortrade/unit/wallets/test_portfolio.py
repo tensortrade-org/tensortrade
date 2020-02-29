@@ -82,8 +82,7 @@ def portfolio(wallet_usd, wallet_btc, wallet_eth, wallet_xrp, exchange):
 def portfolio_locked(portfolio, wallet_usd, wallet_btc, wallet_eth, wallet_xrp):
     def allocate(wallet, amount, identifier):
         wallet -= amount
-        amount.lock_for(identifier)
-        wallet += amount
+        wallet += amount.lock_for(identifier)
         return wallet
 
     wallet_usd = allocate(wallet_usd, 50 * USD, "1")

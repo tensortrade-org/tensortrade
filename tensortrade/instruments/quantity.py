@@ -23,8 +23,7 @@ from tensortrade.base.exceptions import InvalidNegativeQuantity, IncompatibleIns
 
 
 class Quantity:
-    """An size of a financial instrument for use in trading.
-    """
+    """A size of a financial instrument for use in trading."""
 
     def __init__(self, instrument: 'Instrument', size: float = 0, path_id: str = None):
         if size < 0:
@@ -33,11 +32,6 @@ class Quantity:
         self._size = size
         self._instrument = instrument
         self._path_id = path_id
-
-        self._src = None
-        self._tgt = None
-        self._memo = None
-        self._associated = None
 
     @property
     def size(self) -> float:
@@ -64,38 +58,14 @@ class Quantity:
         self._path_id = path_id
 
     @property
-    def src(self):
-        return self._src
-
-    @property
-    def tgt(self):
-        return self._tgt
-
-    @property
-    def associated(self):
-        return self._associated
-
-    @property
-    def memo(self) -> str:
-        return self._memo
-
-    def info(self,
-             src: str = None,
-             tgt: str = None,
-             associated: str = None,
-             memo: str = None):
-        self._src = src
-        self._tgt = tgt
-        self._associated = associated
-        self._memo = memo
-        return self
-
-    @property
     def is_locked(self) -> bool:
         return bool(self._path_id)
 
     def lock_for(self, path_id: str):
-        self._path_id = path_id
+        return Quantity(self.instrument, self.size, path_id)
+
+    def convert(self, to_instrument: 'Instrument', price: float):
+        return Quantity(to_instrument, round(self.size / price, to_instrument.precision), self.path_id)
 
     def free(self):
         return Quantity(self.instrument, self.size)

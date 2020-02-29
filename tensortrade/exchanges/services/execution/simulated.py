@@ -22,39 +22,26 @@ def execute_buy_order(order: 'Order',
                       options: 'ExchangeOptions',
                       exchange_id: str,
                       clock: 'Clock') -> 'Trade':
-    price = contain_price(current_price, options)
-
     if order.type == TradeType.LIMIT and order.price < current_price:
         return None
 
-    commission = Quantity(order.pair.base, order.size * options.commission, order.path_id)
-    size = contain_size(order.size - commission.size, options)
+    price = contain_price(current_price, options)
 
     if order.type == TradeType.MARKET:
-        scale = min(price, order.price) / max(price, order.price)
-        commission = Quantity(order.pair.base, scale * order.size * options.commission, order.path_id)
+        scale = order.price / max(price, order.price)
+        commission = Quantity(order.pair.base, scale * order.size *
+                              options.commission, order.path_id)
         size = contain_size(scale * (order.size - commission.size), options)
+    else:
+        commission = Quantity(order.pair.base, order.size * options.commission, order.path_id)
+        size = contain_size(order.size - commission.size, options)
 
-    base_wallet -= commission.info(
-        src="{}:{}/locked".format(base_wallet.exchange.name, base_wallet.instrument),
-        tgt=base_wallet.exchange.name,
-        memo="COMMISSION FOR BUY"
-    )
     quantity = Quantity(order.pair.base, size, order.path_id)
-    base_wallet -= quantity.info(
-        src="{}:{}/locked".format(base_wallet.exchange.name, base_wallet.instrument),
-        tgt="",
-        memo="REMOVE FROM LOCKED TO FILL ORDER"
-    )
+    filled_quantity = quantity.convert(quote_wallet.instrument, price)
 
-    quote_size = (order.price / price) * (size / price)
-
-    filled_quantity = Quantity(order.pair.quote, quote_size, order.path_id)
-    quote_wallet += filled_quantity.info(
-        src="{}:{}/locked".format(base_wallet.exchange.name, base_wallet.instrument),
-        tgt="{}:{}/locked".format(quote_wallet.exchange.name, quote_wallet.instrument),
-        memo="BOUGHT @ {} {}".format(price, order.exchange_pair)
-    )
+    base_wallet.withdraw(quantity, "FILL BUY ORDER")
+    quote_wallet.deposit(filled_quantity, "BOUGHT {} @ {}".format(order.exchange_pair, price))
+    base_wallet.withdraw(commission, "COMMISSION FOR BUY")
 
     trade = Trade(order_id=order.id,
                   exchange_id=exchange_id,
@@ -76,35 +63,19 @@ def execute_sell_order(order: 'Order',
                        options: 'ExchangeOptions',
                        exchange_id: str,
                        clock: 'Clock') -> 'Trade':
-    price = contain_price(current_price, options)
-
     if order.type == TradeType.LIMIT and order.price > current_price:
         return None
 
-    commission = Quantity(order.pair.base, order.size * options.commission, order.path_id)
-    order_size = contain_size(order.size, options)
+    price = contain_price(current_price, options)
+    commission = Quantity(base_wallet.instrument, order.size * options.commission, order.path_id)
+    size = contain_size(order.size, options)
 
-    quote_size = (order_size / order.price)
-    quote_quantity = Quantity(order.pair.quote, quote_size, order.path_id)
-    quote_wallet -= quote_quantity.info(
-        src="{}:{}/locked".format(quote_wallet.exchange.name, quote_wallet.instrument),
-        tgt="",
-        memo="REMOVE FROM LOCKED TO FILL ORDER"
-    )
+    quantity = Quantity(base_wallet.instrument, size, order.path_id)
+    filled_quantity = quantity.convert(quote_wallet.instrument, price)
 
-    base_size = (quote_size * price) # / (price / order.price)
-    quantity = Quantity(order.pair.base, base_size, order.path_id)
-
-    base_wallet += quantity.info(
-        src="{}:{}/locked".format(quote_wallet.exchange.name, quote_wallet.instrument),
-        tgt="{}:{}/locked".format(base_wallet.exchange.name, base_wallet.instrument),
-        memo="SOLD @ {} {}".format(price, order.exchange_pair)
-    )
-    base_wallet -= commission.info(
-        src="{}:{}/locked".format(base_wallet.exchange.name, base_wallet.instrument),
-        tgt=base_wallet.exchange.name,
-        memo="COMMISSION FOR SELL"
-    )
+    quote_wallet.withdraw(filled_quantity, "FILL SELL ORDER")
+    base_wallet.deposit(quantity, 'SOLD {} @ {}'.format(order.exchange_pair, price))
+    base_wallet.withdraw(quantity, 'COMMISSION FOR SELL')
 
     trade = Trade(order_id=order.id,
                   exchange_id=exchange_id,
@@ -126,7 +97,6 @@ def execute_order(order: 'Order',
                   options: 'Options',
                   exchange_id: str,
                   clock: 'Clock') -> 'Trade':
-
     if order.is_buy:
         trade = execute_buy_order(
             order=order,

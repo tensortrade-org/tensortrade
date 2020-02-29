@@ -67,11 +67,11 @@ class Order(TimedIdentifiable):
         self.side = side
         self.type = trade_type
         self.exchange_pair = exchange_pair
-        self.quantity = quantity
         self.portfolio = portfolio
         self.price = price
         self.criteria = criteria
         self.path_id = path_id or str(uuid.uuid4())
+        self.quantity = quantity.lock_for(self.path_id)
         self.start = start or step
         self.end = end
         self.status = OrderStatus.PENDING
@@ -88,20 +88,8 @@ class Order(TimedIdentifiable):
             self.side.instrument(self.exchange_pair.pair)
         )
 
-        self.quantity.lock_for(self.path_id)
-
         if self.path_id not in wallet.locked.keys():
-            wallet -= self.quantity.free().info(
-                src="{}:{}/free".format(exchange_pair.exchange.name, quantity.instrument),
-                tgt="",
-                associated=self.path_id,
-                memo="REMOVE FOR ALLOCATION"
-            )
-            wallet += self.quantity.info(
-                src="",
-                tgt="{}:{}/locked".format(exchange_pair.exchange.name, quantity.instrument),
-                memo="LOCK FOR ORDER"
-            )
+            wallet.lock(self.quantity, self, "LOCK FOR ORDER")
 
     @property
     def size(self) -> float:
@@ -168,12 +156,14 @@ class Order(TimedIdentifiable):
     def is_complete(self):
         if self.status == OrderStatus.CANCELLED:
             return True
+
         wallet = self.portfolio.get_wallet(
             self.exchange_pair.exchange.id,
             self.side.instrument(self.exchange_pair.pair)
         )
         quantity = wallet.locked[self.path_id]
-        return quantity.size == 0
+
+        return quantity.size == 0 or self.filled_size >= self.size
 
     def add_order_spec(self, order_spec: 'OrderSpec') -> 'Order':
         self._specs += [order_spec]
@@ -221,6 +211,7 @@ class Order(TimedIdentifiable):
             listener.on_complete(self)
 
         self._listeners = []
+
         return order or self.release("COMPLETED")
 
     def cancel(self):
@@ -233,26 +224,13 @@ class Order(TimedIdentifiable):
 
         self.release("CANCELLED")
 
-    def release(self, reason: str = ""):
-
+    def release(self, reason: str = "RELEASE (NO REASON)"):
         for wallet in self.portfolio.wallets:
-
             if self.path_id in wallet.locked.keys():
-
                 quantity = wallet.locked[self.path_id]
 
                 if quantity is not None:
-                    wallet -= quantity.info(
-                        src="{}:{}/locked".format(wallet.exchange.name, wallet.instrument),
-                        tgt="".format(wallet.exchange.name, wallet.instrument),
-                        memo="DEALLOCATE {} ({})".format(wallet.instrument, reason)
-                    )
-                    wallet += quantity.free().info(
-                        src="",
-                        tgt="{}:{}/free".format(wallet.exchange.name, wallet.instrument),
-                        associated=self.path_id,
-                        memo="RESTORE BALANCE {} ({})".format(wallet.instrument, reason)
-                    )
+                    wallet.unlock(quantity, self.path_id, reason)
 
                 wallet.locked.pop(self.path_id, None)
 

@@ -15,10 +15,10 @@
 from typing import Dict, Tuple
 
 from tensortrade.base import Identifiable
-from tensortrade.base.exceptions import InsufficientFunds
+from tensortrade.base.exceptions import InsufficientFunds, DoubleLockedQuantity, DoubleUnlockedQuantity
 from tensortrade.instruments import Quantity
 
-from .ledger import Ledger, Transaction
+from .ledger import Ledger
 
 
 class Wallet(Identifiable):
@@ -87,7 +87,43 @@ class Wallet(Identifiable):
     def locked(self) -> Dict[str, 'Quantity']:
         return self._locked
 
-    def __iadd__(self, quantity: 'Quantity') -> 'Wallet':
+    def lock(self, quantity, order: 'Order', reason: str):
+        if quantity.is_locked:
+            raise DoubleLockedQuantity(quantity)
+
+        if quantity > self._balance:
+            raise InsufficientFunds(self.balance, quantity)
+
+        self._balance -= quantity
+        self._locked[quantity.path_id] += quantity.lock_for(order)
+
+        self.ledger.commit(wallet=self,
+                           quantity=quantity,
+                           source="{}:{}/free".format(self.exchange.name, self.instrument),
+                           target="{}:{}/locked".format(self.exchange.name, self.instrument),
+                           memo="LOCK ({})".format(reason))
+
+        return quantity
+
+    def unlock(self, quantity: 'Quantity', reason: str):
+        if not quantity.is_locked:
+            raise DoubleUnlockedQuantity(quantity)
+
+        if quantity > self._locked[quantity.path_id]:
+            raise InsufficientFunds(self.locked[quantity.path_id], quantity)
+
+        self._locked[quantity.path_id] -= quantity
+        self._balance += quantity.free()
+
+        self.ledger.commit(wallet=self,
+                           quantity=quantity,
+                           source="{}:{}/locked".format(self.exchange.name, self.instrument),
+                           target="{}:{}/free".format(self.exchange.name, self.instrument),
+                           memo="UNLOCK {} ({})".format(self.instrument, reason))
+
+        return quantity
+
+    def deposit(self, quantity: 'Quantity', reason: str):
         if quantity.is_locked:
             if quantity.path_id not in self.locked.keys():
                 self._locked[quantity.path_id] = quantity
@@ -96,39 +132,33 @@ class Wallet(Identifiable):
         else:
             self._balance += quantity
 
-        self.ledger.commit(Transaction(
-            quantity.path_id if quantity.path_id else quantity.associated,
-            self.exchange.clock.step,
-            quantity.src,
-            quantity.tgt,
-            quantity.memo,
-            quantity,
-            self.balance,
-            self.locked_balance
-        ))
-        return self
+        self.ledger.commit(wallet=self,
+                           quantity=quantity,
+                           source=self.exchange.name,
+                           target="{}:{}/locked".format(self.exchange.name, self.instrument),
+                           memo="DEPOSIT ({})".format(reason))
 
-    def __isub__(self, quantity: 'Quantity') -> 'Wallet':
+        return quantity
+
+    def withdraw(self, quantity: 'Quantity', reason: str):
         if quantity.is_locked and self.locked[quantity.path_id]:
             if quantity > self.locked[quantity.path_id]:
                 raise InsufficientFunds(self.locked[quantity.path_id], quantity)
+
             self._locked[quantity.path_id] -= quantity
         elif not quantity.is_locked:
             if quantity > self._balance:
                 raise InsufficientFunds(self.balance, quantity)
+
             self._balance -= quantity
 
-        self.ledger.commit(Transaction(
-            quantity.path_id if quantity.path_id else quantity.associated,
-            self.exchange.clock.step,
-            quantity.src,
-            quantity.tgt,
-            quantity.memo,
-            quantity,
-            self.balance,
-            self.locked_balance
-        ))
-        return self
+        self.ledger.commit(wallet=self,
+                           quantity=quantity,
+                           source="{}:{}/locked".format(self.exchange.name, self.instrument),
+                           target=self.exchange.name,
+                           memo="WITHDRAWAL ({})".format(reason))
+
+        return quantity
 
     def reset(self):
         self._balance = Quantity(self._instrument, self._initial_size)
