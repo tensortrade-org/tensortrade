@@ -97,8 +97,8 @@ class Wallet(Identifiable):
             self._balance += quantity
 
         self.ledger.commit(Transaction(
+            quantity.path_id if quantity.path_id else quantity.associated,
             self.exchange.clock.step,
-            quantity.path_id,
             quantity.src,
             quantity.tgt,
             quantity.memo,
@@ -119,8 +119,8 @@ class Wallet(Identifiable):
             self._balance -= quantity
 
         self.ledger.commit(Transaction(
+            quantity.path_id if quantity.path_id else quantity.associated,
             self.exchange.clock.step,
-            quantity.path_id,
             quantity.src,
             quantity.tgt,
             quantity.memo,

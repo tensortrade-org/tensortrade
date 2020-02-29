@@ -41,10 +41,10 @@ def test_smoke():
     ])
 
     action_scheme = ManagedRiskOrders(
-        durations=[4],
-        stop_loss_percentages=[0.01],
-        take_profit_percentages=[0.01],
-        trade_sizes=[0.1]
+        durations=[4, 10],
+        stop_loss_percentages=[0.002, 0.01, 0.05, 0.2],
+        take_profit_percentages=[0.001, 0.03, 0.08, 0.15],
+        trade_sizes=[0.1, 0.5, 0.75]
     )
 
     env = TradingEnvironment(
@@ -59,6 +59,6 @@ def test_smoke():
         action = env.action_space.sample()
         obs, reward, done, info = env.step(action)
 
-    portfolio.ledger.as_frame().to_clipboard(index=False)
+    portfolio.ledger.as_frame().sort_values(["poid", "step"]).to_clipboard(index=False)
 
     pytest.fail("Failed.")

@@ -31,34 +31,21 @@ def execute_buy_order(order: 'Order',
     size = contain_size(order.size - commission.size, options)
 
     if order.type == TradeType.MARKET:
-        scale = order.price / price
+        scale = min(price, order.price) / max(price, order.price)
         commission = Quantity(order.pair.base, scale * order.size * options.commission, order.path_id)
-        size = contain_size(scale * order.size - commission.size, options)
+        size = contain_size(scale * (order.size - commission.size), options)
 
-    try:
-        base_wallet -= commission.info(
-            src="{}:{}/locked".format(base_wallet.exchange.name, base_wallet.instrument),
-            tgt=base_wallet.exchange.name,
-            memo="COMMISSION FOR BUY"
-        )
-        quantity = Quantity(order.pair.base, size, order.path_id)
-        base_wallet -= quantity.info(
-            src="{}:{}/locked".format(base_wallet.exchange.name, base_wallet.instrument),
-            tgt="",
-            memo="REMOVE FROM LOCKED TO FILL ORDER"
-        )
-    except InsufficientFunds:
-        balance = base_wallet.locked[order.path_id]
-        quantity = Quantity(order.pair.base, balance.size, order.path_id)
-        base_wallet -= quantity.info(memo="(INSUFFICIENT FUNDS)")
-        order.portfolio.ledger.as_frame().to_clipboard(index=False)
-
-    """
-    except InsufficientFunds:
-        balance = base_wallet.locked[order.path_id]
-        quantity = Quantity(order.pair.base, balance.size, order.path_id)
-        base_wallet -= quantity.reason("REMOVE FROM LOCKED TO FILL ORDER (INSUFFICIENT FUNDS)")
-    """
+    base_wallet -= commission.info(
+        src="{}:{}/locked".format(base_wallet.exchange.name, base_wallet.instrument),
+        tgt=base_wallet.exchange.name,
+        memo="COMMISSION FOR BUY"
+    )
+    quantity = Quantity(order.pair.base, size, order.path_id)
+    base_wallet -= quantity.info(
+        src="{}:{}/locked".format(base_wallet.exchange.name, base_wallet.instrument),
+        tgt="",
+        memo="REMOVE FROM LOCKED TO FILL ORDER"
+    )
 
     quote_size = (order.price / price) * (size / price)
 
@@ -95,30 +82,23 @@ def execute_sell_order(order: 'Order',
         return None
 
     commission = Quantity(order.pair.base, order.size * options.commission, order.path_id)
-    size = contain_size(order.size - commission.size, options)
+    order_size = contain_size(order.size, options)
 
-    quote_size = (size / price) * (price / order.price)
+    quote_size = (order_size / order.price)
     quote_quantity = Quantity(order.pair.quote, quote_size, order.path_id)
     quote_wallet -= quote_quantity.info(
         src="{}:{}/locked".format(quote_wallet.exchange.name, quote_wallet.instrument),
         tgt="",
         memo="REMOVE FROM LOCKED TO FILL ORDER"
     )
-    """
-    except InsufficientFunds:
-        balance = quote_wallet.locked[order.path_id]
-        quote_size = balance.size
-        remove_quantity = Quantity(order.pair.quote, quote_size, order.path_id)
-        quote_wallet -= remove_quantity.reason("REMOVE FROM LOCKED TO FILL ORDER (INSUFFICIENT FUNDS)")
-    """
 
-    base_size = (quote_size * price) / (price / order.price)
+    base_size = (quote_size * price) # / (price / order.price)
     quantity = Quantity(order.pair.base, base_size, order.path_id)
 
     base_wallet += quantity.info(
         src="{}:{}/locked".format(quote_wallet.exchange.name, quote_wallet.instrument),
         tgt="{}:{}/locked".format(base_wallet.exchange.name, base_wallet.instrument),
-        memo="SOLD @ {} {}".format(order.price, order.exchange_pair)
+        memo="SOLD @ {} {}".format(price, order.exchange_pair)
     )
     base_wallet -= commission.info(
         src="{}:{}/locked".format(base_wallet.exchange.name, base_wallet.instrument),

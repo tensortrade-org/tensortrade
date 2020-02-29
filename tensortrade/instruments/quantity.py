@@ -37,6 +37,7 @@ class Quantity:
         self._src = None
         self._tgt = None
         self._memo = None
+        self._associated = None
 
     @property
     def size(self) -> float:
@@ -71,12 +72,21 @@ class Quantity:
         return self._tgt
 
     @property
+    def associated(self):
+        return self._associated
+
+    @property
     def memo(self) -> str:
         return self._memo
 
-    def info(self, src: str = None, tgt: str = None, memo: str = None):
+    def info(self,
+             src: str = None,
+             tgt: str = None,
+             associated: str = None,
+             memo: str = None):
         self._src = src
         self._tgt = tgt
+        self._associated = associated
         self._memo = memo
         return self
 

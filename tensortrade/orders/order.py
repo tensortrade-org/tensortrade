@@ -94,6 +94,7 @@ class Order(TimedIdentifiable):
             wallet -= self.quantity.free().info(
                 src="{}:{}/free".format(exchange_pair.exchange.name, quantity.instrument),
                 tgt="",
+                associated=self.path_id,
                 memo="REMOVE FOR ALLOCATION"
             )
             wallet += self.quantity.info(
@@ -165,7 +166,14 @@ class Order(TimedIdentifiable):
         return self.status not in [OrderStatus.FILLED, OrderStatus.CANCELLED]
 
     def is_complete(self):
-        return round(self.remaining_size, self.base_instrument.precision) == 0 or self.status == OrderStatus.CANCELLED
+        if self.status == OrderStatus.CANCELLED:
+            return True
+        wallet = self.portfolio.get_wallet(
+            self.exchange_pair.exchange.id,
+            self.side.instrument(self.exchange_pair.pair)
+        )
+        quantity = wallet.locked[self.path_id]
+        return quantity.size == 0
 
     def add_order_spec(self, order_spec: 'OrderSpec') -> 'Order':
         self._specs = [order_spec] + self._specs
@@ -242,6 +250,7 @@ class Order(TimedIdentifiable):
                     wallet += quantity.free().info(
                         src="",
                         tgt="{}:{}/free".format(wallet.exchange.name, wallet.instrument),
+                        associated=self.path_id,
                         memo="RESTORE BALANCE {} ({})".format(wallet.instrument, reason)
                     )
 
