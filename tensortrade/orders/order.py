@@ -176,7 +176,7 @@ class Order(TimedIdentifiable):
         return quantity.size == 0
 
     def add_order_spec(self, order_spec: 'OrderSpec') -> 'Order':
-        self._specs = [order_spec] + self._specs
+        self._specs += [order_spec]
         return self
 
     def attach(self, listener: 'OrderListener'):

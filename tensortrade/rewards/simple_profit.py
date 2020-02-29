@@ -36,4 +36,4 @@ class SimpleProfit(RewardScheme):
         """
         returns = portfolio.performance['net_worth'].pct_change().dropna()
         returns = (1 + returns[-self.window_size:]).cumprod() - 1
-        return returns.iloc[-1]
+        return 0 if len(returns) < 1 else returns.iloc[-1]
