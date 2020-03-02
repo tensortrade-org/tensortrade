@@ -19,7 +19,7 @@ from enum import Enum
 from typing import Callable
 
 from tensortrade.base import TimedIdentifiable
-from tensortrade.base.exceptions import InvalidOrderQuantity, InsufficientFunds
+from tensortrade.base.exceptions import InvalidOrderQuantity
 from tensortrade.instruments import Quantity, ExchangePair
 from tensortrade.orders import Trade, TradeSide, TradeType
 
@@ -99,7 +99,7 @@ class Order(TimedIdentifiable):
         if self.base_instrument is self.quantity.instrument:
             return self.quantity.size
 
-        return self.quantity.size * self.price
+        return self.quantity.convert(self.exchange_pair).size
 
     @property
     def price(self) -> float:

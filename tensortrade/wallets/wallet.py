@@ -68,7 +68,7 @@ class Wallet(Identifiable):
         """The total balance of the wallet locked in orders."""
         locked_balance = Quantity(self.instrument, 0)
 
-        for quantity in self.locked.values():
+        for quantity in self._locked.values():
             locked_balance += quantity.size
 
         return locked_balance
@@ -78,7 +78,7 @@ class Wallet(Identifiable):
         """The total balance of the wallet, both available for use and locked in orders."""
         total_balance = self._balance
 
-        for quantity in self.locked.values():
+        for quantity in self._locked.values():
             total_balance += quantity.size
 
         return total_balance
@@ -96,7 +96,7 @@ class Wallet(Identifiable):
 
         self._balance -= quantity
 
-        quantity = quantity.lock_for(order)
+        quantity = quantity.lock_for(order.path_id)
 
         if quantity.path_id not in self._locked:
             self._locked[quantity.path_id] = quantity
@@ -119,7 +119,7 @@ class Wallet(Identifiable):
             raise QuantityNotLocked(quantity)
 
         if quantity > self._locked[quantity.path_id]:
-            raise InsufficientFunds(self.locked[quantity.path_id], quantity)
+            raise InsufficientFunds(self._locked[quantity.path_id], quantity)
 
         self._locked[quantity.path_id] -= quantity
         self._balance += quantity.free()
@@ -150,9 +150,9 @@ class Wallet(Identifiable):
         return quantity
 
     def withdraw(self, quantity: 'Quantity', reason: str):
-        if quantity.is_locked and self.locked.get(quantity.path_id, False):
-            if quantity > self.locked[quantity.path_id]:
-                raise InsufficientFunds(self.locked[quantity.path_id], quantity)
+        if quantity.is_locked and self._locked.get(quantity.path_id, False):
+            if quantity > self._locked[quantity.path_id]:
+                raise InsufficientFunds(self._locked[quantity.path_id], quantity)
 
             self._locked[quantity.path_id] -= quantity
         elif not quantity.is_locked:

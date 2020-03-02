@@ -13,6 +13,7 @@
 # limitations under the License
 
 
+import math
 import operator
 
 from typing import Union, Tuple
@@ -26,7 +27,7 @@ class Quantity:
     """A size of a financial instrument for use in trading."""
 
     def __init__(self, instrument: 'Instrument', size: float = 0, path_id: str = None):
-        if size < 0:
+        if size < -instrument.precision:
             raise InvalidNegativeQuantity(size)
 
         self._size = size
@@ -64,15 +65,16 @@ class Quantity:
     def lock_for(self, path_id: str):
         return Quantity(self.instrument, self.size, path_id)
 
-    def convert(self, to_instrument: 'Instrument', price: float):
-        return Quantity(to_instrument, round(self.size / price, to_instrument.precision), self.path_id)
+    def convert(self, exchange_pair: 'ExchangePair'):
+        to_instrument = exchange_pair.pair.base if exchange_pair.pair.quote == self.instrument else exchange_pair.pair.quote
+
+        return Quantity(to_instrument, round(self.size / exchange_pair.price, to_instrument.precision), self.path_id)
 
     def free(self):
         return Quantity(self.instrument, self.size)
 
     @staticmethod
     def validate(left, right) -> Tuple['Quantity', 'Quantity']:
-
         if isinstance(left, Quantity) and isinstance(right, Quantity):
             if left.instrument != right.instrument:
                 raise IncompatibleInstrumentOperation(left, right)
@@ -121,7 +123,8 @@ class Quantity:
                         right: Union['Quantity', float, int],
                         op: operator) -> 'Quantity':
         left, right = Quantity.validate(left, right)
-        size = op(left._size, right._size)
+        size = op(left.size, right.size)
+
         return Quantity(left.instrument, size, left.path_id)
 
     def __add__(self, other: Union['Quantity', float, int]) -> 'Quantity':

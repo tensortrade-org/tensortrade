@@ -18,7 +18,6 @@ from tensortrade.orders.criteria import Stop, Limit
 
 
 def market_order(step: int,
-                 exchange_name: str,
                  side: 'TradeSide',
                  exchange_pair: 'ExchangePair',
                  price: float,
@@ -26,7 +25,6 @@ def market_order(step: int,
                  portfolio: 'Portfolio'):
     instrument = side.instrument(exchange_pair.pair)
     order = Order(step=step,
-                  exchange_name=exchange_name,
                   side=side,
                   trade_type=TradeType.MARKET,
                   exchange_pair=exchange_pair,
@@ -38,7 +36,6 @@ def market_order(step: int,
 
 
 def limit_order(step: int,
-                exchange_name: str,
                 side: 'TradeSide',
                 exchange_pair: 'ExchangePair',
                 price: float,
@@ -48,7 +45,6 @@ def limit_order(step: int,
                 end: int = None):
     instrument = side.instrument(exchange_pair.pair)
     order = Order(step=step,
-                  exchange_name=exchange_name,
                   side=side,
                   trade_type=TradeType.LIMIT,
                   exchange_pair=exchange_pair,
@@ -62,7 +58,6 @@ def limit_order(step: int,
 
 
 def hidden_limit_order(step: int,
-                       exchange_name: str,
                        side: 'TradeSide',
                        exchange_pair: 'ExchangePair',
                        price: float,
@@ -72,7 +67,6 @@ def hidden_limit_order(step: int,
                        end: int = None):
     instrument = side.instrument(exchange_pair.pair)
     order = Order(step=step,
-                  exchange_name=exchange_name,
                   side=side,
                   trade_type=TradeType.MARKET,
                   exchange_pair=exchange_pair,
