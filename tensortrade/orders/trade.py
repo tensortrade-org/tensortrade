@@ -84,10 +84,7 @@ class Trade(TimedIdentifiable):
 
     @property
     def size(self) -> float:
-        if self.exchange_pair.pair.base is self.quantity.instrument:
-            return self.quantity.size
-
-        return self.quantity.convert(self.exchange_pair).size
+        return self.quantity.size
 
     @property
     def price(self) -> float:
@@ -103,7 +100,7 @@ class Trade(TimedIdentifiable):
 
     @commission.setter
     def commission(self, commission: 'Quantity'):
-        self._commission = commission.size * self.exchange_pair.pair.base
+        self._commission = commission
 
     @property
     def is_buy(self) -> bool:

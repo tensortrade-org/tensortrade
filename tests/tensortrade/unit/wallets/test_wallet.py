@@ -1,10 +1,11 @@
 
 import pytest
+import unittest.mock as mock
 
 from tensortrade.base.exceptions import InsufficientFunds, IncompatibleInstrumentOperation
 from tensortrade.exchanges import Exchange
 from tensortrade.wallets import Wallet
-from tensortrade.instruments import USD, BTC, Quantity
+from tensortrade.instruments import USD, BTC, Quantity, ExchangePair
 
 
 path_id = "f4cfeeae-a3e4-42e9-84b9-a24ccd2eebeb"
@@ -150,3 +151,46 @@ def test_total_balance():
     wallet += Quantity(USD, 700, path_id=other_id)
 
     assert wallet.total_balance == 11200 * USD
+
+
+def test_transfer():
+
+    exchange = mock.Mock()
+    exchange.quote_price = lambda pair: 9750.19
+    exchange.name = "coinbase"
+
+    order = mock.Mock()
+    order.path_id = "fake_id"
+
+    exchange_pair = ExchangePair(exchange, USD / BTC)
+
+    source = Wallet(exchange, 18903.89 * USD)
+    source.lock(917.07 * USD, order, "test")
+
+    target = Wallet(exchange, 3.79283997 * BTC)
+
+    quantity = (256.19 * USD).lock_for("fake_id")
+    commission = (2.99 * USD).lock_for("fake_id")
+
+    Wallet.transfer(source,
+                    target,
+                    quantity,
+                    commission,
+                    exchange_pair,
+                    "transfer")
+
+    source = Wallet(exchange, 3.79283997 * BTC)
+    source.lock(3.00000029 * BTC, order, "test")
+
+    target = Wallet(exchange, 18903.89 * USD)
+
+    quantity = (2.19935873 * BTC).lock_for("fake_id")
+    commission = (0.00659732 * BTC).lock_for("fake_id")
+
+    Wallet.transfer(source,
+                    target,
+                    quantity,
+                    commission,
+                    exchange_pair,
+                    "transfer")
+

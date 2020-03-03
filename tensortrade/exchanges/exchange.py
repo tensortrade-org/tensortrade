@@ -14,6 +14,7 @@
 
 
 from typing import Callable, Union
+from decimal import Decimal
 
 from tensortrade.base import Component, TimedIdentifiable
 from tensortrade.instruments import TradingPair
@@ -64,7 +65,7 @@ class Exchange(Module, Component, TimedIdentifiable):
             pair = "".join([c if c.isalnum() else "/" for c in node.name])
             self._prices[pair] = Forward(node)
 
-    def quote_price(self, trading_pair: 'TradingPair') -> float:
+    def quote_price(self, trading_pair: 'TradingPair') -> Decimal:
         """The quote price of a trading pair on the exchange, denoted in the base instrument.
 
         Arguments:
@@ -73,7 +74,7 @@ class Exchange(Module, Component, TimedIdentifiable):
         Returns:
             The quote price of the specified trading pair, denoted in the base instrument.
         """
-        return self._prices[str(trading_pair)].value
+        return Decimal(self._prices[str(trading_pair)].value)
 
     def is_pair_tradable(self, trading_pair: 'TradingPair') -> bool:
         """Whether or not the specified trading pair is tradable on this exchange.

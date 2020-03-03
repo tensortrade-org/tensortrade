@@ -1,19 +1,11 @@
 
-import pandas as pd
+from decimal import Decimal
 
 from tensortrade.base import Clock, InsufficientFunds
 from tensortrade.wallets import Wallet
 from tensortrade.instruments import Quantity, precise
 from tensortrade.exchanges import ExchangeOptions
 from tensortrade.orders import Order, Trade, TradeType, TradeSide
-
-
-def contain_price(price: float, options: 'ExchangeOptions') -> float:
-    return max(min(price, options.max_trade_price), options.min_trade_price)
-
-
-def contain_size(size: float, options: 'ExchangeOptions') -> float:
-    return max(min(size, options.max_trade_size), options.min_trade_size)
 
 
 def execute_buy_order(order: 'Order',
@@ -25,23 +17,23 @@ def execute_buy_order(order: 'Order',
     if order.type == TradeType.LIMIT and order.price < current_price:
         return None
 
-    price = contain_price(current_price, options)
-    filled_size = order.remaining_size
+    filled = order.remaining.contain(options)
 
     if order.type == TradeType.MARKET:
-        scale = order.price / max(price, order.price)
+        scale = order.price / max(current_price, order.price)
+        filled = scale * filled
 
-        filled_size = scale * order.remaining_size
-        filled_size = precise(filled_size, order.pair.base.precision)
+    commission = options.commission * filled
+    quantity = filled - commission
 
-    size = contain_size(filled_size, options)
-    base_quantity = Quantity(order.pair.base, size, order.path_id)
-
-    commission = base_wallet.withdraw(options.commission * base_quantity, "COMMISSION FOR BUY")
-    withdrawn = base_wallet.withdraw(base_quantity - commission, "FILL BUY ORDER")
-    converted = withdrawn.convert(order.exchange_pair)
-
-    quote_wallet.deposit(converted, "BOUGHT {} @ {}".format(order.exchange_pair, price))
+    transfer = Wallet.transfer(
+        source=base_wallet,
+        target=quote_wallet,
+        quantity=quantity,
+        commission=commission,
+        exchange_pair=order.exchange_pair,
+        reason="BUY"
+    )
 
     trade = Trade(
         order_id=order.id,
@@ -49,9 +41,9 @@ def execute_buy_order(order: 'Order',
         exchange_pair=order.exchange_pair,
         side=TradeSide.BUY,
         trade_type=order.type,
-        quantity=converted,
-        price=price,
-        commission=commission
+        quantity=transfer.quantity,
+        price=transfer.price,
+        commission=transfer.commission
     )
 
     return trade
@@ -66,19 +58,20 @@ def execute_sell_order(order: 'Order',
     if order.type == TradeType.LIMIT and order.price > current_price:
         return None
 
-    price = contain_price(current_price, options)
-    filled_size = contain_size(order.remaining_size, options)
+    filled = order.remaining.contain(options)
 
-    base_amount = Quantity(base_wallet.instrument, filled_size, order.path_id)
+    commission = options.commission * filled
+    quantity = filled - commission
 
-    quote_amount = base_amount.convert(order.exchange_pair)
-
-    withdrawn = quote_wallet.withdraw(quote_amount, "FILL SELL ORDER")
-    converted = withdrawn.convert(order.exchange_pair)
-    base_wallet.deposit(converted, 'SOLD {} @ {}'.format(order.exchange_pair, price))
-
-    commission = options.commission * converted
-    base_wallet.withdraw(commission, "COMMISSION FOR SELL")
+    # Transfer Funds from Quote Wallet to Base Wallet
+    transfer = Wallet.transfer(
+        source=quote_wallet,
+        target=base_wallet,
+        quantity=quantity,
+        commission=commission,
+        exchange_pair=order.exchange_pair,
+        reason="SELL"
+    )
 
     trade = Trade(
         order_id=order.id,
@@ -86,9 +79,9 @@ def execute_sell_order(order: 'Order',
         exchange_pair=order.exchange_pair,
         side=TradeSide.SELL,
         trade_type=order.type,
-        quantity=withdrawn - commission.convert(order.exchange_pair),
-        price=price,
-        commission=commission
+        quantity=transfer.quantity,
+        price=transfer.price,
+        commission=transfer.commission
     )
 
     return trade

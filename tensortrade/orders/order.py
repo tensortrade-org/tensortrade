@@ -17,6 +17,7 @@ import uuid
 
 from enum import Enum
 from typing import Callable
+from decimal import Decimal
 
 from tensortrade.base import TimedIdentifiable
 from tensortrade.base.exceptions import InvalidOrderQuantity
@@ -76,9 +77,6 @@ class Order(TimedIdentifiable):
         self.end = end
         self.status = OrderStatus.PENDING
 
-        self.filled_size = 0
-        self.remaining_size = self.size
-
         self._specs = []
         self._listeners = []
         self._trades = []
@@ -91,15 +89,13 @@ class Order(TimedIdentifiable):
         if self.path_id not in wallet.locked.keys():
             self.quantity = wallet.lock(quantity, self, "LOCK FOR ORDER")
 
+        self.remaining = self.quantity
+
     @property
-    def size(self) -> float:
+    def size(self) -> Decimal:
         if not self.quantity or self.quantity is None:
             return -1
-
-        if self.base_instrument is self.quantity.instrument:
-            return self.quantity.size
-
-        return self.quantity.convert(self.exchange_pair).size
+        return self.quantity.size
 
     @property
     def price(self) -> float:
@@ -167,7 +163,7 @@ class Order(TimedIdentifiable):
         )
         quantity = wallet.locked.get(self.path_id, None)
 
-        return (quantity and quantity.size == 0) or self.filled_size >= self.size
+        return (quantity and quantity.size == 0) or self.remaining.size <= 0
 
     def add_order_spec(self, order_spec: 'OrderSpec') -> 'Order':
         self._specs += [order_spec]
@@ -193,10 +189,9 @@ class Order(TimedIdentifiable):
     def fill(self, trade: Trade):
         self.status = OrderStatus.PARTIALLY_FILLED
 
-        fill_size = trade.size + trade.commission.size
+        filled = trade.quantity + trade.commission
 
-        self.filled_size += fill_size
-        self.remaining_size -= fill_size
+        self.remaining -= filled
         self._trades += [trade]
 
         for listener in self._listeners or []:
@@ -248,7 +243,7 @@ class Order(TimedIdentifiable):
             "side": self.side,
             "quantity": self.quantity,
             "size": self.size,
-            "filled_size": self.filled_size,
+            "remaining": self.remaining,
             "price": self.price,
             "criteria": self.criteria,
             "path_id": self.path_id,
@@ -267,7 +262,7 @@ class Order(TimedIdentifiable):
             "quote_symbol": str(self.exchange_pair.pair.quote.symbol),
             "quantity": str(self.quantity),
             "size": float(self.size),
-            "filled_size": float(self.filled_size),
+            "remaining": str(self.remaining),
             "price": float(self.price),
             "criteria": str(self.criteria),
             "path_id": str(self.path_id),

@@ -17,6 +17,7 @@ import operator
 
 from typing import Union, Tuple
 from numbers import Number
+from decimal import Decimal, getcontext
 
 from tensortrade.base.exceptions import InvalidNegativeQuantity, IncompatibleInstrumentOperation, \
     InvalidNonNumericQuantity, QuantityOpPathMismatch
@@ -30,17 +31,16 @@ def precise(amount: float, precision: int):
 class Quantity:
     """A size of a financial instrument for use in trading."""
 
-    def __init__(self, instrument: 'Instrument', size: float = 0, path_id: str = None):
+    def __init__(self, instrument: 'Instrument', size: Union[float, Decimal] = 0, path_id: str = None):
         if size < 0:
             raise InvalidNegativeQuantity(size)
 
         self._instrument = instrument
-        self._size = size
+        self._size = size if isinstance(size, Decimal) else Decimal(size)
         self._path_id = path_id
 
     @property
-    def size(self) -> float:
-        # return precise(self._size, self.instrument.precision)
+    def size(self) -> Decimal:
         return self._size
 
     @size.setter
@@ -82,9 +82,17 @@ class Quantity:
     def free(self):
         return Quantity(self.instrument, self.size)
 
-    def round(self):
+    def quantize(self):
         return Quantity(self.instrument,
-                        round(self.size, self.instrument.precision),
+                        self.size.quantize(Decimal(10)**-self.instrument.precision),
+                        self.path_id)
+
+    def as_float(self):
+        return float(self.size)
+
+    def contain(self, options: 'ExchangeOptions'):
+        return Quantity(self.instrument,
+                        max(min(self.size, options.max_trade_size), options.min_trade_size),
                         self.path_id)
 
     @staticmethod
@@ -105,11 +113,11 @@ class Quantity:
             return left, right
 
         elif isinstance(left, Number) and isinstance(right, Quantity):
-            left = Quantity(right.instrument, float(left), right.path_id)
+            left = Quantity(right.instrument, left, right.path_id)
             return left, right
 
         elif isinstance(left, Quantity) and isinstance(right, Number):
-            right = Quantity(left.instrument, float(right), left.path_id)
+            right = Quantity(left.instrument, right, left.path_id)
             return left, right
 
         elif isinstance(left, Quantity):

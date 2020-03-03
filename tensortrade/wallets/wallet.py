@@ -13,12 +13,17 @@
 # limitations under the License
 
 from typing import Dict, Tuple
+from collections import namedtuple
+from decimal import Decimal
 
 from tensortrade.base import Identifiable
 from tensortrade.base.exceptions import InsufficientFunds, DoubleLockedQuantity, DoubleUnlockedQuantity, QuantityNotLocked
-from tensortrade.instruments import Quantity
+from tensortrade.instruments import Quantity, ExchangePair
 
 from .ledger import Ledger
+
+
+Transfer = namedtuple("Transfer", ["quantity", "commission", "price"])
 
 
 class Wallet(Identifiable):
@@ -30,7 +35,7 @@ class Wallet(Identifiable):
         self._exchange = exchange
         self._initial_size = quantity.size
         self._instrument = quantity.instrument
-        self._balance = quantity
+        self._balance = quantity.quantize()
         self._locked = {}
 
     @classmethod
@@ -88,6 +93,7 @@ class Wallet(Identifiable):
         return self._locked
 
     def lock(self, quantity, order: 'Order', reason: str):
+        quantity = quantity.quantize()
         if quantity.is_locked:
             raise DoubleLockedQuantity(quantity)
 
@@ -122,7 +128,7 @@ class Wallet(Identifiable):
             raise InsufficientFunds(self._locked[quantity.path_id], quantity)
 
         self._locked[quantity.path_id] -= quantity
-        self._balance += quantity.free()
+        self._balance += quantity.free().quantize()
 
         self.ledger.commit(wallet=self,
                            quantity=quantity,
@@ -133,6 +139,7 @@ class Wallet(Identifiable):
         return quantity
 
     def deposit(self, quantity: 'Quantity', reason: str):
+        quantity = quantity.quantize()
         if quantity.is_locked:
             if quantity.path_id not in self._locked:
                 self._locked[quantity.path_id] = quantity
@@ -150,6 +157,7 @@ class Wallet(Identifiable):
         return quantity
 
     def withdraw(self, quantity: 'Quantity', reason: str):
+        quantity = quantity.quantize()
         if quantity.is_locked and self._locked.get(quantity.path_id, False):
             if quantity > self._locked[quantity.path_id]:
                 raise InsufficientFunds(self._locked[quantity.path_id], quantity)
@@ -169,8 +177,51 @@ class Wallet(Identifiable):
 
         return quantity
 
+    @staticmethod
+    def transfer(source: 'Wallet',
+                 target: 'Wallet',
+                 quantity: 'Quantity',
+                 commission: 'Quantity',
+                 exchange_pair: 'ExchangePair',
+                 reason: str):
+        """
+        E1: (lsb1 - lsb2) - q = (ltb2 - ltb1) - p*(q - c)
+        """
+        quantity = quantity.quantize()
+        commission = commission.quantize()
+
+        pair = source.instrument / target.instrument
+        price = exchange_pair.price if pair == exchange_pair.pair else exchange_pair.price**-1
+
+        poid = quantity.path_id
+
+        lsb1 = source.locked.get(poid).size
+        ltb1 = target.locked.get(poid, 0 * pair.quote).size
+
+        commission = source.withdraw(commission, "COMMISSION")
+        quantity = source.withdraw(quantity, "FILL ORDER")
+
+        converted = quantity.convert(exchange_pair)
+        target.deposit(converted, 'SOLD {} @ {}'.format(exchange_pair, price))
+
+        lsb2 = source.locked.get(poid).size
+        ltb2 = target.locked.get(poid, 0 * pair.quote).size
+        q = quantity.size
+        p = price
+        c = commission.size
+
+        cv = (q / p).quantize(Decimal(10)**-target.instrument.precision)
+
+        if (lsb1 - lsb2) - (q + c) != (ltb2 - ltb1) - cv:
+            equation = "({} - {}) - ({} + {}) != ({} - {}) - {}".format(
+                lsb1, lsb2, q, c, ltb2, ltb1, cv
+            )
+            raise Exception("Invalid Transfer: " + equation)
+
+        return Transfer(quantity, commission, price)
+
     def reset(self):
-        self._balance = Quantity(self._instrument, self._initial_size)
+        self._balance = Quantity(self._instrument, self._initial_size).quantize()
         self._locked = {}
 
     def __str__(self):

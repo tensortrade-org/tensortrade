@@ -118,7 +118,8 @@ class ManagedRiskOrders(ActionScheme):
         wallet_instrument = side.instrument(exchange_pair.pair)
         wallet = portfolio.get_wallet(exchange_pair.exchange.id, instrument=wallet_instrument)
 
-        size = (wallet.balance.size * prop)
+        balance = wallet.balance.as_float()
+        size = (balance * prop)
         size = min(wallet.balance.size, size)
 
         if size < 10 ** -exchange_pair.pair.base.precision:
