@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License
 
+import numpy as np
+
 from typing import Dict, Tuple
 from collections import namedtuple
 from decimal import Decimal
@@ -159,15 +161,17 @@ class Wallet(Identifiable):
     def withdraw(self, quantity: 'Quantity', reason: str):
         quantity = quantity.quantize()
         if quantity.is_locked and self._locked.get(quantity.path_id, False):
-            if quantity > self._locked[quantity.path_id]:
+            locked_quantity = self._locked[quantity.path_id]
+
+            if quantity > locked_quantity and not np.isclose(quantity.as_float(), locked_quantity.as_float(), rtol=0.001):
                 raise InsufficientFunds(self._locked[quantity.path_id], quantity)
 
-            self._locked[quantity.path_id] -= quantity
+            self._locked[quantity.path_id] -= min(locked_quantity, quantity)
         elif not quantity.is_locked:
-            if quantity > self._balance:
+            if quantity > self._balance and not np.isclose(quantity.as_float(), self._balance.as_float(), rtol=0.001):
                 raise InsufficientFunds(self.balance, quantity)
 
-            self._balance -= quantity
+            self._balance -= min(self._balance, quantity)
 
         self.ledger.commit(wallet=self,
                            quantity=quantity,
@@ -202,7 +206,7 @@ class Wallet(Identifiable):
         quantity = source.withdraw(quantity, "FILL ORDER")
 
         converted = quantity.convert(exchange_pair)
-        target.deposit(converted, 'SOLD {} @ {}'.format(exchange_pair, price))
+        target.deposit(converted, 'TRADED {} {} @ {}'.format(quantity, exchange_pair, price))
 
         lsb2 = source.locked.get(poid).size
         ltb2 = target.locked.get(poid, 0 * pair.quote).size
@@ -210,12 +214,13 @@ class Wallet(Identifiable):
         p = price
         c = commission.size
 
-        cv = (q / p).quantize(Decimal(10)**-target.instrument.precision)
+        cv = (q / p).quantize(Decimal(10) ** -target.instrument.precision)
 
-        if (lsb1 - lsb2) - (q + c) != (ltb2 - ltb1) - cv:
+        if not np.isclose(float(lsb1 - lsb2) - float(q + c), float(ltb2 - ltb1) - float(cv), rtol=0.001):
             equation = "({} - {}) - ({} + {}) != ({} - {}) - {}".format(
                 lsb1, lsb2, q, c, ltb2, ltb1, cv
             )
+
             raise Exception("Invalid Transfer: " + equation)
 
         return Transfer(quantity, commission, price)
