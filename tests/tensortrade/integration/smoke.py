@@ -1,5 +1,6 @@
 
 import ssl
+import pandas as pd
 import pytest
 
 ssl._create_default_https_context = ssl._create_unverified_context
@@ -23,7 +24,7 @@ def test_smoke():
     bitstamp_eth = cdd.fetch("Bitstamp", "USD", "ETH", "1h")
     bitstamp_ltc = cdd.fetch("Bitstamp", "USD", "LTC", "1h")
 
-    steps = 20
+    steps = 100
     coinbase = Exchange("coinbase", service=execute_order)(
         Stream("USD-BTC", list(coinbase_btc['close'][-steps:])),
         Stream("USD-ETH", list(coinbase_eth['close'][-steps:]))
@@ -41,10 +42,10 @@ def test_smoke():
     ])
 
     action_scheme = ManagedRiskOrders(
-        durations=[4, 10],
-        stop_loss_percentages=[0.002, 0.01, 0.05, 0.2],
-        take_profit_percentages=[0.001, 0.03, 0.08, 0.15],
-        trade_sizes=[0.1, 0.5, 0.75]
+        durations=[4],
+        stop_loss_percentages=[0.001],
+        take_profit_percentages=[0.001],
+        trade_sizes=[0.1]
     )
 
     env = TradingEnvironment(
@@ -59,6 +60,13 @@ def test_smoke():
         action = env.action_space.sample()
         obs, reward, done, info = env.step(action)
 
-    portfolio.ledger.as_frame().sort_values(["poid", "step"]).to_clipboard(index=False)
+    portfolio.ledger.as_frame().sort_values(["step", "poid"]).to_clipboard(index=False)
+    df = portfolio.ledger.as_frame()
+
+    frames = []
+    for poid in df.poid.unique():
+        frames += [df.loc[df.poid == poid, :]]
+
+    pd.concat(frames, ignore_index=True, axis=0).to_clipboard(index=False)
 
     pytest.fail("Failed.")

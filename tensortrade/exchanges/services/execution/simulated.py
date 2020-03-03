@@ -1,7 +1,9 @@
 
-from tensortrade.base import Clock
+import pandas as pd
+
+from tensortrade.base import Clock, InsufficientFunds
 from tensortrade.wallets import Wallet
-from tensortrade.instruments import Quantity
+from tensortrade.instruments import Quantity, precise
 from tensortrade.exchanges import ExchangeOptions
 from tensortrade.orders import Order, Trade, TradeType, TradeSide
 
@@ -24,34 +26,33 @@ def execute_buy_order(order: 'Order',
         return None
 
     price = contain_price(current_price, options)
-    locked_quantity = base_wallet.locked.get(order.path_id)
     filled_size = order.remaining_size
 
     if order.type == TradeType.MARKET:
         scale = order.price / max(price, order.price)
+
         filled_size = scale * order.remaining_size
+        filled_size = precise(filled_size, order.pair.base.precision)
 
-    filled_size = min(locked_quantity.size, filled_size)
-    commission = Quantity(order.pair.base,
-                          filled_size * options.commission,
-                          order.path_id)
-    size = contain_size(filled_size - commission.size, options)
-
+    size = contain_size(filled_size, options)
     base_quantity = Quantity(order.pair.base, size, order.path_id)
-    quote_quantity = base_quantity.convert(order.exchange_pair)
 
-    base_wallet.withdraw(base_quantity, "FILL BUY ORDER")
-    quote_wallet.deposit(quote_quantity, "BOUGHT {} @ {}".format(order.exchange_pair, price))
-    base_wallet.withdraw(commission, "COMMISSION FOR BUY")
+    commission = base_wallet.withdraw(options.commission * base_quantity, "COMMISSION FOR BUY")
+    withdrawn = base_wallet.withdraw(base_quantity - commission, "FILL BUY ORDER")
+    converted = withdrawn.convert(order.exchange_pair)
 
-    trade = Trade(order_id=order.id,
-                  step=clock.step,
-                  exchange_pair=order.exchange_pair,
-                  side=TradeSide.BUY,
-                  trade_type=order.type,
-                  quantity=quote_quantity,
-                  price=price,
-                  commission=commission)
+    quote_wallet.deposit(converted, "BOUGHT {} @ {}".format(order.exchange_pair, price))
+
+    trade = Trade(
+        order_id=order.id,
+        step=clock.step,
+        exchange_pair=order.exchange_pair,
+        side=TradeSide.BUY,
+        trade_type=order.type,
+        quantity=converted,
+        price=price,
+        commission=commission
+    )
 
     return trade
 
@@ -66,30 +67,29 @@ def execute_sell_order(order: 'Order',
         return None
 
     price = contain_price(current_price, options)
-    locked_quote_quantity = quote_wallet.locked.get(order.path_id)
-    locked_base_quantity = locked_quote_quantity.convert(order.exchange_pair)
-    filled_size = min(locked_base_quantity.size, order.remaining_size)
+    filled_size = contain_size(order.remaining_size, options)
 
-    commission = Quantity(base_wallet.instrument,
-                          filled_size * options.commission,
-                          order.path_id)
-    size = contain_size(filled_size - commission.size, options)
+    base_amount = Quantity(base_wallet.instrument, filled_size, order.path_id)
 
-    base_quantity = Quantity(base_wallet.instrument, size, order.path_id)
-    quote_quantity = Quantity(quote_wallet.instrument, filled_size, order.path_id)
+    quote_amount = base_amount.convert(order.exchange_pair)
 
-    quote_wallet.withdraw(quote_quantity, "FILL SELL ORDER")
-    base_wallet.deposit(base_quantity, 'SOLD {} @ {}'.format(order.exchange_pair, price))
-    base_wallet.withdraw(base_quantity, 'COMMISSION FOR SELL')
+    withdrawn = quote_wallet.withdraw(quote_amount, "FILL SELL ORDER")
+    converted = withdrawn.convert(order.exchange_pair)
+    base_wallet.deposit(converted, 'SOLD {} @ {}'.format(order.exchange_pair, price))
 
-    trade = Trade(order_id=order.id,
-                  step=clock.step,
-                  exchange_pair=order.exchange_pair,
-                  side=TradeSide.SELL,
-                  trade_type=order.type,
-                  quantity=quote_quantity,
-                  price=price,
-                  commission=commission)
+    commission = options.commission * converted
+    base_wallet.withdraw(commission, "COMMISSION FOR SELL")
+
+    trade = Trade(
+        order_id=order.id,
+        step=clock.step,
+        exchange_pair=order.exchange_pair,
+        side=TradeSide.SELL,
+        trade_type=order.type,
+        quantity=withdrawn - commission.convert(order.exchange_pair),
+        price=price,
+        commission=commission
+    )
 
     return trade
 

@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License
 
-
 import math
 import operator
 
@@ -23,19 +22,25 @@ from tensortrade.base.exceptions import InvalidNegativeQuantity, IncompatibleIns
     InvalidNonNumericQuantity, QuantityOpPathMismatch
 
 
+def precise(amount: float, precision: int):
+    factor = 10**precision
+    return math.floor(amount*factor) / factor
+
+
 class Quantity:
     """A size of a financial instrument for use in trading."""
 
     def __init__(self, instrument: 'Instrument', size: float = 0, path_id: str = None):
-        if size < -instrument.precision:
+        if size < 0:
             raise InvalidNegativeQuantity(size)
 
-        self._size = size
         self._instrument = instrument
+        self._size = size
         self._path_id = path_id
 
     @property
     def size(self) -> float:
+        # return precise(self._size, self.instrument.precision)
         return self._size
 
     @size.setter
@@ -66,12 +71,21 @@ class Quantity:
         return Quantity(self.instrument, self.size, path_id)
 
     def convert(self, exchange_pair: 'ExchangePair'):
-        to_instrument = exchange_pair.pair.base if exchange_pair.pair.quote == self.instrument else exchange_pair.pair.quote
-
-        return Quantity(to_instrument, round(self.size / exchange_pair.price, to_instrument.precision), self.path_id)
+        if self.instrument == exchange_pair.pair.base:
+            instrument = exchange_pair.pair.quote
+            converted_size = self.size / exchange_pair.price
+        else:
+            instrument = exchange_pair.pair.base
+            converted_size = self.size * exchange_pair.price
+        return Quantity(instrument, converted_size, self.path_id)
 
     def free(self):
         return Quantity(self.instrument, self.size)
+
+    def round(self):
+        return Quantity(self.instrument,
+                        round(self.size, self.instrument.precision),
+                        self.path_id)
 
     @staticmethod
     def validate(left, right) -> Tuple['Quantity', 'Quantity']:
@@ -111,7 +125,7 @@ class Quantity:
                         right: Union['Quantity', float, int],
                         bool_op: operator) -> bool:
         left, right = Quantity.validate(left, right)
-        boolean = bool_op(left.size, right.size)
+        boolean = bool_op(left._size, right._size)
 
         if not isinstance(boolean, bool):
             raise Exception("`bool_op` cannot return a non-bool type ({}).".format(boolean))
@@ -123,7 +137,7 @@ class Quantity:
                         right: Union['Quantity', float, int],
                         op: operator) -> 'Quantity':
         left, right = Quantity.validate(left, right)
-        size = op(left.size, right.size)
+        size = op(left._size, right._size)
 
         return Quantity(left.instrument, size, left.path_id)
 

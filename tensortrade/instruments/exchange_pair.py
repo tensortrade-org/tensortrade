@@ -1,4 +1,8 @@
 
+import math
+
+from tensortrade.instruments.quantity import precise
+
 
 class ExchangePair:
     """A pair of financial instruments to be traded on a specific exchange."""
@@ -8,16 +12,18 @@ class ExchangePair:
         self._pair = pair
 
     @property
-    def exchange(self):
+    def exchange(self) -> 'Exchange':
         return self._exchange
 
     @property
-    def pair(self):
+    def pair(self) -> 'TradingPair':
         return self._pair
 
     @property
-    def price(self):
-        return self.exchange.quote_price(self.pair)
+    def price(self) -> float:
+        price = self.exchange.quote_price(self.pair)
+        # return precise(price, self.pair.base.precision)
+        return price
 
     def __hash__(self):
         return hash(str(self))
