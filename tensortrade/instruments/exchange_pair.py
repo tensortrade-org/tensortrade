@@ -6,20 +6,9 @@ from decimal import Decimal
 class ExchangePair:
     """A pair of financial instruments to be traded on a specific exchange."""
 
-    def __init__(self,
-                 exchange: 'Exchange',
-                 pair: 'TradingPair',
-                 min_trade_size: float = 1e-6,
-                 max_trade_size: float = 1e6,
-                 min_trade_price: float = 1e-8,
-                 max_trade_price: float = 1e8):
+    def __init__(self, exchange: 'Exchange', pair: 'TradingPair'):
         self._exchange = exchange
         self._pair = pair
-
-        self.min_trade_size = min_trade_size
-        self.max_trade_size = max_trade_size
-        self.min_trade_price = min_trade_price
-        self.max_trade_price = max_trade_price
 
     @property
     def exchange(self) -> 'Exchange':

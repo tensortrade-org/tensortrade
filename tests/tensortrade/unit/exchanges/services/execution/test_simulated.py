@@ -6,9 +6,9 @@ import unittest.mock as mock
 from decimal import Decimal
 
 from tensortrade.wallets import Wallet, Portfolio
-from tensortrade.instruments import BTC, USD, ExchangePair, precise
+from tensortrade.instruments import BTC, USD, ExchangePair
 from tensortrade.orders import Order, TradeSide, TradeType, OrderStatus
-from tensortrade.exchanges import Exchange, ExchangeOptions
+from tensortrade.exchanges import ExchangeOptions
 
 from tensortrade.exchanges.services.execution.simulated import execute_buy_order, execute_sell_order
 
@@ -34,6 +34,7 @@ def assert_execute_order(current_price,
     mock_exchange = mock.Mock()
     exchange = mock_exchange.return_value
     exchange.name = "coinbase"
+    exchange.options = options
     exchange.quote_price = lambda pair: current_price
 
     base_wallet = Wallet(exchange, base_balance)

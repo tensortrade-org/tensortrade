@@ -3,7 +3,7 @@ from decimal import Decimal
 
 from tensortrade.base import Clock, InsufficientFunds
 from tensortrade.wallets import Wallet
-from tensortrade.instruments import Quantity, precise
+from tensortrade.instruments import Quantity
 from tensortrade.exchanges import ExchangeOptions
 from tensortrade.orders import Order, Trade, TradeType, TradeSide
 
@@ -25,6 +25,10 @@ def execute_buy_order(order: 'Order',
 
     commission = options.commission * filled
     quantity = filled - commission
+
+    if commission.size < Decimal(10)**-quantity.instrument.precision:
+        order.cancel("COMMISSION IS LESS THAN PRECISION.")
+        return None
 
     transfer = Wallet.transfer(
         source=base_wallet,
@@ -62,6 +66,10 @@ def execute_sell_order(order: 'Order',
 
     commission = options.commission * filled
     quantity = filled - commission
+
+    if commission.size < Decimal(10)**-quantity.instrument.precision:
+        order.cancel("COMMISSION IS LESS THAN PRECISION.")
+        return None
 
     # Transfer Funds from Quote Wallet to Base Wallet
     transfer = Wallet.transfer(

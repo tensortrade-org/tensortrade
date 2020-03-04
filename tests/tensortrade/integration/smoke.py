@@ -24,7 +24,7 @@ def test_smoke():
     bitstamp_eth = cdd.fetch("Bitstamp", "USD", "ETH", "1h")
     bitstamp_ltc = cdd.fetch("Bitstamp", "USD", "LTC", "1h")
 
-    steps = 100
+    steps = len(coinbase_btc)
     coinbase = Exchange("coinbase", service=execute_order)(
         Stream("USD-BTC", list(coinbase_btc['close'][-steps:])),
         Stream("USD-ETH", list(coinbase_eth['close'][-steps:]))

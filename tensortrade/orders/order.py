@@ -215,7 +215,7 @@ class Order(TimedIdentifiable):
 
         return order or self.release("COMPLETED")
 
-    def cancel(self):
+    def cancel(self, reason: str = "CANCELLED"):
         self.status = OrderStatus.CANCELLED
 
         for listener in self._listeners or []:
@@ -223,7 +223,7 @@ class Order(TimedIdentifiable):
 
         self._listeners = []
 
-        self.release("CANCELLED")
+        self.release(reason)
 
     def release(self, reason: str = "RELEASE (NO REASON)"):
         for wallet in self.portfolio.wallets:

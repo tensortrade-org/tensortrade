@@ -12,20 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License
 
-import math
 import operator
 
 from typing import Union, Tuple
 from numbers import Number
-from decimal import Decimal, getcontext
+from decimal import Decimal, ROUND_DOWN
 
 from tensortrade.base.exceptions import InvalidNegativeQuantity, IncompatibleInstrumentOperation, \
     InvalidNonNumericQuantity, QuantityOpPathMismatch
-
-
-def precise(amount: float, precision: int):
-    factor = 10**precision
-    return math.floor(amount*factor) / factor
 
 
 class Quantity:
@@ -92,10 +86,20 @@ class Quantity:
         return float(self.size)
 
     def contain(self, exchange_pair: 'ExchangePair'):
-        if (self.size < exchange_pair.min_trade_size):
-            return Quantity(self.instrument, 0, self.path_id)
+        options = exchange_pair.exchange.options
+        price = exchange_pair.price
 
-        return Quantity(self.instrument, min(self.size, exchange_pair.max_trade_size), self.path_id)
+        if exchange_pair.pair.base == self.instrument:
+            size = self.size
+            return Quantity(self.instrument, min(size, options.max_trade_size), self.path_id)
+
+        size = self.size * price
+        if size < options.max_trade_size:
+            return Quantity(self.instrument, self.size, self.path_id)
+
+        contained_size = options.max_trade_size / price
+        contained_size = contained_size.quantize(Decimal(10)**-self.instrument.precision, rounding=ROUND_DOWN)
+        return Quantity(self.instrument, contained_size, self.path_id)
 
     @staticmethod
     def validate(left, right) -> Tuple['Quantity', 'Quantity']:
