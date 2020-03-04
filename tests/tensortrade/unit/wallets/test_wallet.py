@@ -2,6 +2,8 @@
 import pytest
 import unittest.mock as mock
 
+from decimal import Decimal
+
 from tensortrade.base.exceptions import InsufficientFunds, IncompatibleInstrumentOperation
 from tensortrade.exchanges import Exchange
 from tensortrade.wallets import Wallet
@@ -156,7 +158,8 @@ def test_total_balance():
 def test_transfer():
 
     exchange = mock.Mock()
-    exchange.quote_price = lambda pair: 9750.19
+    price = Decimal(9750.19).quantize(Decimal(10)**-2)
+    exchange.quote_price = lambda pair: price
     exchange.name = "coinbase"
 
     order = mock.Mock()

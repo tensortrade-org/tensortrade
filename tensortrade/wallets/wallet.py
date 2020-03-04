@@ -160,18 +160,17 @@ class Wallet(Identifiable):
 
     def withdraw(self, quantity: 'Quantity', reason: str):
         quantity = quantity.quantize()
+
         if quantity.is_locked and self._locked.get(quantity.path_id, False):
             locked_quantity = self._locked[quantity.path_id]
-
-            if quantity > locked_quantity and not np.isclose(quantity.as_float(), locked_quantity.as_float(), rtol=0.001):
+            if quantity > locked_quantity:
                 raise InsufficientFunds(self._locked[quantity.path_id], quantity)
+            self._locked[quantity.path_id] -= quantity
 
-            self._locked[quantity.path_id] -= min(locked_quantity, quantity)
         elif not quantity.is_locked:
-            if quantity > self._balance and not np.isclose(quantity.as_float(), self._balance.as_float(), rtol=0.001):
+            if quantity > self._balance:
                 raise InsufficientFunds(self.balance, quantity)
-
-            self._balance -= min(self._balance, quantity)
+            self._balance -= quantity
 
         self.ledger.commit(wallet=self,
                            quantity=quantity,
@@ -189,7 +188,20 @@ class Wallet(Identifiable):
                  exchange_pair: 'ExchangePair',
                  reason: str):
         """
-        E1: (lsb1 - lsb2) - q = (ltb2 - ltb1) - p*(q - c)
+        Parameters
+        ----------
+            source : 'Wallet'
+                The wallet in which funds will be transferred from
+            target : 'Wallet'
+                The wallet in which funds will be transferred to
+            quantity : 'Quantity'
+                The quantity to be transferred from the source to the target.
+                In terms of the instrument of the source wallet.
+            commission :  'Quantity'
+                The commission to be taken from the source wallet for performing
+                the transfer of funds.
+            exchange_pair : 'ExchangePair'
+                The exchange pair associated with the transfer
         """
         quantity = quantity.quantize()
         commission = commission.quantize()
@@ -206,7 +218,7 @@ class Wallet(Identifiable):
         quantity = source.withdraw(quantity, "FILL ORDER")
 
         converted = quantity.convert(exchange_pair)
-        target.deposit(converted, 'TRADED {} {} @ {}'.format(quantity, exchange_pair, price))
+        target.deposit(converted, 'TRADED {} {} @ {}'.format(quantity, exchange_pair, exchange_pair.price))
 
         lsb2 = source.locked.get(poid).size
         ltb2 = target.locked.get(poid, 0 * pair.quote).size
@@ -216,14 +228,13 @@ class Wallet(Identifiable):
 
         cv = (q / p).quantize(Decimal(10) ** -target.instrument.precision)
 
-        if not np.isclose(float(lsb1 - lsb2) - float(q + c), float(ltb2 - ltb1) - float(cv), rtol=0.001):
+        if (lsb1 - lsb2) - (q + c) != ltb2 - ltb1 - cv:
             equation = "({} - {}) - ({} + {}) != ({} - {}) - {}".format(
                 lsb1, lsb2, q, c, ltb2, ltb1, cv
             )
-
             raise Exception("Invalid Transfer: " + equation)
 
-        return Transfer(quantity, commission, price)
+        return Transfer(quantity, commission, exchange_pair.price)
 
     def reset(self):
         self._balance = Quantity(self._instrument, self._initial_size).quantize()

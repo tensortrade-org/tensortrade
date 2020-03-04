@@ -92,13 +92,11 @@ def assert_execute_order(current_price,
         base_balance = base_wallet.locked['fake_id'].size
         quote_balance = quote_wallet.locked['fake_id'].size
 
-        q = ((trade.size + trade.commission.size) / current_price)
-        q = q.quantize(Decimal(10)**-quote.precision)
-        expected_quote_balance = order_quantity.size - q
-        expected_quote_balance = expected_quote_balance.quantize(Decimal(10)**-quote.precision)
+        expected_base_balance = trade.size * current_price
+        expected_base_balance = expected_base_balance.quantize(Decimal(10)**-base.precision)
 
-        assert base_balance == trade.size
-        assert quote_balance == expected_quote_balance
+        assert base_balance == expected_base_balance
+        assert quote_balance == 0
 
 
 def test_simple_values_execute_buy_order():

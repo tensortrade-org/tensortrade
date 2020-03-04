@@ -1,7 +1,5 @@
 
-import math
 
-from tensortrade.instruments.quantity import precise
 from decimal import Decimal
 
 
@@ -22,8 +20,12 @@ class ExchangePair:
 
     @property
     def price(self) -> Decimal:
+        return self.exchange.quote_price(self.pair)
+
+    @property
+    def inverse_price(self):
         price = self.exchange.quote_price(self.pair)
-        return Decimal(price).quantize(Decimal(10)**-self.pair.base.precision)
+        return Decimal(1 / price).quantize(Decimal(10)**-self.pair.quote.precision)
 
     def __hash__(self):
         return hash(str(self))

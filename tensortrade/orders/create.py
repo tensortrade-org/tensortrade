@@ -85,13 +85,12 @@ def risk_managed_order(step: int,
                        trade_type: 'TradeType',
                        exchange_pair: 'ExchangePair',
                        price: float,
-                       size: float,
+                       quantity: 'Quantity',
                        down_percent: float,
                        up_percent: float,
                        portfolio: 'Portfolio',
                        start: int = None,
                        end: int = None):
-    instrument = side.instrument(exchange_pair.pair)
 
     order = Order(step=step,
                   side=side,
@@ -100,7 +99,7 @@ def risk_managed_order(step: int,
                   price=price,
                   start=start,
                   end=end,
-                  quantity=(size * instrument),
+                  quantity=quantity,
                   portfolio=portfolio)
 
     risk_criteria = Stop("down", down_percent) ^ Stop("up", up_percent)

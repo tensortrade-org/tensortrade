@@ -39,13 +39,17 @@ def test_smoke():
     portfolio = Portfolio(USD, [
         Wallet(coinbase, 200000 * USD),
         Wallet(coinbase, 0 * BTC),
+        Wallet(bitstamp, 10000 * USD),
+        Wallet(bitstamp, 2 * BTC),
+        Wallet(bitstamp, 20 * ETH),
+        Wallet(bitstamp, 30 * LTC)
     ])
 
     action_scheme = ManagedRiskOrders(
-        durations=[4],
-        stop_loss_percentages=[0.001],
-        take_profit_percentages=[0.001],
-        trade_sizes=[0.1]
+        durations=[4, 6, 8, 10],
+        stop_loss_percentages=[0.01, 0.003, 0.3],
+        take_profit_percentages=[0.01, 0.003, 0.3],
+        trade_sizes=[0.99999999999999]
     )
 
     env = TradingEnvironment(
@@ -56,9 +60,11 @@ def test_smoke():
 
     done = False
 
+    n_steps = 0
     while not done:
         action = env.action_space.sample()
         obs, reward, done, info = env.step(action)
+        n_steps += 1
 
     portfolio.ledger.as_frame().sort_values(["step", "poid"]).to_clipboard(index=False)
     df = portfolio.ledger.as_frame()

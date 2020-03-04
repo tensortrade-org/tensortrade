@@ -113,14 +113,15 @@ class ManagedRiskOrders(ActionScheme):
         if action == 0:
             return None
 
-        (exchange_pair, (stop_loss, take_profit, prop, duration, side)) = self.actions[action]
+        (exchange_pair, (stop_loss, take_profit, proportion, duration, side)) = self.actions[action]
 
-        wallet_instrument = side.instrument(exchange_pair.pair)
-        wallet = portfolio.get_wallet(exchange_pair.exchange.id, instrument=wallet_instrument)
+        instrument = side.instrument(exchange_pair.pair)
+        wallet = portfolio.get_wallet(exchange_pair.exchange.id, instrument=instrument)
 
         balance = wallet.balance.as_float()
-        size = (balance * prop)
-        size = min(wallet.balance.size, size)
+        size = (balance * proportion)
+        size = min(balance, size)
+        quantity = (size * instrument).quantize()
 
         if size < 10 ** -exchange_pair.pair.base.precision:
             return None
@@ -130,7 +131,7 @@ class ManagedRiskOrders(ActionScheme):
             'side': side,
             'exchange_pair': exchange_pair,
             'price': exchange_pair.price,
-            'size': size,
+            'quantity': quantity,
             'down_percent': stop_loss,
             'up_percent': take_profit,
             'portfolio': portfolio,

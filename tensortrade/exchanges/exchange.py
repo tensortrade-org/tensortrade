@@ -74,7 +74,9 @@ class Exchange(Module, Component, TimedIdentifiable):
         Returns:
             The quote price of the specified trading pair, denoted in the base instrument.
         """
-        return Decimal(self._prices[str(trading_pair)].value)
+        price = Decimal(self._prices[str(trading_pair)].value)
+        price = price.quantize(Decimal(10)**-trading_pair.base.precision)
+        return price
 
     def is_pair_tradable(self, trading_pair: 'TradingPair') -> bool:
         """Whether or not the specified trading pair is tradable on this exchange.
