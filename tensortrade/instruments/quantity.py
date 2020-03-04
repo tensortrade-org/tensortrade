@@ -77,6 +77,7 @@ class Quantity:
         else:
             instrument = exchange_pair.pair.base
             converted_size = self.size * exchange_pair.price
+
         return Quantity(instrument, converted_size, self.path_id)
 
     def free(self):
@@ -90,10 +91,11 @@ class Quantity:
     def as_float(self):
         return float(self.size)
 
-    def contain(self, options: 'ExchangeOptions'):
-        return Quantity(self.instrument,
-                        max(min(self.size, options.max_trade_size), options.min_trade_size),
-                        self.path_id)
+    def contain(self, exchange_pair: 'ExchangePair'):
+        if (self.size < exchange_pair.min_trade_size):
+            return Quantity(self.instrument, 0, self.path_id)
+
+        return Quantity(self.instrument, min(self.size, exchange_pair.max_trade_size), self.path_id)
 
     @staticmethod
     def validate(left, right) -> Tuple['Quantity', 'Quantity']:

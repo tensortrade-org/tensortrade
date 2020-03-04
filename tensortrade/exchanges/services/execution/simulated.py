@@ -17,7 +17,7 @@ def execute_buy_order(order: 'Order',
     if order.type == TradeType.LIMIT and order.price < current_price:
         return None
 
-    filled = order.remaining.contain(options)
+    filled = order.remaining.contain(order.exchange_pair)
 
     if order.type == TradeType.MARKET:
         scale = order.price / max(current_price, order.price)
@@ -58,7 +58,7 @@ def execute_sell_order(order: 'Order',
     if order.type == TradeType.LIMIT and order.price > current_price:
         return None
 
-    filled = order.remaining.contain(options)
+    filled = order.remaining.contain(order.exchange_pair)
 
     commission = options.commission * filled
     quantity = filled - commission

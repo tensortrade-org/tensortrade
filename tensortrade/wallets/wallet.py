@@ -95,7 +95,6 @@ class Wallet(Identifiable):
         return self._locked
 
     def lock(self, quantity, order: 'Order', reason: str):
-        quantity = quantity.quantize()
         if quantity.is_locked:
             raise DoubleLockedQuantity(quantity)
 
@@ -110,6 +109,9 @@ class Wallet(Identifiable):
             self._locked[quantity.path_id] = quantity
         else:
             self._locked[quantity.path_id] += quantity
+
+        self._locked[quantity.path_id] = self._locked[quantity.path_id].quantize()
+        self._balance = self._balance.quantize()
 
         self.ledger.commit(wallet=self,
                            quantity=quantity,
@@ -130,7 +132,10 @@ class Wallet(Identifiable):
             raise InsufficientFunds(self._locked[quantity.path_id], quantity)
 
         self._locked[quantity.path_id] -= quantity
-        self._balance += quantity.free().quantize()
+        self._balance += quantity.free()
+
+        self._locked[quantity.path_id] = self._locked[quantity.path_id].quantize()
+        self._balance = self._balance.quantize()
 
         self.ledger.commit(wallet=self,
                            quantity=quantity,
@@ -141,7 +146,6 @@ class Wallet(Identifiable):
         return quantity
 
     def deposit(self, quantity: 'Quantity', reason: str):
-        quantity = quantity.quantize()
         if quantity.is_locked:
             if quantity.path_id not in self._locked:
                 self._locked[quantity.path_id] = quantity
@@ -149,6 +153,9 @@ class Wallet(Identifiable):
                 self._locked[quantity.path_id] += quantity
         else:
             self._balance += quantity
+
+        self._locked[quantity.path_id] = self._locked[quantity.path_id]
+        self._balance = self._balance.quantize()
 
         self.ledger.commit(wallet=self,
                            quantity=quantity,
@@ -159,8 +166,6 @@ class Wallet(Identifiable):
         return quantity
 
     def withdraw(self, quantity: 'Quantity', reason: str):
-        quantity = quantity.quantize()
-
         if quantity.is_locked and self._locked.get(quantity.path_id, False):
             locked_quantity = self._locked[quantity.path_id]
             if quantity > locked_quantity:
@@ -171,6 +176,9 @@ class Wallet(Identifiable):
             if quantity > self._balance:
                 raise InsufficientFunds(self.balance, quantity)
             self._balance -= quantity
+
+        self._locked[quantity.path_id] = self._locked[quantity.path_id]
+        self._balance = self._balance.quantize()
 
         self.ledger.commit(wallet=self,
                            quantity=quantity,
@@ -207,8 +215,6 @@ class Wallet(Identifiable):
         commission = commission.quantize()
 
         pair = source.instrument / target.instrument
-        price = exchange_pair.price if pair == exchange_pair.pair else exchange_pair.price**-1
-
         poid = quantity.path_id
 
         lsb1 = source.locked.get(poid).size
@@ -217,21 +223,41 @@ class Wallet(Identifiable):
         commission = source.withdraw(commission, "COMMISSION")
         quantity = source.withdraw(quantity, "FILL ORDER")
 
-        converted = quantity.convert(exchange_pair)
-        target.deposit(converted, 'TRADED {} {} @ {}'.format(quantity, exchange_pair, exchange_pair.price))
+        if quantity.instrument == exchange_pair.pair.base:
+            instrument = exchange_pair.pair.quote
+            converted_size = quantity.size / exchange_pair.price
+        else:
+            instrument = exchange_pair.pair.base
+            converted_size = quantity.size * exchange_pair.price
+
+        converted = Quantity(instrument, converted_size, quantity.path_id).quantize()
+
+        converted = target.deposit(converted, 'TRADED {} {} @ {}'.format(quantity,
+                                                                         exchange_pair,
+                                                                         exchange_pair.price))
 
         lsb2 = source.locked.get(poid).size
         ltb2 = target.locked.get(poid, 0 * pair.quote).size
+
         q = quantity.size
-        p = price
         c = commission.size
+        cv = converted.size
+        p = exchange_pair.inverse_price if pair == exchange_pair.pair else exchange_pair.price
 
-        cv = (q / p).quantize(Decimal(10) ** -target.instrument.precision)
+        source_quantization = Decimal(10) ** -source.instrument.precision
+        target_quantization = Decimal(10) ** -target.instrument.precision
 
-        if (lsb1 - lsb2) - (q + c) != ltb2 - ltb1 - cv:
-            equation = "({} - {}) - ({} + {}) != ({} - {}) - {}".format(
-                lsb1, lsb2, q, c, ltb2, ltb1, cv
+        lhs = Decimal((lsb1 - lsb2) - (q + c)).quantize(source_quantization)
+        rhs = Decimal(ltb2 - ltb1 - cv).quantize(target_quantization)
+
+        lhs_eq_zero = np.isclose(float(lhs), 0, atol=float(source_quantization))
+        rhs_eq_zero = np.isclose(float(rhs), 0, atol=float(target_quantization))
+
+        if not lhs_eq_zero or not rhs_eq_zero:
+            equation = "({} - {}) - ({} + {}) != ({} - {}) - {}   [LHS = {}, RHS = {}, Price = {}]".format(
+                lsb1, lsb2, q, c, ltb2, ltb1, cv, lhs, rhs, p
             )
+
             raise Exception("Invalid Transfer: " + equation)
 
         return Transfer(quantity, commission, exchange_pair.price)

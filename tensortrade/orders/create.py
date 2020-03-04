@@ -91,7 +91,6 @@ def risk_managed_order(step: int,
                        portfolio: 'Portfolio',
                        start: int = None,
                        end: int = None):
-
     order = Order(step=step,
                   side=side,
                   trade_type=trade_type,

@@ -61,6 +61,8 @@ class Order(TimedIdentifiable):
                  end: int = None):
         super().__init__()
 
+        quantity = quantity.contain(exchange_pair)
+
         if quantity.size == 0:
             raise InvalidOrderQuantity(quantity)
 

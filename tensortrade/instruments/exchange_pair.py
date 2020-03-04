@@ -6,9 +6,20 @@ from decimal import Decimal
 class ExchangePair:
     """A pair of financial instruments to be traded on a specific exchange."""
 
-    def __init__(self, exchange: 'Exchange', pair: 'TradingPair'):
+    def __init__(self,
+                 exchange: 'Exchange',
+                 pair: 'TradingPair',
+                 min_trade_size: float = 1e-6,
+                 max_trade_size: float = 1e6,
+                 min_trade_price: float = 1e-8,
+                 max_trade_price: float = 1e8):
         self._exchange = exchange
         self._pair = pair
+
+        self.min_trade_size = min_trade_size
+        self.max_trade_size = max_trade_size
+        self.min_trade_price = min_trade_price
+        self.max_trade_price = max_trade_price
 
     @property
     def exchange(self) -> 'Exchange':
@@ -25,7 +36,8 @@ class ExchangePair:
     @property
     def inverse_price(self):
         price = self.exchange.quote_price(self.pair)
-        return Decimal(1 / price).quantize(Decimal(10)**-self.pair.quote.precision)
+        quantization = Decimal(10) ** -self.pair.quote.precision
+        return Decimal(price ** Decimal(-1)).quantize(quantization)
 
     def __hash__(self):
         return hash(str(self))

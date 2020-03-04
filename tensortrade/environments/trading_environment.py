@@ -220,7 +220,12 @@ class TradingEnvironment(gym.Env, TimeIndexed):
             done (bool): If `True`, the environments is complete and should be restarted.
             info (dict): Any auxiliary, diagnostic, or debugging information to output.
         """
-        order = self.action_scheme.get_order(action, self.portfolio)
+        try:
+            order = self.action_scheme.get_order(action, self.portfolio)
+        except Exception as e:
+            order = None
+
+            print('Invalid order created: ', e)
 
         if order:
             self._broker.submit(order)
@@ -303,7 +308,8 @@ class TradingEnvironment(gym.Env, TimeIndexed):
         current_step = self.clock.step - 1
 
         for renderer in self._renderers:
-            price_history = None if self._price_history is None else self._price_history[self._price_history.index < current_step]
+            price_history = None if self._price_history is None else self._price_history[
+                self._price_history.index < current_step]
             renderer.render(episode=episode,
                             max_episodes=self._max_episodes,
                             step=current_step,

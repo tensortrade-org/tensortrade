@@ -24,18 +24,8 @@ from tensortrade.data import Forward
 
 class ExchangeOptions:
 
-    def __init__(self,
-                 commission: float = 0.003,
-                 min_trade_size: float = 1e-6,
-                 max_trade_size: float = 1e6,
-                 min_trade_price: float = 1e-8,
-                 max_trade_price: float = 1e8,
-                 is_live: bool = False):
+    def __init__(self, commission: float = 0.003, is_live: bool = False):
         self.commission = commission
-        self.min_trade_size = min_trade_size
-        self.max_trade_size = max_trade_size
-        self.min_trade_price = min_trade_price
-        self.max_trade_price = max_trade_price
         self.is_live = is_live
 
 
