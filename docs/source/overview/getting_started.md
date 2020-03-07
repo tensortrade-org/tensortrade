@@ -17,7 +17,7 @@ pip install tensortrade
 OR
 
 ```bash
-pip install git+https://github.com/notadamking/tensortrade.git
+pip install git+https://github.com/tensortrade-org/tensortrade.git
 ```
 
 Some functionality included in TensorTrade is optional. To install all optional dependencies, run the following command:
@@ -29,7 +29,7 @@ pip install tensortrade[tf,tensorforce,baselines,ccxt,fbm]
 OR
 
 ```bash
-pip install git+https://github.com/notadamking/tensortrade.git[tf,tensorforce,baselines,ccxt,fbm]
+pip install git+https://github.com/tensortrade-org/tensortrade.git[tf,tensorforce,baselines,ccxt,fbm]
 ```
 
 
