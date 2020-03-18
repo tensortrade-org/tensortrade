@@ -257,7 +257,7 @@ class TradingEnvironment(gym.Env, TimeIndexed):
             'step': self.clock.step,
             'portfolio': self.portfolio,
             'broker': self._broker,
-            'order': orders[0],
+            'order': orders[0] if orders else None,
         }
 
         if self._enable_logger:
