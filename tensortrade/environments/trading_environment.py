@@ -221,14 +221,17 @@ class TradingEnvironment(gym.Env, TimeIndexed):
             info (dict): Any auxiliary, diagnostic, or debugging information to output.
         """
         try:
-            order = self.action_scheme.get_order(action, self.portfolio)
+            orders = self.action_scheme.get_order(action, self.portfolio)
         except Exception as e:
-            order = None
-
+            orders = None
             print('Invalid order created: ', e)
 
-        if order:
-            self._broker.submit(order)
+        if orders:
+            if not isinstance(orders, list):
+                orders += [orders]
+
+            for order in orders:
+                self._broker.submit(order)
 
         self._broker.update()
 
@@ -254,7 +257,7 @@ class TradingEnvironment(gym.Env, TimeIndexed):
             'step': self.clock.step,
             'portfolio': self.portfolio,
             'broker': self._broker,
-            'order': order,
+            'order': orders[0],
         }
 
         if self._enable_logger:
