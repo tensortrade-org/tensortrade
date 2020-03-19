@@ -228,7 +228,7 @@ class TradingEnvironment(gym.Env, TimeIndexed):
 
         if orders:
             if not isinstance(orders, list):
-                orders += [orders]
+                orders = [orders]
 
             for order in orders:
                 self._broker.submit(order)
