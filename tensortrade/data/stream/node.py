@@ -19,14 +19,35 @@ References:
     - https://github.com/tensorflow/tensorflow/blob/master/tensorflow/python/keras/engine/node.py
 """
 
+import math
+import functools
+import operator
+
+import numpy as np
+
 from abc import abstractmethod
+from typing import Union, Callable
+
 from tensortrade.base.core import Observable
+
+from .listeners import NodeListener
 
 
 class Node(Observable):
 
-    def __init__(self, name: str):
+    names = {}
+
+    def __init__(self, name: str = None):
         super().__init__()
+
+        if not name:
+            name = self.generic_name
+
+            if name in Node.names.keys():
+                Node.names[name] += 1
+                name += ":" + str(Node.names[name] - 1)
+            else:
+                Node.names[name] = 0
 
         self._name = name
         self.inputs = []
@@ -35,12 +56,20 @@ class Node(Observable):
             Module.CONTEXTS[-1].add_node(self)
 
     @property
+    def generic_name(self) -> str:
+        return "node"
+
+    @property
     def name(self):
         return self._name
 
     @name.setter
     def name(self, name: str):
         self._name = name
+
+    def set_name(self, name: str) -> 'Node':
+        self._name = name
+        return self
 
     @property
     def value(self):
@@ -70,17 +99,132 @@ class Node(Observable):
     def run(self):
         self.value = self.forward()
 
+        for listener in self.listeners:
+            listener.on_next({self.name: self.value})
+
+    def apply(self, func: Callable[[float], float], name: str = None):
+        if not name:
+            name = "Apply({},{})".format(self.name, func.__name__)
+        return Apply(apply=func, name=name)(self)
+
+    def pow(self, power: float, name: str = None):
+        if not name:
+            name = "Pow({},{})".format(self.name, power)
+        return self.apply(lambda x: pow(x, power), name)
+
+    def sqrt(self, name: str = None):
+        if not name:
+            name = "Sqrt({})".format(self.name)
+        return self.apply(math.sqrt, name)
+
+    def square(self, name: str = None):
+        if not name:
+            name = "Square({})".format(self.name)
+        return self.pow(2, name)
+
+    def log(self, name: str = None):
+        if not name:
+            name = "Log({})".format(self.name)
+        return self.apply(math.log, name)
+
+    def abs(self, name: str = None):
+        if not name:
+            name = "Abs({})".format(self.name)
+        return self.apply(abs, name)
+
+    def __add__(self, other):
+        assert isinstance(other, Node)
+        name = "Add({},{})".format(self.name, other.name)
+        return BinOp(operator.add, name)(self, other)
+
+    def __sub__(self, other):
+        if isinstance(other, float):
+            other = Constant(other, "Constant({})".format(other))
+            name = "Subtract({},{})".format(self.name, other.name)
+            return BinOp(operator.sub, name)(self, other)
+
+        assert isinstance(other, Node)
+        name = "Subtract({},{})".format(self.name, other.name)
+        return BinOp(operator.sub, name)(self, other)
+
+    def __mul__(self, other):
+        if isinstance(other, float):
+            other = Constant(other, "Constant({})".format(other))
+            name = "Multiply({},{})".format(self.name, other.name)
+            return BinOp(operator.mul, name)(self, other)
+
+        assert isinstance(other, Node)
+        name = "Multiply({},{})".format(self.name, other.name)
+        return BinOp(operator.mul, name)(self, other)
+
+    def __rmul__(self, other):
+        return self.__mul__(other)
+
+    def __truediv__(self, other):
+        if isinstance(other, float):
+            other = Constant(other, "Constant({})".format(other))
+            name = "Divide({},{})".format(self.name, other.name)
+            return Divide(name=name)(self, other)
+
+        assert isinstance(other, Node)
+        name = "Divide({},{})".format(self.name, other.name)
+        return Divide(name=name)(self, other)
+
+    def __pow__(self, power, modulo=None):
+        return self.pow(power)
+
+    def __abs__(self):
+        return self.abs()
+
+    def __ceil__(self):
+        return self.apply(math.ceil, "Ceil({})".format(self.name))
+
+    def __floor__(self):
+        return self.apply(math.ceil, "Floor({})".format(self.name))
+
+    def __neg__(self):
+        return self.apply(lambda x: -x, "Neg({})".format(self.name))
+
+    def lag(self, lag: int = 1, name: str = None):
+        if not name:
+            name = "Lag({},{})".format(self.name, lag)
+        return Lag(lag=lag, name=name)(self)
+
+    def diff(self, name: str = None):
+        d = self - self.lag()
+        if not name:
+            return d
+        d.name = name
+        return d
+
+    def is_na(self):
+        return not self.value or np.isnan(self.value)
+
+    def is_finite(self):
+        return not self.value or np.isfinite(self.value)
+
+    def ewm(self,
+            com: float = None,
+            span: float = None,
+            halflife: float = None,
+            alpha: float = None,
+            warmup: int = 0,
+            adjust: bool = True,
+            ignore_na: bool = False):
+        return EWM(self, com, span, halflife, alpha, warmup, adjust, ignore_na)
+
     @abstractmethod
     def forward(self):
         raise NotImplementedError()
 
     @abstractmethod
-    def reset(self):
-        raise NotImplementedError()
-
-    @abstractmethod
     def has_next(self):
         raise NotImplementedError()
+
+    def reset(self):
+        for listener in self.listeners:
+            if hasattr(listener, "reset"):
+                listener.reset()
 
     def __str__(self):
         return "<Node: name={}, type={}>".format(self.name,
@@ -94,12 +238,16 @@ class Module(Node):
 
     CONTEXTS = []
 
-    def __init__(self, name: str):
+    def __init__(self, name: str = None):
         super().__init__(name)
 
         self.submodules = []
         self.variables = []
         self.built = False
+
+    @property
+    def generic_name(self) -> str:
+        return "module"
 
     def add_node(self, node: 'Node'):
         node.name = self.name + ":/" + node.name
@@ -131,5 +279,319 @@ class Module(Node):
     def forward(self):
         return
 
+
+class Constant(Node):
+
+    def __init__(self, constant: float, name: str = None):
+        super().__init__(name)
+        self.constant = constant
+
+    def forward(self):
+        return self.constant
+
+    def has_next(self):
+        return True
+
+
+class Divide(Node):
+
+    def __init__(self, fill_value=np.nan, name: str = None):
+        super().__init__(name)
+        self.fill_value = fill_value
+
+    def forward(self):
+        try:
+            v = operator.truediv(self.inputs[0].value, self.inputs[1].value)
+            v = v if np.isfinite(v) else self.fill_value
+        except ZeroDivisionError:
+            return self.fill_value
+        return v
+
+    def has_next(self):
+        return True
+
+
+class Lag(Node):
+
+    def __init__(self, lag: int = 1, name: str = None):
+        super().__init__(name)
+        self.lag = lag
+        self.runs = 0
+        self.history = []
+
+    @property
+    def generic_name(self) -> str:
+        return "lag"
+
+    def forward(self):
+        node = self.inputs[0]
+        if self.runs < self.lag:
+            self.runs += 1
+            self.history.insert(0, node.value)
+            return np.nan
+
+        self.history.insert(0, node.value)
+        return self.history.pop()
+
+    def has_next(self):
+        return True
+
     def reset(self):
-        pass
+        super().reset()
+        self.runs = 0
+        self.history = []
+
+
+class BinOp(Node):
+
+    def __init__(self, op, name: str = None):
+        super().__init__(name)
+        self.op = op
+
+    def generic_name(self) -> str:
+        return str(self.op.__name__)
+
+    def forward(self):
+        return self.op(self.inputs[0].value, self.inputs[1].value)
+
+    def has_next(self):
+        return True
+
+
+class Reduce(Node):
+
+    def __init__(self,
+                 func: Callable[[float, float], float],
+                 name: str = None):
+        super().__init__(name)
+        self.func = func
+
+    @property
+    def generic_name(self) -> str:
+        return "reduce"
+
+    def forward(self):
+        return functools.reduce(self.func, [node.value for node in self.inputs])
+
+    def has_next(self):
+        return True
+
+
+class Select(Node):
+
+    def __init__(self, selector: Union[Callable[[str], bool], str]):
+        if isinstance(selector, str):
+            self.key = selector
+            self.selector = lambda x: x.name == selector
+        else:
+            self.key = None
+            self.selector = selector
+
+        super().__init__(self.key)
+        self._node = None
+
+    @property
+    def generic_name(self) -> str:
+        return "select"
+
+    def forward(self):
+        if not self._node:
+            self._node = list(filter(self.selector, self.inputs))[0]
+            self.name = self._node.name
+
+        return self._node.value
+
+    def has_next(self):
+        return True
+
+
+class Lambda(Node):
+
+    def __init__(self, extract: Callable[[any], float], obj: any, name: str = None):
+        super().__init__(name)
+        self.extract = extract
+        self.obj = obj
+
+    @property
+    def generic_name(self) -> str:
+        return "lambda"
+
+    def forward(self):
+        return self.extract(self.obj)
+
+    def has_next(self):
+        return True
+
+
+class Apply(Node):
+
+    def __init__(self, apply: Callable[[float], float], name: str = None):
+        super().__init__(name)
+        self.name = name
+        self.apply = apply
+
+    @property
+    def generic_name(self) -> str:
+        return "apply"
+
+    def forward(self):
+        node = self.inputs[0]
+        return self.apply(node.value)
+
+    def has_next(self):
+        return True
+
+
+class Forward(Lambda):
+
+    def __init__(self, node: 'Node'):
+        super().__init__(
+            name=node.name,
+            extract=lambda x: x.value,
+            obj=node
+        )
+        self(node)
+
+
+class Condition(Module):
+
+    def __init__(self, condition: Callable[['Node'], bool], name: str = None):
+        super().__init__(name)
+        self.condition = condition
+
+    def build(self):
+        self.variables = list(filter(self.condition, self.inputs))
+
+    def has_next(self):
+        return True
+
+
+class EWM:
+
+    def __init__(self,
+                 node: Node,
+                 com: float = None,
+                 span: float = None,
+                 halflife: float = None,
+                 alpha: float = None,
+                 warmup: int = 0,
+                 adjust: bool = True,
+                 ignore_na: bool = False
+                 ):
+        self.node = node
+        self.com = com
+        self.span = span
+        self.halflife = halflife
+
+        self.warmup = warmup
+        self.adjust = adjust
+        self.ignore_na = ignore_na
+
+        if alpha:
+            assert 0 < alpha <= 1
+            self.alpha = alpha
+        elif com:
+            assert com >= 0
+            self.alpha = 1 / (1 + com)
+        elif span:
+            assert span >= 1
+            self.alpha = 2 / (1 + span)
+        elif halflife:
+            assert halflife > 0
+            self.alpha = 1 - math.exp(math.log(0.5) / halflife)
+
+    def mean(self, name: str = None):
+        if not name:
+            name = "EWM:Mean({},{})".format(self.node.name, self.alpha)
+        return ExponentialWeightedMovingAverage(self, name)(self.node)
+
+    def var(self, bias: bool = False, name: str = None):
+        config = self.get_config()
+        t1 = (self.node**2).ewm(**config).mean()
+        t2 = self.mean()**2
+        biased_variance = t1 - t2
+        if not name:
+            name = "EWM:Var({},{})".format(self.node.name, self.alpha)
+
+        if bias:
+            biased_variance.name = name
+            return biased_variance
+
+        def factor(weights: np.array):
+            a = weights.sum()**2
+            b = (weights**2).sum()
+            return a / (a - b)
+
+        debiasing_factor = Lambda(lambda s: factor(s.weights), t1)(t1)
+        unbiased_variance = debiasing_factor*biased_variance
+        unbiased_variance.name = name
+
+        return unbiased_variance
+
+    def std(self, bias: bool = False, name: str = None):
+        if not name:
+            name = "EWM:SD({},{})".format(self.node.name, self.alpha)
+        return self.var(bias, name).sqrt().set_name(name)
+
+    def get_config(self):
+        return {
+            "alpha": self.alpha,
+            "com": self.com,
+            "span": self.span,
+            "halflife": self.halflife,
+            "warmup": self.warmup,
+            "adjust": self.adjust,
+            "ignore_na": self.ignore_na
+        }
+
+
+class ExponentialWeightedMovingAverage(Node):
+
+    def __init__(self, ewm: EWM, name: str = None):
+        super().__init__(name)
+        self.ewm = ewm
+        self.alpha = self.ewm.alpha
+        self.steps = 0
+        self.values = []
+        self.weights = None
+
+    @property
+    def generic_name(self) -> str:
+        return "EWM:Mean"
+
+    def forward(self):
+        node = self.inputs[0]
+
+        if self.ewm.ignore_na:
+            if not node.is_na():
+                self.values += [node.value]
+        else:
+            self.values += [node.value]
+
+        x = np.array(self.values)
+
+        # Compute weights
+        i = np.arange(0, len(self.values))
+        w = (1 - self.alpha) ** i
+
+        if not self.ewm.adjust:
+            w[:-1] = self.alpha * w[:-1]
+
+        # Compute average
+        if not self.ewm.ignore_na:
+            mask = ~np.isnan(x)
+            w = w[mask[::-1]]
+            x = x[mask]
+
+        v = (w[::-1] * x).sum() / w.sum()
+
+        self.weights = w
+
+        return v if len(self.values) >= self.ewm.warmup else np.nan
+
+    def has_next(self):
+        return True
+
+    def reset(self):
+        self.steps = 0
+        self.values = []

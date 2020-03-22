@@ -2,8 +2,7 @@
 import operator
 import pytest
 
-from tensortrade.data import DataFeed, Stream
-from tensortrade.data.stream.transform import BinOp
+from tensortrade.data import DataFeed, Stream, BinOp
 
 
 def test_init():

@@ -2,8 +2,7 @@
 
 import operator
 
-from tensortrade.data import Stream, DataFeed, Module
-from tensortrade.data.stream.transform import BinOp, Select
+from tensortrade.data import Stream, DataFeed, Module, BinOp, Select
 
 
 def test_namespace():
