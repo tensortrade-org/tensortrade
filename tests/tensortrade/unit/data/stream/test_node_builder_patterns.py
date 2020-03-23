@@ -3,7 +3,7 @@ import pytest
 import numpy as np
 import pandas as pd
 
-from tensortrade.data import DataFeed, Stream, Constant
+from tensortrade.data import DataFeed, Stream, BinOp
 
 
 def test_lag():
@@ -28,7 +28,7 @@ def test_apply():
 
     s1 = Stream([1, 4, 9, 16, 25], "s1")
 
-    lag = s1.apply(np.sqrt, "apply")
+    lag = s1.apply(np.sqrt).set_name("apply")
 
     feed = DataFeed([lag])
     feed.compile()
@@ -96,7 +96,7 @@ def test_log_returns():
     while feed.has_next():
         print(feed.next())
 
-    lr = s1.log().diff("log_return")
+    lr = s1.log().diff().set_name("log_return")
 
     feed = DataFeed([lr])
     feed.compile()
@@ -113,7 +113,7 @@ def test_ewma():
     v = [5, 2, 4, 6]
     s = Stream(v, "s")
 
-    mean = s.ewm(alpha=0.68, adjust=True, ignore_na=True).mean("mean")
+    mean = s.ewm(alpha=0.68, adjust=True, ignore_na=True).mean().set_name("mean")
 
     feed = DataFeed([mean])
     feed.compile()
@@ -130,7 +130,7 @@ def test_ewma():
     v = [5, 2, np.nan, 6]
     s = Stream(v, "s")
 
-    mean = s.ewm(alpha=0.68, adjust=True, ignore_na=False).mean("mean")
+    mean = s.ewm(alpha=0.68, adjust=True, ignore_na=False).mean().set_name("mean")
 
     feed = DataFeed([mean])
     feed.compile()
@@ -147,7 +147,7 @@ def test_ewma():
     v = [5, 2, np.nan, 6]
     s = Stream(v, "s")
 
-    mean = s.ewm(alpha=0.68, adjust=False, ignore_na=True).mean("mean")
+    mean = s.ewm(alpha=0.68, adjust=False, ignore_na=True).mean().set_name("mean")
 
     feed = DataFeed([mean])
     feed.compile()
@@ -164,7 +164,7 @@ def test_ewma():
     v = [5, 2, np.nan, 6]
     s = Stream(v, "s")
 
-    mean = s.ewm(alpha=0.68, adjust=False, ignore_na=False).mean("mean")
+    mean = s.ewm(alpha=0.68, adjust=False, ignore_na=False).mean().set_name("mean")
 
     feed = DataFeed([mean])
     feed.compile()
@@ -194,7 +194,7 @@ def test_ewa_beginning_na():
         d = spec.copy()
         d["warmup"] = d["min_periods"]
         del d["min_periods"]
-        mean = s.ewm(**d).mean("mean")
+        mean = s.ewm(**d).mean().set_name("mean")
 
         feed = DataFeed([mean])
         feed.compile()
@@ -225,7 +225,7 @@ def test_ewmv_biased():
         d = spec.copy()
         d["warmup"] = d["min_periods"]
         del d["min_periods"]
-        var = s.ewm(**d).var(bias=True, name="var")
+        var = s.ewm(**d).var(bias=True).set_name("var")
 
         feed = DataFeed([var])
         feed.compile()
@@ -256,7 +256,7 @@ def test_emwmv_unbiased():
         d = spec.copy()
         d["warmup"] = d["min_periods"]
         del d["min_periods"]
-        var = s.ewm(**d).var(bias=False, name="var")
+        var = s.ewm(**d).var(bias=False).set_name("var")
 
         feed = DataFeed([var])
         feed.compile()
@@ -268,3 +268,90 @@ def test_emwmv_unbiased():
             actual += [feed.next()["var"]]
 
         assert all(np.isclose(actual, expected))
+
+
+def test_min():
+
+    s1 = Stream([1, 2, 3, 4], "s1")
+    s2 = Stream([1, 4, 3, 2], "s2")
+
+    m = s1.min(s2).set_name("min")
+
+    feed = DataFeed([m])
+    feed.compile()
+
+    expected = [1, 2, 3, 2]
+    actual = []
+    while feed.has_next():
+        actual += [feed.next()["min"]]
+
+    assert actual == expected
+
+
+def test_max():
+
+    s1 = Stream([1, 2, 3, 4], "s1")
+    s2 = Stream([1, 4, 3, 2], "s2")
+
+    m = s1.max(s2).set_name("max")
+
+    feed = DataFeed([m])
+    feed.compile()
+
+    expected = [1, 4, 3, 4]
+    actual = []
+    while feed.has_next():
+        actual += [feed.next()["max"]]
+
+    assert actual == expected
+
+
+def test_clamp_min():
+
+    s = Stream([1, -2, -3, 0, 5], "s")
+
+    m = s.clamp_min(0).set_name("clamp_min")
+
+    feed = DataFeed([m])
+    feed.compile()
+
+    expected = [1, 0, 0, 0, 5]
+    actual = []
+    while feed.has_next():
+        actual += [feed.next()["clamp_min"]]
+
+    assert actual == expected
+
+
+def test_clamp_max():
+
+    s = Stream([1, -2, -3, 0, 5], "s")
+
+    m = s.clamp_max(0).set_name("clamp_max")
+
+    feed = DataFeed([m])
+    feed.compile()
+
+    expected = [0, -2, -3, 0, 0]
+    actual = []
+    while feed.has_next():
+        actual += [feed.next()["clamp_max"]]
+
+    assert actual == expected
+
+
+def test_fillna():
+
+    s = Stream([1, np.nan, -3, np.nan, 5], "s")
+
+    m = s.fillna(-1).set_name("fill")
+
+    feed = DataFeed([m])
+    feed.compile()
+
+    expected = [1, -1, -3, -1, 5]
+    actual = []
+    while feed.has_next():
+        actual += [feed.next()["fill"]]
+
+    assert actual == expected

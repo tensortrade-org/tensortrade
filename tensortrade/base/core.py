@@ -73,6 +73,8 @@ class Observable:
 
     def attach(self, listener: Listener):
         self._listeners += [listener]
+        return self
 
     def detach(self, listener: Listener):
         self._listeners.remove(listener)
+        return self

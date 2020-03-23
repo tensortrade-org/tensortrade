@@ -26,7 +26,7 @@ import operator
 import numpy as np
 
 from abc import abstractmethod
-from typing import Union, Callable
+from typing import Union, Callable, List
 
 from tensortrade.base.core import Observable
 
@@ -76,7 +76,7 @@ class Node(Observable):
         return self._value
 
     @value.setter
-    def value(self, value: float):
+    def value(self, value):
         self._value = value
 
     def __call__(self, *inputs):
@@ -102,43 +102,69 @@ class Node(Observable):
         for listener in self.listeners:
             listener.on_next({self.name: self.value})
 
-    def apply(self, func: Callable[[float], float], name: str = None):
-        if not name:
-            name = "Apply({},{})".format(self.name, func.__name__)
-        return Apply(apply=func, name=name)(self)
+    def apply(self, func: Callable[[float], float]):
+        name = "Apply({},{})".format(self.name, func.__name__)
+        return Apply(func=func, name=name)(self)
 
-    def pow(self, power: float, name: str = None):
-        if not name:
-            name = "Pow({},{})".format(self.name, power)
-        return self.apply(lambda x: pow(x, power), name)
+    def pow(self, power: float):
+        name = "Pow({},{})".format(self.name, power)
+        return self.apply(lambda x: pow(x, power)).set_name(name)
 
-    def sqrt(self, name: str = None):
-        if not name:
-            name = "Sqrt({})".format(self.name)
-        return self.apply(math.sqrt, name)
+    def sqrt(self):
+        name = "Sqrt({})".format(self.name)
+        return self.apply(math.sqrt).set_name(name)
 
-    def square(self, name: str = None):
-        if not name:
-            name = "Square({})".format(self.name)
-        return self.pow(2, name)
+    def square(self):
+        name = "Square({})".format(self.name)
+        return self.pow(2).set_name(name)
 
-    def log(self, name: str = None):
-        if not name:
-            name = "Log({})".format(self.name)
-        return self.apply(math.log, name)
+    def log(self):
+        name = "Log({})".format(self.name)
+        return self.apply(math.log).set_name(name)
 
-    def abs(self, name: str = None):
-        if not name:
-            name = "Abs({})".format(self.name)
-        return self.apply(abs, name)
+    def abs(self):
+        name = "Abs({})".format(self.name)
+        return self.apply(abs).set_name(name)
+
+    def max(self, other) -> 'Node':
+        if isinstance(other, float) or isinstance(other, int):
+            name = "Max({},{})".format(self.name, other)
+            return BinOp(max)(self, Constant(other)).set_name(name)
+        assert isinstance(other, Node)
+        name = "Max({},{})".format(self.name, other.name)
+        return BinOp(max)(self, other).set_name(name)
+
+    def min(self, other) -> 'Node':
+        if isinstance(other, float) or isinstance(other, int):
+            name = "Min({},{})".format(self.name, other)
+            return BinOp(min)(self, Constant(other)).set_name(name)
+        assert isinstance(other, Node)
+        name = "Min({},{})".format(self.name, other.name)
+        return BinOp(min)(self, other).set_name(name)
+
+    def clamp_min(self, c_min: float):
+        name = "ClampMin({},{})".format(self.name, c_min)
+        return self.max(c_min).set_name(name)
+
+    def clamp_max(self, c_max: float):
+        name = "ClampMax({},{})".format(self.name, c_max)
+        return self.min(c_max).set_name(name)
+
+    def clamp(self, c_min, c_max):
+        name = "Clamp({},{},{})".format(self.name, c_min, c_max)
+        return self.clamp_min(c_min).clamp_max(c_max).set_name(name)
 
     def __add__(self, other):
+        if isinstance(other, float) or isinstance(other, int):
+            other = Constant(other, "Constant({})".format(other))
+            name = "Add({},{})".format(self.name, other.name)
+            return BinOp(operator.add, name)(self, other)
         assert isinstance(other, Node)
         name = "Add({},{})".format(self.name, other.name)
         return BinOp(operator.add, name)(self, other)
 
     def __sub__(self, other):
-        if isinstance(other, float):
+        if isinstance(other, float) or isinstance(other, int):
             other = Constant(other, "Constant({})".format(other))
             name = "Subtract({},{})".format(self.name, other.name)
             return BinOp(operator.sub, name)(self, other)
@@ -148,7 +174,7 @@ class Node(Observable):
         return BinOp(operator.sub, name)(self, other)
 
     def __mul__(self, other):
-        if isinstance(other, float):
+        if isinstance(other, float) or isinstance(other, int):
             other = Constant(other, "Constant({})".format(other))
             name = "Multiply({},{})".format(self.name, other.name)
             return BinOp(operator.mul, name)(self, other)
@@ -161,7 +187,7 @@ class Node(Observable):
         return self.__mul__(other)
 
     def __truediv__(self, other):
-        if isinstance(other, float):
+        if isinstance(other, float) or isinstance(other, int):
             other = Constant(other, "Constant({})".format(other))
             name = "Divide({},{})".format(self.name, other.name)
             return Divide(name=name)(self, other)
@@ -183,25 +209,29 @@ class Node(Observable):
         return self.apply(math.ceil, "Floor({})".format(self.name))
 
     def __neg__(self):
-        return self.apply(lambda x: -x, "Neg({})".format(self.name))
+        name = "Neg({})".format(self.name)
+        return self.apply(lambda x: -x).set_name(name)
 
-    def lag(self, lag: int = 1, name: str = None):
-        if not name:
-            name = "Lag({},{})".format(self.name, lag)
+    def lag(self, lag: int = 1):
+        name = "Lag({},{})".format(self.name, lag)
         return Lag(lag=lag, name=name)(self)
 
-    def diff(self, name: str = None):
-        d = self - self.lag()
-        if not name:
-            return d
-        d.name = name
-        return d
+    def diff(self):
+        return self - self.lag()
 
-    def is_na(self):
-        return not self.value or np.isnan(self.value)
+    def fillna(self, fill_value: float = 0):
+        name = "FillNa({},{})".format(self.name, fill_value)
+        return FillNa(fill_value, name)(self)
 
-    def is_finite(self):
-        return not self.value or np.isfinite(self.value)
+    def ffill(self):
+        name = "ForwardFill({})".format(self.name)
+        return ForwardFill(name)(self)
+
+    def expanding(self, warmup: int = 1):
+        return Expanding(warmup)(self)
+
+    def rolling(self, window: int, warmup: int = 0):
+        return Rolling(window, warmup)(self)
 
     def ewm(self,
             com: float = None,
@@ -211,7 +241,13 @@ class Node(Observable):
             warmup: int = 0,
             adjust: bool = True,
             ignore_na: bool = False):
-        return EWM(self, com, span, halflife, alpha, warmup, adjust, ignore_na)
+        return EWM(com, span, halflife, alpha, warmup, adjust, ignore_na)(self)
+
+    def is_na(self):
+        return not self.value or np.isnan(self.value)
+
+    def is_finite(self):
+        return not self.value or np.isfinite(self.value)
 
     @abstractmethod
     def forward(self):
@@ -425,10 +461,10 @@ class Lambda(Node):
 
 class Apply(Node):
 
-    def __init__(self, apply: Callable[[float], float], name: str = None):
+    def __init__(self, func: Callable[[float], float], name: str = None):
         super().__init__(name)
         self.name = name
-        self.apply = apply
+        self.func = func
 
     @property
     def generic_name(self) -> str:
@@ -436,7 +472,7 @@ class Apply(Node):
 
     def forward(self):
         node = self.inputs[0]
-        return self.apply(node.value)
+        return self.func(node.value)
 
     def has_next(self):
         return True
@@ -466,19 +502,226 @@ class Condition(Module):
         return True
 
 
-class EWM:
+class ForwardFill(Node):
+
+    def __init__(self, name: str = None):
+        super().__init__(name)
+        self.previous = None
+
+    @property
+    def generic_name(self):
+        return "ffill"
+
+    def forward(self):
+        node = self.inputs[0]
+        if not self.previous or np.isfinite(node.value):
+            self.previous = node.value
+        return self.previous
+
+    def has_next(self):
+        return True
+
+
+class FillNa(Node):
+
+    def __init__(self, fill_value: float = 0, name: str = None):
+        super().__init__(name)
+        self.fill_value = fill_value
+
+    def forward(self):
+        node = self.inputs[0]
+        if node.is_na():
+            return self.fill_value
+        return node.value
+
+    def has_next(self):
+        return True
+
+
+class Expanding(Node):
+
+    def __init__(self, warmup: int = 1, name: str = None):
+        super().__init__(name)
+        self.warmup = warmup
+        self.history = []
+
+    @property
+    def generic_name(self):
+        return "expanding"
+
+    def forward(self):
+        node = self.inputs[0]
+        self.history += [node.value]
+        return self.history
+
+    def has_next(self):
+        return True
+
+    def agg(self, func):
+        name = "Expanding{}({})".format(func.__name__.capitalize(), self.name)
+        return RollingNode(func, name)(self)
+
+    def count(self):
+        name = "ExpandingCount({})".format(self.name)
+        return RollingCount(name)(self)
+
+    def sum(self):
+        name = "ExpandingSum({})".format(self.name)
+        return self.agg(np.sum).set_name(name)
+
+    def mean(self):
+        name = "ExpandingMean({})".format(self.name)
+        return self.agg(np.mean).set_name(name)
+
+    def var(self):
+        name = "ExpandingVar({})".format(self.name)
+        return self.agg(lambda x: np.var(x, ddof=1)).set_name(name)
+
+    def median(self):
+        name = "ExpandingMedian({})".format(self.name)
+        return self.agg(np.median).set_name(name)
+
+    def std(self):
+        name = "ExpandingSD({})".format(self.name)
+        return self.agg(lambda x: np.std(x, ddof=1)).set_name(name)
+
+    def min(self):
+        name = "ExpandingMin({})".format(self.name)
+        return self.agg(np.min).set_name(name)
+
+    def max(self):
+        name = "ExpandingMax({})".format(self.name)
+        return self.agg(np.max).set_name(name)
+
+
+class ExpandingNode(Node):
+
+    def __init__(self, func, name: str = None):
+        super().__init__(name)
+        self.func = func
+
+    def forward(self):
+        expanding = self.inputs[0]
+        history = expanding.value
+
+        if len(history) < expanding.warmup:
+            return np.nan
+
+        return self.func(history)
+
+    def has_next(self):
+        return True
+
+
+class ExpandingCount(ExpandingNode):
+
+    def __init__(self, name: str = None):
+        super().__init__(lambda w: (~np.isnan(w)).sum(), name)
+
+    def forward(self):
+        expanding = self.inputs[0]
+        return self.func(expanding.value)
+
+
+class Rolling(Node):
+
+    def __init__(self, window: int, warmup: int = 0, name: str = None):
+        super().__init__(name)
+        assert warmup <= window
+        self.window = window
+        self.warmup = warmup
+        self.history = []
+
+    @property
+    def generic_name(self):
+        return "rolling"
+
+    def forward(self):
+        node = self.inputs[0]
+        self.history.insert(0, node.value)
+        if len(self.history) > self.window:
+            self.history.pop()
+        return self.history
+
+    def has_next(self):
+        return True
+
+    def agg(self, func):
+        name = "Rolling{}({},{})".format(func.__name__.capitalize(), self.name, self.window)
+        return RollingNode(func, name)(self)
+
+    def count(self):
+        name = "RollingCount({},{})".format(self.name, self.window)
+        return RollingCount(name)(self)
+
+    def sum(self):
+        name = "RollingSum({},{})".format(self.name, self.window)
+        return self.agg(np.sum).set_name(name)
+
+    def mean(self):
+        name = "RollingMean({},{})".format(self.name, self.window)
+        return self.agg(np.mean).set_name(name)
+
+    def var(self):
+        name = "RollingVar({},{})".format(self.name, self.window)
+        return self.agg(np.var).set_name(name)
+
+    def median(self):
+        name = "RollingMedian({},{})".format(self.name, self.window)
+        return self.agg(np.median).set_name(name)
+
+    def std(self):
+        name = "RollingSD({},{})".format(self.name, self.window)
+        return self.var().sqrt().set_name(name)
+
+    def min(self):
+        name = "RollingMin({},{})".format(self.name, self.window)
+        return self.agg(np.min).set_name(name)
+
+    def max(self):
+        name = "RollingMax({},{})".format(self.name, self.window)
+        return self.agg(np.max).set_name(name)
+
+
+class RollingNode(Node):
+
+    def __init__(self, func, name: str = None):
+        super().__init__(name)
+        self.func = func
+
+    def forward(self):
+        rolling = self.inputs[0]
+        history = rolling.value
+        if len(history) < rolling.warmup:
+            return np.nan
+        return self.func(history)
+
+    def has_next(self):
+        return True
+
+
+class RollingCount(RollingNode):
+
+    def __init__(self, name: str = None):
+        super().__init__(lambda w: (~np.isnan(w)).sum(), name)
+
+    def forward(self):
+        rolling = self.inputs[0]
+        return self.func(rolling.value)
+
+
+class EWM(Node):
 
     def __init__(self,
-                 node: Node,
                  com: float = None,
                  span: float = None,
                  halflife: float = None,
                  alpha: float = None,
                  warmup: int = 0,
                  adjust: bool = True,
-                 ignore_na: bool = False
-                 ):
-        self.node = node
+                 ignore_na: bool = False,
+                 name: str = None):
+        super().__init__(name)
         self.com = com
         self.span = span
         self.halflife = halflife
@@ -500,98 +743,120 @@ class EWM:
             assert halflife > 0
             self.alpha = 1 - math.exp(math.log(0.5) / halflife)
 
-    def mean(self, name: str = None):
-        if not name:
-            name = "EWM:Mean({},{})".format(self.node.name, self.alpha)
-        return ExponentialWeightedMovingAverage(self, name)(self.node)
+        self.history = []
+        self.weights = []
 
-    def var(self, bias: bool = False, name: str = None):
-        config = self.get_config()
-        t1 = (self.node**2).ewm(**config).mean()
-        t2 = self.mean()**2
-        biased_variance = t1 - t2
-        if not name:
-            name = "EWM:Var({},{})".format(self.node.name, self.alpha)
+    def forward(self):
+        value = self.inputs[0].value
+        if self.ignore_na:
+            if not np.isnan(value):
+                self.history += [value]
 
-        if bias:
-            biased_variance.name = name
-            return biased_variance
+                # Compute weights
+                if not self.adjust and len(self.weights) > 0:
+                    self.weights[-1] *= self.alpha
+                self.weights += [(1 - self.alpha) ** len(self.history)]
+        else:
+            self.history += [value]
 
-        def factor(weights: np.array):
-            a = weights.sum()**2
-            b = (weights**2).sum()
-            return a / (a - b)
+            # Compute weights
+            if not self.adjust and len(self.weights) > 0:
+                self.weights[-1] *= self.alpha
+            self.weights += [(1 - self.alpha)**len(self.history)]
 
-        debiasing_factor = Lambda(lambda s: factor(s.weights), t1)(t1)
-        unbiased_variance = debiasing_factor*biased_variance
-        unbiased_variance.name = name
+        return self.history, self.weights
 
-        return unbiased_variance
+    def has_next(self):
+        return True
 
-    def std(self, bias: bool = False, name: str = None):
-        if not name:
-            name = "EWM:SD({},{})".format(self.node.name, self.alpha)
-        return self.var(bias, name).sqrt().set_name(name)
+    def debias_factor(self):
+        name = "EWM:DebiasFactor({},{})".format(self.name, self.alpha)
+        return DebiasFactor(name)(self)
 
-    def get_config(self):
-        return {
-            "alpha": self.alpha,
-            "com": self.com,
-            "span": self.span,
-            "halflife": self.halflife,
-            "warmup": self.warmup,
-            "adjust": self.adjust,
-            "ignore_na": self.ignore_na
-        }
+    def mean(self):
+        name = "EWM:Mean({},{})".format(self.name, self.alpha)
+        return ExponentialWeightedMovingAverage(name)(self)
+
+    def var(self, bias: bool = False):
+        name = "EWM:Var({},{})".format(self.name, self.alpha)
+        return ExponentialWeightedMovingVariance(bias, name)(self, self.inputs[0])
+
+    def std(self, bias: bool = False):
+        name = "EWM:SD({},{})".format(self.name, self.alpha)
+        return self.var(bias).sqrt().set_name(name)
 
 
 class ExponentialWeightedMovingAverage(Node):
 
-    def __init__(self, ewm: EWM, name: str = None):
+    def __init__(self, name: str = None):
         super().__init__(name)
-        self.ewm = ewm
-        self.alpha = self.ewm.alpha
-        self.steps = 0
-        self.values = []
-        self.weights = None
-
-    @property
-    def generic_name(self) -> str:
-        return "EWM:Mean"
 
     def forward(self):
-        node = self.inputs[0]
+        ewm = self.inputs[0]
+        history, weights = ewm.value
 
-        if self.ewm.ignore_na:
-            if not node.is_na():
-                self.values += [node.value]
-        else:
-            self.values += [node.value]
-
-        x = np.array(self.values)
-
-        # Compute weights
-        i = np.arange(0, len(self.values))
-        w = (1 - self.alpha) ** i
-
-        if not self.ewm.adjust:
-            w[:-1] = self.alpha * w[:-1]
+        x = np.array(history)
+        w = np.array(weights)
 
         # Compute average
-        if not self.ewm.ignore_na:
+        if not ewm.ignore_na:
             mask = ~np.isnan(x)
             w = w[mask[::-1]]
             x = x[mask]
 
         v = (w[::-1] * x).sum() / w.sum()
 
-        self.weights = w
-
-        return v if len(self.values) >= self.ewm.warmup else np.nan
+        return v if len(x) >= ewm.warmup else np.nan
 
     def has_next(self):
         return True
 
-    def reset(self):
-        self.steps = 0
-        self.values = []
+
+class DebiasFactor(Node):
+
+    def __init__(self, name: str = None):
+        super().__init__(name)
+
+    def forward(self):
+        ewm = self.inputs[0]
+        w = np.array(ewm.weights)
+        a = w.sum()**2
+        b = (w**2).sum()
+        return a / (a - b)
+
+    def has_next(self):
+        return True
+
+
+class ExponentialWeightedMovingVariance(Module):
+
+    def __init__(self, bias: bool = False, name: str = None):
+        super().__init__(name)
+        self.bias = bias
+        self.variance = None
+
+    def build(self):
+        ewm, node = self.inputs
+        t1 = (node**2).ewm(
+            alpha=ewm.alpha,
+            warmup=ewm.warmup,
+            adjust=ewm.adjust,
+            ignore_na=ewm.ignore_na
+        ).mean()
+        t2 = ewm.mean()**2
+        biased_variance = t1 - t2
+
+        if self.bias:
+            self.variance = biased_variance.set_name(self.name)
+        else:
+            self.variance = ewm.debias_factor()*biased_variance
+            self.variance.name = self.name
+
+    def flatten(self):
+        return [self.variance]
+
+    def forward(self):
+        return self.variance.value
+
+    def has_next(self):
+        return True
