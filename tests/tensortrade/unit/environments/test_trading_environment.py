@@ -25,14 +25,14 @@ def portfolio():
     df2 = df2.set_index("date")
 
     ex1 = Exchange("coinbase", service=execute_order)(
-        Stream("USD-BTC", list(df1['BTC:close'])),
-        Stream("USD-ETH", list(df1['ETH:close']))
+        Stream(list(df1['BTC:close']), "USD-BTC"),
+        Stream(list(df1['ETH:close']), "USD-ETH")
     )
 
     ex2 = Exchange("binance", service=execute_order)(
-        Stream("USD-BTC", list(df2['BTC:close'])),
-        Stream("USD-ETH", list(df2['ETH:close'])),
-        Stream("USD-LTC", list(df2['LTC:close']))
+        Stream(list(df2['BTC:close']), "USD-BTC"),
+        Stream(list(df2['ETH:close']), "USD-ETH"),
+        Stream(list(df2['LTC:close']), "USD-LTC")
     )
 
     p = Portfolio(USD, [
@@ -116,11 +116,11 @@ def test_runs_with_external_and_internal_data_feed(portfolio):
     with Module("coinbase") as coinbase:
         nodes = []
         for name in coinbase_btc.columns:
-            nodes += [Stream(name, list(coinbase_btc[name]))]
+            nodes += [Stream(list(coinbase_btc[name]), name)]
         for name in coinbase_eth.columns:
-            nodes += [Stream(name, list(coinbase_eth[name]))]
+            nodes += [Stream(list(coinbase_eth[name]), name)]
 
-    feed = DataFeed()(coinbase)
+    feed = DataFeed([coinbase])
 
     action_scheme = ManagedRiskOrders()
     reward_scheme = SimpleProfit()
@@ -168,9 +168,9 @@ def test_runs_with_external_feed_only(portfolio):
     nodes = []
     with Module("coinbase") as coinbase:
         for name in coinbase_btc.columns:
-            nodes += [Stream(name, list(coinbase_btc[name]))]
+            nodes += [Stream(list(coinbase_btc[name]), name)]
         for name in coinbase_eth.columns:
-            nodes += [Stream(name, list(coinbase_eth[name]))]
+            nodes += [Stream(list(coinbase_eth[name]), name)]
 
     feed = DataFeed([coinbase])
 
@@ -186,6 +186,7 @@ def test_runs_with_external_feed_only(portfolio):
         use_internal=False,
         enable_logger=False
     )
+    print(env.feed.process)
 
     done = False
     obs = env.reset()

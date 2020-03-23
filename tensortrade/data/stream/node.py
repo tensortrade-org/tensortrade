@@ -100,7 +100,7 @@ class Node(Observable):
         self.value = self.forward()
 
         for listener in self.listeners:
-            listener.on_next({self.name: self.value})
+            listener.on_next(self.value)
 
     def apply(self, func: Callable[[float], float]):
         name = "Apply({},{})".format(self.name, func.__name__)
