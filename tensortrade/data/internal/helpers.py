@@ -23,7 +23,7 @@ def create_internal_feed(portfolio: 'Portfolio'):
         name="worths"
     )(*sources)
 
-    net_worth = Reduce(func=operator.add)(worth_nodes).set_name("net_worth")
+    net_worth = Reduce(func=operator.add)(worth_nodes).rename("net_worth")
 
     sources += [net_worth]
 
