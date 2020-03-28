@@ -84,13 +84,34 @@ def test_sub():
 
 def test_truediv():
     s1 = Stream([2, 3, 4, 5, 6], "s1")
-    assert s1.name == "s1"
-
     s2 = Stream([2, 3, 4, 5, 6], "s2")
-    assert s2.name == "s2"
 
     s = (s1 / s2).rename("div")
-    print(s)
+
+    feed = DataFeed([s])
+    feed.compile()
+
+    values = []
+    while feed.has_next():
+        values += [feed.next()["div"]]
+
+    assert values == [1, 1, 1, 1, 1]
+
+    s1 = Stream([1, 1, 1, 1, 1], "s2")
+
+    s = (5 / s1).rename("div")
+    feed = DataFeed([s])
+    feed.compile()
+
+    values = []
+    while feed.has_next():
+        values += [feed.next()["div"]]
+
+    assert values == [5, 5, 5, 5, 5]
+
+    s1 = Stream([5, 5, 5, 5, 5], "s2")
+
+    s = (s1 / 5).rename("div")
     feed = DataFeed([s])
     feed.compile()
 
