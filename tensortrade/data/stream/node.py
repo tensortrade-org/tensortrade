@@ -66,8 +66,10 @@ class Node(Observable):
         self._name = name
 
     def rename(self, name: str, preserve_ns: bool = False) -> 'Node':
-        module_name = Module.CONTEXTS[-1].name
-        self._name = name if not preserve_ns else module_name + ":/" + name
+        if preserve_ns and len(Module.CONTEXTS) > 0:
+            module_name = Module.CONTEXTS[-1].name
+            name = module_name + ":/" + name
+        self._name = name
         return self
 
     @property
