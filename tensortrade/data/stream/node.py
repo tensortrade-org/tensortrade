@@ -65,8 +65,9 @@ class Node(Observable):
     def name(self, name: str):
         self._name = name
 
-    def rename(self, name: str) -> 'Node':
-        self._name = name
+    def rename(self, name: str, preserve_ns: bool = False) -> 'Node':
+        module_name = Module.CONTEXTS[-1].name
+        self._name = name if not preserve_ns else module_name + ":/" + name
         return self
 
     @property
@@ -100,17 +101,17 @@ class Node(Observable):
         for listener in self.listeners:
             listener.on_next(self.value)
 
-    def apply(self, func: Callable[[float], float]) -> 'Node':
+    def apply(self, func: Callable[[any], any]) -> 'Node':
         name = "Apply({},{})".format(self.name, func.__name__)
         return Apply(func=func, name=name)(self)
 
     def pow(self, power: float) -> 'Node':
         name = "Pow({},{})".format(self.name, power)
-        return self.apply(lambda x: pow(x, power)).rename(name)
+        return self.apply(lambda x: np.power(x, power)).rename(name)
 
     def sqrt(self) -> 'Node':
         name = "Sqrt({})".format(self.name)
-        return self.apply(math.sqrt).rename(name)
+        return self.apply(np.sqrt).rename(name)
 
     def square(self) -> 'Node':
         name = "Square({})".format(self.name)
@@ -118,75 +119,89 @@ class Node(Observable):
 
     def log(self) -> 'Node':
         name = "Log({})".format(self.name)
-        return self.apply(math.log).rename(name)
+        return self.apply(np.log).rename(name)
 
     def abs(self) -> 'Node':
         name = "Abs({})".format(self.name)
-        return self.apply(abs).rename(name)
+        return self.apply(np.abs).rename(name)
+
+    def ceil(self) -> 'Node':
+        name = "Ceil({})".format(self.name)
+        return self.apply(np.ceil).rename(name)
+
+    def floor(self) -> 'Node':
+        name = "Floor({})".format(self.name)
+        return self.apply(np.floor).rename(name)
 
     def max(self, other) -> 'Node':
         assert isinstance(other, Node)
         name = "Max({},{})".format(self.name, other.name)
-        return BinOp(max)(self, other).rename(name)
+        return BinOp(np.max)(self, other).rename(name)
 
     def min(self, other) -> 'Node':
         assert isinstance(other, Node)
         name = "Min({},{})".format(self.name, other.name)
-        return BinOp(min)(self, other).rename(name)
+        return BinOp(np.min)(self, other).rename(name)
 
     def clamp_min(self, c_min: float):
         name = "ClampMin({},{})".format(self.name, c_min)
-        return BinOp(max)(self, Constant(c_min)).rename(name).rename(name)
+        return BinOp(np.max)(self, Constant(c_min)).rename(name)
 
     def clamp_max(self, c_max: float):
         name = "ClampMax({},{})".format(self.name, c_max)
-        return BinOp(min)(self, Constant(c_max)).rename(name)
+        return BinOp(np.min)(self, Constant(c_max)).rename(name)
 
     def clamp(self, c_min: float, c_max: float):
         name = "Clamp({},{},{})".format(self.name, c_min, c_max)
         return self.clamp_min(c_min).clamp_max(c_max).rename(name)
 
     def __add__(self, other):
-        if isinstance(other, float) or isinstance(other, int):
+        if np.isreal(other):
             other = Constant(other, "Constant({})".format(other))
             name = "Add({},{})".format(self.name, other.name)
-            return BinOp(operator.add, name)(self, other)
+            return BinOp(np.add, name)(self, other)
         assert isinstance(other, Node)
         name = "Add({},{})".format(self.name, other.name)
-        return BinOp(operator.add, name)(self, other)
+        return BinOp(np.add, name)(self, other)
+
+    def __radd__(self, other):
+        return self.__add__(other)
 
     def __sub__(self, other):
-        if isinstance(other, float) or isinstance(other, int):
+        if np.isreal(other):
             other = Constant(other, "Constant({})".format(other))
             name = "Subtract({},{})".format(self.name, other.name)
-            return BinOp(operator.sub, name)(self, other)
-
+            return BinOp(np.subtract, name)(self, other)
         assert isinstance(other, Node)
         name = "Subtract({},{})".format(self.name, other.name)
-        return BinOp(operator.sub, name)(self, other)
+        return BinOp(np.subtract, name)(self, other)
+
+    def __rsub__(self, other):
+        return self.__sub__(other)
 
     def __mul__(self, other):
-        if isinstance(other, float) or isinstance(other, int):
+        if np.isreal(other):
             other = Constant(other, "Constant({})".format(other))
             name = "Multiply({},{})".format(self.name, other.name)
-            return BinOp(operator.mul, name)(self, other)
-
+            return BinOp(np.multiply, name)(self, other)
         assert isinstance(other, Node)
         name = "Multiply({},{})".format(self.name, other.name)
-        return BinOp(operator.mul, name)(self, other)
+        return BinOp(np.multiply, name)(self, other)
 
     def __rmul__(self, other):
         return self.__mul__(other)
 
     def __truediv__(self, other):
-        if isinstance(other, float) or isinstance(other, int):
+        if np.isreal(other):
             other = Constant(other, "Constant({})".format(other))
             name = "Divide({},{})".format(self.name, other.name)
-            return Divide(name=name)(self, other)
-
+            return BinOp(np.divide, name)(self, other)
         assert isinstance(other, Node)
         name = "Divide({},{})".format(self.name, other.name)
-        return Divide(name=name)(self, other)
+        return BinOp(np.divide, name)(self, other)
+
+    def __rtruediv__(self, other):
+        return self.__truediv__(other)
 
     def __pow__(self, power, modulo=None):
         return self.pow(power)
@@ -195,14 +210,14 @@ class Node(Observable):
         return self.abs()
 
     def __ceil__(self):
-        return self.apply(math.ceil, "Ceil({})".format(self.name))
+        return self.ceil()
 
     def __floor__(self):
-        return self.apply(math.ceil, "Floor({})".format(self.name))
+        return self.floor()
 
     def __neg__(self):
         name = "Neg({})".format(self.name)
-        return self.apply(lambda x: -x).rename(name)
+        return self.apply(np.negative).rename(name)
 
     def lag(self, lag: int = 1):
         name = "Lag({},{})".format(self.name, lag)
@@ -213,7 +228,7 @@ class Node(Observable):
         return Freeze(name)(self)
 
     def diff(self, periods: int = 1):
-        name = "Difference({},{})".format(self.name, periods)
+        name = "Diff({},{})".format(self.name, periods)
         return (self - self.lag(periods)).rename(name)
 
     def cumsum(self):
@@ -346,24 +361,6 @@ class Constant(Node):
         return True
 
 
-class Divide(Node):
-
-    def __init__(self, fill_value=np.nan, name: str = None):
-        super().__init__(name)
-        self.fill_value = fill_value
-
-    def forward(self):
-        try:
-            v = operator.truediv(self.inputs[0].value, self.inputs[1].value)
-            v = v if np.isfinite(v) else self.fill_value
-        except ZeroDivisionError:
-            return self.fill_value
-        return v
-
-    def has_next(self):
-        return True
-
-
 class Lag(Node):
 
     def __init__(self, lag: int = 1, name: str = None):
@@ -460,7 +457,7 @@ class Select(Node):
 
 class Lambda(Node):
 
-    def __init__(self, extract: Callable[[any], float], obj: any, name: str = None):
+    def __init__(self, extract: Callable[[any], any], obj: any, name: str = None):
         super().__init__(name)
         self.extract = extract
         self.obj = obj
@@ -478,7 +475,7 @@ class Lambda(Node):
 
 class Apply(Node):
 
-    def __init__(self, func: Callable[[float], float], name: str = None):
+    def __init__(self, func: Callable[[any], any], name: str = None):
         super().__init__(name)
         self.name = name
         self.func = func
