@@ -138,27 +138,27 @@ class Node(Observable):
     def max(self, other) -> 'Node':
         assert isinstance(other, Node)
         name = "Max({},{})".format(self.name, other.name)
-        return BinOp(np.max)(self, other).rename(name)
+        return BinOp(np.maximum)(self, other).rename(name)
 
     def min(self, other) -> 'Node':
         assert isinstance(other, Node)
         name = "Min({},{})".format(self.name, other.name)
-        return BinOp(np.min)(self, other).rename(name)
+        return BinOp(np.minimum)(self, other).rename(name)
 
     def clamp_min(self, c_min: float):
         name = "ClampMin({},{})".format(self.name, c_min)
-        return BinOp(np.max)(self, Constant(c_min)).rename(name)
+        return BinOp(np.maximum)(self, Constant(c_min)).rename(name)
 
     def clamp_max(self, c_max: float):
         name = "ClampMax({},{})".format(self.name, c_max)
-        return BinOp(np.min)(self, Constant(c_max)).rename(name)
+        return BinOp(np.minimum)(self, Constant(c_max)).rename(name)
 
     def clamp(self, c_min: float, c_max: float):
         name = "Clamp({},{},{})".format(self.name, c_min, c_max)
         return self.clamp_min(c_min).clamp_max(c_max).rename(name)
 
     def __add__(self, other):
-        if np.isreal(other):
+        if np.isscalar(other):
             other = Constant(other, "Constant({})".format(other))
             name = "Add({},{})".format(self.name, other.name)
             return BinOp(np.add, name)(self, other)
@@ -170,7 +170,7 @@ class Node(Observable):
         return self.__add__(other)
 
     def __sub__(self, other):
-        if np.isreal(other):
+        if np.isscalar(other):
             other = Constant(other, "Constant({})".format(other))
             name = "Subtract({},{})".format(self.name, other.name)
             return BinOp(np.subtract, name)(self, other)
@@ -182,7 +182,7 @@ class Node(Observable):
         return self.__sub__(other)
 
     def __mul__(self, other):
-        if np.isreal(other):
+        if np.isscalar(other):
             other = Constant(other, "Constant({})".format(other))
             name = "Multiply({},{})".format(self.name, other.name)
             return BinOp(np.multiply, name)(self, other)
@@ -194,7 +194,7 @@ class Node(Observable):
         return self.__mul__(other)
 
     def __truediv__(self, other):
-        if np.isreal(other):
+        if np.isscalar(other):
             other = Constant(other, "Constant({})".format(other))
             name = "Divide({},{})".format(self.name, other.name)
             return BinOp(np.divide, name)(self, other)

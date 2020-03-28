@@ -82,6 +82,25 @@ def test_sub():
     assert values == [1, 1, 1, 1, 1]
 
 
+def test_truediv():
+    s1 = Stream([2, 3, 4, 5, 6], "s1")
+    assert s1.name == "s1"
+
+    s2 = Stream([2, 3, 4, 5, 6], "s2")
+    assert s2.name == "s2"
+
+    s = (s1 / s2).rename("div")
+    print(s)
+    feed = DataFeed([s])
+    feed.compile()
+
+    values = []
+    while feed.has_next():
+        values += [feed.next()["div"]]
+
+    assert values == [1, 1, 1, 1, 1]
+
+
 def test_log_returns():
 
     s1 = Stream([200.23, 198.35, 244.36, 266.30, 250.40], "price")
