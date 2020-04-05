@@ -81,7 +81,13 @@ class Broker(OrderListener, TimeIndexed):
                 next_order = order.complete()
 
                 if next_order:
-                    self.submit(next_order)
+                    if next_order.is_executable():
+                        self._executed[next_order.id] = next_order
+
+                        next_order.attach(self)
+                        next_order.execute()
+                    else:
+                        self.submit(next_order)
 
     def reset(self):
         self._unexecuted = []

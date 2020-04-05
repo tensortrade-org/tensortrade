@@ -182,7 +182,7 @@ class Node(Observable):
         if not np.isscalar(other):
             raise Exception("Invalid node operation.")
         other = Constant(other, "Constant({})".format(other))
-        name = "Subtract({},{})".format(self.name, other.name)
+        name = "Subtract({},{})".format(other.name, self.name)
         return BinOp(np.subtract, name)(other, self)
 
     def __mul__(self, other):
@@ -210,7 +210,7 @@ class Node(Observable):
         if not np.isscalar(other):
             raise Exception("Invalid node operation.")
         other = Constant(other, "Constant({})".format(other))
-        name = "Divide({},{})".format(self.name, other.name)
+        name = "Divide({},{})".format(other.name, self.name)
         return BinOp(np.divide, name)(other, self)
 
     def __pow__(self, power, modulo=None):
