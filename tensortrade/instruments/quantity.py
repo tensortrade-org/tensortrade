@@ -97,7 +97,8 @@ class Quantity:
         if size < options.max_trade_size:
             return Quantity(self.instrument, self.size, self.path_id)
 
-        contained_size = options.max_trade_size / price
+        max_trade_size = Decimal(options.max_trade_size)
+        contained_size = max_trade_size / price
         contained_size = contained_size.quantize(Decimal(10)**-self.instrument.precision, rounding=ROUND_DOWN)
         return Quantity(self.instrument, contained_size, self.path_id)
 
