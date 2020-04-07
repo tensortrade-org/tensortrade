@@ -220,11 +220,7 @@ class TradingEnvironment(gym.Env, TimeIndexed):
             done (bool): If `True`, the environments is complete and should be restarted.
             info (dict): Any auxiliary, diagnostic, or debugging information to output.
         """
-        try:
-            orders = self.action_scheme.get_order(action, self.portfolio)
-        except Exception as e:
-            orders = None
-            print('Invalid order created: ', e)
+        orders = self.action_scheme.get_order(action, self.portfolio)
 
         if orders:
             if not isinstance(orders, list):
