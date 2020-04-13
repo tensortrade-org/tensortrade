@@ -18,6 +18,7 @@ from sqlite3 import Error
 
 class CCXT_Data_Fetcher():
     """
+        Much Code Credit goes to: https://github.com/Celeborn2BeAlive/cryptobigbro
         exchange_id: Any exchange id available thru CCXT 
                      https://github.com/ccxt/ccxt/wiki/Manual#exchanges
 
