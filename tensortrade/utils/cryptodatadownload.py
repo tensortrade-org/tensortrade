@@ -69,7 +69,7 @@ class CryptoDataDownload:
         exchange_name: str = kwargs.get('exchange_name', 'Coinbase')
         base_symbol: str = kwargs.get('base_symbol', 'BTC')
         quote_symbol: str = kwargs.get('quote_symbol', 'USD')
-        timeframee: str = kwargs.get('timeframe', '1h')
+        timeframe: str = kwargs.get('timeframe', '1h')
         include_all_volumes: bool = kwargs.get('include_all_volumes', False)
         
         if exchange_name.lower() == "gemini":
