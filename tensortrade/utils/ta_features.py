@@ -18,7 +18,7 @@ Interactive Colab Demo @
 
 import pandas as pd
 
-import CryptoDataDownload as cdd
+from .cryptodatadownload import CryptoDataDownload as cdd
 
 # Access Tulip indicators w/default values
 import pantulipy
