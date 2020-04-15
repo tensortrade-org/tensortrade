@@ -65,11 +65,12 @@ class CryptoDataDownload:
         df = df.reset_index()
         return df
 
-    def fetch(exchange_name='Coinbase', 
-              base_symbol='BTC', 
-              quote_symbol='USD', 
-              timeframe='1h', 
-              include_all_volumes=False):
+    def fetch(**kwargs): 
+        exchange_name: str = kwargs.get('exchange_name', 'Coinbase')
+        base_symbol: str = kwargs.get('base_symbol', 'BTC')
+        quote_symbol: str = kwargs.get('quote_symbol', 'USD')
+        timeframee: str = kwargs.get('timeframe', '1h')
+        include_all_volumes: bool = kwargs.get('include_all_volumes', False)
         
         if exchange_name.lower() == "gemini":
             return CryptoDataDownload.fetch_gemini(base_symbol, 
