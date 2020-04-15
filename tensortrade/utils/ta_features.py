@@ -205,23 +205,3 @@ class TA_Features:
         data = TA_Features.get_all_pandas_ta_indicators(data, unique=True)
         data = TA_Features.get_all_pantulipy_indicators(data, unique=False)
         return data
-    pantulipy_indicators = {
-            'ad': ad, 'adosc': adosc, 'adx': adx, 'adxr': adxr, 'ao': ao, 
-            'apo': apo, 'aroon': aroon, 'aroonosc': aroonosc, 'atr': atr, 
-            'avgprice': avgprice, 'bbands': bbands, 'bop': bop, 'cci': cci,
-            'cmo': cmo, 'crossany': crossany, 'crossover': crossover, 
-            'cvi': cvi, 'decay': decay, 'dema': dema, 'di': di, 'dm': dm, 
-            'dpo': dpo, 'dx': dx, 'edecay': edecay, 'ema': ema, 'emv': emv,
-            'fisher': fisher, 'fosc': fosc, 'hma': hma, 'kama': kama, 'kvo': kvo, 
-            'lag': lag, 'linreg': linreg, 'linregintercept': linregintercept, 
-            'linregslope': linregslope, 'macd': macd, 'marketfi': marketfi, 
-            'mass': mass, 'md': md, 'mfi': mfi, 'mom': mom, 'msw': msw, 
-            'natr': natr, 'nvi': nvi, 'obv': obv, 'ppo': ppo, 'psar': psar, 
-            'pvi': pvi, 'qstick': qstick, 'roc': roc, 'rocr': rocr, 'rsi': rsi, 
-            'sma': sma, 'stderr': stderr, 'stoch': stoch, 'tema': tema, 'tr': tr, 
-            'trima': trima, 'trix': trix, 'tsf': tsf, 'typprice': typprice, 
-            'ultosc': ultosc, 'vhf': vhf, 'vidya': vidya, 'volatility': volatility, 
-            'vosc': vosc, 'vwma': vwma, 'wad': wad, 'wcprice': wcprice, 
-            'wilders': wilders, 'willr': willr, 'wma': wma, 'zlema': zlema 
-        }
-
