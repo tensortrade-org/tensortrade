@@ -118,6 +118,14 @@ class TA_Features:
 
         return df
 
+    def _remove_duplicate_columns(df: pd.DataFrame)
+        """Rename all duplicate columns appending _2 or _3 or _4 etc"""
+        cols = pd.Series(df.columns)
+        for dup in cols[cols.duplicated()].unique(): 
+            cols[cols[cols == dup].index.values.tolist()] = [dup + '_' + str(i+1) if i != 0 else dup for i in range(sum(cols == dup))]
+        df.columns = cols # Rename columns
+        return df
+    
     def _append_column(orig, new):
         if isinstance(new, pd.DataFrame):
             for n, column in enumerate(new.columns):
@@ -165,7 +173,7 @@ class TA_Features:
                     data = TA_Features._append_column(data, indicator_data[i])
             else:
                 data = TA_Features._append_column(data, indicator_data)
-        return data
+        return TA_Features._remove_duplicate_columns(data)
 
     def get_all_pantulipy_indicators(data=None, unique=False, **kwargs):
         """
@@ -186,7 +194,7 @@ class TA_Features:
         for name, function in ind.items():
             if name not in pantulipy.core._DEFAULTLESS_INDICATORS:
                 data = pd.concat([data, function(data)], axis=1)
-        return data
+        return TA_Features._remove_duplicate_columns(data)
 
     def get_all_indicators(data=None, **kwargs):
         """
