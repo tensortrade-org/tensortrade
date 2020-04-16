@@ -118,7 +118,7 @@ class TA_Features:
 
         return df
 
-    def _remove_duplicate_columns(df: pd.DataFrame)
+    def _remove_duplicate_columns(df: pd.DataFrame):
         """Rename all duplicate columns appending _2 or _3 or _4 etc"""
         cols = pd.Series(df.columns)
         for dup in cols[cols.duplicated()].unique(): 
