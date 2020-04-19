@@ -105,7 +105,7 @@ class CCXT_Data_Fetcher():
         print("-- Fetching {} candles for {}".format(self.timeframe, self.symbol))
 
         # Grab most recent timestamp if data exists already
-        if type(self.candle_amount) != 'str':
+        if type(self.candle_amount) != str:
             if self.candle_amount > 0:
                 since = datetime.utcnow() - (self.candle_amount * self._timedelta(self.timeframe))
             else:
