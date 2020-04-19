@@ -35,7 +35,7 @@ class CCXT_Data_Fetcher():
         save_format: 'csv' or 'sqlite' are the database options.
         
         Example Usage:
-            from from tensortrade.utils.ccxt_data_fetcher import CCXT_Data_Fetcher
+            from tensortrade.utils.ccxt_data_fetcher import CCXT_Data_Fetcher
             ochlv = CCXT_Data_Fetcher(
                 exchange_id = 'binance',
                 symbol = 'XRP/BTC',
