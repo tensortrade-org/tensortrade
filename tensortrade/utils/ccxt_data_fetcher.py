@@ -120,9 +120,11 @@ class CCXT_Data_Fetcher():
         
         if self.csv:
             self.path_to_db_file = self.path + 'csv/' + main_path + '.csv'
+            self.mk_path = self.path + 'csv/'
             self.path = self.path + 'csv/' + self.exchange.id + '/'
         elif self.sqlite:
             self.path_to_db_file = self.path + 'sqlite/' + main_path + '.sqlite'
+            self.mk_path = self.path + 'sqlite/'
             self.path = self.path + 'sqlite/' + self.exchange.id + '/'
 
         df = pd.DataFrame()
@@ -175,6 +177,7 @@ class CCXT_Data_Fetcher():
                 df.drop_duplicates('timestamp', inplace=True)
 
             if self.csv:
+                self.ifNotDirExists_MakeDir(self.mk_path)
                 self.ifNotDirExists_MakeDir(self.path)
                 # Return a csv formatted string to write to .csv file
                 data = df.to_csv(mode='a', header=True, index=False)
@@ -183,6 +186,7 @@ class CCXT_Data_Fetcher():
                 with open(self.path_to_db_file, 'w+') as f:
                     f.write(data)
             elif self.sqlite:
+                self.ifNotDirExists_MakeDir(self.mk_path)
                 self.ifNotDirExists_MakeDir(self.path)
                 conn = self.load_sqlite_db(self.path_to_db_file)
                 if conn:
