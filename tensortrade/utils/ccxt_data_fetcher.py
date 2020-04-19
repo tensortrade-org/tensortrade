@@ -59,7 +59,8 @@ class CCXT_Data_Fetcher():
                  save_format = 'csv'):
 
         self.path = save_path
-
+        self.mk_path = ''
+        
         self.save_format = save_format
         self.csv = False
         self.sqlite = False
