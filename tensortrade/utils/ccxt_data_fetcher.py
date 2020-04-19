@@ -18,7 +18,9 @@ from sqlite3 import Error
 
 class CCXT_Data_Fetcher():
     """
-        Much Code Credit goes to: https://github.com/Celeborn2BeAlive/cryptobigbro
+        Majority Code Credit goes to: 
+            https://github.com/Celeborn2BeAlive/cryptobigbro
+            
         exchange_id: Any exchange id available thru CCXT 
                      https://github.com/ccxt/ccxt/wiki/Manual#exchanges
 
@@ -39,7 +41,8 @@ class CCXT_Data_Fetcher():
                 symbol = 'XRP/BTC',
                 timeframe = '1d',
                 candle_amount = 2000,
-                save_path = '/content/drive/My Drive/Crypto_Data/',
+                save_path = '/content/drive/My Drive/
+                ',
                 save_format = 'csv'
             )
             candles = ochlv.fetch_candles()
@@ -114,6 +117,7 @@ class CCXT_Data_Fetcher():
             since = datetime(1970, 1, 1, tzinfo=timezone.utc) # Earliest possible
 
         main_path = self.exchange.id + '/' + self.symbol.replace('/','_') + '_' + self.timeframe
+        
         if self.csv:
             self.path_to_db_file = self.path + 'csv/' + main_path + '.csv'
             self.path = self.path + 'csv/' + self.exchange.id + '/'
@@ -135,8 +139,10 @@ class CCXT_Data_Fetcher():
                     conn = self.load_sqlite_db(self.path_to_db_file)
                     if conn:
                         df_db = self.sqlite_to_dataframe(conn, table='ohlcv')
+                        
+            # Get Latest Candle Timestamp
             if not df_db.empty:
-                since = datetime.fromtimestamp(df_db.timestamp.values[-1], timezone.utc) # said close tiemstamp before, not open
+                since = datetime.fromtimestamp(df_db.timestamp.values[-1], timezone.utc)
 
             # Check if candle DB is up to date
             next_open_date = self.compute_end_timestamp(since, self.timeframe) + self._timedelta('1s')
@@ -144,7 +150,7 @@ class CCXT_Data_Fetcher():
                 print("\t-- The time is {} and next candle time is {}, no request needed.".format(exchange_time, since + self._timedelta(self.timeframe)))
                 continue
 
-            # Fetch ohlcv data from CCXT
+            # Fetch OHLCV data from CCXT
             print("\t-- Fetching candles from {}".format(since.strftime('%m/%d/%Y, %H:%M:%S')))
 
             df = self.exchange.fetch_ohlcv(symbol=self.symbol, timeframe=self.timeframe, since=int(since.timestamp()*1000))
@@ -191,8 +197,8 @@ class CCXT_Data_Fetcher():
                     c.execute('select * from ohlcv')
                     for row in c.fetchall():
                         print(row)
-
                     conn.close()
+                    
             df_db = df.copy()
             df = pd.DataFrame()
 
