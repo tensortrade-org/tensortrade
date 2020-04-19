@@ -150,8 +150,6 @@ class CCXT_Data_Fetcher():
             df = self.exchange.fetch_ohlcv(symbol=self.symbol, timeframe=self.timeframe, since=int(since.timestamp()*1000))
             df = pd.DataFrame(data=df, columns=['timestamp','open','high','low','close','volume'])
             df['timestamp'] = df['timestamp'].apply(lambda t: int(t/1000)) # convert timestamp from nanoseconds to milliseconds (expected by datetime)
-            df['open_timestamp_utc'] = df['timestamp'].apply(lambda t: (datetime.fromtimestamp(t, timezone.utc) - self._timedelta(self.timeframe)).timestamp())
-            df['close_timestamp_utc'] = df['timestamp'].apply(lambda t: (datetime.fromtimestamp(t, timezone.utc) - self._timedelta('1s')).timestamp())
 
             dupes = 0
             if not df_db.empty and not df.empty:
@@ -184,7 +182,7 @@ class CCXT_Data_Fetcher():
                 if conn:
                     #print(df.head())
                     c = conn.cursor()
-                    c.execute('create table if not exists ohlcv (timestamp, open, high, low, close, volume, open_timestamp_utc, close_timestamp_utc)')
+                    c.execute('create table if not exists ohlcv (timestamp, open, high, low, close, volume)')
                     conn.commit()
                     # Use Pandas to write to sqlite db
                     df.to_sql('ohlcv', conn, if_exists='append', index=False) #use index=True if index is timestamp
@@ -203,7 +201,6 @@ class CCXT_Data_Fetcher():
             time.sleep(self.exchange.rateLimit * 5 / 1000) # soften IO Load
 
         # Format OHCLV Data for the TensorTrade DataFeed
-        df_db.drop(columns=['open_timestamp_utc','close_timestamp_utc'], inplace=True)
         df_db = df_db.rename({"timestamp": "Date"}, axis='columns')
         df_db['Date'] = df_db['Date'].apply(lambda x: datetime.utcfromtimestamp(x))
         df_db['Date'] = df_db['Date'].dt.strftime('%Y-%m-%d %I:%M %p')
