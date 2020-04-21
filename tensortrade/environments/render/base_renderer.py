@@ -27,8 +27,8 @@ class BaseRenderer(Identifiable, metaclass=ABCMeta):
 
     def _create_log_entry(self, episode: int = None, max_episodes: int = None,
                          step: int = None, max_steps: int = None,
-                         date_format='%Y-%m-%d %H:%M:%S %p'):
-        log_entry = '[{}]'.format(datetime.now().strftime(date_format))
+                         date_format: str='%Y-%m-%d %H:%M:%S %p'):
+        log_entry = f'[{datetime.now().strftime("%Y-%m-%d %H:%M:%S %p")}]'
 
         if episode is not None:
             log_entry += f' Episode: {episode + 1}' + (f'/{max_episodes}' if max_episodes else '')
