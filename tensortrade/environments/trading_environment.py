@@ -49,7 +49,7 @@ class TradingEnvironment(gym.Env, TimeIndexed):
                  reward_scheme: Union[RewardScheme, str],
                  feed: DataFeed = None,
                  window_size: int = 1,
-                 use_internal: bool = True,
+                 use_internal: bool = False,
                  renderers: Union[str, List[str], List['BaseRenderer']] = 'screenlog',
                  **kwargs):
         """
