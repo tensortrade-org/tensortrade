@@ -36,7 +36,7 @@ class CCXT_Data_Fetcher():
         
         Example Usage:
             from tensortrade.utils.ccxt_data_fetcher import CCXT_Data_Fetcher
-            ochlv = CCXT_Data_Fetcher(
+            ohlcv = CCXT_Data_Fetcher(
                 exchange_id = 'binance',
                 symbol = 'XRP/BTC',
                 timeframe = '1d',
@@ -45,7 +45,7 @@ class CCXT_Data_Fetcher():
                 ',
                 save_format = 'csv'
             )
-            candles = ochlv.fetch_candles()
+            candles = ohlcv.fetch_candles()
             print(candles.head())
     """
 
