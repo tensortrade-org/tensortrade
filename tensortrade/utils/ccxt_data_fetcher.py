@@ -39,6 +39,9 @@ class CCXT_Data():
         save_path: Use if you want to save data as .csv file or SQLite DB.
         save_format: 'csv' or 'sqlite' are the database options.
         
+        TT_Format: True would set columns with a prefix using the base symbol
+            eg. BTC:open, BTC:close, BTC:volume
+            
         Example Usage:
             from tensortrade.utils.ccxt_data_fetcher import CCXT_Data
             
@@ -79,7 +82,8 @@ class CCXT_Data():
                       candle_amount: int = 1000,
                       save_path = '', 
                       save_format: str = 'csv',
-                      limit: int = 1000):
+                      limit: int = 1000,
+                      TT_Format=False):
         """
             Fetch OHLCV aka Candle Data using CCXT
             Able to fetch full available candle history
@@ -256,18 +260,20 @@ class CCXT_Data():
 
         # After getting all the candles, format and return for tensortrade use
         # Format OHCLV Data for the TensorTrade DataFeed
-        df_db = df_db.rename({"timestamp": "Date"}, axis='columns')
-        df_db['Date'] = df_db['Date'].apply(lambda x: datetime.utcfromtimestamp(x))
-        df_db['Date'] = df_db['Date'].dt.strftime('%Y-%m-%d %H:%M %p')
-        df_db.sort_values(by='Date', ascending=True, inplace=True)
-        df_db = df_db.set_index("Date")
+        df_db.sort_values(by='timestamp', ascending=True, inplace=True)
 
-        # Format column names for tensortrade use
-        if ccxt_exchange.id != 'bitmex' and '/' in symbol:
-            base, quote = symbol.split('/')
-        else:
-            base = symbol[:3]
-        df_db.columns = [base + ":" + name.lower() for name in df_db.columns]
+        if TT_Format:
+            df_db = df_db.rename({"timestamp": "Date"}, axis='columns')
+            df_db['Date'] = df_db['Date'].apply(lambda x: datetime.utcfromtimestamp(x))
+            df_db['Date'] = df_db['Date'].dt.strftime('%Y-%m-%d %H:%M %p')
+            df_db = df_db.set_index("Date")
+
+            # Format column names for tensortrade use
+            if ccxt_exchange.id != 'bitmex' and '/' in symbol:
+                base, quote = symbol.split('/')
+            else:
+                base = symbol[:3]
+            df_db.columns = [base + ":" + name.lower() for name in df_db.columns]
         
         print('\t\t\t-- Total Candles: ' + str(len(df_db)) + '\n')
 
@@ -278,7 +284,8 @@ class CCXT_Data():
                      trades_amount: str = '10m',
                      save_path: str = '', 
                      save_format: str = 'csv',
-                     limit: int=1000):
+                     limit: int=1000,
+                     TT_Format=False):
         """
             Fetch Trades aka Tick Data using CCXT
             Able to fetch full available trade history
@@ -461,24 +468,28 @@ class CCXT_Data():
         # After getting all the trades/ticks, format and return for tensortrade use
         # Format Tick Data for the TensorTrade DataFeed
         df_db.sort_values(by='timestamp', ascending=True, inplace=True)
-        df_db['Date'] = df_db['timestamp'].apply(lambda x: datetime.utcfromtimestamp(x/1000))
-        df_db = df_db.set_index("Date")
 
-        # format column names for tensortrade
-        if ccxt_exchange.id != 'bitmex' and '/' in symbol:
-            base, quote = symbol.split('/')
-        else:
-            base = symbol[:3]
-        df_db.columns = [base + ":" + name.lower() for name in df_db.columns]
+        if TT_Format:
+            df_db['Date'] = df_db['timestamp'].apply(lambda x: datetime.utcfromtimestamp(x/1000))
+            df_db = df_db.set_index("Date")
+
+            # format column names for tensortrade
+            if ccxt_exchange.id != 'bitmex' and '/' in symbol:
+                base, quote = symbol.split('/')
+            else:
+                base = symbol[:3]
+            df_db.columns = [base + ":" + name.lower() for name in df_db.columns]
         
         print('\t\t\t-- Total Trades: ' + str(len(df_db)) + '\n')
         return df_db
 
 
 
+
     ####################
     # Helper functions #
     ####################
+
     def earliest_datetime(dt):
         if dt.timestamp() < 0.0:
             return datetime(1970, 1, 1, tzinfo=timezone.utc)
@@ -486,6 +497,7 @@ class CCXT_Data():
             return dt
 
     def resample_ticks(data, column, tf):
+        # If 'price' in column name
         if column.find('price') > 0:
             return data[column].resample(tf).ohlc()
         else: # Resample Volume
