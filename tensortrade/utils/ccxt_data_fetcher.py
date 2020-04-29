@@ -41,7 +41,7 @@ class CCXT_Data():
         
         TT_Format: True would set columns with a prefix using the base symbol
             eg. BTC:open, BTC:close, BTC:volume
-            
+
         Example Usage:
             from tensortrade.utils.ccxt_data_fetcher import CCXT_Data
             
@@ -274,6 +274,10 @@ class CCXT_Data():
             else:
                 base = symbol[:3]
             df_db.columns = [base + ":" + name.lower() for name in df_db.columns]
+        else:
+            df_db = df_db.rename({"timestamp": "Date"}, axis='columns')
+            df_db['Date'] = df_db['Date'].apply(lambda x: datetime.utcfromtimestamp(x))
+            df_db = df_db.set_index("Date")
         
         print('\t\t\t-- Total Candles: ' + str(len(df_db)) + '\n')
 
@@ -468,11 +472,10 @@ class CCXT_Data():
         # After getting all the trades/ticks, format and return for tensortrade use
         # Format Tick Data for the TensorTrade DataFeed
         df_db.sort_values(by='timestamp', ascending=True, inplace=True)
+        df_db['Date'] = df_db['timestamp'].apply(lambda x: datetime.utcfromtimestamp(x/1000))
+        df_db = df_db.set_index("Date")
 
         if TT_Format:
-            df_db['Date'] = df_db['timestamp'].apply(lambda x: datetime.utcfromtimestamp(x/1000))
-            df_db = df_db.set_index("Date")
-
             # format column names for tensortrade
             if ccxt_exchange.id != 'bitmex' and '/' in symbol:
                 base, quote = symbol.split('/')
