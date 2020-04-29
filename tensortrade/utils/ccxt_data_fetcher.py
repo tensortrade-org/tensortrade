@@ -67,7 +67,10 @@ class CCXT_Data():
         "m": timedelta(minutes=1),
         "h": timedelta(hours=1),
         "d": timedelta(days=1),
-        "w": timedelta(days=7)
+        "w": timedelta(days=7),
+        "M": timedelta(days=31),
+        "Y": timedelta(weeks=52), # option for fetch trades
+        "y": timedelta(weeks=52) # lowercase alias
     }
 
     def fetch_candles(exchange: str = 'binance',
@@ -125,11 +128,23 @@ class CCXT_Data():
         # Grab most recent timestamp if data exists already
         if type(candle_amount) != str:
             if candle_amount > 0:
-                since = datetime.utcnow() - (candle_amount * CCXT_Data._timedelta(timeframe))
+                if timeframe.endswith('M'):
+                    _ = timeframe.split('M')
+                    c = int(_[0])
+                    # Special case for month because it has not fixed timedelta
+                    since = datetime.utcnow() - (c * candle_amount * CCXT_Data._timedelta(timeframe))
+                    since = datetime(since.year, since.month, 1, tzinfo=timezone.utc)
+                else:
+                    since = datetime.utcnow() - (candle_amount * CCXT_Data._timedelta(timeframe))
+        elif candle_amount.lower() == 'all':
+            since = datetime(1970, 1, 1, tzinfo=timezone.utc)
+        else:
+            if timeframe.endswith('M'):
+                since = datetime(1970, 1, 1, tzinfo=timezone.utc)
             else:
                 since = datetime.utcnow() - (500 * CCXT_Data._timedelta(timeframe))
-        elif candle_amount.lower() == 'all':
-            since = datetime(1970, 1, 1, tzinfo=timezone.utc) # Earliest possible
+
+        since = CCXT_Data.earliest_datetime(since) # sanitize if date is earlier than 1970
 
         main_path = ccxt_exchange.id + '/' + symbol.replace('/','_') + '_' + timeframe
         if csv:
@@ -389,7 +404,8 @@ class CCXT_Data():
             else:
                 prev_df_len = len(df)
 
-            new_since_date = df_db.index.values[-1] # Most recent timestamp in db
+            # Most recent timestamp in db
+            new_since_date = df_db.index.values[-1] if len(df_db) > 0 else since + CCXT_Data._timedelta(trades_amount)  
 
             print("\t\t-- {} trades received.".format(len(df)))
                
@@ -463,6 +479,11 @@ class CCXT_Data():
     ####################
     # Helper functions #
     ####################
+    def earliest_datetime(dt):
+        if dt.timestamp() < 0.0:
+            return datetime(1970, 1, 1, tzinfo=timezone.utc)
+        else:
+            return dt
 
     def resample_ticks(data, column, tf):
         if column.find('price') > 0:
