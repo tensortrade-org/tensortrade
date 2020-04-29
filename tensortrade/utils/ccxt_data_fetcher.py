@@ -501,7 +501,7 @@ class CCXT_Data():
 
     def resample_ticks(data, column, tf):
         # If 'price' in column name
-        if column.find('price') > 0 or column == 'price' or 'price' in column::
+        if column.find('price') > 0 or column == 'price' or 'price' in column:
             return data[column].resample(tf).ohlc()
         else: # Resample Volume
             return data[column].resample(tf).sum()
