@@ -258,7 +258,7 @@ class CCXT_Data():
         # Format OHCLV Data for the TensorTrade DataFeed
         df_db = df_db.rename({"timestamp": "Date"}, axis='columns')
         df_db['Date'] = df_db['Date'].apply(lambda x: datetime.utcfromtimestamp(x))
-        df_db['Date'] = df_db['Date'].dt.strftime('%Y-%m-%d %I:%M %p')
+        df_db['Date'] = df_db['Date'].dt.strftime('%Y-%m-%d %H:%M %p')
         df_db.sort_values(by='Date', ascending=True, inplace=True)
         df_db = df_db.set_index("Date")
 
