@@ -58,15 +58,15 @@ setup(
         'matplotlib': ['matplotlib>=3.1.1'],
         'plotly': ['plotly>=4.5.0'],
         'ipython': ['ipython>=7.12.0'],
-        'ccxt': ['ccxt==1.21.0'],
+        'ccxt': ['ccxt>=1.18.0'],
         'all-framework': ['tensorflow>=2.1.0',
                           'stochastic>=0.4.0',
-                          'ccxt==1.21.0',
+                          'ccxt>=1.18.0',
                           'matplotlib>=3.1.1',
                           'plotly>=4.5.0'
                           ],
         'data': ['cython',
-                 'ccxt==1.21.0', 
+                 'ccxt>=1.18.0', 
                  'tulipy==0.4.0', 
                  'pandas-ta>=0.1.39b', 
                  'pantulipy @ git+https://github.com/havocesp/pantulipy.git'
