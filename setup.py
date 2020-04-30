@@ -69,7 +69,7 @@ setup(
                  'tulipy', 
                  'pandas-ta', 
                  'cython', 
-                 'git+https://github.com/havocesp/pantulipy.git'
+                 'pantulipy @ git+https://github.com/havocesp/pantulipy.git'
                 ],
         'render': ['plotly>=4.5.0', 'matplotlib>=3.1.1'],
         'tests': ['pytest>=5.1.1',
