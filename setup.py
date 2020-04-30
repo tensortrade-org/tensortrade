@@ -61,7 +61,7 @@ setup(
         'ccxt': ['ccxt>=2.21.0'],
         'all-framework': ['tensorflow>=2.1.0',
                           'stochastic>=0.4.0',
-                          'ccxt>=1.18.1220',
+                          'ccxt>=2.21.0',
                           'matplotlib>=3.1.1',
                           'plotly>=4.5.0'
                           ],
@@ -76,7 +76,7 @@ setup(
                   'ta>=0.4.7',
                   'tensorflow>=2.1.0',
                   'stochastic>=0.4.0',
-                  'ccxt>=1.18.1220',
+                  'ccxt>=2.21.0',
                   'pytest>=5.1.1',
                   'plotly>=4.5.0',
                   'ipython>=7.12.0',
