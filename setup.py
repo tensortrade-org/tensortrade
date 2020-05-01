@@ -66,6 +66,7 @@ setup(
                           'plotly>=4.5.0'
                           ],
         'data': ['cython',
+                 'tulipy>=0.4.0',
                  'ccxt>=1.18.0', 
                  'pandas-ta>=0.1.39b', 
                  'pantulipy @ git+https://github.com/havocesp/pantulipy.git'
