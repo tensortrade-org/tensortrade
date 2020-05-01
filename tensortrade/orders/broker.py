@@ -59,7 +59,6 @@ class Broker(OrderListener, TimeIndexed):
         order.cancel()
 
     def update(self):
-
         for order in self._unexecuted:
             if order.is_executable():
                 self._unexecuted.remove(order)

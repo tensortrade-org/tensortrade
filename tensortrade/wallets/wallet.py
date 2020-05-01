@@ -154,7 +154,6 @@ class Wallet(Identifiable):
         else:
             self._balance += quantity
 
-        self._locked[quantity.path_id] = self._locked[quantity.path_id]
         self._balance = self._balance.quantize()
 
         self.ledger.commit(wallet=self,
@@ -177,7 +176,6 @@ class Wallet(Identifiable):
                 raise InsufficientFunds(self.balance, quantity)
             self._balance -= quantity
 
-        self._locked[quantity.path_id] = self._locked[quantity.path_id]
         self._balance = self._balance.quantize()
 
         self.ledger.commit(wallet=self,

@@ -603,12 +603,12 @@ def test_convert(mock_exchange_pair):
     quantity = Quantity(USD, 1000)
     converted = quantity.convert(exchange_pair)
 
-    assert converted.size == 1000 / 9000
+    assert float(converted.size) == 1000 / 9000
     assert converted.instrument == BTC
 
     # Test converts to Quote
     quantity = Quantity(BTC, 1.6)
     converted = quantity.convert(exchange_pair)
 
-    assert converted.size == 1.6 * 9000
+    assert float(converted.size) == 1.6 * 9000
     assert converted.instrument == USD
