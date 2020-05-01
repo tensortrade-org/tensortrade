@@ -130,7 +130,7 @@ class CryptoDataDownload:
         month = month.strip(' ').lower() if month not in months else month
         for month_ in months:
             month_L = month_.lower()
-            if month_L.startswith(month) or month_L.endswith(month) or month_L.find(month) > 0:
+            if month_L.startswith(month) or month_L.endswith(month) or month_L.find(month) >= 0:
                 month = month_
 
         # Parse input symbol
@@ -145,24 +145,31 @@ class CryptoDataDownload:
             print(f'Please input a symbol with tick data available')
             pprint.pprint(symbol_list)
             return
-        
-        # Correct USD/T if Exchange is explicit
-        if exchange == 'Binance' and quote == 'USD':
-            quote += 'T'
-        elif exchange == 'Bitstamp' and quote == 'USDT':
-            quote = 'USD'
-            
+
+        # Correct USD/T if Exchange is explicit 
+        if exchange:
+            exchange_ = exchange.lower()
+            if ('binance'.startswith(exchange_) or 
+                'binance'.endswith(exchange_) or 
+                'binance'.find(exchange_) >= 0) and quote == 'USD':
+                quote += 'T'
+            elif ('bitstamp'.startswith(exchange_) or 
+                  'bitstamp'.endswith(exchange_) or 
+                  'bitstamp'.find(exchange_) >= 0) and quote == 'USDT':
+                quote = 'USD'
+
+        # Get proper exchange name
         for ex, ex_data in symbol_list.items():
             if base+'/'+quote in ex_data:
                 exchange = ex
                 break
 
-        prefix = 'tradeprints' if exchange == 'Binance' else ''
-        year = '2020' if month == 'January' else '2019'
+        year = '2020' if month == 'January' else '2019' # Deduce Year
 
-
-        filename = f'{prefix}/{base}{quote}_{month}{year}_{exchange}_prints.csv'
-
-        df = pd.read_csv(CryptoDataDownload.url + filename, skiprows=1)
-        df['datetime'] = df['unix'].apply(lambda x: datetime.utcfromtimestamp(x/1000))
+        exch_date = f'{month}{year}_{exchange}' if exchange == 'Binance' else f'{exchange}_{month}{year}'
+        filename = f'tradeprints/{base}{quote}_{exch_date}_prints.csv'
+        df = pd.read_csv(CryptoDataDownload.url + filename, skiprows=1 if exchange == 'Binance' else 0)
+        
+        unix_multip = 1000 if exchange == 'Binance' else 1
+        df['datetime'] = df['unix'].apply(lambda x: datetime.utcfromtimestamp(x/unix_multip))
         return df.set_index('datetime')
