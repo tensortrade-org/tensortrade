@@ -12,33 +12,35 @@
 # See the License for the specific language governing permissions and
 # limitations under the License
 
-
 import random
+
 import numpy as np
 import tensorflow as tf
 
-from typing import Callable
-
+from tensortrade.environments import TradingEnvironment
 
 class ParallelDQNModel:
 
     def __init__(self,
-                 create_env: Callable[[], 'TradingEnvironment'],
-                 policy_network: tf.keras.Model = None):
-        temp_env = create_env()
+                 env: TradingEnvironment,
+                 policy_network: str = None):
 
-        self.n_actions = temp_env.action_space.n
-        self.observation_shape = temp_env.observation_space.shape
+        self.n_actions = env.action_space.n
+        self.observation_shape = env.observation_space.shape
 
-        self.policy_network = policy_network or self._build_policy_network()
+        if policy_network:
+            self.policy_network = tf.keras.models.model_from_json(policy_network)
+        else:
+            self.policy_network = self._build_policy_network()
 
         self.target_network = tf.keras.models.clone_model(self.policy_network)
         self.target_network.trainable = False
 
     def _build_policy_network(self):
         network = tf.keras.Sequential([
-            tf.keras.layers.InputLayer(input_shape=self.observation_shape),
-            tf.keras.layers.Conv1D(filters=64, kernel_size=6, padding="same", activation="tanh"),
+            # keras.layers.InputLayer(input_shape=self.observation_shape),
+            tf.keras.layers.Conv1D(filters=64, kernel_size=6, input_shape=self.observation_shape, padding="same",
+                                   activation="tanh"),
             tf.keras.layers.MaxPooling1D(pool_size=2),
             tf.keras.layers.Conv1D(filters=32, kernel_size=3, padding="same", activation="tanh"),
             tf.keras.layers.MaxPooling1D(pool_size=2),
@@ -46,7 +48,6 @@ class ParallelDQNModel:
             tf.keras.layers.Dense(self.n_actions, activation="sigmoid"),
             tf.keras.layers.Dense(self.n_actions, activation="softmax")
         ])
-
         return network
 
     def restore(self, path: str, **kwargs):
