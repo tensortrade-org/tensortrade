@@ -95,7 +95,9 @@ class CryptoDataDownload:
             Check these links to see all the available pairs:
                 https://www.cryptodatadownload.com/data/binance/
                 https://www.cryptodatadownload.com/data/bitstamp/
-
+                
+            Demo: https://colab.research.google.com/drive/1gL8j_hPWHONC2QgJG_izYpMxzCcsJf1y
+            
             Example Usage:
                 from tensortrade.utils.cryptodatadownload import CryptoDataDownload as cdd
                 
