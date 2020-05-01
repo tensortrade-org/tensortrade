@@ -15,14 +15,14 @@ from tensortrade.data import DataFeed, Stream
 def test_create_internal_data_feed():
 
     ex1 = Exchange("coinbase", service=execute_order)(
-        Stream("USD-BTC", [7000, 7500, 8300]),
-        Stream("USD-ETH", [200, 212, 400])
+        Stream([7000, 7500, 8300]).rename("USD-BTC"),
+        Stream([200, 212, 400]).rename("USD-ETH")
     )
 
     ex2 = Exchange("binance", service=execute_order)(
-        Stream("USD-BTC", [7005, 7600, 8200]),
-        Stream("USD-ETH", [201, 208, 402]),
-        Stream("USD-LTC", [56, 52, 60])
+        Stream([7005, 7600, 8200]).rename("USD-BTC"),
+        Stream([201, 208, 402]).rename("USD-ETH"),
+        Stream([56, 52, 60]).rename("USD-LTC")
     )
 
     portfolio = Portfolio(USD, [

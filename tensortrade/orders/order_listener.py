@@ -18,14 +18,14 @@ from abc import ABCMeta
 
 class OrderListener(object, metaclass=ABCMeta):
 
-    def on_execute(self, order: 'Order', exchange: 'Exchange'):
+    def on_execute(self, order: 'Order'):
         pass
 
     def on_cancel(self, order: 'Order'):
         pass
 
-    def on_fill(self, order: 'Order', exchange: 'Exchange', trade: 'Trade'):
+    def on_fill(self, order: 'Order', trade: 'Trade'):
         pass
 
-    def on_complete(self, order: 'Order', exchange: 'Exchange'):
+    def on_complete(self, order: 'Order'):
         pass

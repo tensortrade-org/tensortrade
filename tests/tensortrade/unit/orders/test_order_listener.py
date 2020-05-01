@@ -2,10 +2,12 @@
 import pytest
 import unittest.mock as mock
 
+from decimal import Decimal
 
 from tensortrade.orders import OrderListener, Order, TradeType, TradeSide
-from tensortrade.instruments import USD, BTC
+from tensortrade.instruments import USD, BTC, ExchangePair
 from tensortrade.wallets import Wallet, Portfolio
+from tensortrade.exchanges import ExchangeOptions
 
 
 @pytest.fixture
@@ -16,7 +18,7 @@ def execute_listener():
         def __init__(self):
             self.listened = False
 
-        def on_execute(self, order: 'Order', exchange: 'Exchange'):
+        def on_execute(self, order: 'Order'):
             self.listened = True
 
     return ExecuteListener()
@@ -30,7 +32,7 @@ def fill_listener():
         def __init__(self):
             self.listened = False
 
-        def on_fill(self, order: 'Order', exchange: 'Exchange', trade: 'Trade'):
+        def on_fill(self, order: 'Order', trade: 'Trade'):
             self.listened = True
 
     return FillListener()
@@ -44,7 +46,7 @@ def complete_listener():
         def __init__(self):
             self.listened = False
 
-        def on_complete(self, order: 'Order', exchange: 'Exchange'):
+        def on_complete(self, order: 'Order'):
             self.listened = True
 
     return CompleteListener()
@@ -64,51 +66,56 @@ def cancel_listener():
     return CancelListener()
 
 
-@mock.patch('tensortrade.exchanges.Exchange')
-def test_on_execute(mock_exchange_class,
-                    execute_listener):
+@mock.patch("tensortrade.exchanges.Exchange")
+def test_on_execute(mock_exchange_class, execute_listener):
+
     exchange = mock_exchange_class.return_value
-    exchange.id = "fake_id"
+    exchange.options = ExchangeOptions()
+    exchange.id = "fake_exchange_id"
     exchange.name = "coinbase"
+    exchange.clock = mock.Mock()
+    exchange.clock.step = 0
+    exchange.quote_price = mock.Mock(return_value=Decimal(7000.00))
 
     wallets = [Wallet(exchange, 10000 * USD), Wallet(exchange, 0 * BTC)]
     portfolio = Portfolio(USD, wallets)
 
     order = Order(step=0,
-                  exchange_name="coinbase",
+                  exchange_pair=ExchangePair(exchange, USD / BTC),
                   side=TradeSide.BUY,
                   trade_type=TradeType.MARKET,
-                  pair=USD / BTC,
                   quantity=5200.00 * USD,
                   portfolio=portfolio,
-                  price=7000.00)
+                  price=Decimal(7000.00))
 
     order.attach(execute_listener)
 
     assert not execute_listener.listened
-    order.execute(exchange)
+    order.execute()
     assert execute_listener.listened
 
 
-@mock.patch('tensortrade.exchanges.Exchange')
-def test_on_cancel(mock_exchange_class,
-                   cancel_listener):
+@mock.patch("tensortrade.exchanges.Exchange")
+def test_on_cancel(mock_exchange_class, cancel_listener):
 
     exchange = mock_exchange_class.return_value
+    exchange.options = ExchangeOptions()
     exchange.id = "fake_exchange_id"
     exchange.name = "coinbase"
+    exchange.clock = mock.Mock()
+    exchange.clock.step = 0
+    exchange.quote_price = mock.Mock(return_value=Decimal(7000.00))
 
     wallets = [Wallet(exchange, 10000 * USD), Wallet(exchange, 0 * BTC)]
     portfolio = Portfolio(USD, wallets)
 
     order = Order(step=0,
-                  exchange_name="coinbase",
+                  exchange_pair=ExchangePair(exchange, USD / BTC),
                   side=TradeSide.BUY,
                   trade_type=TradeType.MARKET,
-                  pair=USD / BTC,
                   quantity=5200.00 * USD,
                   portfolio=portfolio,
-                  price=7000.00)
+                  price=Decimal(7000.00))
 
     order.attach(cancel_listener)
 
@@ -117,73 +124,77 @@ def test_on_cancel(mock_exchange_class,
     assert cancel_listener.listened
 
 
-@mock.patch('tensortrade.exchanges.Exchange')
-@mock.patch('tensortrade.orders.Trade')
-def test_on_fill(mock_trade_class,
-                 mock_exchange_class,
-                 fill_listener):
+@mock.patch("tensortrade.exchanges.Exchange")
+@mock.patch("tensortrade.orders.Trade")
+def test_on_fill(mock_trade_class, mock_exchange_class, fill_listener):
 
     exchange = mock_exchange_class.return_value
+    exchange.options = ExchangeOptions()
     exchange.id = "fake_exchange_id"
     exchange.name = "coinbase"
+    exchange.clock = mock.Mock()
+    exchange.clock.step = 0
+    exchange.quote_price = mock.Mock(return_value=Decimal(7000.00))
 
     wallets = [Wallet(exchange, 10000 * USD), Wallet(exchange, 0 * BTC)]
     portfolio = Portfolio(USD, wallets)
 
     order = Order(step=0,
-                  exchange_name="coinbase",
+                  exchange_pair=ExchangePair(exchange, USD / BTC),
                   side=TradeSide.BUY,
                   trade_type=TradeType.MARKET,
-                  pair=USD / BTC,
                   quantity=5200.00 * USD,
                   portfolio=portfolio,
-                  price=7000.00)
+                  price=Decimal(7000.00))
 
     order.attach(fill_listener)
 
-    order.execute(exchange)
+    order.execute()
 
     trade = mock_trade_class.return_value
-    trade.size = 3997.00
+    trade.size = Decimal(3997.00)
+    trade.quantity = trade.size * USD
     trade.commission = 3.00 * USD
 
     assert not fill_listener.listened
-    order.fill(exchange, trade)
+    order.fill(trade)
     assert fill_listener.listened
 
 
-@mock.patch('tensortrade.exchanges.Exchange')
-@mock.patch('tensortrade.orders.Trade')
-def test_on_complete(mock_trade_class,
-                     mock_exchange_class,
-                     complete_listener):
+@mock.patch("tensortrade.exchanges.Exchange")
+@mock.patch("tensortrade.orders.Trade")
+def test_on_complete(mock_trade_class, mock_exchange_class, complete_listener):
 
     exchange = mock_exchange_class.return_value
+    exchange.options = ExchangeOptions()
     exchange.id = "fake_exchange_id"
     exchange.name = "coinbase"
+    exchange.clock = mock.Mock()
+    exchange.clock.step = 0
+    exchange.quote_price = mock.Mock(return_value=Decimal(7000.00))
 
     wallets = [Wallet(exchange, 10000 * USD), Wallet(exchange, 0 * BTC)]
     portfolio = Portfolio(USD, wallets)
 
     order = Order(step=0,
-                  exchange_name="coinbase",
+                  exchange_pair=ExchangePair(exchange, USD / BTC),
                   side=TradeSide.BUY,
                   trade_type=TradeType.MARKET,
-                  pair=USD / BTC,
                   quantity=5200.00 * USD,
                   portfolio=portfolio,
-                  price=7000.00)
+                  price=Decimal(7000.00))
 
     order.attach(complete_listener)
 
-    order.execute(exchange)
+    order.execute()
 
     trade = mock_trade_class.return_value
-    trade.size = 5217.00
+    trade.size = Decimal(5197.00)
+    trade.quantity = trade.size * USD
     trade.commission = 3.00 * USD
 
-    order.fill(exchange, trade)
+    order.fill(trade)
 
     assert not complete_listener.listened
-    order.complete(exchange)
+    order.complete()
     assert complete_listener.listened
