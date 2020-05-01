@@ -145,13 +145,16 @@ class CryptoDataDownload:
             print(f'Please input a symbol with tick data available')
             pprint.pprint(symbol_list)
             return
-
+        
+        # Correct USD/T if Exchange is explicit
+        if exchange == 'Binance' and quote == 'USD':
+            quote += 'T'
+        elif exchange == 'Bitstamp' and quote == 'USDT':
+            quote = 'USD'
+            
         for ex, ex_data in symbol_list.items():
             if base+'/'+quote in ex_data:
-                if exchange is None:
-                    exchange = ex
-                elif exchange == 'binance' and quote == 'USD':
-                elif exchange == 'bitstamp' and quote == 'USDT':
+                exchange = ex
                 break
 
         prefix = 'tradeprints' if exchange == 'Binance' else ''
