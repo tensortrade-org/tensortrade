@@ -2,6 +2,8 @@ import pandas as pd
 import ssl # Used if pandas gives a SSLError
 ssl._create_default_https_context = ssl._create_unverified_context
 
+import pprint
+from datetime import datetime
 
 class CryptoDataDownload:
 
@@ -65,12 +67,12 @@ class CryptoDataDownload:
         df = df.reset_index()
         return df
 
-    def fetch(**kwargs): 
-        exchange_name: str = kwargs.get('exchange_name', 'Coinbase')
-        base_symbol: str = kwargs.get('base_symbol', 'BTC')
-        quote_symbol: str = kwargs.get('quote_symbol', 'USD')
-        timeframe: str = kwargs.get('timeframe', '1h')
-        include_all_volumes: bool = kwargs.get('include_all_volumes', False)
+
+    def fetch_candles(exchange_name = 'Coinbase',
+                      base_symbol = 'BTC',
+                      quote_symbol = 'USD',
+                      timeframe = '1h',
+                      include_all_volumes= False): 
         
         if exchange_name.lower() == "gemini":
             return CryptoDataDownload.fetch_gemini(base_symbol, 
@@ -81,3 +83,83 @@ class CryptoDataDownload:
                                                 quote_symbol, 
                                                 timeframe, 
                                                 include_all_volumes=False)
+        
+    def fetch_trades(exchange = None, 
+                     symbol = 'BTC/USDT', 
+                     month = 'aug'):
+        """
+            Fetch CSVs of Tick/Trade Data from CDD 
+            Quickly gets 300 000+ trades, for 36mb.
+
+            Binance and Bitstamp are the only exchanges available.
+            Check these links to see all the available pairs:
+                https://www.cryptodatadownload.com/data/binance/
+                https://www.cryptodatadownload.com/data/bitstamp/
+
+            Example Usage:
+                from tensortrade.utils.cryptodatadownload import CryptoDataDownload as cdd
+                
+                cdd.fetch_candles(exchange_name = 'Coinbase',
+                                  base_symbol = 'BTC',
+                                  quote_symbol = 'USD',
+                                  timeframe = '1h',
+                                  include_all_volumes = False)
+
+                cdd.fetch_trades()
+        """
+
+        symbol_list = {'Binance': [
+                                   'BTC/USDT', 'ETH/USDT', 'LTC/USDT', 'LINK/USDT', 
+                                   'BNB/USDT', 'XRP/USDT', 'EOS/USDT', 'TRX/USDT', 
+                                   'NEO/USDT', 'ETC/USDT', 'XLM/USDT', 'BAT/USDT', 
+                                   'QTUM/USDT', 'ADA/USDT', 'XMR/USDT', 'ZEC/USDT', 
+                                   'DASH/USDT', 'BTT/USDT', 'MATIC/USDT', 'PAX/USDT', 
+                                   'CELR/USDT', 'ONE/USDT'
+                                   ],
+                       'Bitstamp': [
+                                    'BTC/USD','BTC/EUR',
+                                    'BCH/USD','BCH/EUR','BCH/BTC',
+                                    'ETH/USD','ETH/EUR','ETH/BTC',
+                                    'LTC/USD','LTC/EUR','LTC/BTC',
+                                    'XRP/USD','XRP/EUR','XRP/BTC'
+                                    ]
+                       }
+
+        # Parse date input
+        months = ['August', 'September', 'October', 'November', 'December', 'January']
+        month = month.strip(' ').lower() if month not in months else month
+        for month_ in months:
+            month_L = month_.lower()
+            if month_L.startswith(month) or month_L.endswith(month) or month_L.find(month) > 0:
+                month = month_
+
+        # Parse input symbol
+        for delim in ['/', '-', '_', ' ']:
+            try:
+                base, quote = symbol.strip(' ').upper().split(delim)
+                break
+            except:
+                continue
+
+        if not base or not quote:
+            print(f'Please input a symbol with tick data available')
+            pprint.pprint(symbol_list)
+            return
+
+        for ex, ex_data in symbol_list.items():
+            if base+'/'+quote in ex_data:
+                if exchange is None:
+                    exchange = ex
+                elif exchange == 'binance' and quote == 'USD':
+                elif exchange == 'bitstamp' and quote == 'USDT':
+                break
+
+        prefix = 'tradeprints' if exchange == 'Binance' else ''
+        year = '2020' if month == 'January' else '2019'
+
+
+        filename = f'{prefix}/{base}{quote}_{month}{year}_{exchange}_prints.csv'
+
+        df = pd.read_csv(CryptoDataDownload.url + filename, skiprows=1)
+        df['datetime'] = df['unix'].apply(lambda x: datetime.utcfromtimestamp(x/1000))
+        return df.set_index('datetime')
