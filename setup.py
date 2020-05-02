@@ -65,11 +65,9 @@ setup(
                           'matplotlib>=3.1.1',
                           'plotly>=4.5.0'
                           ],
-        'data': ['cython',
-                 'tulipy>=0.4.0',
-                 'ccxt>=1.18.0', 
+        'data': ['ccxt>=1.18.0', 
                  'pandas-ta>=0.1.39b', 
-                 'pantulipy @ git+https://github.com/havocesp/pantulipy.git'
+                 'pantulipy @ git+https://github.com/kodiakcrypto/pantulipy.git'
                 ],
         'render': ['plotly>=4.5.0', 'matplotlib>=3.1.1'],
         'tests': ['pytest>=5.1.1',
@@ -80,9 +78,6 @@ setup(
                   'pytest>=5.1.1',
                   'plotly>=4.5.0',
                   'ipython>=7.12.0',
-                  'cython',
-                  'pandas-ta>=0.1.39b', 
-                  'pantulipy @ git+https://github.com/havocesp/pantulipy.git'
                   ],
         'docs': ['sphinx',
                  'sphinx_rtd_theme',
