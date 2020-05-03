@@ -9,6 +9,25 @@ class CryptoDataDownload:
 
     url = "https://www.cryptodatadownload.com/cdd/"
     
+    # For trades/ticks, not candles
+    tick_symbol_list = {
+                'Binance': [
+                           'BTC/USDT', 'ETH/USDT', 'LTC/USDT', 'LINK/USDT', 
+                           'BNB/USDT', 'XRP/USDT', 'EOS/USDT', 'TRX/USDT', 
+                           'NEO/USDT', 'ETC/USDT', 'XLM/USDT', 'BAT/USDT', 
+                           'QTUM/USDT', 'ADA/USDT', 'XMR/USDT', 'ZEC/USDT', 
+                           'DASH/USDT', 'BTT/USDT', 'MATIC/USDT', 'PAX/USDT', 
+                           'CELR/USDT', 'ONE/USDT'
+                           ],
+                'Bitstamp': [
+                            'BTC/USD','BTC/EUR',
+                            'BCH/USD','BCH/EUR','BCH/BTC',
+                            'ETH/USD','ETH/EUR','ETH/BTC',
+                            'LTC/USD','LTC/EUR','LTC/BTC',
+                            'XRP/USD','XRP/EUR','XRP/BTC'
+                            ]
+                }
+    
     @classmethod
     def fetch_default(cls,
                       exchange_name, 
@@ -125,23 +144,6 @@ class CryptoDataDownload:
                                  month='aug') # Aug - Sep
         """
 
-        symbol_list = {'Binance': [
-                                   'BTC/USDT', 'ETH/USDT', 'LTC/USDT', 'LINK/USDT', 
-                                   'BNB/USDT', 'XRP/USDT', 'EOS/USDT', 'TRX/USDT', 
-                                   'NEO/USDT', 'ETC/USDT', 'XLM/USDT', 'BAT/USDT', 
-                                   'QTUM/USDT', 'ADA/USDT', 'XMR/USDT', 'ZEC/USDT', 
-                                   'DASH/USDT', 'BTT/USDT', 'MATIC/USDT', 'PAX/USDT', 
-                                   'CELR/USDT', 'ONE/USDT'
-                                   ],
-                       'Bitstamp': [
-                                    'BTC/USD','BTC/EUR',
-                                    'BCH/USD','BCH/EUR','BCH/BTC',
-                                    'ETH/USD','ETH/EUR','ETH/BTC',
-                                    'LTC/USD','LTC/EUR','LTC/BTC',
-                                    'XRP/USD','XRP/EUR','XRP/BTC'
-                                    ]
-                       }
-
         # Parse date input
         months = ['August', 'September', 'October', 'November', 'December', 'January']
         month = month.strip(' ').lower() if month not in months else month
@@ -160,7 +162,7 @@ class CryptoDataDownload:
 
         if not base or not quote:
             print(f'Please input a symbol with tick data available')
-            pprint.pprint(symbol_list)
+            pprint.pprint(cls.symbol_list)
             return
 
         # Correct USD/T if Exchange is explicit 
@@ -176,7 +178,7 @@ class CryptoDataDownload:
                 quote = 'USD'
 
         # Get proper exchange name
-        for ex, ex_data in symbol_list.items():
+        for ex, ex_data in cls.tick_symbol_list.items():
             if base+'/'+quote in ex_data:
                 exchange = ex
                 break
@@ -194,4 +196,4 @@ class CryptoDataDownload:
     @classmethod
     def all(cls): 
         """Print all available tick data symbols"""
-        pprint.pprint(cls.symbol_list)
+        pprint.pprint(cls.tick_symbol_list)
