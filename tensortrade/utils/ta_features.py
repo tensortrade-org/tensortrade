@@ -104,7 +104,7 @@ class TA_Features:
                 exchange_name: str = kwargs.get('exchange_name', 'Coinbase')
                 base_symbol: str = kwargs.get('base_symbol', 'BTC')
                 quote_symbol: str = kwargs.get('quote_symbol', 'USD')
-                timeframe: str = kwargs.get('timeframe', '1h')
+                timeframe: str = kwargs.get('timeframe', '1d')
                 include_all_volumes: bool = kwargs.get('include_all_volumes', False)
         """ 
         df = cdd.fetch_candles(**kwargs)
@@ -140,7 +140,7 @@ class TA_Features:
                 exchange_name: str = 'Coinbase'
                 base_symbol: str = 'BTC'
                 quote_symbol: str = 'USD'
-                timeframe: str = '1h'
+                timeframe: str = '1d'
                 include_all_volumes: bool = False
         """
 
@@ -182,7 +182,7 @@ class TA_Features:
                 exchange_name: str = 'Coinbase'
                 base_symbol: str = 'BTC'
                 quote_symbol: str = 'USD'
-                timeframe: str = '1h'
+                timeframe: str = '1d'
                 include_all_volumes: bool = False
         """
         data = cls.fetch(**kwargs) if not type(data) == pd.DataFrame or data.empty else data
@@ -203,7 +203,7 @@ class TA_Features:
                 exchange_name: str = 'Coinbase'
                 base_symbol: str = 'BTC'
                 quote_symbol: str = 'USD'
-                timeframe: str = '1h'
+                timeframe: str = '1d'
                 include_all_volumes: bool = False
         """
         data = cls.fetch(**kwargs) if not type(data) == pd.DataFrame or data.empty else data
