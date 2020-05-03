@@ -54,9 +54,9 @@ setup(
     ],
     extras_require={
         'tf': ['tensorflow>=2.1.0'],
-        'data': ['cython',
-                 'tulipy>=0.4.0',
-                 'ccxt>=1.18.0', 
+        'pre-data': ['cython',
+                     'tulipy>=0.4.0']
+        'data': ['ccxt>=1.18.0', 
                  'pandas-ta>=0.1.39b', 
                  'pantulipy @ git+https://github.com/kodiakcrypto/pantulipy.git'
                 ],
