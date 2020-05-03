@@ -50,13 +50,12 @@ setup(
         'pandas>=0.25.0',
         'gym>=0.14.0',
         'pyyaml>=5.1.2',
-        'sympy>=1.4'
+        'sympy>=1.4',
+        'tulipy>=0.4.0' # Because this needs to be installed before pantulipy
     ],
     extras_require={
         'tf': ['tensorflow>=2.1.0'],
-        'data1': ['cython',
-                 'tulipy>=0.4.0'],
-        'data2': ['ccxt>=1.18.0', 
+        'data': ['ccxt>=1.18.0', 
                  'pandas-ta>=0.1.39b', 
                  'pantulipy @ git+https://github.com/havocesp/pantulipy.git'
                 ],
