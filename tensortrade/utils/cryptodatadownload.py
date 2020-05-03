@@ -8,8 +8,10 @@ from datetime import datetime
 class CryptoDataDownload:
 
     url = "https://www.cryptodatadownload.com/cdd/"
-
-    def fetch_default(exchange_name, 
+    
+    @classmethod
+    def fetch_default(cls,
+                      exchange_name, 
                       base_symbol, 
                       quote_symbol, 
                       timeframe, 
@@ -24,7 +26,7 @@ class CryptoDataDownload:
         quote_vc = "Volume {}".format(quote_symbol)
         new_quote_vc = "volume_quote"
 
-        df = pd.read_csv(CryptoDataDownload.url + filename, skiprows=1)
+        df = pd.read_csv(cls.url + filename, skiprows=1)
         df = df[::-1]
         df = df.drop(["Symbol"], axis=1)
         df = df.rename({base_vc: new_base_vc, 
@@ -46,7 +48,8 @@ class CryptoDataDownload:
             return df
         return df
 
-    def fetch_gemini(base_symbol, quote_symbol, timeframe):
+    @classmethod
+    def fetch_gemini(cls, base_symbol, quote_symbol, timeframe):
         exchange_name = "gemini"
         if timeframe.lower() in ['1d', 'd']:
             exchange_name = "Gemini"
@@ -58,7 +61,7 @@ class CryptoDataDownload:
                                            base_symbol, 
                                            quote_symbol, 
                                            timeframe)
-        df = pd.read_csv(CryptoDataDownload.url + filename, 
+        df = pd.read_csv(cls.url + filename, 
                          skiprows=1)
         df = df[::-1]
         df = df.drop(["Symbol", "Unix Timestamp"], axis=1)
@@ -67,24 +70,42 @@ class CryptoDataDownload:
         df = df.reset_index()
         return df
 
-
-    def fetch_candles(exchange_name = 'Coinbase',
+    @classmethod
+    def fetch_candles(cls,
+                      exchange_name = 'Coinbase',
                       base_symbol = 'BTC',
                       quote_symbol = 'USD',
                       timeframe = '1h',
                       include_all_volumes= False): 
-        
+        """
+            Fetch CSVs of Candle/OHLCV Data from CDD 
+            Only 1d and 1h time frames are available
+            There may be errors getting data from untested exchanges
+
+            Check this link to see all the available exchanges:
+                https://www.cryptodatadownload.com/data/
+
+            Example Usage:
+                from tensortrade.utils.cryptodatadownload import CryptoDataDownload as cdd
+
+            cdd.fetch_candles(exchange_name = 'Coinbase',
+                              base_symbol = 'BTC',
+                              quote_symbol = 'USD',
+                              timeframe = '1h',
+                              include_all_volumes = False)
+        """
         if exchange_name.lower() == "gemini":
-            return CryptoDataDownload.fetch_gemini(base_symbol, 
-                                                   quote_symbol, 
-                                                   timeframe)
-        return CryptoDataDownload.fetch_default(exchange_name, 
-                                                base_symbol,
-                                                quote_symbol, 
-                                                timeframe, 
-                                                include_all_volumes=False)
-        
-    def fetch_trades(exchange = None, 
+            return cls.fetch_gemini(base_symbol,
+                                    quote_symbol,
+                                    timeframe)
+        return cls.fetch_default(exchange_name, 
+                                 base_symbol,
+                                 quote_symbol, 
+                                 timeframe, 
+                                 include_all_volumes=False)
+    @classmethod
+    def fetch_trades(cls,
+                     exchange = None, 
                      symbol = 'BTC/USDT', 
                      month = 'aug'):
         """
@@ -95,19 +116,13 @@ class CryptoDataDownload:
             Check these links to see all the available pairs:
                 https://www.cryptodatadownload.com/data/binance/
                 https://www.cryptodatadownload.com/data/bitstamp/
-                
-            Demo: https://colab.research.google.com/drive/1gL8j_hPWHONC2QgJG_izYpMxzCcsJf1y
-            
+
             Example Usage:
                 from tensortrade.utils.cryptodatadownload import CryptoDataDownload as cdd
-                
-                cdd.fetch_candles(exchange_name = 'Coinbase',
-                                  base_symbol = 'BTC',
-                                  quote_symbol = 'USD',
-                                  timeframe = '1h',
-                                  include_all_volumes = False)
 
-                cdd.fetch_trades()
+                cdd.fetch_trades(exchange='binance', # or Bitstamp
+                                 symbol='BTC/USDT', # run cdd.all() to see all
+                                 month='aug') # Aug - Sep
         """
 
         symbol_list = {'Binance': [
@@ -170,8 +185,13 @@ class CryptoDataDownload:
 
         exch_date = f'{month}{year}_{exchange}' if exchange == 'Binance' else f'{exchange}_{month}{year}'
         filename = f'tradeprints/{base}{quote}_{exch_date}_prints.csv'
-        df = pd.read_csv(CryptoDataDownload.url + filename, skiprows=1 if exchange == 'Binance' else 0)
+        df = pd.read_csv(cls.url + filename, skiprows=1 if exchange == 'Binance' else 0)
         
         unix_multip = 1000 if exchange == 'Binance' else 1
         df['datetime'] = df['unix'].apply(lambda x: datetime.utcfromtimestamp(x/unix_multip))
         return df.set_index('datetime')
+    
+    @classmethod
+    def all(cls): 
+        """Print all available tick data symbols"""
+        pprint.pprint(cls.symbol_list)
