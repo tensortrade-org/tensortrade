@@ -3,7 +3,7 @@
 Interactive Colab Demo @
     https://colab.research.google.com/drive/1D86JximL2g9n6fTGmEkDhdip8Tw7T-9U
 
-# 144 Unique Indicators
+# 144 Unique Feature columns
     Utilizing Tulip, Tulipy, PanTulipy and Pandas_TA (which includes the Bukosabino TA Indicators)
 """
 
