@@ -94,7 +94,7 @@ class CryptoDataDownload:
                       exchange_name = 'Coinbase',
                       base_symbol = 'BTC',
                       quote_symbol = 'USD',
-                      timeframe = '1h',
+                      timeframe = '1d',
                       include_all_volumes = False): 
         """
             Fetch CSVs of Candle/OHLCV Data from CDD 
