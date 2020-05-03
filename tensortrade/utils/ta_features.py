@@ -1,20 +1,11 @@
 # -*- coding: utf-8 -*-
-"""ta_features.py
-
+"""
 Interactive Colab Demo @
     https://colab.research.google.com/drive/1D86JximL2g9n6fTGmEkDhdip8Tw7T-9U
 
 # 144 Unique Indicators
     Utilizing Tulip, Tulipy, PanTulipy and Pandas_TA (which includes the Bukosabino TA Indicators)
 """
-
-
-## Requirements
-# !pip install pandas-ta
-# !pip install cython
-# !pip install tulipy
-# !pip install git+https://github.com/kodiakcrypto/pantulipy.git
-# !pip install ccxt # for CryptoDataDownload
 
 import pandas as pd
 
@@ -33,6 +24,7 @@ class TA_Features:
         with columns: 'open' 'high' 'low' 'close' 'volume'.
         Using Tulip indicators and Pandas_TA Indicators.
     """
+    
     unique_pandas_ta_indicators = {
             'accbands': ta.accbands, 'amat': ta.amat, 'aobv': ta.aobv, 
             'cg': ta.cg, 'coppock': ta.coppock, 'decreasing': ta.decreasing, 
@@ -104,7 +96,8 @@ class TA_Features:
         }
 
     ## Fetch Crypto Data Function
-    def fetch(**kwargs):  
+    @classmethod
+    def fetch(cls, **kwargs):  
         """ 
             Wrapper Function for the CryptoDataDownload Class 
             Defaults and parameters:
@@ -114,11 +107,12 @@ class TA_Features:
                 timeframe: str = kwargs.get('timeframe', '1h')
                 include_all_volumes: bool = kwargs.get('include_all_volumes', False)
         """ 
-        df = cdd.fetch(**kwargs)
+        df = cdd.fetch_candles(**kwargs)
 
         return df
-
-    def _remove_duplicate_columns(df: pd.DataFrame):
+    
+    @classmethod
+    def _remove_duplicate_columns(cls, df: pd.DataFrame):
         """Rename all duplicate columns appending _2 or _3 or _4 etc"""
         cols = pd.Series(df.columns)
         for dup in cols[cols.duplicated()].unique(): 
@@ -126,15 +120,17 @@ class TA_Features:
         df.columns = cols # Rename columns
         return df
     
-    def _append_column(orig, new):
+    @classmethod
+    def _append_column(cls, orig, new):
         if isinstance(new, pd.DataFrame):
             for n, column in enumerate(new.columns):
                 orig[column.lower()] = new.iloc[:,n]
         else:
             orig[new.name.lower()] = new
         return orig
-
-    def get_all_pandas_ta_indicators(data=None, unique=False, **kwargs):
+    
+    @classmethod
+    def get_all_pandas_ta_indicators(cls, data=None, unique=False, **kwargs):
         """
             Get all Pandas_TA indicators
             :param: data - DataFrame with columns: 'open' 'high' 'low' 'close' 'volume'
@@ -148,7 +144,7 @@ class TA_Features:
                 include_all_volumes: bool = False
         """
 
-        data = TA_Features.fetch(**kwargs) if not type(data) == pd.DataFrame or data.empty else data
+        data = cls.fetch(**kwargs) if not type(data) == pd.DataFrame or data.empty else data
 
         open_ = data['open']
         high = data['high']
@@ -156,7 +152,7 @@ class TA_Features:
         close = data['close']
         volume = data['volume']
 
-        ind = TA_Features.unique_pandas_ta_indicators if unique else TA_Features.pandas_ta_indicators
+        ind = cls.unique_pandas_ta_indicators if unique else cls.pandas_ta_indicators
 
         for name, function in ind.items():
             if name == 'massi': # Can't handle being sent a close= kwarg
@@ -170,12 +166,13 @@ class TA_Features:
                                           volume=volume)
             if type(indicator_data) == tuple: # tuple of dataframes
                 for i in range(0, len(indicator_data)):
-                    data = TA_Features._append_column(data, indicator_data[i])
+                    data = cls._append_column(data, indicator_data[i])
             else:
-                data = TA_Features._append_column(data, indicator_data)
-        return TA_Features._remove_duplicate_columns(data)
-
-    def get_all_pantulipy_indicators(data=None, unique=False, **kwargs):
+                data = cls._append_column(data, indicator_data)
+        return cls._remove_duplicate_columns(data)
+    
+    @classmethod
+    def get_all_pantulipy_indicators(cls, data=None, unique=False, **kwargs):
         """
             Get all Tulip Indicators
             :param: data - DataFrame with columns: 'open' 'high' 'low' 'close' 'volume'
@@ -188,15 +185,16 @@ class TA_Features:
                 timeframe: str = '1h'
                 include_all_volumes: bool = False
         """
-        data = TA_Features.fetch(**kwargs) if not type(data) == pd.DataFrame or data.empty else data
+        data = cls.fetch(**kwargs) if not type(data) == pd.DataFrame or data.empty else data
 
-        ind = TA_Features.unique_pantulipy_indicators if unique else TA_Features.pantulipy_indicators
+        ind = cls.unique_pantulipy_indicators if unique else cls.pantulipy_indicators
         for name, function in ind.items():
             if name not in pantulipy.core._DEFAULTLESS_INDICATORS:
                 data = pd.concat([data, function(data)], axis=1)
-        return TA_Features._remove_duplicate_columns(data)
-
-    def get_all_indicators(data=None, **kwargs):
+        return cls._remove_duplicate_columns(data)
+    
+    @classmethod
+    def get_all_indicators(cls, data=None, **kwargs):
         """
             Get all Tulipy and Pandas_TA indicators
             :param: data = DataFrame with columns: 'open' 'high' 'low' 'close' 'volume'
@@ -208,8 +206,8 @@ class TA_Features:
                 timeframe: str = '1h'
                 include_all_volumes: bool = False
         """
-        data = TA_Features.fetch(**kwargs) if not type(data) == pd.DataFrame or data.empty else data
+        data = cls.fetch(**kwargs) if not type(data) == pd.DataFrame or data.empty else data
 
-        data = TA_Features.get_all_pandas_ta_indicators(data, unique=True)
-        data = TA_Features.get_all_pantulipy_indicators(data, unique=False)
+        data = cls.get_all_pandas_ta_indicators(data, unique=True)
+        data = cls.get_all_pantulipy_indicators(data, unique=False)
         return data
