@@ -95,7 +95,7 @@ class CryptoDataDownload:
                       base_symbol = 'BTC',
                       quote_symbol = 'USD',
                       timeframe = '1h',
-                      include_all_volumes= False): 
+                      include_all_volumes = False): 
         """
             Fetch CSVs of Candle/OHLCV Data from CDD 
             Only 1d and 1h time frames are available
@@ -105,7 +105,7 @@ class CryptoDataDownload:
                 https://www.cryptodatadownload.com/data/
 
             Example Usage:
-                from tensortrade.utils.cryptodatadownload import CryptoDataDownload as cdd
+                from tensortrade.utils import CryptoDataDownload as cdd
 
             cdd.fetch_candles(exchange_name = 'Coinbase',
                               base_symbol = 'BTC',
@@ -113,6 +113,9 @@ class CryptoDataDownload:
                               timeframe = '1h',
                               include_all_volumes = False)
         """
+        if 'd' in timeframe.lower():
+            timeframe = 'd'
+            
         if exchange_name.lower() == "gemini":
             return cls.fetch_gemini(base_symbol,
                                     quote_symbol,
@@ -121,7 +124,7 @@ class CryptoDataDownload:
                                  base_symbol,
                                  quote_symbol, 
                                  timeframe, 
-                                 include_all_volumes=False)
+                                 include_all_volumes)
     @classmethod
     def fetch_trades(cls,
                      exchange = None, 
