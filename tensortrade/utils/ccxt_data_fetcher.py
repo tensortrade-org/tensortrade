@@ -463,7 +463,7 @@ class CCXT_Data():
                         print(row)
 
                     conn.close()
-            print(since.timestamp(), new_since_date.timestamp())
+
             if df.empty or since.timestamp() == new_since_date.timestamp() or endless_loop_protection >= 5:
                 print("\t\t-- Stopping. Work is done.")
                 break
