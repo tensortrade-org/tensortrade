@@ -58,7 +58,7 @@ setup(
                      'tulipy>=0.4.0'],
         'data': ['ccxt>=1.18.0', 
                  'pandas-ta>=0.1.39b', 
-                 'pantulipy @ git+https://github.com/kodiakcrypto/pantulipy.git'
+                 'pantulipy @ git+https://github.com/havocesp/pantulipy.git'
                 ],
         'render': ['plotly>=4.5.0', 'matplotlib>=3.1.1'],
         'tests': ['pytest>=5.1.1',
