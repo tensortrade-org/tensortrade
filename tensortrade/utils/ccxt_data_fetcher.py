@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-"""ccxt_data_fetcher.ipynb
-
+"""
 Use this URL for a Google Colab Demo of this class and its usage:
     https://colab.research.google.com/drive/1h9SnR2aqn3cuyoew4QdxhKjTe1VjgxUr
 """
@@ -76,7 +75,9 @@ class CCXT_Data():
         "y": timedelta(weeks=52) # lowercase alias
     }
 
-    def fetch_candles(exchange: str = 'binance',
+    @classmethod
+    def fetch_candles(cls, 
+                      exchange: str = 'binance',
                       symbol: str = 'BTC/USDT',
                       timeframe: str = '1d',
                       candle_amount: int = 1000,
@@ -136,19 +137,19 @@ class CCXT_Data():
                     _ = timeframe.split('M')
                     c = int(_[0])
                     # Special case for month because it has not fixed timedelta
-                    since = datetime.utcnow() - (c * candle_amount * CCXT_Data._timedelta(timeframe))
+                    since = datetime.utcnow() - (c * candle_amount * cls._timedelta(timeframe))
                     since = datetime(since.year, since.month, 1, tzinfo=timezone.utc)
                 else:
-                    since = datetime.utcnow() - (candle_amount * CCXT_Data._timedelta(timeframe))
+                    since = datetime.utcnow() - (candle_amount * cls._timedelta(timeframe))
         elif candle_amount.lower() == 'all':
             since = datetime(1970, 1, 1, tzinfo=timezone.utc)
         else:
             if timeframe.endswith('M'):
                 since = datetime(1970, 1, 1, tzinfo=timezone.utc)
             else:
-                since = datetime.utcnow() - (500 * CCXT_Data._timedelta(timeframe))
+                since = datetime.utcnow() - (500 * cls._timedelta(timeframe))
 
-        since = CCXT_Data.earliest_datetime(since) # sanitize if date is earlier than 1970
+        since = cls.earliest_datetime(since) # sanitize if date is earlier than 1970
 
         main_path = ccxt_exchange.id + '/' + symbol.replace('/','_') + '_' + timeframe
         if csv:
@@ -171,17 +172,17 @@ class CCXT_Data():
                 if csv:
                     df_db = pd.read_csv(path_to_db_file)
                 if sqlite:
-                    conn = CCXT_Data.load_sqlite_db(path_to_db_file)
+                    conn = cls.load_sqlite_db(path_to_db_file)
                     if conn:
-                        df_db = CCXT_Data.sqlite_to_dataframe(conn, table='ohlcv')
+                        df_db = cls.sqlite_to_dataframe(conn, table='ohlcv')
 
             if not df_db.empty:
                 since = datetime.fromtimestamp(df_db.timestamp.values[-1], timezone.utc) # said close tiemstamp before, not open
 
             # Check if candle DB is up to date
-            next_open_date = CCXT_Data.compute_end_timestamp(since, timeframe) + CCXT_Data._timedelta('1s')
+            next_open_date = cls.compute_end_timestamp(since, timeframe) + cls._timedelta('1s')
             if datetime.now(tz=timezone.utc) < next_open_date:
-                print("\t-- The next candle time is {}, no request needed.".format(since + CCXT_Data._timedelta(timeframe)))
+                print("\t-- The next candle time is {}, no request needed.".format(since + cls._timedelta(timeframe)))
                 continue
 
             # Fetch candle data with CCXT
@@ -218,8 +219,8 @@ class CCXT_Data():
 
             # Save Data to DB file
             if csv:
-                CCXT_Data.ifNotDirExists_MakeDir(mk_path)
-                CCXT_Data.ifNotDirExists_MakeDir(path)
+                cls.ifNotDirExists_MakeDir(mk_path)
+                cls.ifNotDirExists_MakeDir(path)
                 # Return a csv formatted string to write to .csv file
                 data = df.to_csv(mode='a', header=True, index=False)
                 # aiofiles is an IO lib compatible with async code
@@ -227,9 +228,9 @@ class CCXT_Data():
                 with open(path_to_db_file, 'w+') as f:
                     f.write(data)
             elif sqlite:
-                CCXT_Data.ifNotDirExists_MakeDir(mk_path)
-                CCXT_Data.ifNotDirExists_MakeDir(path)
-                conn = CCXT_Data.load_sqlite_db(path_to_db_file)
+                cls.ifNotDirExists_MakeDir(mk_path)
+                cls.ifNotDirExists_MakeDir(path)
+                conn = cls.load_sqlite_db(path_to_db_file)
                 if conn:
                     #print(df.head())
                     c = conn.cursor()
@@ -283,7 +284,9 @@ class CCXT_Data():
 
         return df_db
 
-    def fetch_trades(exchange: str = 'bitmex',
+    @classmethod
+    def fetch_trades(cls, 
+                     exchange: str = 'bitmex',
                      symbol: str = 'BTC/USD',
                      trades_amount: str = '10m',
                      save_path: str = '', 
@@ -345,9 +348,9 @@ class CCXT_Data():
             if csv:
                 df_db = pd.read_csv(path_to_db_file)
             if sqlite:
-                conn = CCXT_Data.load_sqlite_db(path_to_db_file)
+                conn = cls.load_sqlite_db(path_to_db_file)
                 if conn:
-                    df_db = CCXT_Data.sqlite_to_dataframe(conn, table='trades')
+                    df_db = cls.sqlite_to_dataframe(conn, table='trades')
         else:
             df_db = pd.DataFrame() # If DB File exists, load it to grab most recent candle timestamp
         
@@ -356,8 +359,8 @@ class CCXT_Data():
         # Grab most recent timestamp if data exists already
         # Else set a default start date
         if trades_amount != 'all':
-            since = datetime.utcnow() - CCXT_Data._timedelta(trades_amount)
-        elif trades_amount.lower() == 'all': #or CCXT_Data.since 
+            since = datetime.utcnow() - cls._timedelta(trades_amount)
+        elif trades_amount.lower() == 'all': #or cls.since 
             # check if since can be converted to datetime
             # try to conver it with default format, and failing that
             # except: shove it into datetime 
@@ -381,7 +384,7 @@ class CCXT_Data():
                                                since=int(since.timestamp()*1000),
                                                limit=limit)
                     # Convert Dictionary of Arrays/Lists into a DataFrame
-                    df = CCXT_Data.ticks_to_df(df, exchange_id)
+                    df = cls.ticks_to_df(df, exchange_id)
 
                     # Check for duplicates
                     dupes = 0
@@ -416,14 +419,14 @@ class CCXT_Data():
                 prev_df_len = len(df)
 
             # Most recent timestamp in db
-            new_since_date = df_db.index.values[-1] if len(df_db) > 0 else since + CCXT_Data._timedelta(trades_amount)  
+            new_since_date = datetime.fromtimestamp(df_db.timestamp.values[-1]/1000, timezone.utc) if len(df_db) > 0 else since + cls._timedelta(trades_amount)  
 
             print("\t\t-- {} trades received.".format(len(df)))
                
             # Save Data to DB file
             if csv:
-                CCXT_Data.ifNotDirExists_MakeDir(mk_path)
-                CCXT_Data.ifNotDirExists_MakeDir(path)
+                cls.ifNotDirExists_MakeDir(mk_path)
+                cls.ifNotDirExists_MakeDir(path)
                 # Return a csv formatted string to write to .csv file
                 data = df_db.to_csv(mode='a', header=True, index=False)
                 # aiofiles is an IO lib compatible with async code
@@ -431,9 +434,9 @@ class CCXT_Data():
                 with open(path_to_db_file, 'w+') as f:
                     f.write(data)
             elif sqlite:
-                CCXT_Data.ifNotDirExists_MakeDir(mk_path)
-                CCXT_Data.ifNotDirExists_MakeDir(path)
-                conn = CCXT_Data.load_sqlite_db(path_to_db_file)
+                cls.ifNotDirExists_MakeDir(mk_path)
+                cls.ifNotDirExists_MakeDir(path)
+                conn = cls.load_sqlite_db(path_to_db_file)
                 if conn:
                     #print(df.head())
                     c = conn.cursor()
@@ -460,8 +463,8 @@ class CCXT_Data():
                         print(row)
 
                     conn.close()
-
-            if df.empty or since == new_since_date or endless_loop_protection >= 5:
+            print(since.timestamp(), new_since_date.timestamp())
+            if df.empty or since.timestamp() == new_since_date.timestamp() or endless_loop_protection >= 5:
                 print("\t\t-- Stopping. Work is done.")
                 break
             #else:
@@ -472,7 +475,7 @@ class CCXT_Data():
         # After getting all the trades/ticks, format and return for tensortrade use
         # Format Tick Data for the TensorTrade DataFeed
         df_db.sort_values(by='timestamp', ascending=True, inplace=True)
-        df_db['Date'] = df_db['timestamp'].apply(lambda x: datetime.utcfromtimestamp(x/1000))
+        df_db['Date'] = df_db['timestamp'].apply(lambda x: datetime.fromtimestamp(x/1000, timezone.utc))
         df_db = df_db.set_index("Date")
 
         if TT_Format:
@@ -493,20 +496,23 @@ class CCXT_Data():
     # Helper functions #
     ####################
 
-    def earliest_datetime(dt):
+    @classmethod
+    def earliest_datetime(cls, dt):
         if dt.timestamp() < 0.0:
             return datetime(1970, 1, 1, tzinfo=timezone.utc)
         else:
             return dt
 
-    def resample_ticks(data, column, tf):
+    @classmethod
+    def resample_ticks(cls, data, column, tf):
         # If 'price' in column name
         if column.find('price') > 0 or column == 'price' or 'price' in column:
             return data[column].resample(tf).ohlc()
         else: # Resample Volume
             return data[column].resample(tf).sum()
 
-    def ticks_to_df(ticks, exchange_id):
+    @classmethod
+    def ticks_to_df(cls, ticks, exchange_id):
         # CCXT fetch_trades() data format
         # [{
         # 'info':       { ... },                  // the original decoded JSON as is
@@ -553,7 +559,8 @@ class CCXT_Data():
         return pd.DataFrame(tick_data)
 
     # SQLite
-    def load_sqlite_db(db_file_path):
+    @classmethod
+    def load_sqlite_db(cls, db_file_path):
         conn = None
         try:
             conn = sqlite3.connect(db_file_path)
@@ -562,29 +569,33 @@ class CCXT_Data():
             print(e)
         return conn
 
-    def sqlite_to_dataframe(conn, table):
+    @classmethod
+    def sqlite_to_dataframe(cls, conn, table):
         df = pd.read_sql_query(f"select * from {table}", conn)
         return df
 
     # Convert a timeframe to a datetime.timedelta object
-    def _timedelta(timeframe):
-        for suffix in CCXT_Data.timedeltas_timeframe_suffixes.keys():
+    @classmethod
+    def _timedelta(cls, timeframe):
+        for suffix in cls.timedeltas_timeframe_suffixes.keys():
             if timeframe.endswith(suffix):
                 _ = timeframe.split(suffix)
                 c = int(_[0])
-                return c * CCXT_Data.timedeltas_timeframe_suffixes[suffix]
+                return c * cls.timedeltas_timeframe_suffixes[suffix]
         raise RuntimeError("Unable to convert timeframe {} to a fixed timedelta.".format(timeframe))
 
-    def compute_end_timestamp(since, timeframe):
+    @classmethod
+    def compute_end_timestamp(cls, since, timeframe):
         if timeframe == "1M":
             # Special case for month because it has not fixed timedelta
-            return datetime(since.year, since.month, 1, tzinfo=timezone.utc) - CCXT_Data._timedelta('1s')
+            return datetime(since.year, since.month, 1, tzinfo=timezone.utc) - cls._timedelta('1s')
 
-        td = CCXT_Data._timedelta(timeframe)
+        td = cls._timedelta(timeframe)
         # This is equivalent to the timestamp
         start_of_current_bar = int(since.timestamp() / td.total_seconds()) * td.total_seconds()
-        return datetime.fromtimestamp(start_of_current_bar, timezone.utc) - CCXT_Data._timedelta('1s')
+        return datetime.fromtimestamp(start_of_current_bar, timezone.utc) - cls._timedelta('1s')
 
-    def ifNotDirExists_MakeDir(path):
+    @classmethod
+    def ifNotDirExists_MakeDir(cls, path):
         if not os.path.exists(path):
             os.mkdir(path)
