@@ -10,15 +10,15 @@ def create_wallet_source(wallet: Wallet, include_worth=True):
     symbol = wallet.instrument.symbol
 
     with Module(exchange_name + ":/" + symbol) as wallet_ds:
-        free_balance = Lambda("free", lambda w: w.balance.size, wallet)
-        locked_balance = Lambda("locked", lambda w: w.locked_balance.size, wallet)
-        total_balance = Lambda("total", lambda w: w.total_balance.size, wallet)
+        free_balance = Lambda(lambda w: w.balance.as_float(), wallet, name="free")
+        locked_balance = Lambda(lambda w: w.locked_balance.as_float(), wallet, name="locked")
+        total_balance = Lambda(lambda w: w.total_balance.as_float(), wallet, name="total")
 
         nodes = [free_balance, locked_balance, total_balance]
 
         if include_worth:
             price = Select(lambda node: node.name.endswith(symbol))(wallet.exchange)
-            worth = BinOp("worth", operator.mul)(price, total_balance)
+            worth = BinOp(operator.mul, name="worth")(price, total_balance)
             nodes += [worth]
 
     return wallet_ds

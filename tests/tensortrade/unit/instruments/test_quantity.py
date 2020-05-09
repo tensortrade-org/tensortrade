@@ -1,5 +1,6 @@
 
 import pytest
+import unittest.mock as mock
 
 from tensortrade.instruments import *
 from tensortrade.base.exceptions import *
@@ -47,8 +48,7 @@ def test_locking():
     q.path_id = path_id
     assert q.is_locked
 
-    q = Quantity(BTC, 10000)
-    q.lock_for(path_id)
+    q = Quantity(BTC, 10000).lock_for(path_id)
     assert q.is_locked
 
 
@@ -590,3 +590,25 @@ def test_free():
     assert isinstance(free, Quantity)
     assert free.size == 5 and free.instrument == ETH
     assert not free.is_locked
+
+
+@mock.patch("tensortrade.instruments.ExchangePair")
+def test_convert(mock_exchange_pair):
+
+    exchange_pair = mock_exchange_pair.return_value
+    exchange_pair.pair = USD/BTC
+    exchange_pair.price = 9000
+
+    # Test converts to Quote
+    quantity = Quantity(USD, 1000)
+    converted = quantity.convert(exchange_pair)
+
+    assert float(converted.size) == 1000 / 9000
+    assert converted.instrument == BTC
+
+    # Test converts to Quote
+    quantity = Quantity(BTC, 1.6)
+    converted = quantity.convert(exchange_pair)
+
+    assert float(converted.size) == 1.6 * 9000
+    assert converted.instrument == USD

@@ -113,26 +113,25 @@ class ManagedRiskOrders(ActionScheme):
         if action == 0:
             return None
 
-        ((exchange, pair), (stop_loss, take_profit, prop, duration, side)) = self.actions[action]
+        (exchange_pair, (stop_loss, take_profit, proportion, duration, side)) = self.actions[action]
 
-        price = exchange.quote_price(pair)
+        instrument = side.instrument(exchange_pair.pair)
+        wallet = portfolio.get_wallet(exchange_pair.exchange.id, instrument=instrument)
 
-        wallet_instrument = side.instrument(pair)
-        wallet = portfolio.get_wallet(exchange.id, instrument=wallet_instrument)
+        balance = wallet.balance.as_float()
+        size = (balance * proportion)
+        size = min(balance, size)
+        quantity = (size * instrument).quantize()
 
-        size = (wallet.balance.size * prop)
-        size = min(wallet.balance.size, size)
-
-        if size < 10 ** -pair.base.precision:
+        if size < 10 ** -exchange_pair.pair.base.precision:
             return None
 
         params = {
             'step': self.clock.step,
             'side': side,
-            'exchange_name': exchange.name,
-            'pair': pair,
-            'price': price,
-            'size': size,
+            'exchange_pair': exchange_pair,
+            'price': exchange_pair.price,
+            'quantity': quantity,
             'down_percent': stop_loss,
             'up_percent': take_profit,
             'portfolio': portfolio,

@@ -18,7 +18,7 @@ import pandas as pd
 from typing import Callable, Tuple, Union, List
 
 from tensortrade import Component, TimedIdentifiable
-from tensortrade.instruments import Instrument, Quantity, TradingPair
+from tensortrade.instruments import Instrument, Quantity, ExchangePair
 from tensortrade.data.stream.listeners import FeedListener
 
 from .wallet import Wallet
@@ -99,12 +99,11 @@ class Portfolio(Component, TimedIdentifiable, FeedListener):
         return Wallet.ledger
 
     @property
-    def exchange_pairs(self) -> List['Exchange']:
+    def exchange_pairs(self) -> List['ExchangePair']:
         exchange_pairs = []
-
         for w in self.wallets:
             if w.instrument != self.base_instrument:
-                exchange_pairs += [(w.exchange, self.base_instrument/w.instrument)]
+                exchange_pairs += [ExchangePair(w.exchange, self.base_instrument/w.instrument)]
         return exchange_pairs
 
     @property
@@ -194,7 +193,6 @@ class Portfolio(Component, TimedIdentifiable, FeedListener):
     def add(self, wallet: WalletType):
         if isinstance(wallet, tuple):
             wallet = Wallet.from_tuple(wallet)
-
         self._wallets[(wallet.exchange.id, wallet.instrument.symbol)] = wallet
 
     def remove(self, wallet: 'Wallet'):

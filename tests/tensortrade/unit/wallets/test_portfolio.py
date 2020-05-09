@@ -81,9 +81,14 @@ def portfolio(wallet_usd, wallet_btc, wallet_eth, wallet_xrp, exchange):
 @pytest.fixture
 def portfolio_locked(portfolio, wallet_usd, wallet_btc, wallet_eth, wallet_xrp):
     def allocate(wallet, amount, identifier):
-        wallet -= amount
-        amount.lock_for(identifier)
-        wallet += amount
+        wallet.withdraw(
+            quantity=amount,
+            reason="test"
+        )
+        wallet.deposit(
+            quantity=amount.lock_for(identifier),
+            reason="test"
+        )
         return wallet
 
     wallet_usd = allocate(wallet_usd, 50 * USD, "1")

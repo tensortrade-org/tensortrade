@@ -1,9 +1,8 @@
 
-
 import pytest
 
 from tensortrade.instruments import TradingPair, BTC, USD
-from tensortrade.base.exceptions import InvalidTradingPair, IncompatibleTradingPairOperation
+from tensortrade.base.exceptions import InvalidTradingPair
 
 
 def test_valid_init():

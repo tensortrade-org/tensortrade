@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License
 
-from itertools import product
-from typing import Union, List, Dict
+from typing import List, Dict
 from collections import OrderedDict
 
 from tensortrade.base.core import TimeIndexed
@@ -26,21 +25,10 @@ class Broker(OrderListener, TimeIndexed):
     Orders are kept in a virtual order book until they are ready to be executed.
     """
 
-    def __init__(self, exchanges: Union[List['Exchange'], 'Exchange']):
-        self.exchanges = exchanges
-
+    def __init__(self):
         self._unexecuted = []
         self._executed = {}
         self._trades = OrderedDict()
-
-    @property
-    def exchanges(self) -> List['Exchange']:
-        """The list of exchanges the broker will execute orders on."""
-        return self._exchanges
-
-    @exchanges.setter
-    def exchanges(self, exchanges: Union[List['Exchange'], 'Exchange']):
-        self._exchanges = exchanges if isinstance(exchanges, list) else [exchanges]
 
     @property
     def unexecuted(self) -> List[Order]:
@@ -65,42 +53,40 @@ class Broker(OrderListener, TimeIndexed):
             raise Warning(
                 'Cannot cancel order {} - order has already been cancelled.'.format(order.id))
 
-        if order.status != OrderStatus.PENDING:
-            raise Warning(
-                'Cannot cancel order {} - order has already been executed.'.format(order.id))
-
-        self._unexecuted.remove(order)
+        if order in self._unexecuted:
+            self._unexecuted.remove(order)
 
         order.cancel()
 
     def update(self):
-        for order, exchange in product(self._unexecuted, self._exchanges):
-            is_executable = order.is_executable_on(exchange) and self.clock.step >= order.start
-
-            if order in self._unexecuted and is_executable:
+        for order in self._unexecuted:
+            if order.is_executable():
                 self._unexecuted.remove(order)
                 self._executed[order.id] = order
 
                 order.attach(self)
-                order.execute(exchange)
+                order.execute()
 
         for order in self._unexecuted + list(self._executed.values()):
-            order_expired = (self.clock.step >= order.end) if order.end else False
-            order_active = order.status not in [OrderStatus.FILLED, OrderStatus.CANCELLED]
+            if order.is_active() and order.is_expired():
+                self.cancel(order)
 
-            if order_active and order_expired:
-                order.cancel()
-
-    def on_fill(self, order: Order, exchange: 'Exchange', trade: 'Trade'):
+    def on_fill(self, order: Order, trade: 'Trade'):
         if trade.order_id in self._executed and trade not in self._trades:
             self._trades[trade.order_id] = self._trades.get(trade.order_id, [])
             self._trades[trade.order_id] += [trade]
 
             if order.is_complete():
-                next_order = order.complete(exchange)
+                next_order = order.complete()
 
                 if next_order:
-                    self.submit(next_order)
+                    if next_order.is_executable():
+                        self._executed[next_order.id] = next_order
+
+                        next_order.attach(self)
+                        next_order.execute()
+                    else:
+                        self.submit(next_order)
 
     def reset(self):
         self._unexecuted = []

@@ -1,28 +1,29 @@
 
 
-import operator
+import pytest
+import numpy as np
 
-from tensortrade.data import Stream, DataFeed, Module
-from tensortrade.data.stream.transform import BinOp, Select
+from tensortrade.data import Stream, DataFeed, Module, BinOp, Select
 
 
+@pytest.mark.skip(reason="Soon to be deprecated.")
 def test_namespace():
 
-    a = Stream("a", [1, 2, 3])
+    a = Stream([1, 2, 3]).rename("a")
 
     with Module("world") as world:
-        a1 = Stream("a1", [4, 5, 6])
-        a2 = Stream("a2", [7, 8, 9])
+        a1 = Stream([4, 5, 6]).rename("a1")
+        a2 = Stream([7, 8, 9]).rename("a2")
 
         with Module("sub-world") as sub_world:
-            a3 = Stream("a3", [10, 11, 12])
-            a4 = Stream("a4", [13, 14, 15])
+            a3 = Stream([10, 11, 12]).rename("a3")
+            a4 = Stream([13, 14, 15]).rename("a4")
 
-            t3 = BinOp("t3", operator.add)(a2, a4)
+            t3 = BinOp(np.add)(a2, a4).rename("t3")
 
-    t1 = BinOp("t1", operator.mul)(a, t3)
+    t1 = BinOp(np.multiply)(a, t3).rename("t1")
 
-    feed = DataFeed()(t1, world, sub_world)
+    feed = DataFeed([t1, world, sub_world])
 
     assert feed.next() == {
         "world:/a1": 4,
@@ -45,15 +46,15 @@ def test_namespace():
 
 def test_select():
 
-    a3 = Stream("a3", [3, 2, 1])
+    a3 = Stream([3, 2, 1]).rename("a3")
 
     with Module("world") as a:
-        a1 = Stream("a1", [7, 8, 9])
-        a2 = Stream("a2", [3, 2, 1])
+        a1 = Stream([7, 8, 9]).rename("a1")
+        a2 = Stream([3, 2, 1]).rename("a2")
 
-    t1 = BinOp("t1", operator.mul)(a1, a3)
+    t1 = BinOp(np.multiply)(a1, a3).rename("t1")
 
     s = Select("world:/a1")(t1, a)
-    feed = DataFeed()(s)
+    feed = DataFeed([s])
 
     assert feed.next() == {"world:/a1": 7}
