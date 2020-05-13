@@ -18,8 +18,6 @@ from decimal import Decimal
 
 from tensortrade.base import Component, TimedIdentifiable
 from tensortrade.instruments import TradingPair
-from tensortrade.data import Module
-from tensortrade.data import Forward
 
 
 class ExchangeOptions:
@@ -39,7 +37,7 @@ class ExchangeOptions:
         self.is_live = is_live
 
 
-class Exchange(Module, Component, TimedIdentifiable):
+class Exchange(Component, TimedIdentifiable):
     """An abstract exchange for use within a trading environment."""
 
     registered_name = "exchanges"
@@ -48,22 +46,24 @@ class Exchange(Module, Component, TimedIdentifiable):
                  name: str,
                  service: Union[Callable, str],
                  options: ExchangeOptions = None):
-        super().__init__(name)
-
+        super().__init__()
+        self.name = name
         self._service = service
         self._options = options if options else ExchangeOptions()
-        self._prices = None
+        self._price_streams = {}
 
     @property
     def options(self):
         return self._options
 
-    def build(self):
-        self._prices = {}
+    def __call__(self, *streams):
+        for s in streams:
+            pair = "".join([c if c.isalnum() else "/" for c in s.name])
+            self._price_streams[pair] = s.rename(self.name + ":/" + s.name)
+        return self
 
-        for node in self.inputs:
-            pair = "".join([c if c.isalnum() else "/" for c in node.name])
-            self._prices[pair] = Forward(node)
+    def streams(self) -> "List[Stream[float]]":
+        return list(self._price_streams.values())
 
     def quote_price(self, trading_pair: 'TradingPair') -> Decimal:
         """The quote price of a trading pair on the exchange, denoted in the base instrument.
@@ -74,7 +74,7 @@ class Exchange(Module, Component, TimedIdentifiable):
         Returns:
             The quote price of the specified trading pair, denoted in the base instrument.
         """
-        price = Decimal(self._prices[str(trading_pair)].value)
+        price = Decimal(self._price_streams[str(trading_pair)].value)
         price = price.quantize(Decimal(10)**-trading_pair.base.precision)
         return price
 
@@ -87,7 +87,7 @@ class Exchange(Module, Component, TimedIdentifiable):
         Returns:
             A bool designating whether or not the pair is tradable.
         """
-        return str(trading_pair) in self._prices.keys()
+        return str(trading_pair) in self._price_streams.keys()
 
     def execute_order(self, order: 'Order', portfolio: 'Portfolio'):
         """Execute an order on the exchange.
@@ -107,9 +107,3 @@ class Exchange(Module, Component, TimedIdentifiable):
 
         if trade:
             order.fill(trade)
-
-    def has_next(self):
-        return True
-
-    def reset(self):
-        self._prices = None

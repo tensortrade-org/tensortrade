@@ -8,21 +8,21 @@ from tensortrade.instruments import Quantity, USD, BTC, ETH, LTC
 
 from tensortrade.exchanges.services.execution.simulated import execute_order
 from tensortrade.exchanges import Exchange
-from tensortrade.data.internal import create_internal_feed
+from tensortrade.data.internal import create_internal_streams
 from tensortrade.data import DataFeed, Stream
 
 
 def test_create_internal_data_feed():
 
     ex1 = Exchange("coinbase", service=execute_order)(
-        Stream([7000, 7500, 8300]).rename("USD-BTC"),
-        Stream([200, 212, 400]).rename("USD-ETH")
+        Stream.source([7000, 7500, 8300], dtype="float").rename("USD-BTC"),
+        Stream.source([200, 212, 400], dtype="float").rename("USD-ETH")
     )
 
     ex2 = Exchange("binance", service=execute_order)(
-        Stream([7005, 7600, 8200]).rename("USD-BTC"),
-        Stream([201, 208, 402]).rename("USD-ETH"),
-        Stream([56, 52, 60]).rename("USD-LTC")
+        Stream.source([7005, 7600, 8200], dtype="float").rename("USD-BTC"),
+        Stream.source([201, 208, 402], dtype="float").rename("USD-ETH"),
+        Stream.source([56, 52, 60], dtype="float").rename("USD-LTC")
     )
 
     portfolio = Portfolio(USD, [
@@ -35,7 +35,7 @@ def test_create_internal_data_feed():
         Wallet(ex2, 3 * LTC),
     ])
 
-    feed = create_internal_feed(portfolio)
+    feed = DataFeed(create_internal_streams(portfolio))
 
     data = {
         "coinbase:/USD-BTC": 7000,

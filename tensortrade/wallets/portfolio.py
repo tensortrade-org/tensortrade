@@ -19,7 +19,6 @@ from typing import Callable, Tuple, Union, List
 
 from tensortrade import Component, TimedIdentifiable
 from tensortrade.instruments import Instrument, Quantity, ExchangePair
-from tensortrade.data.stream.listeners import FeedListener
 
 from .wallet import Wallet
 
@@ -27,7 +26,7 @@ from .wallet import Wallet
 WalletType = Union['Wallet', Tuple['Exchange', Instrument, float]]
 
 
-class Portfolio(Component, TimedIdentifiable, FeedListener):
+class Portfolio(Component, TimedIdentifiable):
     """A portfolio of wallets on exchanges."""
 
     registered_name = "portfolio"
@@ -221,6 +220,7 @@ class Portfolio(Component, TimedIdentifiable, FeedListener):
         return keys
 
     def on_next(self, data: dict):
+        data = data["internal"]
         if not self._keys:
             self._keys = self.find_keys(data)
 

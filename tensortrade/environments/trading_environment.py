@@ -29,8 +29,8 @@ import tensortrade.wallets as wallets
 from tensortrade.base import TimeIndexed, Clock
 from tensortrade.actions import ActionScheme
 from tensortrade.rewards import RewardScheme
-from tensortrade.data import DataFeed
-from tensortrade.data.internal import create_internal_feed
+from tensortrade.data import DataFeed, Stream
+from tensortrade.data.internal import create_internal_streams
 from tensortrade.orders import Broker
 from tensortrade.wallets import Portfolio
 from tensortrade.environments import ObservationHistory
@@ -47,9 +47,8 @@ class TradingEnvironment(gym.Env, TimeIndexed):
                  portfolio: Union[Portfolio, str],
                  action_scheme: Union[ActionScheme, str],
                  reward_scheme: Union[RewardScheme, str],
-                 feed: DataFeed = None,
+                 feed: DataFeed,
                  window_size: int = 1,
-                 use_internal: bool = False,
                  renderers: Union[str, List[str], List['BaseRenderer']] = 'screenlog',
                  **kwargs):
         """
@@ -69,14 +68,13 @@ class TradingEnvironment(gym.Env, TimeIndexed):
         self.portfolio = portfolio
         self.action_scheme = action_scheme
         self.reward_scheme = reward_scheme
-        self.feed = feed
-        self.window_size = window_size
-        self.use_internal = use_internal
-        self._price_history: pd.DataFrame = kwargs.get('price_history', None)
 
-        if self.feed:
-            self._external_keys = self.feed.next().keys()
-            self.feed.reset()
+        internal_group = Stream.group(create_internal_streams(portfolio)).rename("internal")
+        external_group = Stream.group(feed.inputs).rename("external")
+        self.feed = DataFeed([internal_group, external_group]).attach(portfolio)
+
+        self.window_size = window_size
+        self._price_history: pd.DataFrame = kwargs.get('price_history', None)
 
         self.history = ObservationHistory(window_size=window_size)
         self._broker = Broker()
@@ -144,13 +142,8 @@ class TradingEnvironment(gym.Env, TimeIndexed):
         self.action_scheme.compile()
         self.action_space = self.action_scheme.action_space
 
-        if not self.feed:
-            self.feed = create_internal_feed(self.portfolio)
-        else:
-            self.feed = self.feed + create_internal_feed(self.portfolio)
-
-        initial_obs = self.feed.next()
-        n_features = len(initial_obs.keys()) if self.use_internal else len(self._external_keys)
+        initial_obs = self.feed.next()["external"]
+        n_features = len(initial_obs.keys())
 
         self.observation_space = Box(
             low=self._observation_lows,
@@ -231,10 +224,7 @@ class TradingEnvironment(gym.Env, TimeIndexed):
 
         self._broker.update()
 
-        obs_row = self.feed.next()
-
-        if not self.use_internal:
-            obs_row = {k: obs_row[k] for k in self._external_keys}
+        obs_row = self.feed.next()["external"]
 
         self.history.push(obs_row)
 
@@ -285,10 +275,7 @@ class TradingEnvironment(gym.Env, TimeIndexed):
         for renderer in self._renderers:
             renderer.reset()
 
-        obs_row = self.feed.next()
-
-        if not self.use_internal:
-            obs_row = {k: obs_row[k] for k in self._external_keys}
+        obs_row = self.feed.next()["external"]
 
         self.history.push(obs_row)
 
