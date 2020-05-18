@@ -449,6 +449,7 @@ class Data():
         """               
             symbol: Can be multiple symbols separated by a space.
                     eg. 'AAPL MSFT AMZN SNAP SPY' will get all of those
+
             timeframe: 1m, 2m, 5m, 15m, 30m, 60m, 90m, 1h, 1d, 5d, 1wk, 1mo, 3mo
                        (optional, default is '1d')
             
@@ -462,18 +463,24 @@ class Data():
             
             TT_Format: True would set columns with a prefix using the base symbol
                 eg. BTC:open, BTC:close, BTC:volume
+
+
             Example Usage:
                 from tensortrade.utils import Data
+
                 # Get 1 Day candles from 2015 to 2020
                 Data.Yahoo.fetch_candles(symbol="SPY AAPL MSFT",
                                          start="2015-01-01",
                                          end="2020-01-01",
                                          timeframe="1d")
+
+
                 # Get 1 Week candles from 2015 to 2020
                 Data.Yahoo.fetch_candles(symbol="SPY AAPL MSFT",
                                          start="2015-01-01",
                                          candle_amount="5y",
                                          timeframe="1wk")
+
                 # Get full asset history of 1 Month candles
                 Data.Yahoo.fetch_candles(symbol="SPY AAPL MSFT",
                                          candle_amount="max",
@@ -578,7 +585,6 @@ class Data():
                     else:
                         df_db = df_db.append(df)
 
-                    print(df_db)
                     df_db = df_db.reset_index().drop_duplicates('Date')
                     df_db['Date'] = df_db['Date'].apply(lambda x: pd.to_datetime(x))
                     df_db.sort_values(by='Date', ascending=True, inplace=True)
@@ -607,6 +613,7 @@ class Data():
                         df_copy = df[asset].copy()
                         df_copy.columns = [asset + ":" + name.lower() for name in df[asset].columns]
                         df_new = pd.concat([df_new, df_copy],axis=1)
+                    df = df_new
                 else:
                     df.columns = [symbol + ":" + name.lower() for name in df.columns]
             #put back together the multi index
