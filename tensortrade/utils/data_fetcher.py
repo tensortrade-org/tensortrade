@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Use this URL for a Google Colab Demo of this class and its usage:
-    https://colab.research.google.com/drive/1h9SnR2aqn3cuyoew4QdxhKjTe1VjgxUr
+    https://colab.research.google.com/drive/154_2tvDn_36pZzU_XkSv9Xvd3KjQCw1U
 """
 from datetime import timedelta, datetime, timezone
 import sys, os, time, random
