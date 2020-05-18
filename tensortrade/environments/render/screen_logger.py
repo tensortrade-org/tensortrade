@@ -20,7 +20,7 @@ DEFAULT_FORMAT = '[%(asctime)-15s] %(message)s'
 
 
 class ScreenLogger(BaseRenderer):
-    def __init__(self, date_format: str = '%Y-%m-%d %-I:%M:%S %p'):
+    def __init__(self, date_format: str = '%Y-%m-%d %H:%M:%S %p'):
         self._date_format = date_format
 
     def render(self, episode: int = None, max_episodes: int = None,
