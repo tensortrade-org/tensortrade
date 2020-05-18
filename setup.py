@@ -55,7 +55,8 @@ setup(
     extras_require={
         'tf': ['tensorflow>=2.1.0'],
         'data1': ['tulipy>=0.4.0'],
-        'data2': ['ccxt>=1.18.0', 
+        'data2': ['yfinance',
+                  'ccxt>=1.18.0', 
                  'pandas-ta>=0.1.39b', 
                  'pantulipy @ git+https://github.com/havocesp/pantulipy.git'
                  ],
