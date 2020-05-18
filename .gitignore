@@ -18,6 +18,7 @@ tags
 .idea
 .vscode
 Pipfile
+.virtualenv
 
 # agent storage
 examples/agents
