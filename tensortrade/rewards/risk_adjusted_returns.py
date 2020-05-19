@@ -75,9 +75,11 @@ class RiskAdjustedReturns(RewardScheme):
         """Return the reward corresponding to the selected risk-adjusted return metric."""
         returns = portfolio.performance['net_worth'][-(self._window_size + 1):].pct_change().dropna()
         risk_adjusted_return = self._return_algorithm(returns)
-
-        trade_count = trade_count + 1 if self.minimize_trades else 1
-        if risk_adjusted_return >= 0:
-            return risk_adjusted_return / trade_count # Blunt positive rewards if minimize_trades = True
-        else:
-            return risk_adjusted_return * trade_count # Magnify negative rewards
+        try:
+            trade_count = trade_count + 1 if self.minimize_trades else 1
+            if risk_adjusted_return >= 0:
+                return risk_adjusted_return / trade_count # Blunt positive rewards if minimize_trades = True
+            else:
+                return risk_adjusted_return * trade_count # Magnify negative rewards
+        except Exception as e:
+            print(e)
