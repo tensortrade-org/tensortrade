@@ -26,6 +26,7 @@ class RiskAdjustedReturns(RewardScheme):
 
     def __init__(self,
                  return_algorithm: str = 'sharpe',
+                 minimize_trades: bool = False,
                  risk_free_rate: float = 0.,
                  target_returns: float = 0.,
                  window_size: int = 1):
@@ -36,7 +37,7 @@ class RiskAdjustedReturns(RewardScheme):
             target_returns (optional): The target returns per period for use in calculating the sortino ratio. Default to 0.
         """
         algorithm = self.default('return_algorithm', return_algorithm)
-
+        self.minimize_trades = minimize_trades
         self._return_algorithm = self._return_algorithm_from_str(algorithm)
         self._risk_free_rate = self.default('risk_free_rate', risk_free_rate)
         self._target_returns = self.default('target_returns', target_returns)
@@ -52,7 +53,6 @@ class RiskAdjustedReturns(RewardScheme):
 
     def _sharpe_ratio(self, returns: pd.Series) -> float:
         """Return the sharpe ratio for a given series of a returns.
-
         References:
             - https://en.wikipedia.org/wiki/Sharpe_ratio
         """
@@ -60,7 +60,6 @@ class RiskAdjustedReturns(RewardScheme):
 
     def _sortino_ratio(self, returns: pd.Series) -> float:
         """Return the sortino ratio for a given series of a returns.
-
         References:
             - https://en.wikipedia.org/wiki/Sortino_ratio
         """
@@ -77,4 +76,8 @@ class RiskAdjustedReturns(RewardScheme):
         returns = portfolio.performance['net_worth'][-(self._window_size + 1):].pct_change().dropna()
         risk_adjusted_return = self._return_algorithm(returns)
 
-        return risk_adjusted_return
+        trades = len(self.env._broker.trades) + 1 if self.minimize_trades else 1
+        if risk_adjusted_return >= 0:
+            return risk_adjusted_return / trades # Blunt positive rewards if minimize_trades = True
+        else:
+            return risk_adjusted_return * trades # Magnify negative rewards
