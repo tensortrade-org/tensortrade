@@ -237,7 +237,7 @@ class TradingEnvironment(gym.Env, TimeIndexed):
         obs = self.history.observe()
         obs = obs.astype(self._observation_dtype)
 
-        reward = self.reward_scheme.get_reward(self._portfolio)
+        reward = self.reward_scheme.get_reward(self._portfolio, len(self._broker.trades))
         reward = np.nan_to_num(reward)
 
         if np.bitwise_not(np.isfinite(reward)):
