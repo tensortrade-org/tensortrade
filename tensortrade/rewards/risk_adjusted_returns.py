@@ -37,11 +37,12 @@ class RiskAdjustedReturns(RewardScheme):
             target_returns (optional): The target returns per period for use in calculating the sortino ratio. Default to 0.
         """
         algorithm = self.default('return_algorithm', return_algorithm)
-        self.minimize_trades = minimize_trades
         self._return_algorithm = self._return_algorithm_from_str(algorithm)
+        
         self._risk_free_rate = self.default('risk_free_rate', risk_free_rate)
         self._target_returns = self.default('target_returns', target_returns)
         self._window_size = self.default('window_size', window_size)
+        self.minimize_trades = self.default('minimize_trades', minimize_trades)
 
     def _return_algorithm_from_str(self, algorithm_str: str) -> Callable[[pd.DataFrame], float]:
         assert algorithm_str in ['sharpe', 'sortino']
@@ -75,11 +76,10 @@ class RiskAdjustedReturns(RewardScheme):
         """Return the reward corresponding to the selected risk-adjusted return metric."""
         returns = portfolio.performance['net_worth'][-(self._window_size + 1):].pct_change().dropna()
         risk_adjusted_return = self._return_algorithm(returns)
-        try:
-            trade_count = trade_count + 1 if self.minimize_trades else 1
-            if risk_adjusted_return >= 0:
-                return risk_adjusted_return / trade_count # Blunt positive rewards if minimize_trades = True
-            else:
-                return risk_adjusted_return * trade_count # Magnify negative rewards
-        except Exception as e:
-            print(e)
+
+        trade_count = trade_count + 1 if self.minimize_trades else 1
+        if risk_adjusted_return >= 0:
+            return risk_adjusted_return / trade_count # Blunt positive rewards if minimize_trades = True
+        else:
+            return risk_adjusted_return * trade_count # Magnify negative rewards
+
