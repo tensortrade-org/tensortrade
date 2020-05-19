@@ -237,7 +237,6 @@ class TradingEnvironment(gym.Env, TimeIndexed):
         obs = self.history.observe()
         obs = obs.astype(self._observation_dtype)
 
-        print(len(self.episode_trades), len(self._broker.trades))
         reward = self.reward_scheme.get_reward(self._portfolio, len(self.episode_trades))
         reward = np.nan_to_num(reward)
 
