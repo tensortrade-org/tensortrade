@@ -71,13 +71,13 @@ class RiskAdjustedReturns(RewardScheme):
 
         return (expected_return - self._risk_free_rate + 1E-9) / (downside_std + 1E-9)
 
-    def get_reward(self, portfolio: 'Portfolio') -> float:
+    def get_reward(self, portfolio: 'Portfolio', trade_count: int) -> float:
         """Return the reward corresponding to the selected risk-adjusted return metric."""
         returns = portfolio.performance['net_worth'][-(self._window_size + 1):].pct_change().dropna()
         risk_adjusted_return = self._return_algorithm(returns)
 
-        trades = len(self.env._broker.trades) + 1 if self.minimize_trades else 1
+        trade_count = trade_count + 1 if self.minimize_trades else 1
         if risk_adjusted_return >= 0:
-            return risk_adjusted_return / trades # Blunt positive rewards if minimize_trades = True
+            return risk_adjusted_return / trade_count # Blunt positive rewards if minimize_trades = True
         else:
-            return risk_adjusted_return * trades # Magnify negative rewards
+            return risk_adjusted_return * trade_count # Magnify negative rewards
