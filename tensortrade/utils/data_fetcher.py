@@ -619,7 +619,9 @@ class Data():
                     df.columns = [symbol + ":" + name.lower() for name in df.columns]
                     df['volume'] = df['volume'].apply(lambda x: float(x))
             else:
-                df['Volume'] = df['Volume'].apply(lambda x: float(x))
+                df.columns = [symbol + ":" + name.lower() for name in df.columns]
+                df['volume'] = df['volume'].apply(lambda x: float(x))
+               
             return df
 
 
