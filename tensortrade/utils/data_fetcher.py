@@ -612,11 +612,14 @@ class Data():
                     for asset in symbol.split(' '):
                         df_copy = df[asset].copy()
                         df_copy.columns = [asset + ":" + name.lower() for name in df[asset].columns]
+                        df_copy['volume'] = df_copy['volume'].apply(lambda x: float(x))
                         df_new = pd.concat([df_new, df_copy],axis=1)
                     df = df_new
                 else:
                     df.columns = [symbol + ":" + name.lower() for name in df.columns]
-            #put back together the multi index
+                    df['volume'] = df['volume'].apply(lambda x: float(x))
+            else:
+                df['Volume'] = df['Volume'].apply(lambda x: float(x))
             return df
 
 
