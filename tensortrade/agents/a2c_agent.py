@@ -236,7 +236,7 @@ class A2CAgent(Agent):
 
             self.env.save()
 
-            if save_path and (is_checkpoint or episode == n_episodes):
+            if save_path and (is_checkpoint or episode == n_episodes - 1):
                 self.save(save_path, episode=episode)
 
             episode += 1
