@@ -184,14 +184,13 @@ class A2CAgent(Agent):
         episode = 0
         steps_done = 0
         total_reward = 0
-        stop_training = False
 
         if n_steps and not n_episodes:
             n_episodes = np.iinfo(np.int32).max
 
         print('====      AGENT ID: {}      ===='.format(self.id))
 
-        while episode < n_episodes and not stop_training:
+        while episode < n_episodes:
             state = self.env.reset()
             done = False
             steps_done = 0
