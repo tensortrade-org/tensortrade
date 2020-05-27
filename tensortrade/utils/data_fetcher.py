@@ -569,14 +569,15 @@ class Data():
                 df_db = pd.DataFrame() # If DB File exists, load it
                 if path and os.path.exists(path_to_db_file):
                     #print("\t\t-- Loading existing history from file {} to get next timestamp.".format(path_to_db_file))
-                    if csv:
-                        df_db = pd.read_csv(path_to_db_file)
-                    if sqlite:
-                        conn = Data._load_sqlite_db(path_to_db_file)
-                        if conn:
-                            df_db = Data._sqlite_to_dataframe(conn, table='ohlcv')
-
-                    print("\t-- Fetching candles...")
+                    try:
+                        if csv:
+                            df_db = pd.read_csv(path_to_db_file)
+                        if sqlite:
+                            conn = Data._load_sqlite_db(path_to_db_file)
+                            if conn:
+                                df_db = Data._sqlite_to_dataframe(conn, table='ohlcv')
+                    except Exception as e:
+                        print(e)
 
                 # Writing data to DB format of choice
                 if not df_db.empty:
@@ -596,13 +597,13 @@ class Data():
                         df = df_db.copy()
 
                 # Save Data to DB file
-                if len(df) > 0:
+                if len(df.index.values) > 0:
                     if csv:
-                        Data.Save_Data.as_csv(df_db, path_to_db_file)
+                        Data.Save_Data.as_csv(df, path_to_db_file)
                     elif sqlite:
                         sql_query = 'create table if not exists ohlcv (date, open, high, low, close, volume)'
                         sql_table_name = 'ohlcv'     
-                        Data.Save_Data.as_sqlite(df_db, path_to_db_file, sql_table_name, sql_query)
+                        Data.Save_Data.as_sqlite(df, path_to_db_file, sql_table_name, sql_query)
 
             # After getting all the candles
             print('\t\t\t-- Total Candles: ' + str(len(df)) + '\n')
