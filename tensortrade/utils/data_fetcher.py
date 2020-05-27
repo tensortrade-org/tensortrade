@@ -648,7 +648,7 @@ class Data():
             cls._ifNotDirExists_MakeDir(path_to_db_file[:path_to_db_file.rfind('/')])
             # Return a csv formatted string to write to .csv file
             data = df.to_csv(mode='a', header=True, index=False)
-            # aiofiles is an IO lib compatible with async code
+            print(data)
             # w+ creates the file if it doesnt exist
             with open(path_to_db_file, 'w+') as f:
                 f.write(data)
