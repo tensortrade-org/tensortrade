@@ -586,10 +586,10 @@ class Data():
                     else:
                         df_db = df_db.append(df)
 
-                    df_db = df_db.reset_index().drop_duplicates('Date')
-                    df_db['Date'] = df_db['Date'].apply(lambda x: pd.to_datetime(x))
-                    df_db.sort_values(by='Date', ascending=True, inplace=True)
-                    df_db = df_db.set_index('Date')
+                    df_db = df_db.reset_index().drop_duplicates('Datetime')
+                    #df_db['Date'] = df_db['Date'].apply(lambda x: pd.to_datetime(x))
+                    df_db.sort_values(by='Datetime', ascending=True, inplace=True)
+                    df_db = df_db.set_index('Datetime')
 
                     if isinstance(df.columns, pd.MultiIndex):
                         df[asset] = df_db.copy()
