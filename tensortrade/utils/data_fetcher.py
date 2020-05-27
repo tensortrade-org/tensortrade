@@ -612,14 +612,14 @@ class Data():
                     for asset in symbol.split(' '):
                         df_copy = df[asset].copy()
                         df_copy.columns = [asset + ":" + name.lower() for name in df[asset].columns]
-                        df_copy['volume'] = df_copy['volume'].apply(lambda x: float(x))
                         df_new = pd.concat([df_new, df_copy],axis=1)
                     df = df_new
                 else:
                     df.columns = [symbol + ":" + name.lower() for name in df.columns]
-                    df['volume'] = df['volume'].apply(lambda x: float(x))
             else:
-                df.columns = [symbol + ":" + name.lower() for name in df.columns]
+                df.columns = [name.lower() for name in df.columns]
+                
+            if 'volume' in df.columns:
                 df['volume'] = df['volume'].apply(lambda x: float(x))
                
             return df
