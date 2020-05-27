@@ -596,12 +596,13 @@ class Data():
                         df = df_db.copy()
 
                 # Save Data to DB file
-                if csv:
-                    Data.Save_Data.as_csv(df_db, path_to_db_file)
-                elif sqlite:
-                    sql_query = 'create table if not exists ohlcv (date, open, high, low, close, volume)'
-                    sql_table_name = 'ohlcv'     
-                    Data.Save_Data.as_sqlite(df_db, path_to_db_file, sql_table_name, sql_query)
+                if len(df_db.index.values) > 0:
+                    if csv:
+                        Data.Save_Data.as_csv(df_db, path_to_db_file)
+                    elif sqlite:
+                        sql_query = 'create table if not exists ohlcv (date, open, high, low, close, volume)'
+                        sql_table_name = 'ohlcv'     
+                        Data.Save_Data.as_sqlite(df_db, path_to_db_file, sql_table_name, sql_query)
 
             # After getting all the candles
             print('\t\t\t-- Total Candles: ' + str(len(df)) + '\n')
