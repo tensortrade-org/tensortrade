@@ -596,7 +596,7 @@ class Data():
                         df = df_db.copy()
 
                 # Save Data to DB file
-                if len(df_db) > 0:
+                if len(df) > 0:
                     if csv:
                         Data.Save_Data.as_csv(df_db, path_to_db_file)
                     elif sqlite:
