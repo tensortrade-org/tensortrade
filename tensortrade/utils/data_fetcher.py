@@ -599,11 +599,11 @@ class Data():
                 # Save Data to DB file
                 if len(df.index.values) > 0:
                     if csv:
-                        Data.Save_Data.as_csv(df, path_to_db_file)
+                        Data.Save_Data.as_csv(df.reset_index(), path_to_db_file)
                     elif sqlite:
                         sql_query = 'create table if not exists ohlcv (date, open, high, low, close, volume)'
                         sql_table_name = 'ohlcv'     
-                        Data.Save_Data.as_sqlite(df, path_to_db_file, sql_table_name, sql_query)
+                        Data.Save_Data.as_sqlite(df.reset_index(), path_to_db_file, sql_table_name, sql_query)
 
             # After getting all the candles
             print('\t\t\t-- Total Candles: ' + str(len(df)) + '\n')
@@ -650,7 +650,6 @@ class Data():
             cls._ifNotDirExists_MakeDir(path_to_db_file[:path_to_db_file.rfind('/')])
             # Return a csv formatted string to write to .csv file
             data = df.to_csv(mode='a', header=True, index=False)
-            print(data)
             # w+ creates the file if it doesnt exist
             with open(path_to_db_file, 'w+') as f:
                 f.write(data)
