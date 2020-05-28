@@ -137,9 +137,13 @@ class PlotlyTradingChart(BaseRenderer):
             if trade.side.value == 'buy':
                 color = 'DarkGreen'
                 ay = 15
+                base_size = trade.size
+                quote_size = round(trade.size/trade.price, trade.exchange_pair.pair.quote.precision)
             elif trade.side.value == 'sell':
                 color = 'FireBrick'
                 ay = -15
+                quote_size = trade.size
+                base_size = trade.size * trade.price
             else:
                 raise ValueError(f"Valid trade side values are 'buy' and 'sell'. Found '{trade.side.value}'.")
 
@@ -147,8 +151,8 @@ class PlotlyTradingChart(BaseRenderer):
                 step=trade.step,
                 datetime=price_history.iloc[trade.step - 1]['datetime'],
                 side=trade.side.value.upper(),
-                qty=round(trade.size/trade.price, trade.exchange_pair.pair.quote.precision),
-                size=trade.size,
+                qty=quote_size,
+                size=base_size,
                 quote_instrument=trade.quote_instrument,
                 price=float(trade.price),
                 base_instrument=trade.base_instrument,
