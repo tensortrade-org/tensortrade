@@ -37,12 +37,12 @@ def create_env():
     ], axis=1)
 
     coinbase = Exchange("coinbase", service=execute_order)(
-        Stream("USD-BTC", list(coinbase_data['BTC:close'])),
-        Stream("USD-ETH", list(coinbase_data['ETH:close']))
+        Stream(list(coinbase_data['BTC:close']), "USD-BTC"),
+        Stream(list(coinbase_data['ETH:close']), "USD-ETH")
     )
 
     with Module("coinbase") as coinbase_ns:
-        nodes = [Stream(name, list(coinbase_data[name])) for name in coinbase_data.columns]
+        nodes = [Stream(list(coinbase_data[name]), name) for name in coinbase_data.columns]
 
     feed = DataFeed([coinbase_ns])
 
