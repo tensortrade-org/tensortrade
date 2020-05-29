@@ -1,4 +1,16 @@
-﻿# [TensorTrade: Trade Efficiently with Reinforcement Learning](https://towardsdatascience.com/trade-smarter-w-reinforcement-learning-a5e91163f315?source=friends_link&sk=ea3afd0a305141eb9147be4718826dfb)
+﻿---
+
+This fork contains updates that didn't yet make it to the official TensorTrade repo.
+
+What changed:
+- works on Win10 out of the box;
+- several fixes for plotly chart;
+- fixed A2C agent;
+- merged bbrund's code for ParallelDQN agent (run `examples/dqn_example.py`)
+
+---
+
+# [TensorTrade: Trade Efficiently with Reinforcement Learning](https://towardsdatascience.com/trade-smarter-w-reinforcement-learning-a5e91163f315?source=friends_link&sk=ea3afd0a305141eb9147be4718826dfb)
 
 [![Build Status](https://travis-ci.com/tensortrade-org/tensortrade.svg?branch=master)](https://travis-ci.org/tensortrade-org/tensortrade)
 [![Documentation Status](https://readthedocs.org/projects/tensortrade/badge/?version=latest)](https://tensortrade.org)
