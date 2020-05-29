@@ -54,7 +54,10 @@ class ParallelDQNTrainer(Process):
 
     def run(self):
         os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # FATAL
-        tf.config.experimental.set_memory_growth(tf.config.experimental.list_physical_devices('GPU')[0], True)
+        try:
+            tf.config.experimental.set_memory_growth(tf.config.experimental.list_physical_devices('GPU')[0], True)
+        except IndexError:
+            pass  # no GPU on this machine
 
         env = self.create_env_func()
         env.agent_id = self.agent_id
