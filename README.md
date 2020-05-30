@@ -7,7 +7,7 @@ What changed:
 - several fixes for plotly chart;
 - fixed A2C agent;
 - merged bbrund's code for ParallelDQN agent (run `examples/dqn_example.py`)
-
+- fixed a bug with exploration/exploitation ratio that made agent to pick a random action way too often;
 ---
 
 # [TensorTrade: Trade Efficiently with Reinforcement Learning](https://towardsdatascience.com/trade-smarter-w-reinforcement-learning-a5e91163f315?source=friends_link&sk=ea3afd0a305141eb9147be4718826dfb)
