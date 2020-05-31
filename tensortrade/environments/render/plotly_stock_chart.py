@@ -147,16 +147,16 @@ class PlotlyTradingChart(BaseRenderer):
                 step=trade.step,
                 datetime=price_history.iloc[trade.step - 1]['datetime'],
                 side=trade.side.value.upper(),
-                qty=round(trade.size/trade.price, trade.pair.quote.precision),
+                qty=round(trade.size/trade.price, trade.exchange_pair.pair.quote.precision),
                 size=trade.size,
                 quote_instrument=trade.quote_instrument,
-                price=trade.price,
+                price=float(trade.price),
                 base_instrument=trade.base_instrument,
                 type=trade.type.value.upper(),
                 commission=trade.commission
             )
             annotation = go.layout.Annotation(
-                x=trade.step - 1, y=trade.price,
+                x=trade.step - 1, y=float(trade.price),
                 ax=0, ay=ay, xref='x1', yref='y1', showarrow=True,
                 arrowhead=2, arrowcolor=color, arrowwidth=4,
                 arrowsize=0.8, hovertext=hovertext, opacity=0.6,
