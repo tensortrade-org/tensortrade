@@ -93,26 +93,26 @@ class SimpleOrders(ActionScheme):
         if action == 0:
             return None
 
-        ((exchange, pair), (criteria, prop, duration, side)) = self.actions[action]
+        (exchange_pair, (criteria, proportion, duration, side)) = self.actions[action]
 
-        price = exchange.quote_price(pair)
+        instrument = side.instrument(exchange_pair.pair)
+        wallet = portfolio.get_wallet(exchange_pair.exchange.id, instrument=instrument)
 
-        instrument = side.instrument(pair)
-        wallet = portfolio.get_wallet(exchange.id, instrument=instrument)
+        balance = wallet.balance.as_float()
+        size = (balance * proportion)
+        size = min(balance, size)
 
-        size = (wallet.balance.size * prop)
-        size = min(wallet.balance.size, size)
+        quantity = (size * instrument).quantize()
 
         if size < 10 ** -instrument.precision:
             return None
 
         order = Order(step=self.clock.step,
-                      exchange_name=exchange.name,
                       side=side,
                       trade_type=self._trade_type,
-                      pair=pair,
-                      price=price,
-                      quantity=(size*instrument),
+                      exchange_pair=exchange_pair,
+                      price=exchange_pair.price,
+                      quantity=quantity,
                       criteria=criteria,
                       end=self.clock.step + duration if duration else None,
                       portfolio=portfolio)

@@ -35,7 +35,7 @@ class ActionScheme(Component, TimeIndexed, metaclass=ABCMeta):
         return self._exchange_pairs
 
     @exchange_pairs.setter
-    def exchange_pairs(self, exchange_pairs: List[Tuple['Exchange', 'TradingPair']]):
+    def exchange_pairs(self, exchange_pairs: List['ExchangePair']):
         self._exchange_pairs = exchange_pairs
 
     @property

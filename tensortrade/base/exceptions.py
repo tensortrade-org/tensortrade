@@ -25,7 +25,35 @@ class QuantityOpPathMismatch(Exception):
 
     def __init(self, left_id, right_id, *args):
         super().__init__(
-            "Invalid operation between quantities with unequal path id: {} {}.".format(left_id, right_id),
+            "Invalid operation between quantities with unequal path id: {} {}.".format(
+                left_id, right_id),
+            *args
+        )
+
+
+class DoubleLockedQuantity(Exception):
+
+    def __init(self, quantity, *args):
+        super().__init__(
+            "Cannot lock quantity that has previously been locked: {}.".format(quantity),
+            *args
+        )
+
+
+class DoubleUnlockedQuantity(Exception):
+
+    def __init(self, quantity, *args):
+        super().__init__(
+            "Cannot unlock quantity that has previously been unlocked: {}.".format(quantity),
+            *args
+        )
+
+
+class QuantityNotLocked(Exception):
+
+    def __init(self, quantity, *args):
+        super().__init__(
+            "Cannot unlock quantity that has not been locked in this wallet: {}.".format(quantity),
             *args
         )
 
@@ -92,7 +120,7 @@ class InsufficientFunds(Exception):
 # =============================================================================
 class InvalidTradingPair(Exception):
 
-    def __init__(self, base, quote,*args):
+    def __init__(self, base, quote, *args):
         super().__init__(
             "Invalid instrument pair {}/{}.".format(base, quote),
             *args

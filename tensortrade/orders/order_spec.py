@@ -24,29 +24,32 @@ class OrderSpec(Identifiable):
     def __init__(self,
                  side: TradeSide,
                  trade_type: TradeType,
-                 pair: 'TradingPair',
+                 exchange_pair: 'ExchangePair',
                  criteria: Callable[['Order', 'Exchange'], bool] = None):
         self.side = side
         self.type = trade_type
-        self.pair = pair
+        self.exchange_pair = exchange_pair
         self.criteria = criteria
 
-    def create_order(self, order: 'Order', exchange: 'Exchange') -> 'Order':
-        wallet_instrument = self.side.instrument(self.pair)
+    def create_order(self, order: 'Order') -> 'Order':
 
+        wallet_instrument = self.side.instrument(self.exchange_pair.pair)
+
+        exchange = order.exchange_pair.exchange
         wallet = order.portfolio.get_wallet(exchange.id, instrument=wallet_instrument)
-        quantity = wallet.locked.get(order.path_id, 0)
+        quantity = wallet.locked.get(order.path_id, None)
+
+        if not quantity or quantity.size == 0:
+            return None
 
         return Order(step=exchange.clock.step,
-                     exchange_name=order.exchange_name,
                      side=self.side,
                      trade_type=self.type,
-                     pair=self.pair,
+                     exchange_pair=self.exchange_pair,
                      quantity=quantity,
                      portfolio=order.portfolio,
-                     price=order.price,
+                     price=self.exchange_pair.price,
                      criteria=self.criteria,
-                     start=order.start,
                      end=order.end,
                      path_id=order.path_id)
 
@@ -54,7 +57,7 @@ class OrderSpec(Identifiable):
         return {
             "id": self.id,
             "type": self.type,
-            "pair": self.pair,
+            "exchange_pair": self.exchange_pair,
             "criteria": self.criteria
         }
 

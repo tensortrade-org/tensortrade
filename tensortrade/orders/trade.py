@@ -42,9 +42,8 @@ class Trade(TimedIdentifiable):
 
     def __init__(self,
                  order_id: str,
-                 exchange_id: str,
                  step: int,
-                 pair: 'TradingPair',
+                 exchange_pair: 'ExchangePair',
                  side: TradeSide,
                  trade_type: TradeType,
                  quantity: 'Quantity',
@@ -53,9 +52,8 @@ class Trade(TimedIdentifiable):
         """
         Arguments:
             order_id: The id of the order that created the trade.
-            exchange_id: The id of the exchange the trade was executed on.
             step: The timestep the trade was made during the trading episode.
-            pair: The trading pair of the instruments in the trade.
+            exchange_pair: The exchange pair of instruments in the trade.
             (e.g. BTC/USDT, ETH/BTC, ADA/BTC, AAPL/USD, NQ1!/USD, CAD/USD, etc)
             side: Whether the quote instrument is being bought or sold.
             (e.g. BUY = trade the `base_instrument` for the `quote_instrument` in the pair. SELL = trade the `quote_instrument` for the `base_instrument`)
@@ -67,11 +65,9 @@ class Trade(TimedIdentifiable):
             (e.g. 10000 represents $10,000.00 if the `base_instrument` is "USD").
         """
         super().__init__()
-
         self.order_id = order_id
-        self.exchange_id = exchange_id
         self.step = step
-        self.pair = pair
+        self.exchange_pair = exchange_pair
         self.side = side
         self.type = trade_type
         self.quantity = quantity
@@ -80,17 +76,15 @@ class Trade(TimedIdentifiable):
 
     @property
     def base_instrument(self) -> 'Instrument':
-        return self.pair.base
+        return self.exchange_pair.pair.base
 
     @property
     def quote_instrument(self) -> 'Instrument':
-        return self.pair.quote
+        return self.exchange_pair.pair.quote
 
     @property
     def size(self) -> float:
-        if self.pair.base is self.quantity.instrument:
-            return self.quantity.size
-        return self.quantity.size * self.price
+        return self.quantity.size
 
     @property
     def price(self) -> float:
@@ -106,7 +100,7 @@ class Trade(TimedIdentifiable):
 
     @commission.setter
     def commission(self, commission: 'Quantity'):
-        self._commission = commission.size * self.pair.base
+        self._commission = commission
 
     @property
     def is_buy(self) -> bool:
@@ -128,8 +122,9 @@ class Trade(TimedIdentifiable):
         return {'id': self.id,
                 'order_id': self.order_id,
                 'step': self.step,
-                'base_symbol': self.pair.base.symbol,
-                'quote_symbol': self.pair.quote.symbol,
+                'exchange_pair': self.exchange_pair,
+                'base_symbol': self.exchange_pair.pair.base.symbol,
+                'quote_symbol': self.exchange_pair.pair.quote.symbol,
                 'side': self.side,
                 'type': self.type,
                 'size': self.size,
@@ -143,8 +138,9 @@ class Trade(TimedIdentifiable):
         return {'id': str(self.id),
                 'order_id': str(self.order_id),
                 'step': int(self.step),
-                'base_symbol': str(self.pair.base.symbol),
-                'quote_symbol': str(self.pair.quote.symbol),
+                'exchange_pair': str(self.exchange_pair),
+                'base_symbol': str(self.exchange_pair.pair.base.symbol),
+                'quote_symbol': str(self.exchange_pair.pair.quote.symbol),
                 'side': str(self.side),
                 'type': str(self.type),
                 'size': float(self.size),

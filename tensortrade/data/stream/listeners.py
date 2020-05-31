@@ -15,11 +15,11 @@
 
 class NodeListener:
 
-    def on_next(self, data):
+    def on_next(self, data: dict):
         pass
 
 
 class FeedListener:
 
-    def on_next(self, data):
+    def on_next(self, data: dict):
         pass

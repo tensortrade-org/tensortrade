@@ -12,31 +12,29 @@
 # See the License for the specific language governing permissions and
 # limitations under the License
 
-
 import operator
 
 from typing import Union, Tuple
 from numbers import Number
+from decimal import Decimal, ROUND_DOWN
 
 from tensortrade.base.exceptions import InvalidNegativeQuantity, IncompatibleInstrumentOperation, \
     InvalidNonNumericQuantity, QuantityOpPathMismatch
 
 
 class Quantity:
-    """An size of a financial instrument for use in trading.
-    """
+    """A size of a financial instrument for use in trading."""
 
-    def __init__(self, instrument: 'Instrument', size: float = 0, path_id: str = None):
+    def __init__(self, instrument: 'Instrument', size: Union[float, Decimal] = 0, path_id: str = None):
         if size < 0:
             raise InvalidNegativeQuantity(size)
 
-        self._size = size
         self._instrument = instrument
+        self._size = size if isinstance(size, Decimal) else Decimal(size)
         self._path_id = path_id
-        self._memo = None
 
     @property
-    def size(self) -> float:
+    def size(self) -> Decimal:
         return self._size
 
     @size.setter
@@ -60,26 +58,52 @@ class Quantity:
         self._path_id = path_id
 
     @property
-    def memo(self) -> str:
-        return self._memo
-
-    def reason(self, memo):
-        self._memo = memo
-        return self
-
-    @property
     def is_locked(self) -> bool:
         return bool(self._path_id)
 
     def lock_for(self, path_id: str):
-        self._path_id = path_id
+        return Quantity(self.instrument, self.size, path_id)
+
+    def convert(self, exchange_pair: 'ExchangePair'):
+        if self.instrument == exchange_pair.pair.base:
+            instrument = exchange_pair.pair.quote
+            converted_size = self.size / exchange_pair.price
+        else:
+            instrument = exchange_pair.pair.base
+            converted_size = self.size * exchange_pair.price
+
+        return Quantity(instrument, converted_size, self.path_id)
 
     def free(self):
         return Quantity(self.instrument, self.size)
 
+    def quantize(self):
+        return Quantity(self.instrument,
+                        self.size.quantize(Decimal(10)**-self.instrument.precision),
+                        self.path_id)
+
+    def as_float(self):
+        return float(self.size)
+
+    def contain(self, exchange_pair: 'ExchangePair'):
+        options = exchange_pair.exchange.options
+        price = exchange_pair.price
+
+        if exchange_pair.pair.base == self.instrument:
+            size = self.size
+            return Quantity(self.instrument, min(size, options.max_trade_size), self.path_id)
+
+        size = self.size * price
+        if size < options.max_trade_size:
+            return Quantity(self.instrument, self.size, self.path_id)
+
+        max_trade_size = Decimal(options.max_trade_size)
+        contained_size = max_trade_size / price
+        contained_size = contained_size.quantize(Decimal(10)**-self.instrument.precision, rounding=ROUND_DOWN)
+        return Quantity(self.instrument, contained_size, self.path_id)
+
     @staticmethod
     def validate(left, right) -> Tuple['Quantity', 'Quantity']:
-
         if isinstance(left, Quantity) and isinstance(right, Quantity):
             if left.instrument != right.instrument:
                 raise IncompatibleInstrumentOperation(left, right)
@@ -96,11 +120,11 @@ class Quantity:
             return left, right
 
         elif isinstance(left, Number) and isinstance(right, Quantity):
-            left = Quantity(right.instrument, float(left), right.path_id)
+            left = Quantity(right.instrument, left, right.path_id)
             return left, right
 
         elif isinstance(left, Quantity) and isinstance(right, Number):
-            right = Quantity(left.instrument, float(right), left.path_id)
+            right = Quantity(left.instrument, right, left.path_id)
             return left, right
 
         elif isinstance(left, Quantity):
@@ -116,7 +140,7 @@ class Quantity:
                         right: Union['Quantity', float, int],
                         bool_op: operator) -> bool:
         left, right = Quantity.validate(left, right)
-        boolean = bool_op(left.size, right.size)
+        boolean = bool_op(left._size, right._size)
 
         if not isinstance(boolean, bool):
             raise Exception("`bool_op` cannot return a non-bool type ({}).".format(boolean))
@@ -129,6 +153,7 @@ class Quantity:
                         op: operator) -> 'Quantity':
         left, right = Quantity.validate(left, right)
         size = op(left._size, right._size)
+
         return Quantity(left.instrument, size, left.path_id)
 
     def __add__(self, other: Union['Quantity', float, int]) -> 'Quantity':

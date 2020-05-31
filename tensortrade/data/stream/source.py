@@ -19,10 +19,14 @@ from tensortrade.data.stream.node import Node
 
 class Stream(Node):
 
-    def __init__(self, name: str, array: List[any] = None):
+    def __init__(self, array: List[any] = None, name: str = None):
         super().__init__(name)
         self._array = array if array else []
         self._cursor = 0
+
+    @property
+    def generic_name(self) -> str:
+        return "stream"
 
     def forward(self):
         v = self._array[self._cursor]

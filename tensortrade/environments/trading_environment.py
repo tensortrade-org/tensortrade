@@ -19,7 +19,7 @@ import logging
 import numpy as np
 import pandas as pd
 
-from gym.spaces import Discrete, Box
+from gym.spaces import Box
 from typing import Union, List, Tuple, Dict
 
 import tensortrade.actions as actions
@@ -49,7 +49,7 @@ class TradingEnvironment(gym.Env, TimeIndexed):
                  reward_scheme: Union[RewardScheme, str],
                  feed: DataFeed = None,
                  window_size: int = 1,
-                 use_internal: bool = True,
+                 use_internal: bool = False,
                  renderers: Union[str, List[str], List['BaseRenderer']] = 'screenlog',
                  **kwargs):
         """
@@ -79,7 +79,7 @@ class TradingEnvironment(gym.Env, TimeIndexed):
             self.feed.reset()
 
         self.history = ObservationHistory(window_size=window_size)
-        self._broker = Broker(exchanges=self.portfolio.exchanges)
+        self._broker = Broker()
 
         self.clock = Clock()
         self.action_space = None
@@ -220,10 +220,14 @@ class TradingEnvironment(gym.Env, TimeIndexed):
             done (bool): If `True`, the environments is complete and should be restarted.
             info (dict): Any auxiliary, diagnostic, or debugging information to output.
         """
-        order = self.action_scheme.get_order(action, self.portfolio)
+        orders = self.action_scheme.get_order(action, self.portfolio)
 
-        if order:
-            self._broker.submit(order)
+        if orders:
+            if not isinstance(orders, list):
+                orders = [orders]
+
+            for order in orders:
+                self._broker.submit(order)
 
         self._broker.update()
 
@@ -249,7 +253,7 @@ class TradingEnvironment(gym.Env, TimeIndexed):
             'step': self.clock.step,
             'portfolio': self.portfolio,
             'broker': self._broker,
-            'order': order,
+            'order': orders[0] if orders else None,
         }
 
         if self._enable_logger:
@@ -303,7 +307,8 @@ class TradingEnvironment(gym.Env, TimeIndexed):
         current_step = self.clock.step - 1
 
         for renderer in self._renderers:
-            price_history = None if self._price_history is None else self._price_history[self._price_history.index < current_step]
+            price_history = None if self._price_history is None else self._price_history[
+                self._price_history.index < current_step]
             renderer.render(episode=episode,
                             max_episodes=self._max_episodes,
                             step=current_step,

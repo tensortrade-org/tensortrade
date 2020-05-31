@@ -14,25 +14,31 @@ from tensortrade.data import DataFeed, Stream, Reduce
 def test_exchange_with_wallets_feed():
 
     ex1 = Exchange("coinbase", service=execute_order)(
-        Stream("USD-BTC", [7000, 7500, 8300]),
-        Stream("USD-ETH", [200, 212, 400])
+        Stream([7000, 7500, 8300]).rename("USD-BTC"),
+        Stream([200, 212, 400]).rename("USD-ETH")
     )
 
     ex2 = Exchange("binance", service=execute_order)(
-        Stream("USD-BTC", [7005, 7600, 8200]),
-        Stream("USD-ETH", [201, 208, 402]),
-        Stream("USD-LTC", [56, 52, 60])
+        Stream([7005, 7600, 8200]).rename("USD-BTC"),
+        Stream([201, 208, 402]).rename("USD-ETH"),
+        Stream([56, 52, 60]).rename("USD-LTC")
     )
 
     wallet_btc = Wallet(ex1, 10 * BTC)
     wallet_btc_ds = create_wallet_source(wallet_btc)
 
     wallet_usd = Wallet(ex2, 1000 * USD)
-    wallet_usd -= 400 * USD
-    wallet_usd += Quantity(USD, 400, path_id="fake_id")
+    wallet_usd.withdraw(
+        quantity=400 * USD,
+        reason="test"
+    )
+    wallet_usd.deposit(
+        quantity=Quantity(USD, 400, path_id="fake_id"),
+        reason="test"
+    )
     wallet_usd_ds = create_wallet_source(wallet_usd, include_worth=False)
 
-    feed = DataFeed()(ex1, ex2, wallet_btc_ds, wallet_usd_ds)
+    feed = DataFeed([ex1, ex2, wallet_btc_ds, wallet_usd_ds])
 
     assert feed.next() == {
         "coinbase:/USD-BTC": 7000,
