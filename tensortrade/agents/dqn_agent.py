@@ -137,7 +137,6 @@ class DQNAgent(Agent):
         episode = 0
         total_steps_done = 0
         total_reward = 0
-        stop_training = False
 
         if n_steps and not n_episodes:
             n_episodes = np.iinfo(np.int32).max
@@ -146,7 +145,7 @@ class DQNAgent(Agent):
         self.env.max_episodes = n_episodes
         self.env.max_steps = n_steps
 
-        while episode < n_episodes and not stop_training:
+        while episode < n_episodes:
             state = self.env.reset()
             done = False
             steps_done = 0
