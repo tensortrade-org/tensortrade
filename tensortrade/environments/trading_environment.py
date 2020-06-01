@@ -257,7 +257,9 @@ class TradingEnvironment(gym.Env, TimeIndexed):
         }
 
         if self._enable_logger:
-            self.logger.debug('Order:       {}'.format(order))
+            if orders:
+                for order in orders:
+                    self.logger.debug('Order:       {}'.format(order))
             self.logger.debug('Observation: {}'.format(obs))
             self.logger.debug('P/L:         {}'.format(self._portfolio.profit_loss))
             self.logger.debug('Reward ({}): {}'.format(self.clock.step, reward))
