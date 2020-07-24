@@ -7,11 +7,11 @@ ssl._create_default_https_context = ssl._create_unverified_context
 
 from tensortrade.actions import ManagedRiskOrders
 from tensortrade.utils import CryptoDataDownload
-from tensortrade.wallets import Portfolio, Wallet
-from tensortrade.exchanges import Exchange
-from tensortrade.exchanges.services.execution.simulated import execute_order
+from tensortrade.oms.wallets import Portfolio, Wallet
+from tensortrade.oms.exchanges import Exchange
+from tensortrade.oms.exchanges import execute_order
 from tensortrade.data import Stream
-from tensortrade.instruments import USD, BTC, ETH, LTC
+from tensortrade.oms.instruments import USD, BTC, ETH, LTC
 from tensortrade.environments import TradingEnvironment
 
 

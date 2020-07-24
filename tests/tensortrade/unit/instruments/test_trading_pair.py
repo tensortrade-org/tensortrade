@@ -1,7 +1,7 @@
 
 import pytest
 
-from tensortrade.instruments import TradingPair, BTC, USD
+from tensortrade.oms.instruments import TradingPair, BTC, USD
 from tensortrade.base.exceptions import InvalidTradingPair
 
 

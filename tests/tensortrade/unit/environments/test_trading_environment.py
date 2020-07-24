@@ -4,13 +4,13 @@ import pytest
 import ta
 
 from tensortrade.environments import TradingEnvironment
-from tensortrade.exchanges import Exchange
-from tensortrade.instruments import USD, BTC, ETH, LTC
+from tensortrade.oms.exchanges import Exchange
+from tensortrade.oms.instruments import USD, BTC, ETH, LTC
 from tensortrade.rewards import SimpleProfit
-from tensortrade.wallets import Portfolio, Wallet
+from tensortrade.oms.wallets import Portfolio, Wallet
 from tensortrade.actions import ManagedRiskOrders
 from tensortrade.data import DataFeed, Stream, NameSpace
-from tensortrade.exchanges.services.execution.simulated import execute_order
+from tensortrade.oms.exchanges import execute_order
 
 
 @pytest.fixture

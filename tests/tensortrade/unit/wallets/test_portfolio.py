@@ -3,8 +3,8 @@ import pytest
 import unittest.mock as mock
 
 from tensortrade.base.core import Clock
-from tensortrade.wallets import Wallet, Portfolio
-from tensortrade.instruments import USD, BTC, ETH, XRP, BCH
+from tensortrade.oms.wallets import Wallet, Portfolio
+from tensortrade.oms.instruments import USD, BTC, ETH, XRP, BCH
 
 
 @pytest.fixture

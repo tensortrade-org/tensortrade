@@ -1,16 +1,13 @@
-
-
-import pytest
 import unittest.mock as mock
 
 from decimal import Decimal
 
-from tensortrade.wallets import Wallet, Portfolio
-from tensortrade.instruments import BTC, USD, ExchangePair
-from tensortrade.orders import Order, TradeSide, TradeType, OrderStatus
-from tensortrade.exchanges import ExchangeOptions
+from tensortrade.oms.wallets import Wallet, Portfolio
+from tensortrade.oms.instruments import BTC, USD, ExchangePair
+from tensortrade.oms.orders import Order, TradeSide, TradeType, OrderStatus
+from tensortrade.oms.exchanges import ExchangeOptions
 
-from tensortrade.exchanges.services.execution.simulated import execute_buy_order, execute_sell_order
+from tensortrade.oms.exchanges import execute_buy_order, execute_sell_order
 
 
 def assert_execute_order(current_price,

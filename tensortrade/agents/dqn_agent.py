@@ -131,7 +131,7 @@ class DQNAgent(Agent):
         eps_decay_steps: int = kwargs.get('eps_decay_steps', 200)
         update_target_every: int = kwargs.get('update_target_every', 1000)
         memory_capacity: int = kwargs.get('memory_capacity', 1000)
-        render_interval: int = kwargs.get('render_interval', 50)  # in steps, None for episode end render only
+        render_interval: int = kwargs.get('render_interval', 50)  # in steps, None for episode end renderers only
 
         memory = ReplayMemory(memory_capacity, transition_type=DQNTransition)
         episode = 0
@@ -182,7 +182,7 @@ class DQNAgent(Agent):
                 self.save(save_path, episode=episode)
 
             if not render_interval or steps_done < n_steps:
-                self.env.render(episode)  # render final state at episode end if not rendered earlier
+                self.env.render(episode)  # renderers final state at episode end if not rendered earlier
 
             self.env.save()
 

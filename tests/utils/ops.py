@@ -1,7 +1,7 @@
 
 import numpy as np
 
-from tensortrade.data.feed.core import DataFeed
+from tensortrade.feed import DataFeed
 
 
 def assert_op(streams, expected):

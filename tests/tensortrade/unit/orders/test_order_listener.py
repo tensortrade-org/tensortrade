@@ -4,10 +4,10 @@ import unittest.mock as mock
 
 from decimal import Decimal
 
-from tensortrade.orders import OrderListener, Order, TradeType, TradeSide
-from tensortrade.instruments import USD, BTC, ExchangePair
-from tensortrade.wallets import Wallet, Portfolio
-from tensortrade.exchanges import ExchangeOptions
+from tensortrade.oms.orders import OrderListener, Order, TradeType, TradeSide
+from tensortrade.oms.instruments import USD, BTC, ExchangePair
+from tensortrade.oms.wallets import Wallet, Portfolio
+from tensortrade.oms.exchanges import ExchangeOptions
 
 
 @pytest.fixture

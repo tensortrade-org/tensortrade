@@ -1,10 +1,6 @@
-
-
-import pytest
 import unittest.mock as mock
 
-from tensortrade.instruments import ExchangePair, BTC, USD
-from tensortrade.base.exceptions import InvalidTradingPair
+from tensortrade.oms.instruments import ExchangePair, BTC, USD
 
 
 @mock.patch('tensortrade.exchanges.Exchange')

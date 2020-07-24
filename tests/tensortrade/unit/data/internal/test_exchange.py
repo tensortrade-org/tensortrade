@@ -1,9 +1,5 @@
-
-
-import pytest
-
-from tensortrade.exchanges.services.execution.simulated import execute_order
-from tensortrade.exchanges import Exchange
+from tensortrade.oms.exchanges import execute_order
+from tensortrade.oms.exchanges import Exchange
 from tensortrade.data import DataFeed, Stream
 
 

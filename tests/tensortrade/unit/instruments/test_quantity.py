@@ -2,7 +2,7 @@
 import pytest
 import unittest.mock as mock
 
-from tensortrade.instruments import *
+from tensortrade.oms.instruments import *
 from tensortrade.base.exceptions import *
 
 path_id = "f4cfeeae-a3e4-42e9-84b9-a24ccd2eebeb"

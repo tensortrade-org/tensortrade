@@ -1,6 +1,6 @@
 
 
-from tensortrade.data.feed.core import Stream, DataFeed
+from tensortrade.feed import Stream, DataFeed
 
 
 def test_generic():

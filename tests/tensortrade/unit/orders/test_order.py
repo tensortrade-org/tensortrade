@@ -4,11 +4,11 @@ import unittest.mock as mock
 
 from decimal import Decimal
 
-from tensortrade.instruments import *
-from tensortrade.orders import Order, OrderStatus, OrderSpec, TradeSide, TradeType
-from tensortrade.orders.criteria import Stop
-from tensortrade.exchanges import ExchangeOptions
-from tensortrade.wallets import Wallet, Portfolio
+from tensortrade.oms.instruments import *
+from tensortrade.oms.orders import Order, OrderStatus, OrderSpec, TradeSide, TradeType
+from tensortrade.oms.orders.criteria import Stop
+from tensortrade.oms.exchanges import ExchangeOptions
+from tensortrade.oms.wallets import Wallet, Portfolio
 
 
 @mock.patch('tensortrade.exchanges.Exchange')

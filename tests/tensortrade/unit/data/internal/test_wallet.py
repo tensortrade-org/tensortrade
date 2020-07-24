@@ -1,12 +1,9 @@
-
-import operator
-
-from tensortrade.wallets import Wallet
-from tensortrade.instruments import Quantity, USD, BTC
+from tensortrade.oms.wallets import Wallet
+from tensortrade.oms.instruments import Quantity, USD, BTC
 
 
-from tensortrade.exchanges.services.execution.simulated import execute_order
-from tensortrade.exchanges import Exchange
+from tensortrade.oms.exchanges import execute_order
+from tensortrade.oms.exchanges import Exchange
 from tensortrade.data.internal import create_wallet_source
 from tensortrade.data import DataFeed, Stream
 

@@ -1,8 +1,8 @@
 
 import unittest.mock as mock
 
-from tensortrade.orders.criteria import Stop, StopDirection
-from tensortrade.instruments import USD, BTC
+from tensortrade.oms.orders.criteria import Stop, StopDirection
+from tensortrade.oms.instruments import USD, BTC
 
 
 def test_init():

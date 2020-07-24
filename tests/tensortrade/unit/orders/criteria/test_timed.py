@@ -1,7 +1,7 @@
 
 import unittest.mock as mock
 
-from tensortrade.orders.criteria import Timed
+from tensortrade.oms.orders.criteria import Timed
 
 
 def test_init():

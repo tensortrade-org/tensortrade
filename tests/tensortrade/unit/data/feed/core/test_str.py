@@ -1,5 +1,5 @@
 
-from tensortrade.data.feed.core import DataFeed, Stream, Apply
+from tensortrade.feed import DataFeed, Stream
 
 
 def test_str_accessor():

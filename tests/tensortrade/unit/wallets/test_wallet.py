@@ -5,9 +5,9 @@ import unittest.mock as mock
 from decimal import Decimal
 
 from tensortrade.base.exceptions import InsufficientFunds, IncompatibleInstrumentOperation
-from tensortrade.exchanges import Exchange
-from tensortrade.wallets import Wallet
-from tensortrade.instruments import USD, BTC, Quantity, ExchangePair
+from tensortrade.oms.exchanges import Exchange
+from tensortrade.oms.wallets import Wallet
+from tensortrade.oms.instruments import USD, BTC, Quantity, ExchangePair
 
 
 path_id = "f4cfeeae-a3e4-42e9-84b9-a24ccd2eebeb"

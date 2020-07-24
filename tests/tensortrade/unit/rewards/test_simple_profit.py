@@ -2,8 +2,8 @@ import pytest
 import pandas as pd
 
 from tensortrade.rewards import SimpleProfit
-from tensortrade.wallets import Portfolio
-from tensortrade.instruments import USD
+from tensortrade.oms.wallets import Portfolio
+from tensortrade.oms.instruments import USD
 
 @pytest.fixture
 def net_worths():

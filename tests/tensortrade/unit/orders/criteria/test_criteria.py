@@ -1,9 +1,9 @@
 
 import unittest.mock as mock
 
-from tensortrade.exchanges import Exchange
-from tensortrade.orders.criteria import Criteria
-from tensortrade.instruments import USD, BTC
+from tensortrade.oms.exchanges import Exchange
+from tensortrade.oms.orders.criteria import Criteria
+from tensortrade.oms.instruments import USD, BTC
 
 
 class ConcreteCriteria(Criteria):

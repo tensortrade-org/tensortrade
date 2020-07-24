@@ -1,5 +1,5 @@
 
-from tensortrade.data.feed.core import Stream
+from tensortrade.feed import Stream
 
 
 def test_boolean():
