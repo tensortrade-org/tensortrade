@@ -1,6 +1,6 @@
 
-from tensortrade.feed import Stream
-from tensortrade.feed import Methods
+from tensortrade.feed.core import Stream
+from tensortrade.feed.core.methods import Methods
 from tensortrade.feed.core.mixins import DataTypeMixin
 
 

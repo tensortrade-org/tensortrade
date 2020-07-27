@@ -1,8 +1,8 @@
 
 import numpy as np
 
-from tensortrade.feed import Stream
-from tensortrade.feed import Float
+from tensortrade.feed.core.base import Stream
+from tensortrade.feed.api.float import Float
 
 
 class CumSum(Stream[float]):

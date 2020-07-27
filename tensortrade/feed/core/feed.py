@@ -1,6 +1,6 @@
 
 
-from tensortrade.feed import Stream, T
+from tensortrade.feed.core.base import Stream, T
 
 
 class DataFeed(Stream[T]):

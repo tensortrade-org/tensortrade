@@ -12,7 +12,7 @@ from typing import (
 )
 
 from tensortrade.base import Observable
-from tensortrade.feed import CachedAccessor
+from tensortrade.feed.core.accessors import CachedAccessor
 
 
 T = TypeVar("T")

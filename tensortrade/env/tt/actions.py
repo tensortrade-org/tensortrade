@@ -4,11 +4,18 @@ from typing import Union, List
 from itertools import product
 
 
-from gym.spaces import Discrete
+from gym.spaces import Space, Discrete
 
 from tensortrade.env.generic import ActionScheme
 from tensortrade.base import Clock
-from tensortrade.oms.orders import Broker, Order, TradeSide, TradeType, OrderListener, risk_managed_order
+from tensortrade.oms.orders import (
+    Broker,
+    Order,
+    TradeSide,
+    TradeType,
+    OrderListener,
+    risk_managed_order
+)
 
 
 class TensorTradeActionScheme(ActionScheme):
@@ -17,9 +24,6 @@ class TensorTradeActionScheme(ActionScheme):
         super().__init__()
         self.portfolio = None
         self.broker = Broker()
-
-    def set_portfolio(self, portfolio):
-        self.portfolio = portfolio
 
     @property
     def clock(self) -> Clock:
@@ -55,76 +59,66 @@ class TensorTradeActionScheme(ActionScheme):
         self.broker.reset()
 
 
-
-class SimpleOrders(ActionScheme):
+class SimpleOrders(TensorTradeActionScheme):
     """A discrete action scheme that determines actions based on a list of
-    trading pairs, order criteria, and trade sizes."""
+    trading pairs, order criteria, and trade sizes.
+
+    Parameters:
+    ===========
+        criteria : List[OrderCriteria]
+            A list of order criteria to select from when submitting an order.
+            (e.g. MarketOrder, LimitOrder w/ price, StopLoss, etc.)
+        trade_sizes : List[float]
+            A list of trade sizes to select from when submitting an order.
+            (e.g. '[1, 1/3]' = 100% or 33% of balance is tradable.
+            '4' = 25%, 50%, 75%, or 100% of balance is tradable.)
+        durations : List[int]
+            A list of durations to select from when submitting an order.
+        trade_type : TradeType
+            A type of trade to make.
+        order_listener : OrderListener
+            A callback class to use for listening to steps of the order process.
+    """
 
     def __init__(self,
                  criteria: Union[List['OrderCriteria'], 'OrderCriteria'] = None,
                  trade_sizes: Union[List[float], int] = 10,
-                 trade_type: TradeType = TradeType.MARKET,
                  durations: Union[List[int], int] = None,
+                 trade_type: TradeType = TradeType.MARKET,
                  order_listener: OrderListener = None):
-        """
-        Arguments:
-            pairs: A list of trading pairs to select from when submitting an order.
-            (e.g. TradingPair(BTC, USD), TradingPair(ETH, BTC), etc.)
-            criteria: A list of order criteria to select from when submitting an order.
-            (e.g. MarketOrder, LimitOrder w/ price, StopLoss, etc.)
-            trade_sizes: A list of trade sizes to select from when submitting an order.
-            (e.g. '[1, 1/3]' = 100% or 33% of balance is tradeable. '4' = 25%, 50%, 75%, or 100% of balance is tradeable.)
-            order_listener (optional): An optional listener for order events executed by this action scheme.
-        """
-        self.criteria = self.default('criteria', criteria)
-        self.trade_sizes = self.default('trade_sizes', trade_sizes)
-        self.durations = self.default('durations', durations)
+        super().__init__()
+        criteria = self.default('criteria', criteria)
+        self.criteria = criteria if isinstance(criteria, list) else [criteria]
+
+        trade_sizes = self.default('trade_sizes', trade_sizes)
+        if isinstance(trade_sizes, list):
+            self.trade_sizes = trade_sizes
+        else:
+            self.trade_sizes = [(x + 1) / trade_sizes for x in range(trade_sizes)]
+
+        durations = self.default('durations', durations)
+        self.durations = durations if isinstance(durations, list) else [durations]
+
         self._trade_type = self.default('trade_type', trade_type)
         self._order_listener = self.default('order_listener', order_listener)
 
-    @property
-    def criteria(self) -> List['OrderCriteria']:
-        """A list of order criteria to select from when submitting an order.
-        (e.g. MarketOrderCriteria, LimitOrderCriteria, StopLossCriteria, CustomCriteria, etc.)
-        """
-        return self._criteria
-
-    @criteria.setter
-    def criteria(self, criteria: Union[List['OrderCriteria'], 'OrderCriteria']):
-        self._criteria = criteria if isinstance(criteria, list) else [criteria]
+        self._action_space = None
+        self.actions = None
 
     @property
-    def trade_sizes(self) -> List[float]:
-        """A list of trade sizes to select from when submitting an order.
-        (e.g. '[1, 1/3]' = 100% or 33% of balance is tradable. '4' = 25%, 50%, 75%, or 100% of balance is tradable.)
-        """
-        return self._trade_sizes
+    def action_space(self) -> Space:
+        if not self._action_space:
+            self.actions = list(product(self.criteria,
+                                        self.trade_sizes,
+                                        self.durations,
+                                        [TradeSide.BUY, TradeSide.SELL]))
+            self.actions = list(product(self.portfolio.exchange_pairs, self.actions))
+            self.actions = [None] + self.actions
 
-    @trade_sizes.setter
-    def trade_sizes(self, trade_sizes: Union[List[float], int]):
-        self._trade_sizes = trade_sizes if isinstance(trade_sizes, list) else [
-            (x + 1) / trade_sizes for x in range(trade_sizes)]
+            self._action_space = Discrete(len(self.actions))
+        return self._action_space
 
-    @property
-    def durations(self) -> List[int]:
-        """A list of durations to select from when submitting an order."""
-        return self._durations
-
-    @durations.setter
-    def durations(self, durations: Union[List[int], int]):
-        self._durations = durations if isinstance(durations, list) else [durations]
-
-    def compile(self):
-        self.actions = list(product(self._criteria,
-                                    self._trade_sizes,
-                                    self._durations,
-                                    [TradeSide.BUY, TradeSide.SELL]))
-        self.actions = list(product(self.exchange_pairs, self.actions))
-        self.actions = [None] + self.actions
-
-        self._action_space = Discrete(len(self.actions))
-
-    def get_order(self, action: int, portfolio: 'Portfolio') -> Order:
+    def get_orders(self, action: int, portfolio: 'Portfolio') -> Order:
         if action == 0:
             return None
 
@@ -160,9 +154,26 @@ class SimpleOrders(ActionScheme):
         return order
 
 
-class ManagedRiskOrders(ActionScheme):
+class ManagedRiskOrders(TensorTradeActionScheme):
     """A discrete action scheme that determines actions based on managing risk,
        through setting a follow-up stop loss and take profit on every order.
+
+    Parameters:
+    ===========
+        stop_loss_percentages : List[float]
+            A list of possible stop loss percentages for each order.
+        take_profit_percentages : List[float]
+            A list of possible take profit percentages for each order.
+        trade_sizes : List[float]
+            A list of trade sizes to select from when submitting an order.
+            (e.g. '[1, 1/3]' = 100% or 33% of balance is tradable.
+            '4' = 25%, 50%, 75%, or 100% of balance is tradable.)
+        durations : List[int]
+            A list of durations to select from when submitting an order.
+        trade_type : TradeType
+            A type of trade to make.
+        order_listener : OrderListener
+            A callback class to use for listening to steps of the order process.
     """
 
     def __init__(self,
@@ -172,82 +183,45 @@ class ManagedRiskOrders(ActionScheme):
                  durations: Union[List[int], int] = None,
                  trade_type: TradeType = TradeType.MARKET,
                  order_listener: OrderListener = None):
-        """
-        Arguments:
-            pairs: A list of trading pairs to select from when submitting an order.
-            (e.g. TradingPair(BTC, USD), TradingPair(ETH, BTC), etc.)
-            stop_loss_percentages: A list of possible stop loss percentages for each order.
-            take_profit_percentages: A list of possible take profit percentages for each order.
-            trade_sizes: A list of trade sizes to select from when submitting an order.
-            (e.g. '[1, 1/3]' = 100% or 33% of balance is tradable. '4' = 25%, 50%, 75%, or 100% of balance is tradable.)
-            order_listener (optional): An optional listener for order events executed by this action scheme.
-        """
         super().__init__()
-        self.stop_loss_percentages = self.default('stop_loss_percentages', stop_loss_percentages)
-        self.take_profit_percentages = self.default(
-            'take_profit_percentages', take_profit_percentages)
-        self.trade_sizes = self.default('trade_sizes', trade_sizes)
-        self.durations = self.default('durations', durations)
+        stop_loss_percentages = self.default('stop_loss_percentages', stop_loss_percentages)
+        self.stop_loss_percentages = stop_loss_percentages if isinstance(
+            stop_loss_percentages, list) else [stop_loss_percentages]
+
+        take_profit_percentages = self.default('take_profit_percentages', take_profit_percentages)
+        self.take_profit_percentages = take_profit_percentages if isinstance(
+            take_profit_percentages, list) else [take_profit_percentages]
+
+        trade_sizes = self.default('trade_sizes', trade_sizes)
+        if isinstance(trade_sizes, list):
+            self.trade_sizes = trade_sizes
+        else:
+            self.trade_sizes = [(x + 1) / trade_sizes for x in range(trade_sizes)]
+
+        durations = self.default('durations', durations)
+        self.durations = durations if isinstance(durations, list) else [durations]
+
         self._trade_type = self.default('trade_type', trade_type)
         self._order_listener = self.default('order_listener', order_listener)
 
-    @property
-    def stop_loss_percentages(self) -> List[float]:
-        """A list of order percentage losses to select a stop loss from when submitting an order.
-        (e.g. 0.01 = sell if price drops 1%, 0.15 = 15%, etc.)
-        """
-        return self._stop_loss_percentages
-
-    @stop_loss_percentages.setter
-    def stop_loss_percentages(self, stop_loss_percentages: Union[List[float], float]):
-        self._stop_loss_percentages = stop_loss_percentages if isinstance(
-            stop_loss_percentages, list) else [stop_loss_percentages]
+        self._action_space = None
+        self.actions = None
 
     @property
-    def take_profit_percentages(self) -> List[float]:
-        """A list of order percentage gains to select a take profit from when submitting an order.
-        (e.g. 0.01 = sell if price rises 1%, 0.15 = 15%, etc.)
-        """
-        return self._take_profit_percentages
+    def action_space(self) -> Space:
+        if not self._action_space:
+            self.actions = list(product(self.stop_loss_percentages,
+                                        self.take_profit_percentages,
+                                        self.trade_sizes,
+                                        self.durations,
+                                        [TradeSide.BUY, TradeSide.SELL]))
+            self.actions = list(product(self.portfolio.exchange_pairs, self.actions))
+            self.actions = [None] + self.actions
 
-    @take_profit_percentages.setter
-    def take_profit_percentages(self, take_profit_percentages: Union[List[float], float]):
-        self._take_profit_percentages = take_profit_percentages if isinstance(
-            take_profit_percentages, list) else [take_profit_percentages]
+            self._action_space = Discrete(len(self.actions))
+        return self._action_space
 
-    @property
-    def trade_sizes(self) -> List[float]:
-        """A list of trade sizes to select from when submitting an order.
-        (e.g. '[1, 1/3]' = 100% or 33% of balance is tradable. '4' = 25%, 50%, 75%, or 100% of balance is tradable.)
-        """
-        return self._trade_sizes
-
-    @trade_sizes.setter
-    def trade_sizes(self, trade_sizes: Union[List[float], int]):
-        self._trade_sizes = trade_sizes if isinstance(trade_sizes, list) else [
-            (x + 1) / trade_sizes for x in range(trade_sizes)]
-
-    @property
-    def durations(self) -> List[int]:
-        """A list of durations to select from when submitting an order."""
-        return self._durations
-
-    @durations.setter
-    def durations(self, durations: Union[List[int], int]):
-        self._durations = durations if isinstance(durations, list) else [durations]
-
-    def compile(self):
-        self.actions = list(product(self._stop_loss_percentages,
-                                    self._take_profit_percentages,
-                                    self._trade_sizes,
-                                    self._durations,
-                                    [TradeSide.BUY, TradeSide.SELL]))
-        self.actions = list(product(self.exchange_pairs, self.actions))
-        self.actions = [None] + self.actions
-
-        self._action_space = Discrete(len(self.actions))
-
-    def get_order(self, action: int, portfolio: 'Portfolio') -> Order:
+    def get_orders(self, action: int, portfolio: 'Portfolio') -> Order:
 
         if action == 0:
             return None

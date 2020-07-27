@@ -4,8 +4,8 @@ import numpy as np
 
 from typing import Callable, List
 
-from tensortrade.feed import Stream
-from tensortrade.feed import Float
+from tensortrade.feed.core.base import Stream
+from tensortrade.feed.api.float import Float
 
 
 class ExpandingNode(Stream[float]):

@@ -1,6 +1,5 @@
 
-
-from tensortrade.feed import Stream, T
+from tensortrade.feed.core.base import Stream, T
 from tensortrade.feed.core.operators import (
     Apply,
     Lag,

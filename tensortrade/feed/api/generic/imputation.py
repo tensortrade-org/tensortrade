@@ -1,7 +1,7 @@
 
 import numpy as np
 
-from tensortrade.feed import Stream, T
+from tensortrade.feed.core.base import Stream, T
 
 
 class ForwardFill(Stream[T]):

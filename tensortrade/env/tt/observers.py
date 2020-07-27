@@ -94,7 +94,7 @@ class TensorTradeObserver(Observer):
                  window_size=1,
                  min_periods=None,
                  **kwargs):
-        internal_group = create_internal_streams(portfolio).rename("internal")
+        internal_group = Stream.group(create_internal_streams(portfolio)).rename("internal")
         external_group = Stream.group(feed.inputs).rename("external")
 
         self.feed = DataFeed([

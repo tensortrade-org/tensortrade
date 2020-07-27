@@ -1,6 +1,6 @@
 
-from tensortrade.feed import Stream
-from tensortrade.feed import Boolean
+from tensortrade.feed.core.base import Stream
+from tensortrade.feed.api.boolean import Boolean
 
 
 @Boolean.register(["invert"])

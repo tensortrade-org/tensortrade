@@ -23,7 +23,7 @@ from tensortrade.base.core import TimeIndexed
 class ActionScheme(Component, TimeIndexed, metaclass=ABCMeta):
     """An action scheme for determining the action to take at each time step within a trading environment."""
 
-    registered_name = "action"
+    registered_name = "actions"
 
     @property
     @abstractmethod

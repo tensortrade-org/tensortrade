@@ -1,9 +1,9 @@
 
 import numpy as np
 
-from tensortrade.feed import Stream
+from tensortrade.feed.core.base import Stream
 from tensortrade.feed.core.operators import BinOp
-from tensortrade.feed import Float
+from tensortrade.feed.api.float import Float
 
 
 @Float.register(["add", "__add__"])

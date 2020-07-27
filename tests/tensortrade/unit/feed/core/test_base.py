@@ -1,6 +1,6 @@
 
 
-from tensortrade.feed import Observable, Stream, NameSpace
+from tensortrade.feed.core import Stream, NameSpace
 
 
 class Counter(Stream):

@@ -20,7 +20,7 @@ from tensortrade.base.core import TimeIndexed
 
 class RewardScheme(Component, TimeIndexed):
 
-    registered_name = "reward"
+    registered_name = "rewards"
 
     @abstractmethod
     def reward(self, env):

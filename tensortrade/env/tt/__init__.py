@@ -18,7 +18,7 @@ def create(portfolio,
            min_periods: int = None,
            **kwargs) -> TradingEnv:
 
-    action_scheme.set_portfolio(portfolio)
+    action_scheme.portfolio = portfolio
 
     observer = observers.TensorTradeObserver(
         portfolio=portfolio,

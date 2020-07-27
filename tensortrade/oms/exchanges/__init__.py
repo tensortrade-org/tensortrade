@@ -2,9 +2,8 @@
 
 from typing import Callable
 
-from .exchange import Exchange, ExchangeOptions
-
-from . import services
+from tensortrade.oms.exchanges.exchange import Exchange, ExchangeOptions
+from tensortrade.oms.exchanges import services
 
 
 _registry = {
