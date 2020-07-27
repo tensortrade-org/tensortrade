@@ -6,17 +6,22 @@ import tensortrade.env.tt.observers as observers
 import tensortrade.env.tt.renderers as renderers
 import tensortrade.env.tt.stoppers as stoppers
 
+from typing import Union
+
 from tensortrade.env.generic import TradingEnv
 from tensortrade.feed.core import DataFeed
 
 
 def create(portfolio,
-           action_scheme: actions.TensorTradeActionScheme,
-           reward_scheme: rewards.TensorTradeRewardScheme,
+           action_scheme: Union[actions.TensorTradeActionScheme, str],
+           reward_scheme: Union[rewards.TensorTradeRewardScheme, str],
            feed: DataFeed,
            window_size: int = 1,
            min_periods: int = None,
            **kwargs) -> TradingEnv:
+
+    action_scheme = actions.get(action_scheme) if isinstance(action_scheme, str) else action_scheme
+    reward_scheme = rewards.get(reward_scheme) if isinstance(reward_scheme, str) else reward_scheme
 
     action_scheme.portfolio = portfolio
 

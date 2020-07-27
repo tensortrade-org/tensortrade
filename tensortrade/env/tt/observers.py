@@ -122,7 +122,6 @@ class TensorTradeObserver(Observer):
         )
 
         self.feed = self.feed.attach(portfolio)
-        print(self.feed.listeners)
 
         self.feed.reset()
         self.warmup()
