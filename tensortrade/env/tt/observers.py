@@ -120,6 +120,10 @@ class TensorTradeObserver(Observer):
             shape=(self.window_size, n_features),
             dtype=self._observation_dtype
         )
+
+        self.feed = self.feed.attach(portfolio)
+        print(self.feed.listeners)
+
         self.feed.reset()
         self.warmup()
 

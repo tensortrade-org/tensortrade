@@ -221,6 +221,9 @@ class Portfolio(Component, TimedIdentifiable):
 
     def on_next(self, data: dict):
         data = data["internal"]
+
+        print(data)
+
         if not self._keys:
             self._keys = self.find_keys(data)
 

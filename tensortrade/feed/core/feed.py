@@ -45,5 +45,9 @@ class DataFeed(Stream[T]):
         return all(node.has_next() for node in self.process)
 
     def reset(self) -> None:
-        for node in self.process:
-            node.reset()
+        for s in self.process:
+            s.reset()
+
+        for listener in self.listeners:
+            if hasattr(listener, "reset"):
+                listener.reset()
