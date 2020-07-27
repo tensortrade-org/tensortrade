@@ -87,14 +87,12 @@ def test_runs_with_external_feed_only(portfolio):
         reward_scheme=reward_scheme,
         feed=feed,
         window_size=50,
-        use_internal=False,
         enable_logger=False
     )
 
     done = False
     obs = env.reset()
     while not done:
-
         action = env.action_space.sample()
         obs, reward, done, info = env.step(action)
 

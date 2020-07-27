@@ -259,9 +259,6 @@ class ManagedRiskOrders(TensorTradeActionScheme):
 
         return order
 
-    def reset(self):
-        pass
-
 
 _registry = {
     'simple': SimpleOrders,

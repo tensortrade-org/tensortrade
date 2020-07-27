@@ -14,8 +14,6 @@ arrays = [
 ]
 
 configurations = [
-#    {"window": 1, "min_periods": 0},
-#    {"window": 1, "min_periods": 1},
     {"window": 2, "min_periods": 0},
     {"window": 2, "min_periods": 1},
     {"window": 2, "min_periods": 2},

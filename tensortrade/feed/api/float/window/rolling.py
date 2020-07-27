@@ -34,9 +34,6 @@ class RollingCount(RollingNode):
     def forward(self):
         rolling = self.inputs[0]
         history = rolling.value
-
-        if len(history) < rolling.min_periods:
-            return np.nan
         return self.func(history)
 
 

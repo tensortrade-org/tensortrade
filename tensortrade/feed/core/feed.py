@@ -35,10 +35,6 @@ class DataFeed(Stream[T]):
 
     def next(self):
         self.run()
-
-        for listener in self.listeners:
-            listener.on_next(self.value)
-
         return self.value
 
     def has_next(self) -> bool:
@@ -47,7 +43,3 @@ class DataFeed(Stream[T]):
     def reset(self) -> None:
         for s in self.process:
             s.reset()
-
-        for listener in self.listeners:
-            if hasattr(listener, "reset"):
-                listener.reset()
