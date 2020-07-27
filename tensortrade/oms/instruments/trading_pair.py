@@ -15,7 +15,7 @@
 
 from numbers import Number
 
-from tensortrade.base.exceptions import InvalidTradingPair
+from tensortrade.core.exceptions import InvalidTradingPair
 
 
 class TradingPair:

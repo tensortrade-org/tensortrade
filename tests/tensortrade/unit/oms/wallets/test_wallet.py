@@ -4,7 +4,7 @@ import unittest.mock as mock
 
 from decimal import Decimal
 
-from tensortrade.base.exceptions import InsufficientFunds, IncompatibleInstrumentOperation
+from tensortrade.core.exceptions import InsufficientFunds, IncompatibleInstrumentOperation
 from tensortrade.oms.exchanges import Exchange
 from tensortrade.oms.wallets import Wallet
 from tensortrade.oms.instruments import USD, BTC, Quantity, ExchangePair

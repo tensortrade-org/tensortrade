@@ -2,7 +2,7 @@
 import tensortrade as td
 
 from abc import abstractmethod
-from tensortrade.base import Component
+from tensortrade.core import Component
 
 
 class DataMessageComponent(Component):

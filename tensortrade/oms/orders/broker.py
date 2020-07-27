@@ -15,7 +15,7 @@
 from typing import List, Dict
 from collections import OrderedDict
 
-from tensortrade.base.core import TimeIndexed
+from tensortrade.core.base import TimeIndexed
 from .order import Order, OrderStatus
 from .order_listener import OrderListener
 

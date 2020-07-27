@@ -4,11 +4,11 @@ from abc import ABC, ABCMeta
 
 from .context import TradingContext, Context
 from .registry import get_registry, register
-from .core import Identifiable
+from .base import Identifiable
 
 
 class InitContextMeta(ABCMeta):
-    """Metaclass that executes `__init__` of instance in it's base."""
+    """Metaclass that executes `__init__` of instance in it's core."""
 
     def __call__(cls, *args, **kwargs):
         context = TradingContext.get_context()

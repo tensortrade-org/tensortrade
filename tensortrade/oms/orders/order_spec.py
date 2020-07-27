@@ -15,7 +15,7 @@
 
 from typing import Callable
 
-from tensortrade.base import Identifiable
+from tensortrade.core import Identifiable
 from tensortrade.oms.orders import Order, TradeSide, TradeType
 
 

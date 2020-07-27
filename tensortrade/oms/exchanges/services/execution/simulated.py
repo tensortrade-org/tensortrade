@@ -1,7 +1,7 @@
 
 from decimal import Decimal
 
-from tensortrade.base import Clock
+from tensortrade.core import Clock
 from tensortrade.oms.wallets import Wallet
 from tensortrade.oms.exchanges import ExchangeOptions
 from tensortrade.oms.orders import Order, Trade, TradeType, TradeSide

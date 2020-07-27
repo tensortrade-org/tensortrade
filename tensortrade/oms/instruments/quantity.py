@@ -18,7 +18,7 @@ from typing import Union, Tuple
 from numbers import Number
 from decimal import Decimal, ROUND_DOWN
 
-from tensortrade.base.exceptions import InvalidNegativeQuantity, IncompatibleInstrumentOperation, \
+from tensortrade.core.exceptions import InvalidNegativeQuantity, IncompatibleInstrumentOperation, \
     InvalidNonNumericQuantity, QuantityOpPathMismatch
 
 

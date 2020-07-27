@@ -2,7 +2,7 @@
 import pytest
 
 from tensortrade.oms.instruments import TradingPair, BTC, USD
-from tensortrade.base.exceptions import InvalidTradingPair
+from tensortrade.core.exceptions import InvalidTradingPair
 
 
 def test_valid_init():

@@ -18,8 +18,8 @@ from typing import Dict, Tuple
 from collections import namedtuple
 from decimal import Decimal
 
-from tensortrade.base import Identifiable
-from tensortrade.base.exceptions import InsufficientFunds, DoubleLockedQuantity, DoubleUnlockedQuantity, QuantityNotLocked
+from tensortrade.core import Identifiable
+from tensortrade.core.exceptions import InsufficientFunds, DoubleLockedQuantity, DoubleUnlockedQuantity, QuantityNotLocked
 from tensortrade.oms.instruments import Quantity, ExchangePair
 
 from .ledger import Ledger

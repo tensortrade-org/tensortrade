@@ -156,7 +156,7 @@ html_context = {
 
 # -- Options for HTMLHelp output ---------------------------------------------
 
-# Output file base name for HTML help builder.
+# Output file core name for HTML help builder.
 htmlhelp_basename = 'tensortradedocs'
 
 # -- Options for LaTeX output ------------------------------------------------
@@ -261,7 +261,7 @@ nbsphinx_prolog = (
 {% if env.metadata[env.docname]['nbsphinx-link-target'] %}
 {% set docpath = env.metadata[env.docname]['nbsphinx-link-target'] %}
 {% else %}
-{% set docpath = env.doc2path(env.docname, base='docs/source/') %}
+{% set docpath = env.doc2path(env.docname, core='docs/source/') %}
 {% endif %}
 
 .. only:: html

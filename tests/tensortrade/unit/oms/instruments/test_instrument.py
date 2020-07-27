@@ -2,7 +2,7 @@
 import pytest
 
 from tensortrade.oms.instruments import Instrument, Quantity
-from tensortrade.base.exceptions import InvalidTradingPair
+from tensortrade.core.exceptions import InvalidTradingPair
 
 
 def test_init():

@@ -15,7 +15,7 @@
 
 from enum import Enum
 
-from tensortrade.base import TimedIdentifiable
+from tensortrade.core import TimedIdentifiable
 
 
 class TradeType(Enum):
@@ -57,11 +57,11 @@ class Trade(TimedIdentifiable):
             (e.g. BTC/USDT, ETH/BTC, ADA/BTC, AAPL/USD, NQ1!/USD, CAD/USD, etc)
             side: Whether the quote instrument is being bought or sold.
             (e.g. BUY = trade the `base_instrument` for the `quote_instrument` in the pair. SELL = trade the `quote_instrument` for the `base_instrument`)
-            size: The size of the base instrument in the trade.
+            size: The size of the core instrument in the trade.
             (e.g. 1000 shares, 6.50 satoshis, 2.3 contracts, etc).
-            price: The price paid per quote instrument in terms of the base instrument.
+            price: The price paid per quote instrument in terms of the core instrument.
             (e.g. 10000 represents $10,000.00 if the `base_instrument` is "USD").
-            commission: The commission paid for the trade in terms of the base instrument.
+            commission: The commission paid for the trade in terms of the core instrument.
             (e.g. 10000 represents $10,000.00 if the `base_instrument` is "USD").
         """
         super().__init__()

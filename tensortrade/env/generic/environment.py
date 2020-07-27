@@ -16,7 +16,7 @@ import gym
 import uuid
 import logging
 
-from tensortrade.base import TimeIndexed, Clock
+from tensortrade.core import TimeIndexed, Clock
 from tensortrade.env.generic import (
     ActionScheme,
     RewardScheme,

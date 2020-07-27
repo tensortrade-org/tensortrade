@@ -19,8 +19,8 @@ from enum import Enum
 from typing import Callable
 from decimal import Decimal
 
-from tensortrade.base import TimedIdentifiable
-from tensortrade.base.exceptions import InvalidOrderQuantity
+from tensortrade.core import TimedIdentifiable
+from tensortrade.core.exceptions import InvalidOrderQuantity
 from tensortrade.oms.instruments import Quantity, ExchangePair
 from tensortrade.oms.orders import Trade, TradeSide, TradeType
 

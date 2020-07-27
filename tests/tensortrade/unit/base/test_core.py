@@ -1,3 +1,3 @@
 
-from tensortrade.base.core import TimedIdentifiable
+from tensortrade.core.base import TimedIdentifiable
 

@@ -17,7 +17,7 @@ import numpy as np
 
 from abc import ABCMeta, abstractmethod
 
-from tensortrade.base import Identifiable
+from tensortrade.core import Identifiable
 
 
 class Agent(Identifiable, metaclass=ABCMeta):

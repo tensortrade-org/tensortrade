@@ -7,7 +7,7 @@ from itertools import product
 from gym.spaces import Space, Discrete
 
 from tensortrade.env.generic import ActionScheme
-from tensortrade.base import Clock
+from tensortrade.core import Clock
 from tensortrade.oms.orders import (
     Broker,
     Order,

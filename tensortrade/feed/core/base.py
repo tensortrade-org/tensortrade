@@ -11,7 +11,7 @@ from typing import (
     List
 )
 
-from tensortrade.base import Observable
+from tensortrade.core import Observable
 from tensortrade.feed.core.accessors import CachedAccessor
 
 

@@ -16,7 +16,7 @@
 from typing import Callable, Union
 from decimal import Decimal
 
-from tensortrade.base import Component, TimedIdentifiable
+from tensortrade.core import Component, TimedIdentifiable
 from tensortrade.oms.instruments import TradingPair
 
 
@@ -66,13 +66,13 @@ class Exchange(Component, TimedIdentifiable):
         return list(self._price_streams.values())
 
     def quote_price(self, trading_pair: 'TradingPair') -> Decimal:
-        """The quote price of a trading pair on the exchange, denoted in the base instrument.
+        """The quote price of a trading pair on the exchange, denoted in the core instrument.
 
         Arguments:
             trading_pair: The `TradingPair` to get the quote price for.
 
         Returns:
-            The quote price of the specified trading pair, denoted in the base instrument.
+            The quote price of the specified trading pair, denoted in the core instrument.
         """
         price = Decimal(self._price_streams[str(trading_pair)].value)
         price = price.quantize(Decimal(10)**-trading_pair.base.precision)

@@ -1,7 +1,7 @@
 
 import tensortrade as td
 
-from tensortrade.base.context import TradingContext
+from tensortrade.core.context import TradingContext
 
 
 def get_context():

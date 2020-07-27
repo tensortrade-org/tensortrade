@@ -107,12 +107,12 @@ class Portfolio(Component, TimedIdentifiable):
 
     @property
     def initial_balance(self) -> Quantity:
-        """The initial balance of the base instrument over all wallets, set by calling `reset`."""
+        """The initial balance of the core instrument over all wallets, set by calling `reset`."""
         return self._initial_balance
 
     @property
     def base_balance(self) -> Quantity:
-        """The current balance of the base instrument over all wallets."""
+        """The current balance of the core instrument over all wallets."""
         return self.balance(self._base_instrument)
 
     @property

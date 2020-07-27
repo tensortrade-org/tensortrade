@@ -14,7 +14,7 @@
 
 from abc import ABCMeta, abstractmethod
 
-from tensortrade.base import Component
+from tensortrade.core import Component
 
 
 class Renderer(Component, metaclass=ABCMeta):

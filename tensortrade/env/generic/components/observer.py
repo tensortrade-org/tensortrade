@@ -16,8 +16,8 @@ from abc import abstractmethod
 
 from gym.spaces import Space
 
-from tensortrade.base.component import Component
-from tensortrade.base.core import TimeIndexed
+from tensortrade.core.component import Component
+from tensortrade.core.base import TimeIndexed
 
 
 class Observer(Component, TimeIndexed):
