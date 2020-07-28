@@ -20,6 +20,7 @@ from multiprocessing import Process, Queue
 
 
 class ParallelDQNTrainer(Process):
+
     def __init__(self,
                  agent: 'ParallelDQNAgent',
                  create_env: Callable[[None], 'TrainingEnvironment'],

@@ -22,7 +22,7 @@ class Renderer(Component, metaclass=ABCMeta):
     registered_name = "renderer"
 
     @abstractmethod
-    def render(self, env: 'TradingEnv'):
+    def render(self, env: 'TradingEnv', **kwargs):
         raise NotImplementedError()
 
     def save(self):

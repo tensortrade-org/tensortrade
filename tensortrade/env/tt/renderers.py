@@ -70,8 +70,8 @@ class BaseRenderer(Renderer):
         self._max_episodes = None
         self._max_steps = None
 
-    def _create_log_entry(self,
-                          episode: int = None,
+    @staticmethod
+    def _create_log_entry(episode: int = None,
                           max_episodes: int = None,
                           step: int = None,
                           max_steps: int = None,
@@ -86,8 +86,29 @@ class BaseRenderer(Renderer):
 
         return log_entry
 
+    def render(self, env: 'TradingEnv', **kwargs):
+        portfolio = env.action_scheme.portfolio.performance.net_worth
+        self.render_env(
+            episode=kwargs.get("episode", None),
+            max_episodes=kwargs.get("max_episodes", None),
+            step=env.clock.step,
+            max_steps=kwargs.get("max_steps", None),
+            price_history=None,
+            net_worth=portfolio.performance.net_worth,
+            performance=portfolio.performance.drop(columns=['base_symbol']),
+            trades=env.action_scheme.broker.trades
+        )
+
     @abstractmethod
-    def render(self, env: TradingEnv) -> None:
+    def render_env(self,
+                   episode: int = None,
+                   max_episodes: int = None,
+                   step: int = None,
+                   max_steps: int = None,
+                   price_history: pd.DataFrame = None,
+                   net_worth: pd.Series = None,
+                   performance: pd.DataFrame = None,
+                   trades: 'OrderedDict' = None) -> None:
         raise NotImplementedError()
 
     def save(self) -> None:
@@ -108,13 +129,18 @@ class ScreenLogger(BaseRenderer):
     DEFAULT_FORMAT = "[%(asctime)-15s] %(message)s"
 
     def __init__(self, date_format: str = "%Y-%m-%d %-I:%M:%S %p"):
+        super().__init__()
         self._date_format = date_format
 
-    def render(self, episode: int = None, max_episodes: int = None,
-               step: int = None, max_steps: int = None,
-               price_history: pd.DataFrame = None, net_worth: pd.Series = None,
-               performance: pd.DataFrame = None, trades: 'OrderedDict' = None
-               ):
+    def render(self,
+               episode: int = None,
+               max_episodes: int = None,
+               step: int = None,
+               max_steps: int = None,
+               price_history: pd.DataFrame = None,
+               net_worth: pd.Series = None,
+               performance: pd.DataFrame = None,
+               trades: 'OrderedDict' = None):
         print(self._create_log_entry(episode, max_episodes, step, max_steps, date_format=self._date_format))
 
 
@@ -134,6 +160,7 @@ class FileLogger(BaseRenderer):
                 more details, refer to https://docs.python.org/3/library/logging.html
             timestamp_format: The format of the timestamp of the log entry. Node for default.
         """
+        super().__init__()
         check_path(path)
 
         if not filename:
@@ -157,16 +184,15 @@ class FileLogger(BaseRenderer):
     def log_file(self) -> str:
         return self._logger.handlers[0].baseFilename
 
-    def render(self,
-               episode: int = None,
-               max_episodes: int = None,
-               step: int = None,
-               max_steps: int = None,
-               price_history: pd.DataFrame = None,
-               net_worth: pd.Series = None,
-               performance: pd.DataFrame = None,
-               trades: 'OrderedDict' = None
-               ):
+    def render_env(self,
+                   episode: int = None,
+                   max_episodes: int = None,
+                   step: int = None,
+                   max_steps: int = None,
+                   price_history: pd.DataFrame = None,
+                   net_worth: pd.Series = None,
+                   performance: pd.DataFrame = None,
+                   trades: 'OrderedDict' = None) -> None:
         log_entry = self._create_log_entry(episode, max_episodes, step, max_steps)
         self._logger.info(f"{log_entry} - Performance:\n{performance}")
 
@@ -283,7 +309,13 @@ class MatplotlibTradingChart:
                                        size="large",
                                        arrowprops=dict(arrowstyle='simple', facecolor=color))
 
-    def render(self, current_step, net_worths, benchmarks, trades, window_size=50):
+    def render_env(self,
+                   current_step,
+                   net_worths,
+                   benchmarks,
+                   trades,
+                   window_size=50) -> None:
+
         net_worth = round(net_worths[-1], 2)
         initial_net_worth = round(net_worths[0], 2)
         profit_percent = round((net_worth - initial_net_worth) / initial_net_worth * 100, 2)
@@ -317,24 +349,28 @@ class PlotlyTradingChart(BaseRenderer):
     Trading visualization for TensorTrade using Plotly.
 
     Possible Future Enhancements:
-    - Saving images without using Orca.
-    - Limit displayed step range for the case of a large number of steps and let
-      the shown part of the chart slide after filling that range to keep showing
-      recent data as it's being added.
+        - Saving images without using Orca.
+        - Limit displayed step range for the case of a large number of steps and let
+          the shown part of the chart slide after filling that range to keep showing
+          recent data as it's being added.
 
     References:
-    https://plot.ly/python-api-reference/generated/plotly.graph_objects.Figure.html
-    https://plot.ly/python/figurewidget/
-    https://plot.ly/python/subplots/
-    https://plot.ly/python/reference/#candlestick
-    https://plot.ly/python/#chart-events
+    ===========
+        - https://plot.ly/python-api-reference/generated/plotly.graph_objects.Figure.html
+        - https://plot.ly/python/figurewidget/
+        - https://plot.ly/python/subplots/
+        - https://plot.ly/python/reference/#candlestick
+        - https://plot.ly/python/#chart-events
     """
-    def __init__(self, display: bool = True, height: int=None,
+    def __init__(self,
+                 display: bool = True,
+                 height: int = None,
                  timestamp_format: str = '%Y-%m-%d %H:%M:%S',
-                 save_format: str=None, path: str = 'charts',
-                 filename_prefix='chart_', auto_open_html=False,
-                 include_plotlyjs: Union[bool, str]='cdn'
-                 ):
+                 save_format: str = None,
+                 path: str = 'charts',
+                 filename_prefix: str = 'chart_',
+                 auto_open_html: bool = False,
+                 include_plotlyjs: Union[bool, str] = 'cdn'):
         """
         Arguments:
             display: True to display the chart on the screen, False for not.
@@ -356,6 +392,7 @@ class PlotlyTradingChart(BaseRenderer):
                 in much larger file sizes. False to not include the library. For more
                 details, refer to https://plot.ly/python-api-reference/generated/plotly.graph_objects.Figure.html
         """
+        super().__init__()
         self._height = height
         self._timestamp_format = timestamp_format
         self._save_format = save_format
@@ -443,25 +480,28 @@ class PlotlyTradingChart(BaseRenderer):
                 type=trade.type.value.upper(),
                 commission=trade.commission
             )
-            annotation = go.layout.Annotation(
+            annotations += [go.layout.Annotation(
                 x=trade.step - 1, y=trade.price,
                 ax=0, ay=ay, xref='x1', yref='y1', showarrow=True,
                 arrowhead=2, arrowcolor=color, arrowwidth=4,
                 arrowsize=0.8, hovertext=hovertext, opacity=0.6,
                 hoverlabel=dict(bgcolor=color)
-                )
-            annotations.append(annotation)
+            )]
 
         if trades:
             self._last_trade_step = trades[list(trades)[-1]][0].step
 
         return tuple(annotations)
 
-    def render(self, episode: int = None, max_episodes: int = None,
-               step: int = None, max_steps: int = None,
-               price_history: pd.DataFrame = None, net_worth: pd.Series = None,
-               performance: pd.DataFrame = None, trades: 'OrderedDict' = None
-               ):
+    def render_env(self,
+                   episode: int = None,
+                   max_episodes: int = None,
+                   step: int = None,
+                   max_steps: int = None,
+                   price_history: pd.DataFrame = None,
+                   net_worth: pd.Series = None,
+                   performance: pd.DataFrame = None,
+                   trades: 'OrderedDict' = None) -> None:
         if price_history is None:
             raise ValueError("renderers() is missing required positional argument 'price_history'.")
 
@@ -509,13 +549,18 @@ class PlotlyTradingChart(BaseRenderer):
     def save(self):
         """Saves the current chart to a file.
 
-        Note:
-        All formats other than HTML require Orca installed and server running.
+        Parameters:
+        ===========
+            filename : str
+                primary part of the image file name (e.g. "mountain" in "mountain.png".
+            path : str
+                The path to save the chart to.
+            format : str
+                The chart format to save.
 
-        Arguments:
-            filename: str, primary part of the image file name (e.g. "mountain" in "mountain.png".
-            path: The path to save the chart to.
-            format: The chart format to save.
+        Note:
+        =====
+            All formats other than HTML require Orca installed and server running.
         """
         if not self._save_format:
             return

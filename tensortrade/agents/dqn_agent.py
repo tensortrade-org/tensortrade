@@ -1,4 +1,4 @@
-# Copyright 2019 The TensorTrade Authors.
+# Copyright 2020 The TensorTrade Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,12 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-References:
-    - https://towardsdatascience.com/deep-reinforcement-learning-build-a-deep-q-network-dqn-to-play-cartpole-with-tensorflow-2-and-gym-8e105744b998
-    - https://pytorch.org/tutorials/intermediate/reinforcement_q_learning.html#dqn-algorithm
-"""
-
 import random
 import numpy as np
 import tensorflow as tf
@@ -30,6 +24,13 @@ DQNTransition = namedtuple('DQNTransition', ['state', 'action', 'reward', 'next_
 
 
 class DQNAgent(Agent):
+    """
+
+    References:
+    ===========
+        - https://towardsdatascience.com/deep-reinforcement-learning-build-a-deep-q-network-dqn-to-play-cartpole-with-tensorflow-2-and-gym-8e105744b998
+        - https://pytorch.org/tutorials/intermediate/reinforcement_q_learning.html#dqn-algorithm
+    """
 
     def __init__(self,
                  env: 'TradingEnvironment',
@@ -142,8 +143,8 @@ class DQNAgent(Agent):
             n_episodes = np.iinfo(np.int32).max
 
         print('====      AGENT ID: {}      ===='.format(self.id))
-        self.env.max_episodes = n_episodes
-        self.env.max_steps = n_steps
+        #self.env.max_episodes = n_episodes
+        #self.env.max_steps = n_steps
 
         while episode < n_episodes and not stop_training:
             state = self.env.reset()
@@ -182,7 +183,11 @@ class DQNAgent(Agent):
                 self.save(save_path, episode=episode)
 
             if not render_interval or steps_done < n_steps:
-                self.env.render(episode)  # renderers final state at episode end if not rendered earlier
+                self.env.render(
+                    episode=episode,
+                    max_episodes=n_episodes,
+                    max_steps=n_steps
+                )  # renderers final state at episode end if not rendered earlier
 
             self.env.save()
 

@@ -30,8 +30,9 @@ from tensortrade.env.generic import (
 class TradingEnv(gym.Env, TimeIndexed):
     """A trading environment made for use with Gym-compatible reinforcement learning algorithms."""
 
-    agent_id: str = None
-    episode_id: str = None
+    # agent_id: str = None
+    # episode_id: str = None
+    #  * Used in ParallelDQN
 
     def __init__(self,
                  action_scheme: ActionScheme,
@@ -51,7 +52,7 @@ class TradingEnv(gym.Env, TimeIndexed):
         self.monitor = monitor
         self.renderer = renderer
 
-        for c in self.components():
+        for c in self.components.values():
             c.clock = self.clock
 
         self.action_space = action_scheme.action_space
@@ -59,11 +60,17 @@ class TradingEnv(gym.Env, TimeIndexed):
 
         self._max_episodes = None
         self._max_steps = None
+        self._episode = 0
 
         self._enable_logger = kwargs.get('enable_logger', False)
         if self._enable_logger:
             self.logger = logging.getLogger(kwargs.get('logger_name', __name__))
             self.logger.setLevel(kwargs.get('log_level', logging.DEBUG))
+
+    """
+    @property
+    def episode(self):
+        return self._episode
 
     @property
     def max_episodes(self):
@@ -80,15 +87,19 @@ class TradingEnv(gym.Env, TimeIndexed):
     @max_steps.setter
     def max_steps(self, max_steps):
         self._max_steps = max_steps
+    """
+    # * Used in the rendering systems
 
+    @property
     def components(self):
-        return [
-            self.action_scheme,
-            self.reward_scheme,
-            self.observer,
-            self.stopper,
-            self.monitor
-        ]
+        return {
+            "action_scheme": self.action_scheme,
+            "reward_scheme": self.reward_scheme,
+            "observer": self.observer,
+            "stopper": self.stopper,
+            "monitor": self.monitor,
+            "renderer": self.renderer
+        }
 
     def step(self, action):
         self.action_scheme.perform(self, action)
@@ -103,13 +114,12 @@ class TradingEnv(gym.Env, TimeIndexed):
         return obs, reward, done, info
 
     def reset(self):
-        self.episode_id = str(uuid.uuid4())
+        # self.episode_id = str(uuid.uuid4())
+        # self._episode += 1
         self.clock.reset()
-        self.action_scheme.reset()
-        self.observer.reset()
-        self.reward_scheme.reset()
-        self.stopper.reset()
-        self.monitor.reset()
+
+        for c in self.components.values():
+            c.reset()
 
         obs = self.observer.observe(self)
 
@@ -117,8 +127,8 @@ class TradingEnv(gym.Env, TimeIndexed):
 
         return obs
 
-    def render(self, episode: int = None):
-        self.renderer.render(self, episode)
+    def render(self, **kwargs):
+        self.renderer.render(self, **kwargs)
 
     def save(self):
         self.renderer.save()
