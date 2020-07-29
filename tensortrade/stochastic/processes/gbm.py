@@ -28,10 +28,12 @@ def geometric_brownian_motion_log_returns(params: ModelParameters):
     a random Geometric Brownian Motion (GBM). The GBM is the stochastic process
     underlying the Black-Scholes options pricing formula.
 
-    Arguments:
+    Parameters:
+    ===========
         params : ModelParameters
             The parameters for the stochastic model.
     Returns:
+    ========
         The log returns of a geometric brownian motion process
     """
     wiener_process = np.array(brownian_motion_log_returns(params))
@@ -44,11 +46,13 @@ def geometric_brownian_motion_levels(params: ModelParameters):
     Constructs a sequence of price levels for an asset which evolves according to
     a geometric brownian motion.
 
-    Arguments:
+    Parameters:
+    ===========
         params : ModelParameters
             The parameters for the stochastic model.
 
     Returns:
+    ========
         The price levels for the asset
     """
     return convert_to_prices(params, geometric_brownian_motion_log_returns(params))

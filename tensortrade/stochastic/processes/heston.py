@@ -17,7 +17,7 @@ import numpy as np
 import scipy as sp
 
 from tensortrade.stochastic.processes.gbm import geometric_brownian_motion_log_returns
-from tensortrade.stochastic.utils import ModelParameters, generate
+from tensortrade.stochastic.utils import ModelParameters, generate, convert_to_prices
 
 
 # =============================================================================
@@ -29,11 +29,13 @@ def jump_diffusion_process(params: ModelParameters):
     diffusion process. These jumps are combined with a geometric brownian
     motion (log returns) to produce the Merton model.
 
-    Arguments:
+    Parameters:
+    ===========
         params : ModelParameters
             The parameters for the stochastic model.
 
     Returns:
+    ========
         jump sizes for each point in time (mostly zeroes if jumps are infrequent)
     """
     s_n = time = 0
@@ -57,11 +59,13 @@ def geometric_brownian_motion_jump_diffusion_log_returns(params: ModelParameters
     (log returns) with a jump diffusion process (log returns) to produce
     a sequence of gbm jump returns.
 
-    Arguments:
+    Parameters:
+    ===========
         params : ModelParameters
             The parameters for the stochastic model.
 
     Returns:
+    ========
         A GBM process with jumps in it
     """
     jump_diffusion = jump_diffusion_process(params)
@@ -75,11 +79,13 @@ def geometric_brownian_motion_jump_diffusion_levels(params: ModelParameters):
     which evolves according to a geometric brownian motion but can contain
     jumps at any point in time.
 
-    Arguments:
+    Parameters:
+    ===========
         params : ModelParameters
             The parameters for the stochastic model.
 
     Returns:
+    ========
         The price levels
     """
     return convert_to_prices(params, geometric_brownian_motion_jump_diffusion_log_returns(params))
@@ -97,11 +103,13 @@ def cox_ingersoll_ross_heston(params):
     method from which the interest rate levels are constructed. The other
     correlated process are used in the Heston model.
 
-    Arguments:
+    Parameters:
+    ===========
         params : ModelParameters
             The parameters for the stochastic model.
 
     Returns:
+    ========
         The interest rate levels for the CIR process
     """
     # We don't multiply by sigma here because we do that in heston
@@ -123,13 +131,15 @@ def heston_construct_correlated_path(params: ModelParameters,
     for just two assets. It does not make use of matrix algebra and is therefore
     quite easy to implement.
 
-    Arguments:
+    Parameters:
+    ===========
         params : ModelParameters
             The parameters for the stochastic model.
         brownian_motion_one : np.array
             (Not filled)
 
     Returns:
+    ========
         A correlated brownian motion path.
     """
     # We do not multiply by sigma here, we do that in the Heston model
@@ -145,19 +155,24 @@ def heston_construct_correlated_path(params: ModelParameters,
 
 def heston_model_levels(params):
     """
-    NOTE - this method is dodgy! Need to debug!
     The Heston model is the geometric brownian motion model with stochastic
     volatility. This stochastic volatility is given by the cox ingersoll ross
     process. Step one on this method is to construct two correlated GBM
     processes. One is used for the underlying asset prices and the other is used
     for the stochastic volatility levels.
 
-    Arguments:
+    Parameters:
+    ===========
         params : ModelParameters
             The parameters for the stochastic model.
 
     Returns:
+    ========
         The prices for an underlying following a Heston process
+
+    Notes:
+    ======
+        This method is dodgy! Need to debug!
     """
     # Get two correlated brownian motion sequences for the volatility parameter and the underlying asset
     # brownian_motion_market, brownian_motion_vol = get_correlated_paths_simple(param)
@@ -179,7 +194,8 @@ def get_correlated_geometric_brownian_motions(params: ModelParameters,
     Constructs a basket of correlated asset paths using the Cholesky
     decomposition method.
 
-    Arguments:
+    Parameters:
+    ===========
         params : ModelParameters
             The parameters for the stochastic model.
         correlation_matrix : np.array
@@ -188,6 +204,7 @@ def get_correlated_geometric_brownian_motions(params: ModelParameters,
             Number of assets (number of paths to return)
 
     Returns:
+    ========
         n correlated log return geometric brownian motion processes
     """
     decomposition = sp.linalg.cholesky(correlation_matrix, lower=False)
@@ -230,7 +247,4 @@ def heston(base_price: int = 1,
         time_frame=time_frame,
         params=params
     )
-    return data_frame
-
-
     return data_frame
