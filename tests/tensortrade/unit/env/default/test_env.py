@@ -4,13 +4,13 @@ import pandas as pd
 import pytest
 import ta
 
-import tensortrade.env.tt as tt
+import tensortrade.env.default as default
 
 from tensortrade.oms.exchanges import Exchange
 from tensortrade.oms.instruments import USD, BTC, ETH, LTC
 from tensortrade.oms.wallets import Portfolio, Wallet
-from tensortrade.env.tt.actions import ManagedRiskOrders
-from tensortrade.env.tt.rewards import SimpleProfit
+from tensortrade.env.default.actions import ManagedRiskOrders
+from tensortrade.env.default.rewards import SimpleProfit
 from tensortrade.feed import DataFeed, Stream, NameSpace
 from tensortrade.oms.exchanges.services.execution.simulated import execute_order
 
@@ -81,7 +81,7 @@ def test_runs_with_external_feed_only(portfolio):
     action_scheme = ManagedRiskOrders()
     reward_scheme = SimpleProfit()
 
-    env = tt.create(
+    env = default.create(
         portfolio=portfolio,
         action_scheme=action_scheme,
         reward_scheme=reward_scheme,

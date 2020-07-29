@@ -33,7 +33,7 @@ class DQNAgent(Agent):
     """
 
     def __init__(self,
-                 env: 'TradingEnvironment',
+                 env: 'TradingEnv',
                  policy_network: tf.keras.Model = None):
         self.env = env
         self.n_actions = env.action_space.n
@@ -143,8 +143,6 @@ class DQNAgent(Agent):
             n_episodes = np.iinfo(np.int32).max
 
         print('====      AGENT ID: {}      ===='.format(self.id))
-        #self.env.max_episodes = n_episodes
-        #self.env.max_steps = n_steps
 
         while episode < n_episodes and not stop_training:
             state = self.env.reset()
@@ -171,7 +169,11 @@ class DQNAgent(Agent):
                     done = True
 
                 if render_interval is not None and steps_done % render_interval == 0:
-                    self.env.render(episode)
+                    self.env.render(
+                        episode=episode,
+                        max_episodes=n_episodes,
+                        max_steps=n_steps
+                    )
 
                 if steps_done % update_target_every == 0:
                     self.target_network = tf.keras.models.clone_model(self.policy_network)

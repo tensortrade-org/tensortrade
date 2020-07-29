@@ -67,6 +67,7 @@ def check_path(path, auto_create: bool = True):
 class BaseRenderer(Renderer):
 
     def __init__(self):
+        super().__init__()
         self._max_episodes = None
         self._max_steps = None
 
@@ -87,15 +88,19 @@ class BaseRenderer(Renderer):
         return log_entry
 
     def render(self, env: 'TradingEnv', **kwargs):
-        portfolio = env.action_scheme.portfolio.performance.net_worth
+
+        price_history = None
+        if len(env.observer.renderer_history) > 0:
+            price_history = pd.DataFrame(env.observer.renderer_history)
+
         self.render_env(
             episode=kwargs.get("episode", None),
             max_episodes=kwargs.get("max_episodes", None),
             step=env.clock.step,
             max_steps=kwargs.get("max_steps", None),
-            price_history=None,
-            net_worth=portfolio.performance.net_worth,
-            performance=portfolio.performance.drop(columns=['base_symbol']),
+            price_history=price_history,
+            net_worth=env.action_scheme.portfolio.performance.net_worth,
+            performance=env.action_scheme.portfolio.performance.drop(columns=['base_symbol']),
             trades=env.action_scheme.broker.trades
         )
 
@@ -120,7 +125,7 @@ class BaseRenderer(Renderer):
 
 class EmptyRenderer(Renderer):
 
-    def render(self, env):
+    def render(self, env, **kwargs):
         pass
 
 
@@ -132,15 +137,15 @@ class ScreenLogger(BaseRenderer):
         super().__init__()
         self._date_format = date_format
 
-    def render(self,
-               episode: int = None,
-               max_episodes: int = None,
-               step: int = None,
-               max_steps: int = None,
-               price_history: pd.DataFrame = None,
-               net_worth: pd.Series = None,
-               performance: pd.DataFrame = None,
-               trades: 'OrderedDict' = None):
+    def render_env(self,
+                   episode: int = None,
+                   max_episodes: int = None,
+                   step: int = None,
+                   max_steps: int = None,
+                   price_history: pd.DataFrame = None,
+                   net_worth: pd.Series = None,
+                   performance: pd.DataFrame = None,
+                   trades: 'OrderedDict' = None):
         print(self._create_log_entry(episode, max_episodes, step, max_steps, date_format=self._date_format))
 
 
@@ -203,6 +208,7 @@ class MatplotlibTradingChart:
     VOLUME_CHART_HEIGHT = 0.33
 
     def __init__(self, df):
+        super().__init__()
         self.df = df
 
         # Create a figure on screen and set the title
@@ -348,6 +354,37 @@ class PlotlyTradingChart(BaseRenderer):
     """
     Trading visualization for TensorTrade using Plotly.
 
+    Class Variables:
+    ================
+        display : bool
+            True to display the chart on the screen, False for not.
+        height : int
+            Chart height in pixels. Affects both display and saved file
+            charts. Set to None for 100% height. Default is None.
+        save_format : float
+            A format to save the chart to. Acceptable formats are
+            html, png, jpeg, webp, svg, pdf, eps. All the formats except for
+            'html' require Orca. Default is None for no saving.
+        path : str
+            The path to save the char to if save_format is not None. The folder
+            will be created if not found.
+        filename_prefix : str
+            A string that precedes automatically-created file name
+            when charts are saved. Default 'chart_'.
+        timestamp_format : str
+            The format of the date shown in the chart title.
+        auto_open_html : bool
+            Works for save_format='html' only. True to automatically
+            open the saved chart HTML file in the default browser, False otherwise.
+        include_plotlyjs : Union[bool, str]
+            Whether to include/load the plotly.js library in the saved
+            file. 'cdn' results in a smaller file by loading the library online but
+            requires an Internet connect while True includes the library resulting
+            in much larger file sizes. False to not include the library. For more
+            details, refer to https://plot.ly/python-api-reference/generated/plotly.graph_objects.Figure.html
+
+    Notes:
+    ======
     Possible Future Enhancements:
         - Saving images without using Orca.
         - Limit displayed step range for the case of a large number of steps and let
@@ -362,6 +399,7 @@ class PlotlyTradingChart(BaseRenderer):
         - https://plot.ly/python/reference/#candlestick
         - https://plot.ly/python/#chart-events
     """
+
     def __init__(self,
                  display: bool = True,
                  height: int = None,
@@ -371,27 +409,6 @@ class PlotlyTradingChart(BaseRenderer):
                  filename_prefix: str = 'chart_',
                  auto_open_html: bool = False,
                  include_plotlyjs: Union[bool, str] = 'cdn'):
-        """
-        Arguments:
-            display: True to display the chart on the screen, False for not.
-            height: Chart height in pixels. Affects both display and saved file
-                charts. Set to None for 100% height. Default is None.
-            save_format: A format to save the chart to. Acceptable formats are
-                html, png, jpeg, webp, svg, pdf, eps. All the formats except for
-                'html' require Orca. Default is None for no saving.
-            path: The path to save the char to if save_format is not None. The folder
-                will be created if not found.
-            filename_prefix: A string that precedes automatically-created file name
-                when charts are saved. Default 'chart_'.
-            timestamp_format: The format of the date shown in the chart title.
-            auto_open_html: Works for save_format='html' only. True to automatically
-                open the saved chart HTML file in the default browser, False otherwise.
-            include_plotlyjs: Whether to include/load the plotly.js library in the saved
-                file. 'cdn' results in a smaller file by loading the library online but
-                requires an Internet connect while True includes the library resulting
-                in much larger file sizes. False to not include the library. For more
-                details, refer to https://plot.ly/python-api-reference/generated/plotly.graph_objects.Figure.html
-        """
         super().__init__()
         self._height = height
         self._timestamp_format = timestamp_format
@@ -429,7 +446,7 @@ class PlotlyTradingChart(BaseRenderer):
         for k in performance_keys:
             fig.add_trace(go.Scatter(mode='lines', name=k), row=3, col=1)
 
-        fig.add_trace(go.Scatter(mode='lines', name='Net Worth', marker={ 'color': 'DarkGreen' }),
+        fig.add_trace(go.Scatter(mode='lines', name='Net Worth', marker={'color': 'DarkGreen'}),
                       row=4, col=1)
 
         fig.update_xaxes(linecolor='Grey', gridcolor='Gainsboro')
@@ -456,32 +473,56 @@ class PlotlyTradingChart(BaseRenderer):
         for trade in reversed(trades.values()):
             trade = trade[0]
 
+            tp = float(trade.price)
+            ts = float(trade.size)
+
             if trade.step <= self._last_trade_step:
                 break
 
             if trade.side.value == 'buy':
                 color = 'DarkGreen'
                 ay = 15
+                qty = round(ts / tp, trade.quote_instrument.precision)
+
+                text_info = dict(
+                    step=trade.step,
+                    datetime=price_history.iloc[trade.step - 1]['date'],
+                    side=trade.side.value.upper(),
+                    qty=qty,
+                    size=ts,
+                    quote_instrument=trade.quote_instrument,
+                    price=tp,
+                    base_instrument=trade.base_instrument,
+                    type=trade.type.value.upper(),
+                    commission=trade.commission
+                )
+
             elif trade.side.value == 'sell':
                 color = 'FireBrick'
                 ay = -15
+                # qty = round(ts * tp, trade.quote_instrument.precision)
+
+                text_info = dict(
+                    step=trade.step,
+                    datetime=price_history.iloc[trade.step - 1]['date'],
+                    side=trade.side.value.upper(),
+                    qty=ts,
+                    size=round(ts * tp, trade.base_instrument.precision),
+                    quote_instrument=trade.quote_instrument,
+                    price=tp,
+                    base_instrument=trade.base_instrument,
+                    type=trade.type.value.upper(),
+                    commission=trade.commission
+                )
             else:
                 raise ValueError(f"Valid trade side values are 'buy' and 'sell'. Found '{trade.side.value}'.")
 
-            hovertext = 'Step {step} [{datetime}]<br>{side} {qty} {quote_instrument} @ {price} {base_instrument} {type}<br>Total: {size} {base_instrument} - Comm.: {commission}'.format(
-                step=trade.step,
-                datetime=price_history.iloc[trade.step - 1]['datetime'],
-                side=trade.side.value.upper(),
-                qty=round(trade.size/trade.price, trade.pair.quote.precision),
-                size=trade.size,
-                quote_instrument=trade.quote_instrument,
-                price=trade.price,
-                base_instrument=trade.base_instrument,
-                type=trade.type.value.upper(),
-                commission=trade.commission
-            )
+            hovertext = 'Step {step} [{datetime}]<br>' \
+                        '{side} {qty} {quote_instrument} @ {price} {base_instrument} {type}<br>' \
+                        'Total: {size} {base_instrument} - Comm.: {commission}'.format(**text_info)
+
             annotations += [go.layout.Annotation(
-                x=trade.step - 1, y=trade.price,
+                x=trade.step - 1, y=tp,
                 ax=0, ay=ay, xref='x1', yref='y1', showarrow=True,
                 arrowhead=2, arrowcolor=color, arrowwidth=4,
                 arrowsize=0.8, hovertext=hovertext, opacity=0.6,

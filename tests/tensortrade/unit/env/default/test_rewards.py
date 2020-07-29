@@ -3,7 +3,7 @@ import pytest
 import numpy as np
 import pandas as pd
 
-import tensortrade.env.tt.rewards as rewards
+import tensortrade.env.default.rewards as rewards
 
 from tensortrade import TradingContext
 from tensortrade.oms.wallets import Portfolio

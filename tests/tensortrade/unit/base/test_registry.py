@@ -1,8 +1,8 @@
 
 import warnings
 
-import tensortrade.env.tt.actions as actions
-import tensortrade.env.tt.rewards as rewards
+import tensortrade.env.default.actions as actions
+import tensortrade.env.default.rewards as rewards
 
 warnings.filterwarnings("ignore")
 

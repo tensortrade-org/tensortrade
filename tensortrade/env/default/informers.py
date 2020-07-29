@@ -1,9 +1,9 @@
 
 
-from tensortrade.env.generic import Monitor
+from tensortrade.env.generic import Informer
 
 
-class TensorTradeMonitor(Monitor):
+class TensorTradeInformer(Informer):
 
     def __init__(self):
         super().__init__()

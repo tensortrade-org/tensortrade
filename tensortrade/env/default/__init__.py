@@ -1,10 +1,10 @@
 
-import tensortrade.env.tt.actions as actions
-import tensortrade.env.tt.rewards as rewards
-import tensortrade.env.tt.monitors as monitors
-import tensortrade.env.tt.observers as observers
-import tensortrade.env.tt.renderers as renderers
-import tensortrade.env.tt.stoppers as stoppers
+import tensortrade.env.default.actions as actions
+import tensortrade.env.default.rewards as rewards
+import tensortrade.env.default.informers as monitors
+import tensortrade.env.default.observers as observers
+import tensortrade.env.default.renderers as renderers
+import tensortrade.env.default.stoppers as stoppers
 
 from typing import Union
 
@@ -28,6 +28,7 @@ def create(portfolio,
     observer = observers.TensorTradeObserver(
         portfolio=portfolio,
         feed=feed,
+        renderer_feed=kwargs.get("renderer_feed", None),
         window_size=window_size,
         min_periods=min_periods
     )
@@ -40,8 +41,8 @@ def create(portfolio,
         action_scheme=action_scheme,
         reward_scheme=reward_scheme,
         observer=observer,
-        stopper=stopper,
-        monitor=monitors.TensorTradeMonitor(),
-        renderer=renderers.EmptyRenderer()
+        stopper=kwargs.get("stopper", stopper),
+        informer=kwargs.get("informer", monitors.TensorTradeInformer()),
+        renderer=kwargs.get("renderer", renderers.EmptyRenderer())
     )
     return env

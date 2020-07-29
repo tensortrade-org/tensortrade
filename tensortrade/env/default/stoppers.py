@@ -4,7 +4,8 @@ from tensortrade.env.generic import Stopper
 
 class MaxLossStopper(Stopper):
 
-    def __init__(self, max_allowed_loss):
+    def __init__(self, max_allowed_loss: float):
+        super().__init__()
         self.max_allowed_loss = max_allowed_loss
 
     def stop(self, env):

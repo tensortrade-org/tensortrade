@@ -91,16 +91,26 @@ class TensorTradeObserver(Observer):
     def __init__(self,
                  portfolio,
                  feed=None,
+                 renderer_feed=None,
                  window_size=1,
                  min_periods=None,
                  **kwargs):
         internal_group = Stream.group(create_internal_streams(portfolio)).rename("internal")
         external_group = Stream.group(feed.inputs).rename("external")
 
-        self.feed = DataFeed([
-            internal_group,
-            external_group
-        ])
+        if renderer_feed:
+            renderer_group = Stream.group(renderer_feed.inputs).rename("renderer")
+
+            self.feed = DataFeed([
+                internal_group,
+                external_group,
+                renderer_group
+            ])
+        else:
+            self.feed = DataFeed([
+                internal_group,
+                external_group
+            ])
 
         self.window_size = window_size
         self.min_periods = min_periods
@@ -123,6 +133,8 @@ class TensorTradeObserver(Observer):
 
         self.feed = self.feed.attach(portfolio)
 
+        self.renderer_history = []
+
         self.feed.reset()
         self.warmup()
 
@@ -138,7 +150,14 @@ class TensorTradeObserver(Observer):
                     self.history.push(obs_row)
 
     def observe(self, env):
-        obs_row = self.feed.next()["external"]
+        data = self.feed.next()
+
+        # Save renderer information to history
+        if "renderer" in data.keys():
+            self.renderer_history += [data["renderer"]]
+
+        # Push new observation to observation history
+        obs_row = data["external"]
 
         self.history.push(obs_row)
 
@@ -150,6 +169,7 @@ class TensorTradeObserver(Observer):
         return self.feed.has_next()
 
     def reset(self):
+        self.renderer_history = []
         self.history.reset()
         self.feed.reset()
         self.warmup()

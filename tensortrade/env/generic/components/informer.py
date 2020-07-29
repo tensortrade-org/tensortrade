@@ -18,7 +18,7 @@ from tensortrade.core.component import Component
 from tensortrade.core.base import TimeIndexed
 
 
-class Monitor(Component, TimeIndexed):
+class Informer(Component, TimeIndexed):
 
     registered_name = "monitor"
 
