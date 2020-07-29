@@ -21,3 +21,4 @@ Pipfile
 
 # agent storage
 examples/agents
+examples/training_logs
