@@ -13,6 +13,7 @@
 # limitations under the License
 
 from abc import ABCMeta, abstractmethod
+from typing import List
 
 from tensortrade.core import Component
 
@@ -33,3 +34,26 @@ class Renderer(Component, metaclass=ABCMeta):
 
     def close(self):
         pass
+
+
+class AggregateRenderer(Renderer):
+
+    def __init__(self, renderers: List[Renderer]):
+        super().__init__()
+        self.renderers = renderers
+
+    def render(self, env: 'TradingEnv', **kwargs):
+        for r in self.renderers:
+            r.render(env, **kwargs)
+
+    def save(self):
+        for r in self.renderers:
+            r.save()
+
+    def reset(self):
+        for r in self.renderers:
+            r.reset()
+
+    def close(self):
+        for r in self.renderers:
+            r.close()

@@ -9,6 +9,7 @@ import tensortrade.env.default.stoppers as stoppers
 from typing import Union
 
 from tensortrade.env.generic import TradingEnv
+from tensortrade.env.generic.components.renderer import AggregateRenderer
 from tensortrade.feed.core import DataFeed
 
 
@@ -37,12 +38,25 @@ def create(portfolio,
         max_allowed_loss=kwargs.get("max_allowed_loss", 0.5)
     )
 
+    renderer_list = kwargs.get("renderer", renderers.EmptyRenderer())
+
+    if isinstance(renderer_list, list):
+        for i, r in enumerate(renderer_list):
+            if isinstance(r, str):
+                renderer_list[i] = renderers.get(r)
+        renderer = AggregateRenderer(renderer_list)
+    else:
+        if isinstance(renderer_list, str):
+            renderer = renderers.get(renderer_list)
+        else:
+            renderer = renderer_list
+
     env = TradingEnv(
         action_scheme=action_scheme,
         reward_scheme=reward_scheme,
         observer=observer,
         stopper=kwargs.get("stopper", stopper),
         informer=kwargs.get("informer", monitors.TensorTradeInformer()),
-        renderer=kwargs.get("renderer", renderers.EmptyRenderer())
+        renderer=renderer
     )
     return env
