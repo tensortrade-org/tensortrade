@@ -77,7 +77,7 @@ class BaseRenderer(Renderer):
                           step: int = None,
                           max_steps: int = None,
                           date_format: str = "%Y-%m-%d %H:%M:%S %p") -> str:
-        log_entry = "[{}]".format(datetime.now().strftime(date_format))
+        log_entry = f"[{datetime.now().strftime(date_format)}]"
 
         if episode is not None:
             log_entry += f" Episode: {episode + 1}/{max_episodes if max_episodes else ''}"

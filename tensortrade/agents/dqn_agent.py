@@ -136,6 +136,7 @@ class DQNAgent(Agent):
 
         memory = ReplayMemory(memory_capacity, transition_type=DQNTransition)
         episode = 0
+        total_steps_done = 0
         total_reward = 0
         stop_training = False
 
@@ -150,7 +151,7 @@ class DQNAgent(Agent):
             steps_done = 0
 
             while not done:
-                threshold = eps_end + (eps_start - eps_end) * np.exp(-steps_done / eps_decay_steps)
+                threshold = eps_end + (eps_start - eps_end) * np.exp(-total_steps_done / eps_decay_steps)
                 action = self.get_action(state, threshold=threshold)
                 next_state, reward, done, _ = self.env.step(action)
 
@@ -159,6 +160,7 @@ class DQNAgent(Agent):
                 state = next_state
                 total_reward += reward
                 steps_done += 1
+                total_steps_done +=1
 
                 if len(memory) < batch_size:
                     continue
