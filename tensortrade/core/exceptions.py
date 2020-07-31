@@ -1,11 +1,21 @@
+"""Holds all the exceptions for the project."""
 
 
 # =============================================================================
 # Quantity Exceptions
 # =============================================================================
 class InvalidNegativeQuantity(Exception):
+    """Raised when a `Quantity` tries to be instantiated with a negative amount.
 
-    def __init__(self, size, *args):
+    Parameters
+    ----------
+    size : float
+        The size that was specified for the `Quantity`.
+    *args : positional arguments
+        More positional arguments for the exception.
+    """
+
+    def __init__(self, size: float, *args) -> None:
         super().__init__(
             "Invalid Quantity: {}. Amounts cannot be negative.".format(size),
             *args
@@ -13,8 +23,18 @@ class InvalidNegativeQuantity(Exception):
 
 
 class InvalidNonNumericQuantity(Exception):
+    """Raised when a `Quantity` tries to be instantiated with a value
+    that is not numeric.
 
-    def __init(self, size, *args):
+    Parameters
+    ----------
+    size : float
+        The value that was specified for the `Quantity`.
+    *args : positional arguments
+        More positional arguments for the exception.
+    """
+
+    def __init__(self, size: float, *args) -> None:
         super().__init__(
             "Invalid Quantity: {}. Amounts cannot be non-numeric.".format(size),
             *args
@@ -22,8 +42,20 @@ class InvalidNonNumericQuantity(Exception):
 
 
 class QuantityOpPathMismatch(Exception):
+    """Raised when an operation tries to occur between quantities that are not
+    under the same path_id.
 
-    def __init(self, left_id, right_id, *args):
+    Parameters
+    ----------
+    left_id : str
+        The path_id for the left argument in the operation.
+    right_id : str
+        The path_id for the right argument in the operation.
+    *args : positional arguments
+        More positional arguments for the exception.
+    """
+
+    def __init__(self, left_id: str, right_id: str, *args) -> None:
         super().__init__(
             "Invalid operation between quantities with unequal path id: {} {}.".format(
                 left_id, right_id),
@@ -32,8 +64,17 @@ class QuantityOpPathMismatch(Exception):
 
 
 class DoubleLockedQuantity(Exception):
+    """Raised when a locked `Quantity` is trying to get locked again.
 
-    def __init(self, quantity, *args):
+    Parameters
+    ----------
+    quantity : `Quantity`
+        A locked quantity.
+    *args : positional arguments
+        More positional arguments for the exception.
+    """
+
+    def __init__(self, quantity: 'Quantity', *args) -> None:
         super().__init__(
             "Cannot lock quantity that has previously been locked: {}.".format(quantity),
             *args
@@ -41,8 +82,17 @@ class DoubleLockedQuantity(Exception):
 
 
 class DoubleUnlockedQuantity(Exception):
+    """Raised when a free `Quantity` is trying to get unlocked.
 
-    def __init(self, quantity, *args):
+    Parameters
+    ----------
+    quantity : `Quantity`
+        A unlocked quantity.
+    *args : positional arguments
+        More positional arguments for the exception.
+    """
+
+    def __init__(self, quantity: 'Quantity', *args) -> None:
         super().__init__(
             "Cannot unlock quantity that has previously been unlocked: {}.".format(quantity),
             *args
@@ -50,22 +100,20 @@ class DoubleUnlockedQuantity(Exception):
 
 
 class QuantityNotLocked(Exception):
+    """Raised when a locked `Quantity` does not have a path_id in the `Wallet`
+    it is trying to be unlocked in.
 
-    def __init(self, quantity, *args):
+    Parameters
+    ----------
+    quantity : `Quantity`
+        A locked quantity.
+    *args : positional arguments
+        More positional arguments for the exception.
+    """
+
+    def __init__(self, quantity, *args) -> None:
         super().__init__(
             "Cannot unlock quantity that has not been locked in this wallet: {}.".format(quantity),
-            *args
-        )
-
-
-# =============================================================================
-# Price Exceptions
-# =============================================================================
-class IncompatiblePriceQuantityOperation(Exception):
-
-    def __init__(self, left, right, *args):
-        super().__init__(
-            "Quantity instrument does not match quote: {} != {}.".format(left, right),
             *args
         )
 
@@ -74,8 +122,19 @@ class IncompatiblePriceQuantityOperation(Exception):
 # Instrument Exceptions
 # =============================================================================
 class IncompatibleInstrumentOperation(Exception):
+    """Raised when two quantities with different instruments occurs.
 
-    def __init__(self, left, right, *args):
+    Parameters
+    ----------
+    left : `Quantity`
+        The left argument of the operation.
+    right : `Quantity`
+        The right argument of the operation.
+    *args : positional arguments
+        More positional arguments for the exception.
+    """
+
+    def __init__(self, left: 'Quantity', right: 'Quantity', *args) -> None:
         super().__init__(
             "Instruments are not of the same type ({} and {}).".format(left, right),
             *args
@@ -86,19 +145,19 @@ class IncompatibleInstrumentOperation(Exception):
 # Order Exceptions
 # =============================================================================
 class InvalidOrderQuantity(Exception):
+    """Raised when an `Order` with a non-negative amount is placed
 
-    def __init__(self, size, *args):
+    Parameters
+    ----------
+    quantity : `Quantity`
+        An invalid order quantity.
+    *args : positional arguments
+        More positional arguments for the exception.
+    """
+
+    def __init__(self, quantity: 'Quantity', *args) -> None:
         super().__init__(
-            "Invalid Quantity: {}. Order sizes must be positive.".format(size),
-            *args
-        )
-
-
-class IncompatibleRecipePath(Exception):
-
-    def __init__(self, order, recipe, *args):
-        super().__init__(
-            "Incompatible {} following {}.".format(order, recipe),
+            "Invalid Quantity: {}. Order sizes must be positive.".format(quantity),
             *args
         )
 
@@ -107,8 +166,19 @@ class IncompatibleRecipePath(Exception):
 # Wallet Exceptions
 # =============================================================================
 class InsufficientFunds(Exception):
+    """Raised when requested funds are greater than the free balance of a `Wallet`
 
-    def __init__(self, balance, size, *args):
+    Parameters
+    ----------
+    balance : `Quantity`
+        The balance of the `Wallet` where funds are being allocated from.
+    size : `Quantity`
+        The amount being requested for allocation.
+    *args : positional arguments
+        More positional arguments for the exception.
+    """
+
+    def __init__(self, balance: 'Quantity', size: 'Quantity', *args) -> None:
         super().__init__(
             "Insufficient funds for allocating size {} with balance {}.".format(size, balance),
             *args
@@ -119,18 +189,20 @@ class InsufficientFunds(Exception):
 # Trading Pair Exceptions
 # =============================================================================
 class InvalidTradingPair(Exception):
+    """Raised when an invalid trading pair is trying to be created.
 
-    def __init__(self, base, quote, *args):
+    Parameters
+    ----------
+    base : 'Instrument'
+        The base instrument of the pair.
+    quote : 'Instrument'
+        The quote instrument of the pair.
+    *args : positional arguments
+        More positional arguments for the exception.
+    """
+
+    def __init__(self, base: 'Instrument', quote: 'Instrument', *args) -> None:
         super().__init__(
             "Invalid instrument pair {}/{}.".format(base, quote),
-            *args
-        )
-
-
-class IncompatibleTradingPairOperation(Exception):
-
-    def __init__(self, left, right, *args):
-        super().__init__(
-            "Trading pairs are not of the same type ({} and {}).".format(left, right),
             *args
         )

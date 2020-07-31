@@ -1,34 +1,45 @@
+"""This module hold the project level registry and provides methods to mutate
+and change the registry.
 
-import numpy as np
-
+Attributes
+----------
+MAJOR_COMPONENTS : List[str]
+    The list of the major components that can be injected into.
+"""
 
 _REGISTRY = {}
 
 
 MAJOR_COMPONENTS = [
-    'actions',
-    'rewards',
-    'portfolio',
-    'exchanges',
-    'slippage',
+    "actions",
+    "rewards",
+    "observer",
+    "informer",
+    "stopper",
+    "renderer"
 ]
 
 
-def get_major_component_names():
-    return MAJOR_COMPONENTS
+def registry() -> dict:
+    """Gets the project level registry.
 
-
-def get_registry():
+    Returns
+    -------
+    dict
+        The project level registry.
+    """
     return _REGISTRY
 
 
-def registered_names():
-    return list(np.unique([_REGISTRY[i] for i in _REGISTRY.keys()]))
+def register(component: 'Component', registered_name: str) -> None:
+    """Registers a component into the registry
 
-
-def register(component, registered_name: str):
+    Parameters
+    ----------
+    component : 'Component'
+        The component to be registered.
+    registered_name : str
+        The name to be associated with the registered component.
+    """
     _REGISTRY[component] = registered_name
 
-
-def get_registered_name(component):
-    return _REGISTRY[component]
