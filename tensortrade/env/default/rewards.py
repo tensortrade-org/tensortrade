@@ -1,40 +1,68 @@
 
+from abc import abstractmethod
+
 import numpy as np
 import pandas as pd
-
-from abc import abstractmethod
-from typing import Callable
 
 from tensortrade.env.generic import RewardScheme, TradingEnv
 
 
 class TensorTradeRewardScheme(RewardScheme):
+    """The abstract base class for reward schemes for the default environment.
+    """
 
-    def reward(self, env: TradingEnv):
+    def reward(self, env: 'TradingEnv') -> float:
         return self.get_reward(env.action_scheme.portfolio)
 
     @abstractmethod
-    def get_reward(self, portfolio):
+    def get_reward(self, portfolio) -> float:
+        """Gets the reward associated with current step of the episode.
+
+        Parameters
+        ----------
+        portfolio : `Portfolio`
+            The portfolio associated with the `TensorTradeActionScheme`.
+
+        Returns
+        -------
+        float
+            The reward for the current step of the episode.
+        """
         raise NotImplementedError()
 
 
 class SimpleProfit(TensorTradeRewardScheme):
-    """A simple reward scheme that rewards the agent for incremental increases in net worth."""
+    """A simple reward scheme that rewards the agent for incremental increases
+    in net worth.
+
+    Parameters
+    ----------
+    window_size : int
+        The size of the look back window for computing the reward.
+
+    Attributes
+    ----------
+    window_size : int
+        The size of the look back window for computing the reward.
+    """
 
     def __init__(self, window_size: int = 1):
         self.window_size = self.default('window_size', window_size)
 
-    def reset(self):
-        pass
-
     def get_reward(self, portfolio: 'Portfolio') -> float:
-        """Rewards the agent for incremental increases in net worth over a sliding window.
+        """Rewards the agent for incremental increases in net worth over a
+        sliding window.
 
-        Args:
-            portfolio: The portfolio being used by the environment.
+        Parameters
+        ----------
+        portfolio : `Portfolio`
+            The portfolio being used by the environment.
 
-        Returns:
-            The cumulative percentage change in net worth over the previous `window_size` timesteps.
+        Returns
+        -------
+        float
+            The cumulative percentage change in net worth over the previous
+            `window_size` time steps.
         """
         returns = portfolio.performance['net_worth'].pct_change().dropna()
         returns = (1 + returns[-self.window_size:]).cumprod() - 1
@@ -44,46 +72,72 @@ class SimpleProfit(TensorTradeRewardScheme):
 class RiskAdjustedReturns(TensorTradeRewardScheme):
     """A reward scheme that rewards the agent for increasing its net worth,
     while penalizing more volatile strategies.
+
+    Parameters
+    ----------
+    return_algorithm : {'sharpe', 'sortino'}, Default 'sharpe'.
+        The risk-adjusted return metric to use.
+    risk_free_rate : float, Default 0.
+        The risk free rate of returns to use for calculating metrics.
+    target_returns : float, Default 0
+        The target returns per period for use in calculating the sortino ratio.
+    window_size : int
+        The size of the look back window for computing the reward.
     """
 
     def __init__(self,
                  return_algorithm: str = 'sharpe',
                  risk_free_rate: float = 0.,
                  target_returns: float = 0.,
-                 window_size: int = 1):
-        """
-        Args:
-            return_algorithm (optional): The risk-adjusted return metric to use. Options are 'sharpe' and 'sortino'. Defaults to 'sharpe'.
-            risk_free_rate (optional): The risk free rate of returns to use for calculating metrics. Defaults to 0.
-            target_returns (optional): The target returns per period for use in calculating the sortino ratio. Default to 0.
-        """
+                 window_size: int = 1) -> None:
         algorithm = self.default('return_algorithm', return_algorithm)
 
-        self._return_algorithm = self._return_algorithm_from_str(algorithm)
+        assert algorithm in ['sharpe', 'sortino']
+
+        if algorithm == 'sharpe':
+            return_algorithm = self._sharpe_ratio
+        elif algorithm == 'sortino':
+            return_algorithm = self._sortino_ratio
+
+        self._return_algorithm = return_algorithm
         self._risk_free_rate = self.default('risk_free_rate', risk_free_rate)
         self._target_returns = self.default('target_returns', target_returns)
         self._window_size = self.default('window_size', window_size)
 
-    def _return_algorithm_from_str(self, algorithm_str: str) -> Callable[[pd.DataFrame], float]:
-        assert algorithm_str in ['sharpe', 'sortino']
+    def _sharpe_ratio(self, returns: 'pd.Series') -> float:
+        """Computes the sharpe ratio for a given series of a returns.
 
-        if algorithm_str == 'sharpe':
-            return self._sharpe_ratio
-        elif algorithm_str == 'sortino':
-            return self._sortino_ratio
+        Parameters
+        ----------
+        returns : `pd.Series`
+            The returns for the `portfolio`.
 
-    def _sharpe_ratio(self, returns: pd.Series) -> float:
-        """Return the sharpe ratio for a given series of a returns.
+        Returns
+        -------
+        float
+            The sharpe ratio for the given series of a `returns`.
 
-        References:
+        References
+        ----------
             - https://en.wikipedia.org/wiki/Sharpe_ratio
         """
         return (np.mean(returns) - self._risk_free_rate + 1E-9) / (np.std(returns) + 1E-9)
 
-    def _sortino_ratio(self, returns: pd.Series) -> float:
-        """Return the sortino ratio for a given series of a returns.
+    def _sortino_ratio(self, returns: 'pd.Series') -> float:
+        """Computes the sortino ratio for a given series of a returns.
 
-        References:
+        Parameters
+        ----------
+        returns : `pd.Series`
+            The returns for the `portfolio`.
+
+        Returns
+        -------
+        float
+            The sortino ratio for the given series of a `returns`.
+
+        References
+        ----------
             - https://en.wikipedia.org/wiki/Sortino_ratio
         """
         downside_returns = returns.copy()
@@ -95,7 +149,18 @@ class RiskAdjustedReturns(TensorTradeRewardScheme):
         return (expected_return - self._risk_free_rate + 1E-9) / (downside_std + 1E-9)
 
     def get_reward(self, portfolio: 'Portfolio') -> float:
-        """Return the reward corresponding to the selected risk-adjusted return metric."""
+        """Computes the reward corresponding to the selected risk-adjusted return metric.
+
+        Parameters
+        ----------
+        portfolio : `Portfolio`
+            The current portfolio being used by the environment.
+
+        Returns
+        -------
+        float
+            The reward corresponding to the selected risk-adjusted return metric.
+        """
         returns = portfolio.performance['net_worth'][-(self._window_size + 1):].pct_change().dropna()
         risk_adjusted_return = self._return_algorithm(returns)
 
@@ -111,12 +176,22 @@ _registry = {
 def get(identifier: str) -> TensorTradeRewardScheme:
     """Gets the `RewardScheme` that matches with the identifier.
 
-    Arguments:
-        identifier: The identifier for the `RewardScheme`
+    Parameters
+    ----------
+    identifier : str
+        The identifier for the `RewardScheme`
 
-    Raises:
-        KeyError: if identifier is not associated with any `RewardScheme`
+    Returns
+    -------
+    `TensorTradeRewardScheme`
+        The reward scheme associated with the `identifier`.
+
+    Raises
+    ------
+    KeyError:
+        Raised if identifier is not associated with any `RewardScheme`
     """
     if identifier not in _registry.keys():
-        raise KeyError(f"Identifier {identifier} is not associated with any `RewardScheme`.")
+        msg = f"Identifier {identifier} is not associated with any `RewardScheme`."
+        raise KeyError(msg)
     return _registry[identifier]()

@@ -26,7 +26,7 @@ class CryptoDataDownload:
 
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.url = "https://www.cryptodatadownload.com/cdd/"
 
     def fetch_default(self,
@@ -34,7 +34,7 @@ class CryptoDataDownload:
                       base_symbol: str,
                       quote_symbol: str,
                       timeframe: str,
-                      include_all_volumes: bool = False):
+                      include_all_volumes: bool = False) -> pd.DataFrame:
         """Fetches data from all exchanges that match the evaluation structure.
 
         Parameters

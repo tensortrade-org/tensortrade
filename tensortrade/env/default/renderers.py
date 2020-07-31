@@ -17,16 +17,18 @@ import sys
 import logging
 import importlib
 
+from abc import abstractmethod
+from datetime import datetime
+from typing import Union, Tuple
+from collections import OrderedDict
+
+
 import numpy as np
 import pandas as pd
 
-from abc import abstractmethod
-from datetime import datetime
-from typing import Union
-from collections import OrderedDict
-
 from IPython.display import display, clear_output
 from pandas.plotting import register_matplotlib_converters
+
 
 from tensortrade.oms.orders import TradeSide
 from tensortrade.env.generic import Renderer, TradingEnv
@@ -46,7 +48,7 @@ if importlib.util.find_spec("plotly"):
     from plotly.subplots import make_subplots
 
 
-def create_auto_file_name(filename_prefix: str,
+def _create_auto_file_name(filename_prefix: str,
                           ext: str,
                           timestamp_format: str = '%Y%m%d_%H%M%S'):
     timestamp = datetime.now().strftime(timestamp_format)
@@ -54,7 +56,7 @@ def create_auto_file_name(filename_prefix: str,
     return filename
 
 
-def check_path(path, auto_create: bool = True):
+def _check_path(path, auto_create: bool = True):
     if not path or os.path.exists(path):
         return
 
@@ -65,6 +67,9 @@ def check_path(path, auto_create: bool = True):
 
 
 class BaseRenderer(Renderer):
+    """The abstract base renderer to be subclassed when making a renderer
+    the incorporates a `Portfolio`.
+    """
 
     def __init__(self):
         super().__init__()
@@ -77,6 +82,27 @@ class BaseRenderer(Renderer):
                           step: int = None,
                           max_steps: int = None,
                           date_format: str = "%Y-%m-%d %H:%M:%S %p") -> str:
+        """
+        Creates a log entry to be used by a renderer.
+
+        Parameters
+        ----------
+        episode : int
+            The current episode.
+        max_episodes : int
+            The maximum number of episodes that can occur.
+        step : int
+            The current step of the current episode.
+        max_steps : int
+            The maximum number of steps within an episode that can occur.
+        date_format : str
+            The format for logging the date.
+
+        Returns
+        -------
+        str
+            a log entry
+        """
         log_entry = f"[{datetime.now().strftime(date_format)}]"
 
         if episode is not None:
@@ -114,22 +140,60 @@ class BaseRenderer(Renderer):
                    net_worth: pd.Series = None,
                    performance: pd.DataFrame = None,
                    trades: 'OrderedDict' = None) -> None:
+        """Renderers the current state of the environment.
+
+        Parameters
+        ----------
+        episode : int
+            The episode that the environment is being rendered for.
+        max_episodes : int
+            The maximum number of episodes that will occur.
+        step : int
+            The step of the current episode that is happening.
+        max_steps : int
+            The maximum number of steps that will occur in an episode.
+        price_history : `pd.DataFrame`
+            The history of instrument involved with the environment. The
+            required columns are: date, open, high, low, close, and volume.
+        net_worth : `pd.Series`
+            The history of the net worth of the `portfolio`.
+        performance : `pd.Series`
+            The history of performance of the `portfolio`.
+        trades : `OrderedDict`
+            The history of trades for the current episode.
+        """
         raise NotImplementedError()
 
     def save(self) -> None:
+        """Saves the rendering of the `TradingEnv`.
+        """
         pass
 
     def reset(self) -> None:
+        """Resets the renderer.
+        """
         pass
 
 
 class EmptyRenderer(Renderer):
+    """A renderer that does renders nothing.
+
+    Needed to make sure that environment can function without requiring a
+    renderer.
+    """
 
     def render(self, env, **kwargs):
         pass
 
 
 class ScreenLogger(BaseRenderer):
+    """Logs information the screen of the user.
+
+    Parameters
+    ----------
+    date_format : str
+        The format for logging the date.
+    """
 
     DEFAULT_FORMAT = "[%(asctime)-15s] %(message)s"
 
@@ -150,26 +214,35 @@ class ScreenLogger(BaseRenderer):
 
 
 class FileLogger(BaseRenderer):
+    """Logs information to a file.
+
+    Parameters
+    ----------
+    filename : str
+        The file name of the log file. If omitted, a file name will be
+        created automatically.
+    path : str
+        The path to save the log files to. None to save to same script directory.
+    log_format : str
+        The log entry format as per Python logging. None for default. For
+        more details, refer to https://docs.python.org/3/library/logging.html
+    timestamp_format : str
+        The format of the timestamp of the log entry. Node for default.
+    """
 
     DEFAULT_LOG_FORMAT = '[%(asctime)-15s] %(message)s'
     DEFAULT_TIMESTAMP_FORMAT = '%Y-%m-%d %H:%M:%S'
 
-    def __init__(self, filename: str = None, path: str = 'log', log_format=None,
-                 timestamp_format: str = None):
-        """
-        Arguments:
-            filename: The file name of the log file. If omitted, a file name will be
-                created automatically.
-            path: The path to save the log files to. None to save to same script directory.
-            log_format: The log entry format as per Python logging. None for default. For
-                more details, refer to https://docs.python.org/3/library/logging.html
-            timestamp_format: The format of the timestamp of the log entry. Node for default.
-        """
+    def __init__(self,
+                 filename: str = None,
+                 path: str = 'log',
+                 log_format: str = None,
+                 timestamp_format: str = None) -> None:
         super().__init__()
-        check_path(path)
+        _check_path(path)
 
         if not filename:
-            filename = create_auto_file_name('log_', 'log')
+            filename = _create_auto_file_name('log_', 'log')
 
         self._logger = logging.getLogger(self.id)
         self._logger.setLevel(logging.INFO)
@@ -187,6 +260,8 @@ class FileLogger(BaseRenderer):
 
     @property
     def log_file(self) -> str:
+        """The filename information is being logged to. (str, read-only)
+        """
         return self._logger.handlers[0].baseFilename
 
     def render_env(self,
@@ -203,9 +278,16 @@ class FileLogger(BaseRenderer):
 
 
 class MatplotlibTradingChart:
-    """An OHLCV trading visualization using matplotlib made to renderers gym environments using matplotlib."""
+    """An OHLCV trading visualization using matplotlib made to renderers gym
+    environments using matplotlib.
 
-    VOLUME_CHART_HEIGHT = 0.33
+    Parameters
+    ----------
+    df : `pd.DataFrame`
+        The data to use for rendering the visualization.
+    """
+
+    VOLUME_CHART_HEIGHT: float = 0.33
 
     def __init__(self, df):
         super().__init__()
@@ -230,7 +312,12 @@ class MatplotlibTradingChart:
         # Show the graph without blocking the rest of the program
         plt.show(block=False)
 
-    def _render_net_worth(self, step_range, times, current_step, net_worths, benchmarks):
+    def _render_net_worth(self,
+                          step_range,
+                          times,
+                          current_step,
+                          net_worths,
+                          benchmarks):
         # Clear the frame rendered last step
         self.net_worth_ax.clear()
         # Plot net worths
@@ -316,11 +403,11 @@ class MatplotlibTradingChart:
                                        arrowprops=dict(arrowstyle='simple', facecolor=color))
 
     def render_env(self,
-                   current_step,
-                   net_worths,
+                   current_step: int,
+                   net_worths: pd.Series,
                    benchmarks,
-                   trades,
-                   window_size=50) -> None:
+                   trades: OrderedDict,
+                   window_size: int = 50) -> None:
 
         net_worth = round(net_worths[-1], 2)
         initial_net_worth = round(net_worths[0], 2)
@@ -346,53 +433,52 @@ class MatplotlibTradingChart:
         # Necessary to view frames before they are unrendered
         plt.pause(0.001)
 
-    def close(self):
+    def close(self) -> None:
         plt.close()
 
 
 class PlotlyTradingChart(BaseRenderer):
-    """
-    Trading visualization for TensorTrade using Plotly.
+    """Trading visualization for TensorTrade using Plotly.
 
-    Class Variables:
-    ================
-        display : bool
-            True to display the chart on the screen, False for not.
-        height : int
-            Chart height in pixels. Affects both display and saved file
-            charts. Set to None for 100% height. Default is None.
-        save_format : float
-            A format to save the chart to. Acceptable formats are
-            html, png, jpeg, webp, svg, pdf, eps. All the formats except for
-            'html' require Orca. Default is None for no saving.
-        path : str
-            The path to save the char to if save_format is not None. The folder
-            will be created if not found.
-        filename_prefix : str
-            A string that precedes automatically-created file name
-            when charts are saved. Default 'chart_'.
-        timestamp_format : str
-            The format of the date shown in the chart title.
-        auto_open_html : bool
-            Works for save_format='html' only. True to automatically
-            open the saved chart HTML file in the default browser, False otherwise.
-        include_plotlyjs : Union[bool, str]
-            Whether to include/load the plotly.js library in the saved
-            file. 'cdn' results in a smaller file by loading the library online but
-            requires an Internet connect while True includes the library resulting
-            in much larger file sizes. False to not include the library. For more
-            details, refer to https://plot.ly/python-api-reference/generated/plotly.graph_objects.Figure.html
+    Parameters
+    ----------
+    display : bool
+        True to display the chart on the screen, False for not.
+    height : int
+        Chart height in pixels. Affects both display and saved file
+        charts. Set to None for 100% height. Default is None.
+    save_format : float
+        A format to save the chart to. Acceptable formats are
+        html, png, jpeg, webp, svg, pdf, eps. All the formats except for
+        'html' require Orca. Default is None for no saving.
+    path : str
+        The path to save the char to if save_format is not None. The folder
+        will be created if not found.
+    filename_prefix : str
+        A string that precedes automatically-created file name
+        when charts are saved. Default 'chart_'.
+    timestamp_format : str
+        The format of the date shown in the chart title.
+    auto_open_html : bool
+        Works for save_format='html' only. True to automatically
+        open the saved chart HTML file in the default browser, False otherwise.
+    include_plotlyjs : Union[bool, str]
+        Whether to include/load the plotly.js library in the saved
+        file. 'cdn' results in a smaller file by loading the library online but
+        requires an Internet connect while True includes the library resulting
+        in much larger file sizes. False to not include the library. For more
+        details, refer to https://plot.ly/python-api-reference/generated/plotly.graph_objects.Figure.html
 
-    Notes:
-    ======
+    Notes
+    -----
     Possible Future Enhancements:
         - Saving images without using Orca.
         - Limit displayed step range for the case of a large number of steps and let
           the shown part of the chart slide after filling that range to keep showing
           recent data as it's being added.
 
-    References:
-    ===========
+    References
+    ----------
         - https://plot.ly/python-api-reference/generated/plotly.graph_objects.Figure.html
         - https://plot.ly/python/figurewidget/
         - https://plot.ly/python/subplots/
@@ -408,7 +494,7 @@ class PlotlyTradingChart(BaseRenderer):
                  path: str = 'charts',
                  filename_prefix: str = 'chart_',
                  auto_open_html: bool = False,
-                 include_plotlyjs: Union[bool, str] = 'cdn'):
+                 include_plotlyjs: Union[bool, str] = 'cdn') -> None:
         super().__init__()
         self._height = height
         self._timestamp_format = timestamp_format
@@ -430,7 +516,7 @@ class PlotlyTradingChart(BaseRenderer):
         self._last_trade_step = 0
         self._show_chart = True
 
-    def _create_figure(self, performance_keys):
+    def _create_figure(self, performance_keys: dict):
         fig = make_subplots(
             rows=4, cols=1, shared_xaxes=True, vertical_spacing=0.03,
             row_heights=[0.55, 0.15, 0.15, 0.15],
@@ -467,8 +553,23 @@ class PlotlyTradingChart(BaseRenderer):
         self.fig.update_layout(template='plotly_white', height=self._height, margin=dict(t=50))
         self._base_annotations = self.fig.layout.annotations
 
-    def _create_trade_annotations(self, trades: OrderedDict, price_history: pd.DataFrame):
-        """Creates annotations of the new trades after the last one in the chart."""
+    def _create_trade_annotations(self,
+                                  trades: OrderedDict,
+                                  price_history: pd.DataFrame) -> 'Tuple[go.layout.Annotation]':
+        """Creates annotations of the new trades after the last one in the chart.
+
+        Parameters
+        ----------
+        trades : OrderedDict
+            The history of trades for the current episode.
+        price_history : `pd.DataFrame`
+            The price history of the current episode.
+
+        Returns
+        -------
+        Tuple[go.layout.Annotation]
+            A tuple of annotations used in the renderering process.
+        """
         annotations = []
         for trade in reversed(trades.values()):
             trade = trade[0]
@@ -578,30 +679,13 @@ class PlotlyTradingChart(BaseRenderer):
 
         self._net_worth_chart.update({'y': net_worth})
 
-    def reset(self):
-        self._last_trade_step = 0
-        if self.fig is None:
-            return
 
-        self.fig.layout.annotations = self._base_annotations
-        clear_output(wait=True)
-        self._show_chart = True
-
-    def save(self):
+    def save(self) -> None:
         """Saves the current chart to a file.
 
-        Parameters:
-        ===========
-            filename : str
-                primary part of the image file name (e.g. "mountain" in "mountain.png".
-            path : str
-                The path to save the chart to.
-            format : str
-                The chart format to save.
-
-        Note:
-        =====
-            All formats other than HTML require Orca installed and server running.
+        Notes
+        -----
+        All formats other than HTML require Orca installed and server running.
         """
         if not self._save_format:
             return
@@ -610,14 +694,24 @@ class PlotlyTradingChart(BaseRenderer):
             if self._save_format not in valid_formats:
                 raise ValueError("Acceptable formats are '{}'. Found '{}'".format("', '".join(valid_formats), self._save_format))
 
-        check_path(self._path)
+        _check_path(self._path)
 
-        filename = create_auto_file_name(self._filename_prefix, self._save_format)
+        filename = _create_auto_file_name(self._filename_prefix, self._save_format)
         filename = os.path.join(self._path, filename)
         if self._save_format == 'html':
             self.fig.write_html(file=filename, include_plotlyjs='cdn', auto_open=self._auto_open_html)
         else:
             self.fig.write_image(filename)
+
+
+    def reset(self) -> None:
+        self._last_trade_step = 0
+        if self.fig is None:
+            return
+
+        self.fig.layout.annotations = self._base_annotations
+        clear_output(wait=True)
+        self._show_chart = True
 
 
 _registry = {
@@ -631,13 +725,22 @@ _registry = {
 def get(identifier: str) -> BaseRenderer:
     """Gets the `BaseRenderer` that matches the identifier.
 
-    Arguments:
-        identifier: The identifier for the `RewardScheme`
+    Parameters
+    ----------
+    identifier : str
+        The identifier for the `BaseRenderer`
 
-    Raises:
-        KeyError: if identifier is not associated with any `RewardScheme`
+    Returns
+    -------
+    `BaseRenderer`
+        The renderer associated with the `identifier`.
+
+    Raises
+    ------
+    KeyError:
+        Raised if identifier is not associated with any `BaseRenderer`
     """
     if identifier not in _registry.keys():
-        raise KeyError(
-            'Identifier {} is not associated with any `BaseRenderer`.'.format(identifier))
+        msg = f"Identifier {identifier} is not associated with any `BaseRenderer`."
+        raise KeyError(msg)
     return _registry[identifier]()
