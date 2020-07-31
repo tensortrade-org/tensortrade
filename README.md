@@ -24,7 +24,7 @@ Every piece of the framework is split up into re-usable components, allowing you
 
 _The goal of this framework is to enable fast experimentation, while maintaining production-quality data pipelines._
 
-Read [the documentation](http://tensortrade.org) or walk through [the tutorial](https://towardsdatascience.com/trade-smarter-w-reinforcement-learning-a5e91163f315?source=friends_link&sk=ea3afd0a305141eb9147be4718826dfb).
+Read [the documentation](https://www.tensortrade.org/en/latest/index.html) or walk through [the tutorial](https://towardsdatascience.com/trade-smarter-w-reinforcement-learning-a5e91163f315?source=friends_link&sk=ea3afd0a305141eb9147be4718826dfb).
 
 ## Guiding principles
 
