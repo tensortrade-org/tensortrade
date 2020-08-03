@@ -1,3 +1,6 @@
+"""
+warmup.py contains classes for warm up stream operations.
+"""
 
 import numpy as np
 
@@ -5,8 +8,15 @@ from tensortrade.feed.core.base import Stream, T
 
 
 class WarmUp(Stream[T]):
+    """A stream operator for warming up a given stream.
 
-    def __init__(self, periods: int):
+    Parameters
+    ----------
+    periods : int
+        Number of periods to warm up.
+    """
+
+    def __init__(self, periods: int) -> None:
         super().__init__()
         self.count = 0
         self.periods = periods
@@ -27,4 +37,18 @@ class WarmUp(Stream[T]):
 
 @Stream.register_generic_method(["warmup"])
 def warmup(s: "Stream[T]", periods: int) -> "Stream[T]":
+    """Creates a warmup stream.
+
+    Parameters
+    ----------
+    s : `Stream[T]`
+        A generic stream.
+    periods : int
+        Number of periods to warm up.
+
+    Returns
+    -------
+    `Stream[T]`
+        The warmup stream of `s`.
+    """
     return WarmUp(periods=periods)(s)

@@ -1,15 +1,44 @@
+"""
+ewm.py contains functions and classes for exponential weighted moving stream
+operations.
+"""
+
+from typing import List, Tuple
 
 import numpy as np
-
-from typing import List
 
 from tensortrade.feed.core.base import Stream
 from tensortrade.feed.api.float import Float
 
 
 class ExponentialWeightedMovingAverage(Stream[float]):
+    """A stream operator that computes an exponential weighted moving average
+    on a given float stream.
 
-    def __init__(self, alpha, adjust, ignore_na, min_periods):
+    Parameters
+    ----------
+    alpha : float
+        The smoothing factor :math:`\alpha` directly,
+        :math:`0 < \alpha \leq 1`.
+    adjust : bool
+        Divide by decaying adjustment factor in beginning periods to account
+        for imbalance in relative weightings (viewing EWMA as a moving average).
+    ignore_na : bool
+        Ignore missing values when calculating weights.
+    min_periods : int
+        Minimum number of observations in window required to have a value
+        (otherwise result is NA).
+
+    References
+    ----------
+    [1] https://github.com/pandas-dev/pandas/blob/d9fff2792bf16178d4e450fe7384244e50635733/pandas/_libs/window/aggregations.pyx#L1801
+    """
+
+    def __init__(self,
+                 alpha: float,
+                 adjust: bool,
+                 ignore_na: bool,
+                 min_periods: int) -> None:
         super().__init__()
         self.alpha = alpha
         self.adjust = adjust
@@ -60,7 +89,7 @@ class ExponentialWeightedMovingAverage(Stream[float]):
     def has_next(self) -> bool:
         return True
 
-    def reset(self):
+    def reset(self) -> None:
         self.i = 0
         self.n = 0
 
@@ -69,8 +98,32 @@ class ExponentialWeightedMovingAverage(Stream[float]):
 
 
 class ExponentialWeightedMovingCovariance(Stream[float]):
+    """A stream operator that computes an exponential weighted moving average
+    on a given float stream.
 
-    def __init__(self, alpha, adjust, ignore_na, min_periods, bias):
+    Parameters
+    ----------
+    alpha : float
+        The smoothing factor :math:`\alpha` directly,
+        :math:`0 < \alpha \leq 1`.
+    adjust : bool
+        Divide by decaying adjustment factor in beginning periods to account
+        for imbalance in relative weightings (viewing EWMA as a moving average).
+    ignore_na : bool
+        Ignore missing values when calculating weights.
+    min_periods : int
+        Minimum number of observations in window required to have a value
+        (otherwise result is NA).
+    bias : bool
+        Use a standard estimation bias correction
+    """
+
+    def __init__(self,
+                 alpha: float,
+                 adjust: bool,
+                 ignore_na: bool,
+                 min_periods: int,
+                 bias: bool) -> None:
         super().__init__()
         self.alpha = alpha
         self.adjust = adjust
@@ -171,7 +224,7 @@ class ExponentialWeightedMovingCovariance(Stream[float]):
     def has_next(self) -> bool:
         return True
 
-    def reset(self):
+    def reset(self) -> None:
         self.avg = None
         self.new_wt = 1 if self.adjust else self.alpha
         self.old_wt = 1
@@ -186,16 +239,74 @@ class ExponentialWeightedMovingCovariance(Stream[float]):
 
 
 class EWM(Stream[List[float]]):
+    """Provide exponential weighted (EW) functions.
+
+    Available EW functions: ``mean()``, ``var()``, ``std()``, ``corr()``, ``cov()``.
+
+    Exactly one parameter: ``com``, ``span``, ``halflife``, or ``alpha`` must be
+    provided.
+
+    Parameters
+    ----------
+    com : float, optional
+        Specify decay in terms of center of mass,
+        :math:`\alpha = 1 / (1 + com)`, for :math:`com \geq 0`.
+    span : float, optional
+        Specify decay in terms of span,
+        :math:`\alpha = 2 / (span + 1)`, for :math:`span \geq 1`.
+    halflife : float, str, timedelta, optional
+        Specify decay in terms of half-life,
+        :math:`\alpha = 1 - \exp\left(-\ln(2) / halflife\right)`, for
+        :math:`halflife > 0`.
+        If ``times`` is specified, the time unit (str or timedelta) over which an
+        observation decays to half its value. Only applicable to ``mean()``
+        and halflife value will not apply to the other functions.
+        .. versionadded:: 1.1.0
+    alpha : float, optional
+        Specify smoothing factor :math:`\alpha` directly,
+        :math:`0 < \alpha \leq 1`.
+    min_periods : int, default 0
+        Minimum number of observations in window required to have a value
+        (otherwise result is NA).
+    adjust : bool, default True
+        Divide by decaying adjustment factor in beginning periods to account
+        for imbalance in relative weightings (viewing EWMA as a moving average).
+        - When ``adjust=True`` (default), the EW function is calculated using weights
+          :math:`w_i = (1 - \alpha)^i`. For example, the EW moving average of the series
+          [:math:`x_0, x_1, ..., x_t`] would be:
+        .. math::
+            y_t = \frac{x_t + (1 - \alpha)x_{t-1} + (1 - \alpha)^2 x_{t-2} + ... + (1 -
+            \alpha)^t x_0}{1 + (1 - \alpha) + (1 - \alpha)^2 + ... + (1 - \alpha)^t}
+        - When ``adjust=False``, the exponentially weighted function is calculated
+          recursively:
+        .. math::
+            \begin{split}
+                y_0 &= x_0\\
+                y_t &= (1 - \alpha) y_{t-1} + \alpha x_t,
+            \end{split}
+    ignore_na : bool, default False
+        Ignore missing values when calculating weights.
+        - When ``ignore_na=False`` (default), weights are based on absolute positions.
+        - When ``ignore_na=True``, weights are based on relative positions.
+
+    See Also
+    --------
+    [1] https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.ewm.html
+
+    References
+    ----------
+    [1] https://github.com/pandas-dev/pandas/blob/d9fff2792bf16178d4e450fe7384244e50635733/pandas/core/window/ewm.py#L65
+    """
 
     def __init__(
             self,
-            com=None,
-            span=None,
-            halflife=None,
-            alpha=None,
-            min_periods=0,
-            adjust=True,
-            ignore_na=False):
+            com: float = None,
+            span: float = None,
+            halflife: float = None,
+            alpha: float = None,
+            min_periods: int = 0,
+            adjust: bool = True,
+            ignore_na: bool = False):
         super().__init__()
         self.com = com
         self.span = span
@@ -221,7 +332,7 @@ class EWM(Stream[List[float]]):
         self.history = []
         self.weights = []
 
-    def forward(self):
+    def forward(self) -> "Tuple[List[float], List[float]]":
         value = self.inputs[0].value
         if self.ignore_na:
             if not np.isnan(value):
@@ -245,6 +356,14 @@ class EWM(Stream[List[float]]):
         return True
 
     def mean(self) -> "Stream[float]":
+        """Computes the exponential weighted moving average.
+
+        Returns
+        -------
+        `Stream[float]`
+            The exponential weighted moving average stream based on the
+            underlying stream of values.
+        """
         return ExponentialWeightedMovingAverage(
             alpha=self.alpha,
             min_periods=self.min_periods,
@@ -253,6 +372,14 @@ class EWM(Stream[List[float]]):
         )(self.inputs[0]).astype("float")
 
     def var(self, bias=False) -> "Stream[float]":
+        """Computes the exponential weighted moving variance.
+
+        Returns
+        -------
+        `Stream[float]`
+            The exponential weighted moving variance stream based on the
+            underlying stream of values.
+        """
         return ExponentialWeightedMovingCovariance(
             alpha=self.alpha,
             adjust=self.adjust,
@@ -262,18 +389,61 @@ class EWM(Stream[List[float]]):
         )(self.inputs[0], self.inputs[0]).astype("float")
 
     def std(self, bias=False) -> "Stream[float]":
+        """Computes the exponential weighted moving standard deviation.
+
+        Returns
+        -------
+        `Stream[float]`
+            The exponential weighted moving standard deviation stream based on
+            the underlying stream of values.
+        """
         return self.var(bias).sqrt()
 
 
 @Float.register(["ewm"])
 def ewm(s: "Stream[float]",
-        com=None,
-        span=None,
-        halflife=None,
-        alpha=None,
-        min_periods=0,
-        adjust=True,
-        ignore_na=False) -> "Stream[List[float]]":
+        com: float = None,
+        span: float = None,
+        halflife: float = None,
+        alpha: float = None,
+        min_periods: int = 0,
+        adjust: bool = True,
+        ignore_na: bool = False) -> "Stream[Tuple[List[float], List[float]]]":
+    """Computes the weights and values in order to perform an exponential
+    weighted moving operation.
+
+    Parameters
+    ----------
+    s : `Stream[float]`
+        A float stream.
+    com : float, optional
+        Specify decay in terms of center of mass,
+        :math:`\alpha = 1 / (1 + com)`, for :math:`com \geq 0`.
+    span : float, optional
+        Specify decay in terms of span,
+        :math:`\alpha = 2 / (span + 1)`, for :math:`span \geq 1`.
+    halflife : float, optional
+        Specify decay in terms of half-life,
+        :math:`\alpha = 1 - \exp\left(-\ln(2) / halflife\right)`, for
+        :math:`halflife > 0`.
+    alpha : float, optional
+        Specify smoothing factor :math:`\alpha` directly,
+        :math:`0 < \alpha \leq 1`.
+    min_periods : int, default 0
+        Minimum number of observations in window required to have a value
+        (otherwise result is NA).
+    adjust : bool, default True
+        Divide by decaying adjustment factor in beginning periods to account
+        for imbalance in relative weightings (viewing EWMA as a moving average).
+    ignore_na : bool, default False
+        Ignore missing values when calculating weights.
+
+    Returns
+    -------
+    `Stream[Tuple[List[float], List[float]]]`
+        A stream of weights and values to be used for computation of exponential
+        weighted moving operations.
+    """
     return EWM(
         com=com,
         span=span,

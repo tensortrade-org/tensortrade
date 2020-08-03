@@ -1,4 +1,5 @@
 
+from typing import List
 
 from tensortrade.feed.core import Stream
 from tensortrade.feed.core.methods import Methods
@@ -16,9 +17,23 @@ class FloatMixin(DataTypeMixin):
 
 
 class Float:
+    """A class to register accessor and instance methods."""
 
     @classmethod
-    def register(cls, names):
+    def register(cls, names: List[str]):
+        """A function decorator that adds accessor and instance methods for
+        specified data type.
+
+        Parameters
+        ----------
+        names : `List[str]`
+            A list of names used to register the function as a method.
+
+        Returns
+        -------
+        Callable
+            A decorated function.
+        """
         def wrapper(func):
             FloatMethods.register_method(func, names)
             FloatMixin.register_method(func, names)
