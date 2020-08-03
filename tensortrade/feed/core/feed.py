@@ -1,11 +1,20 @@
 
 
+from typing import List
+
 from tensortrade.feed.core.base import Stream, T
 
 
 class DataFeed(Stream[T]):
+    """A stream the compiles together streams to be run in an organized manner.
 
-    def __init__(self, streams=None):
+    Parameters
+    ----------
+    streams : `List[Stream]`
+        A list of streams to be used in the data feed.
+    """
+
+    def __init__(self, streams: "List[Stream]") -> None:
         super().__init__()
 
         self.process = None
@@ -14,31 +23,36 @@ class DataFeed(Stream[T]):
         if streams:
             self.__call__(*streams)
 
-    def compile(self):
+    def compile(self) -> None:
+        """Compiles all the given stream together.
+
+        Organizes the order in which streams should be run to get valid output.
+        """
         edges = self.gather()
 
         self.process = self.toposort(edges)
         self.compiled = True
         self.reset()
 
-    def run(self):
+    def run(self) -> None:
+        """Runs all the streams in processing order."""
         if not self.compiled:
             self.compile()
 
-        for node in self.process:
-            node.run()
+        for s in self.process:
+            s.run()
 
         super().run()
 
-    def forward(self):
-        return {node.name: node.value for node in self.inputs}
+    def forward(self) -> dict:
+        return {s.name: s.value for s in self.inputs}
 
-    def next(self):
+    def next(self) -> dict:
         self.run()
         return self.value
 
     def has_next(self) -> bool:
-        return all(node.has_next() for node in self.process)
+        return all(s.has_next() for s in self.process)
 
     def reset(self) -> None:
         for s in self.process:

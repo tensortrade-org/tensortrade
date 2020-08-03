@@ -3,14 +3,19 @@
 class CachedAccessor:
     """
     Custom property-like object.
+
     A descriptor for caching accessors.
 
-    Parameters:
-    ==========
-        name : str
-            Namespace that will be accessed under.
-        accessor : cls
-            Class with the extension methods.
+    Parameters
+    ----------
+    name : str
+        Namespace that will be accessed under, e.g. ``df.foo``.
+    accessor : cls
+        Class with the extension methods.
+
+    References
+    ----------
+        - https://github.com/pandas-dev/pandas/blob/v1.1.0/pandas/core/accessor.py#L285-L289
     """
 
     def __init__(self, name: str, accessor) -> None:
