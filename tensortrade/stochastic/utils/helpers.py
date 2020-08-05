@@ -13,16 +13,38 @@
 # limitations under the License
 
 import re
+
+from typing import Callable
+
 import numpy as np
 import pandas as pd
 
-from typing import Callable
 from stochastic.noise import GaussianNoise
 
-from .parameters import ModelParameters, default
+from tensortrade.stochastic.utils.parameters import ModelParameters, default
 
 
-def scale_times_to_generate(times_to_generate: int, time_frame: str):
+def scale_times_to_generate(times_to_generate: int, time_frame: str) -> int:
+    """Adjusts the number of times to generate the prices based on a time frame.
+
+    Parameters
+    ----------
+    times_to_generate : int
+        The number of time to generate prices.
+    time_frame : str
+        The time frame for generating.
+        (e.g. 1h, 1min, 1w, 1d)
+
+    Returns
+    -------
+    int
+        The adjusted number of times to generate.
+
+    Raises
+    ------
+    ValueError
+        Raised if the `time_frame` provided does not match the correct format.
+    """
 
     if 'MIN' in time_frame.upper():
         times_to_generate *= int(re.findall(r'\d+', time_frame)[0])
@@ -40,7 +62,20 @@ def scale_times_to_generate(times_to_generate: int, time_frame: str):
     return times_to_generate
 
 
-def get_delta(time_frame):
+def get_delta(time_frame: str) -> float:
+    """Gets the time delta for a given time frame.
+
+    Parameters
+    ----------
+    time_frame : str
+        The time frame for generating.
+        (e.g. 1h, 1min, 1w, 1d)
+
+    Returns
+    -------
+    float
+        The time delta for the given time frame.
+    """
     if 'MIN' in time_frame.upper():
         return 1 / (252 * 24 * (60 / int(time_frame.split('MIN')[0])))
     elif 'H' in time_frame.upper():
@@ -51,40 +86,66 @@ def get_delta(time_frame):
         return 1 / 12
 
 
-def convert_to_returns(log_returns):
-    """
-    This method exponentiates a sequence of log returns to get daily returns.
-    :param log_returns: the log returns to exponentiated
-    :return: the exponentiated returns
-    """
-    return np.exp(log_returns)
+def convert_to_prices(param: 'ModelParameters', log_returns: 'np.array') -> 'np.array':
+    """Converts a sequence of log returns into normal returns (exponentiation)
+    and then computes a price sequence given a starting price, param.all_s0.
 
+    Parameters
+    ----------
+    param: `ModelParameters`
+        The model parameters.
+    log_returns : `np.array`
+        The log returns.
 
-def convert_to_prices(param, log_returns):
+    Returns
+    -------
+    `np.array`
+        The price sequence.
     """
-    This method converts a sequence of log returns into normal returns (exponentiation) and then computes a price
-    sequence given a starting price, param.all_s0.
-    :param param: the model parameters object
-    :param log_returns: the log returns to exponentiated
-    :return:
-    """
-    returns = convert_to_returns(log_returns)
+    returns = np.exp(log_returns)
     # A sequence of prices starting with param.all_s0
     price_sequence = [param.all_s0]
     for i in range(1, len(returns)):
         # Add the price at t-1 * return at t
-        price_sequence.append(price_sequence[i - 1] * returns[i - 1])
+        price_sequence += [price_sequence[i - 1] * returns[i - 1]]
+
     return np.array(price_sequence)
 
 
-def generate(price_fn: Callable[[ModelParameters], np.array],
+def generate(price_fn: 'Callable[[ModelParameters], np.array]',
              base_price: int = 1,
              base_volume: int = 1,
              start_date: str = '2010-01-01',
              start_date_format: str = '%Y-%m-%d',
              times_to_generate: int = 1000,
              time_frame: str = '1h',
-             params: ModelParameters = None):
+             params: ModelParameters = None) -> 'pd.DataFrame':
+    """Generates a data frame of OHLCV data based on the price model specified.
+
+    Parameters
+    ----------
+    price_fn : `Callable[[ModelParameters], np.array]`
+        The price function generate the prices based on the chosen model.
+    base_price : int, default 1
+        The base price to use for price generation.
+    base_volume : int, default 1
+        The base volume to use for volume generation.
+    start_date : str, default '2010-01-01'
+        The start date of the generated data
+    start_date_format : str, default '%Y-%m-%d'
+        The format for the start date of the generated data.
+    times_to_generate : int, default 1000
+        The number of bars to make.
+    time_frame : str, default '1h'
+        The time frame.
+    params : `ModelParameters`, optional
+        The model parameters.
+
+    Returns
+    -------
+    `pd.DataFrame`
+        The data frame containing the OHLCV bars.
+    """
 
     delta = get_delta(time_frame)
     times_to_generate = scale_times_to_generate(times_to_generate, time_frame)
