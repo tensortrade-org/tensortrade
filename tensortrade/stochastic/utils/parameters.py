@@ -24,7 +24,7 @@ class ModelParameters:
         The initial asset value.
     all_time : int
         The amount of time to simulate for.
-    all_delta : int
+    all_delta : float
         The rate of time.
         (e.g. 1/252 = daily, 1/12 = monthly)
     all_sigma : float
@@ -60,7 +60,7 @@ class ModelParameters:
     def __init__(self,
                  all_s0: float,
                  all_time: int,
-                 all_delta: int,
+                 all_delta: float,
                  all_sigma: float,
                  gbm_mu: float,
                  jumps_lambda: float = 0.0,
@@ -94,7 +94,7 @@ class ModelParameters:
         self.heston_vol0 = heston_vol0
 
 
-def default(base_price: float, t_gen: int, delta: int) -> 'ModelParameters':
+def default(base_price: float, t_gen: int, delta: float) -> 'ModelParameters':
     """Creates a basic model parameter set with key parameters specified default
     parameters.
 
@@ -104,7 +104,7 @@ def default(base_price: float, t_gen: int, delta: int) -> 'ModelParameters':
         The base price to use for price generation.
     t_gen : int
         The number of bars to generate.
-    delta : int
+    delta : float
         The time delta to use.
 
     Returns
@@ -133,7 +133,7 @@ def default(base_price: float, t_gen: int, delta: int) -> 'ModelParameters':
     )
 
 
-def random(base_price, t_gen, delta) -> 'ModelParameters':
+def random(base_price: float, t_gen: int, delta: float) -> 'ModelParameters':
     """Creates a random model parameter set with key parameters specified
     default parameters.
 

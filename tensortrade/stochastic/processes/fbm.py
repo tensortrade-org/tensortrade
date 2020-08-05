@@ -26,7 +26,35 @@ def fbm(base_price: int = 1,
         start_date_format: str = '%Y-%m-%d',
         times_to_generate: int = 1000,
         hurst: float = 0.61,
-        time_frame: str = '1h'):
+        time_frame: str = '1h') -> 'pd.DataFrame':
+    """Generates price data from the FBM process.
+
+    Parameters
+    ----------
+    base_price : int, default 1
+        The base price to use for price generation.
+    base_volume : int, default 1
+        The base volume to use for volume generation.
+    start_date : str, default '2010-01-01'
+        The start date of the generated data
+    start_date_format : str, default '%Y-%m-%d'
+        The format for the start date of the generated data.
+    times_to_generate : int, default 1000
+        The number of bars to make.
+    hurst : float, default 0.61
+        The hurst parameter for the FBM process.
+    time_frame : str, default '1h'
+        The time frame.
+
+    Returns
+    -------
+    `pd.DataFrame`
+        The generated data frame containing the OHLCV bars.
+
+    References
+    ----------
+    [1] https://en.wikipedia.org/wiki/Fractional_Brownian_motion
+    """
 
     times_to_generate = scale_times_to_generate(times_to_generate, time_frame)
 

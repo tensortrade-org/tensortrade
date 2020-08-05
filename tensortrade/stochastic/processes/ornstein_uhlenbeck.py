@@ -22,15 +22,18 @@ from tensortrade.stochastic.utils.helpers import get_delta, scale_times_to_gener
 from tensortrade.stochastic.utils.parameters import ModelParameters, default
 
 
-def ornstein_uhlenbeck_levels(params):
-    """
-    Constructs the rate levels of a mean-reverting ornstein uhlenbeck process.
+def ornstein_uhlenbeck_levels(params: 'ModelParameters') -> 'np.array':
+    """Constructs the rate levels of a mean-reverting Ornstein-Uhlenbeck
+    process.
 
-    Arguments:
-        params : ModelParameters
-            The parameters for the stochastic model.
+    Parameters
+    ----------
+    params : ModelParameters
+        The parameters for the stochastic model.
 
-    Returns:
+    Returns
+    -------
+    `np.array`
         The interest rate levels for the Ornstein Uhlenbeck process
     """
     ou_levels = [params.all_r0]
@@ -48,7 +51,35 @@ def ornstein(base_price: int = 1,
              start_date_format: str = '%Y-%m-%d',
              times_to_generate: int = 1000,
              time_frame: str = '1h',
-             params: ModelParameters = None):
+             params: 'ModelParameters' = None) -> 'pd.DataFrame':
+    """Generates price data from the OU process.
+
+    Parameters
+    ----------
+    base_price : int, default 1
+        The base price to use for price generation.
+    base_volume : int, default 1
+        The base volume to use for volume generation.
+    start_date : str, default '2010-01-01'
+        The start date of the generated data
+    start_date_format : str, default '%Y-%m-%d'
+        The format for the start date of the generated data.
+    times_to_generate : int, default 1000
+        The number of bars to make.
+    time_frame : str, default '1h'
+        The time frame.
+    params : `ModelParameters`, optional
+        The model parameters.
+
+    Returns
+    -------
+    `pd.DataFrame`
+        The generated data frame containing the OHLCV bars.
+
+    References
+    ----------
+    [1] https://en.wikipedia.org/wiki/Ornstein%E2%80%93Uhlenbeck_process
+    """
 
     delta = get_delta(time_frame)
     times_to_generate = scale_times_to_generate(times_to_generate, time_frame)
