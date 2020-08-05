@@ -95,10 +95,10 @@ def test_is_executable_on(mock_exchange_class):
                   price=Decimal(7000.00))
 
     exchange.quote_price = mock.Mock(return_value=Decimal(6800.00))
-    assert order.is_executable()
+    assert order.is_executable
 
     exchange.quote_price = mock.Mock(return_value=Decimal(7200.00))
-    assert order.is_executable()
+    assert order.is_executable
 
     # Limit order
     wallets = [Wallet(exchange, 10000 * USD), Wallet(exchange, 0 * BTC)]
@@ -112,10 +112,10 @@ def test_is_executable_on(mock_exchange_class):
                   price=Decimal(7000.00))
 
     exchange.quote_price = mock.Mock(return_value=Decimal(6800.00))
-    assert order.is_executable()
+    assert order.is_executable
 
     exchange.quote_price = mock.Mock(return_value=Decimal(7200.00))
-    assert order.is_executable()
+    assert order.is_executable
 
     # Stop Order
     wallets = [Wallet(exchange, 0 * USD), Wallet(exchange, 2 * BTC)]
@@ -130,10 +130,10 @@ def test_is_executable_on(mock_exchange_class):
                   criteria=Stop("down", 0.03))
 
     exchange.quote_price = mock.Mock(return_value=Decimal(1 - 0.031) * order.price)
-    assert order.is_executable()
+    assert order.is_executable
 
     exchange.quote_price = mock.Mock(return_value=Decimal(1 - 0.02) * order.price)
-    assert not order.is_executable()
+    assert not order.is_executable
 
 
 @mock.patch("tensortrade.exchanges.Exchange")
@@ -158,10 +158,10 @@ def test_is_complete(mock_exchange_class):
                   portfolio=portfolio,
                   price=Decimal(7000.00))
 
-    assert not order.is_complete()
+    assert not order.is_complete
 
     order.remaining = 0 * USD
-    assert order.is_complete()
+    assert order.is_complete
 
 
 @mock.patch("tensortrade.exchanges.Exchange")
@@ -220,10 +220,10 @@ def test_attach(mock_exchange_class, mock_order_listener_class):
 
     listener = mock_order_listener_class.return_value
 
-    assert len(order._listeners) == 0
+    assert len(order.listeners) == 0
     order.attach(listener)
-    assert len(order._listeners) == 1
-    assert listener in order._listeners
+    assert len(order.listeners) == 1
+    assert listener in order.listeners
 
 
 @mock.patch("tensortrade.orders.OrderListener")
@@ -250,12 +250,12 @@ def test_detach(mock_exchange_class, mock_order_listener_class):
 
     listener = mock_order_listener_class.return_value
     order.attach(listener)
-    assert len(order._listeners) == 1
-    assert listener in order._listeners
+    assert len(order.listeners) == 1
+    assert listener in order.listeners
 
     order.detach(listener)
-    assert len(order._listeners) == 0
-    assert listener not in order._listeners
+    assert len(order.listeners) == 0
+    assert listener not in order.listeners
 
 
 @mock.patch('tensortrade.exchanges.Exchange')
@@ -423,7 +423,7 @@ def test_complete_complex_order(mock_trade_class,
                                 exchange_pair=ExchangePair(exchange, USD / BTC),
                                 criteria=risk_criteria)
 
-    order += risk_management
+    order.add_order_spec(risk_management)
 
     order.execute()
 
@@ -652,7 +652,7 @@ def test_iadd(mock_exchange_class, mock_order_spec_class):
     order_spec = mock_order_spec_class.return_value
 
     assert len(order._specs) == 0
-    order += order_spec
+    order.add_order_spec(order_spec)
     assert len(order._specs) == 1
 
     assert order_spec in order._specs

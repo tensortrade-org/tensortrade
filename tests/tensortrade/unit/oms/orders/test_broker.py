@@ -149,7 +149,7 @@ def test_on_fill(mock_trade_class,
 
     order.execute()
 
-    broker._executed[order.id] = order
+    broker.executed[order.id] = order
 
     trade = mock_trade_class.return_value
     trade.quantity = 5197.00 * USD
@@ -199,12 +199,12 @@ def test_on_fill_with_complex_order(mock_trade_class,
                                 exchange_pair=ExchangePair(exchange, USD / BTC),
                                 criteria=risk_criteria)
 
-    order += risk_management
+    order.add_order_spec(risk_management)
 
     order.attach(broker)
     order.execute()
 
-    broker._executed[order.id] = order
+    broker.executed[order.id] = order
 
     # Execute fake trade
     price = Decimal(7000.00)

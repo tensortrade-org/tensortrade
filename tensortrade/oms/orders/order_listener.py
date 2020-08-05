@@ -1,4 +1,4 @@
-# Copyright 2019 The TensorTrade Authors.
+# Copyright 2020 The TensorTrade Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,15 +17,46 @@ from abc import ABCMeta
 
 
 class OrderListener(object, metaclass=ABCMeta):
+    """A callback class for an order."""
 
-    def on_execute(self, order: 'Order'):
+    def on_execute(self, order: 'Order') -> None:
+        """Callback for an order after execution.
+
+        Parameters
+        ----------
+        order : `Order`
+            The executed order.
+        """
         pass
 
-    def on_cancel(self, order: 'Order'):
+    def on_cancel(self, order: 'Order') -> None:
+        """Callback for an order after cancellation.
+
+        Parameters
+        ----------
+        order : `Order`
+            The cancelled order.
+        """
         pass
 
-    def on_fill(self, order: 'Order', trade: 'Trade'):
+    def on_fill(self, order: 'Order', trade: 'Trade') -> None:
+        """Callback for an order after being filled.
+
+        Parameters
+        ----------
+        order : `Order`
+            The order being filled.
+        trade : `Trade`
+            The trade that is filling the order.
+        """
         pass
 
-    def on_complete(self, order: 'Order'):
+    def on_complete(self, order: 'Order') -> None:
+        """Callback for an order after being completed.
+
+        Parameters
+        ----------
+        order : `Order`
+            The completed order.
+        """
         pass

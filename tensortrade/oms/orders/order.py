@@ -19,25 +19,28 @@ from enum import Enum
 from typing import Callable
 from decimal import Decimal
 
-from tensortrade.core import TimedIdentifiable
+from tensortrade.core import TimedIdentifiable, Observable
 from tensortrade.core.exceptions import InvalidOrderQuantity
 from tensortrade.oms.instruments import Quantity, ExchangePair
 from tensortrade.oms.orders import Trade, TradeSide, TradeType
 
 
 class OrderStatus(Enum):
-    PENDING = 'pending'
-    OPEN = 'open'
-    CANCELLED = 'cancelled'
-    PARTIALLY_FILLED = 'partially_filled'
-    FILLED = 'filled'
+    """An enumeration for the status of an order."""
+
+    PENDING = "pending"
+    OPEN = "open"
+    CANCELLED = "cancelled"
+    PARTIALLY_FILLED = "partially_filled"
+    FILLED = "filled"
 
     def __str__(self):
         return self.value
 
 
-class Order(TimedIdentifiable):
-    """
+class Order(TimedIdentifiable, Observable):
+    """A class to represent ordering an amount of a financial instrument.
+
     Responsibilities of the Order:
         1. Confirming its own validity.
         2. Tracking its trades and reporting it back to the broker.
@@ -45,6 +48,36 @@ class Order(TimedIdentifiable):
         4. Generating the next order in its path given that there is a
            'OrderSpec' for how to make the next order.
         5. Managing its own state changes when it can.
+
+    Parameters
+    ----------
+     side : `TradeSide`
+        The side of the order.
+    exchange_pair : `ExchangePair`
+        The exchange pair to perform the order for.
+    price : float
+        The price of the order.
+    trade_type : `TradeType`
+        The type of trade being made.
+    exchange_pair : `ExchangePair`
+        The exchange pair that the order is made for.
+    quantity : `Quantity`
+        The quantity of the order.
+    portfolio : `Portfolio`
+        The portfolio being used in the order.
+    criteria : `Callable[[Order, Exchange], bool]`, optional
+        The criteria under which the order will be considered executable.
+    path_id : str, optional
+        The path order id.
+    start : int, optional
+        The start time of the order.
+    end : int, optional
+        The end time of the order.
+
+    Raises
+    ------
+    InvalidOrderQuantity
+        Raised if the given quantity has a size of 0.
     """
 
     def __init__(self,
@@ -55,14 +88,14 @@ class Order(TimedIdentifiable):
                  quantity: 'Quantity',
                  portfolio: 'Portfolio',
                  price: float,
-                 criteria: Callable[['Order', 'Exchange'], bool] = None,
+                 criteria: 'Callable[[Order, Exchange], bool]' = None,
                  path_id: str = None,
                  start: int = None,
                  end: int = None):
         super().__init__()
+        Observable.__init__(self)
 
         quantity = quantity.contain(exchange_pair)
-
         if quantity.size == 0:
             raise InvalidOrderQuantity(quantity)
 
@@ -80,8 +113,7 @@ class Order(TimedIdentifiable):
         self.status = OrderStatus.PENDING
 
         self._specs = []
-        self._listeners = []
-        self._trades = []
+        self.trades = []
 
         wallet = portfolio.get_wallet(
             self.exchange_pair.exchange.id,
@@ -94,68 +126,74 @@ class Order(TimedIdentifiable):
         self.remaining = self.quantity
 
     @property
-    def size(self) -> Decimal:
+    def size(self) -> 'Decimal':
+        """The size of the order. (`Decimal`, read-only)"""
         if not self.quantity or self.quantity is None:
-            return -1
+            return Decimal(-1)
         return self.quantity.size
 
     @property
-    def price(self) -> float:
-        return self._price
-
-    @price.setter
-    def price(self, price: float):
-        self._price = price
-
-    @property
-    def pair(self):
+    def pair(self) -> 'TradingPair':
+        """The trading pair of the order. (`TradingPair`, read-only)"""
         return self.exchange_pair.pair
 
     @property
     def base_instrument(self) -> 'Instrument':
+        """The base instrument of the pair being traded."""
         return self.exchange_pair.pair.base
 
     @property
     def quote_instrument(self) -> 'Instrument':
+        """The quote instrument of the pair being traded."""
         return self.exchange_pair.pair.quote
 
     @property
-    def trades(self):
-        return self._trades
-
-    @property
     def is_buy(self) -> bool:
+        """If this is a buy order. (bool, read-only)"""
         return self.side == TradeSide.BUY
 
     @property
     def is_sell(self) -> bool:
+        """If this is a sell order. (bool, read-only)"""
         return self.side == TradeSide.SELL
 
     @property
     def is_limit_order(self) -> bool:
+        """If this is a limit order. (bool, read-only)"""
         return self.type == TradeType.LIMIT
 
     @property
     def is_market_order(self) -> bool:
+        """If this is a market order. (bool, read-only)"""
         return self.type == TradeType.MARKET
 
-    def is_executable(self):
+    @property
+    def is_executable(self) -> bool:
+        """If this order is executable. (bool, read-only)"""
         is_satisfied = self.criteria is None or self.criteria(self, self.exchange_pair.exchange)
         clock = self.exchange_pair.exchange.clock
         return is_satisfied and clock.step >= self.start
 
-    def is_expired(self):
+    @property
+    def is_expired(self) -> bool:
+        """If this order is expired. (bool, read-only)"""
         if self.end:
             return self.exchange_pair.exchange.clock.step >= self.end
         return False
 
-    def is_cancelled(self):
+    @property
+    def is_cancelled(self) -> bool:
+        """If this order is cancelled. (bool, read-only)"""
         return self.status == OrderStatus.CANCELLED
 
-    def is_active(self):
+    @property
+    def is_active(self) -> bool:
+        """If this order is active. (bool, read-only)"""
         return self.status not in [OrderStatus.FILLED, OrderStatus.CANCELLED]
 
-    def is_complete(self):
+    @property
+    def is_complete(self) -> bool:
+        """If this order is complete. (bool, read-only)"""
         if self.status == OrderStatus.CANCELLED:
             return True
 
@@ -168,38 +206,59 @@ class Order(TimedIdentifiable):
         return (quantity and quantity.size == 0) or self.remaining.size <= 0
 
     def add_order_spec(self, order_spec: 'OrderSpec') -> 'Order':
+        """Adds an order specification to the order.
+
+        Parameters
+        ----------
+        order_spec : `OrderSpec`
+            An order specification.
+
+        Returns
+        -------
+        `Order`
+            The current order.
+        """
         self._specs += [order_spec]
         return self
 
-    def attach(self, listener: 'OrderListener'):
-        self._listeners += [listener]
-
-    def detach(self, listener: 'OrderListener'):
-        self._listeners.remove(listener)
-
-    def execute(self):
+    def execute(self) -> None:
+        """Executes the order."""
         self.status = OrderStatus.OPEN
 
         if self.portfolio.order_listener:
             self.attach(self.portfolio.order_listener)
 
-        for listener in self._listeners or []:
+        for listener in self.listeners or []:
             listener.on_execute(self)
 
         self.exchange_pair.exchange.execute_order(self, self.portfolio)
 
-    def fill(self, trade: Trade):
+    def fill(self, trade: 'Trade') -> None:
+        """Fills the order.
+
+        Parameters
+        ----------
+        trade : `Trade`
+            A trade to fill the order.
+        """
         self.status = OrderStatus.PARTIALLY_FILLED
 
         filled = trade.quantity + trade.commission
 
         self.remaining -= filled
-        self._trades += [trade]
+        self.trades += [trade]
 
-        for listener in self._listeners or []:
+        for listener in self.listeners or []:
             listener.on_fill(self, trade)
 
     def complete(self) -> 'Order':
+        """Completes an order.
+
+        Returns
+        -------
+        `Order`
+            The completed order.
+        """
         self.status = OrderStatus.FILLED
 
         order = None
@@ -208,24 +267,40 @@ class Order(TimedIdentifiable):
             order_spec = self._specs.pop()
             order = order_spec.create_order(self)
 
-        for listener in self._listeners or []:
+        for listener in self.listeners or []:
             listener.on_complete(self)
 
-        self._listeners = []
+        self.listeners = []
 
         return order or self.release("COMPLETED")
 
-    def cancel(self, reason: str = "CANCELLED"):
+    def cancel(self, reason: str = "CANCELLED") -> None:
+        """Cancels an order.
+
+        Parameters
+        ----------
+        reason : str, default 'CANCELLED'
+            The reason for canceling the order.
+        """
         self.status = OrderStatus.CANCELLED
 
-        for listener in self._listeners or []:
+        for listener in self.listeners or []:
             listener.on_cancel(self)
 
-        self._listeners = []
+        self.listeners = []
 
         self.release(reason)
 
-    def release(self, reason: str = "RELEASE (NO REASON)"):
+    def release(self, reason: str = "RELEASE (NO REASON)") -> None:
+        """Releases all quantities from every wallet that have been allocated
+        for this order.
+
+        Parameters
+        ----------
+        reason : str, default 'RELEASE (NO REASON)'
+            The reason for releasing all locked quantities associated with the
+            order.
+        """
         for wallet in self.portfolio.wallets:
             if self.path_id in wallet.locked.keys():
                 quantity = wallet.locked[self.path_id]
@@ -235,7 +310,14 @@ class Order(TimedIdentifiable):
 
                 wallet.locked.pop(self.path_id, None)
 
-    def to_dict(self):
+    def to_dict(self) -> dict:
+        """Creates a dictionary representation of the order.
+
+        Returns
+        -------
+        dict
+            The dictionary representation of the order.
+        """
         return {
             "id": self.id,
             "step": self.step,
@@ -252,7 +334,14 @@ class Order(TimedIdentifiable):
             "created_at": self.created_at
         }
 
-    def to_json(self):
+    def to_json(self) -> dict:
+        """Creates a json dictionary representation of the order.
+
+        Returns
+        -------
+        dict
+            The json dictionary representation of the order
+        """
         return {
             "id": str(self.id),
             "step": int(self.step),
@@ -271,12 +360,9 @@ class Order(TimedIdentifiable):
             "created_at": str(self.created_at)
         }
 
-    def __iadd__(self, recipe: 'OrderSpec') -> 'Order':
-        return self.add_order_spec(recipe)
-
-    def __str__(self):
+    def __str__(self) -> str:
         data = ['{}={}'.format(k, v) for k, v in self.to_dict().items()]
         return '<{}: {}>'.format(self.__class__.__name__, ', '.join(data))
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return str(self)

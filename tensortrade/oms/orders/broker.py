@@ -16,79 +16,110 @@ from typing import List, Dict
 from collections import OrderedDict
 
 from tensortrade.core.base import TimeIndexed
-from .order import Order, OrderStatus
-from .order_listener import OrderListener
+from tensortrade.oms.orders.order import Order, OrderStatus
+from tensortrade.oms.orders.order_listener import OrderListener
 
 
 class Broker(OrderListener, TimeIndexed):
     """A broker for handling the execution of orders on multiple exchanges.
     Orders are kept in a virtual order book until they are ready to be executed.
+
+    Attributes
+    ----------
+    unexecuted : `List[Order]`
+        The list of orders the broker is waiting to execute, when their
+        criteria is satisfied.
+    executed : `Dict[str, Order]`
+        The dictionary of orders the broker has executed since resetting,
+        organized by order id.
+    trades : `Dict[str, Trade]`
+        The dictionary of trades the broker has executed since resetting,
+        organized by order id.
     """
 
     def __init__(self):
-        self._unexecuted = []
-        self._executed = {}
-        self._trades = OrderedDict()
+        self.unexecuted = []
+        self.executed = {}
+        self.trades = OrderedDict()
 
-    @property
-    def unexecuted(self) -> List[Order]:
-        """The list of orders the broker is waiting to execute, when their criteria is satisfied."""
-        return self._unexecuted
+    def submit(self, order: "Order") -> None:
+        """Submits an order to the broker.
 
-    @property
-    def executed(self) -> Dict[str, Order]:
-        """The dictionary of orders the broker has executed since resetting, organized by order id"""
-        return self._executed
+        Adds `order` to the queue of orders waiting to be executed.
 
-    @property
-    def trades(self) -> Dict[str, 'Trade']:
-        """The dictionary of trades the broker has executed since resetting, organized by order id."""
-        return self._trades
+        Parameters
+        ----------
+        order : `Order`
+            The order to be submitted.
+        """
+        self.unexecuted += [order]
 
-    def submit(self, order: Order):
-        self._unexecuted += [order]
+    def cancel(self, order: "Order") -> None:
+        """Cancels an order.
 
-    def cancel(self, order: Order):
+        Parameters
+        ----------
+        order : `Order`
+            The order to be canceled.
+        """
         if order.status == OrderStatus.CANCELLED:
-            raise Warning(
-                'Cannot cancel order {} - order has already been cancelled.'.format(order.id))
+            raise Warning(f"Order {order.id} has already been cancelled.")
 
-        if order in self._unexecuted:
-            self._unexecuted.remove(order)
+        if order in self.unexecuted:
+            self.unexecuted.remove(order)
 
         order.cancel()
 
-    def update(self):
-        for order in self._unexecuted:
-            if order.is_executable():
-                self._unexecuted.remove(order)
-                self._executed[order.id] = order
+    def update(self) -> None:
+        """Updates the brokers order management system.
+
+        The broker will look through the unexecuted orders and if an order
+        is ready to be executed the broker will submit it to the executed
+        list and execute the order.
+
+        Then the broker will find any orders that are active, but expired, and
+        proceed to cancel them.
+        """
+        for order in self.unexecuted:
+            if order.is_executable:
+                self.unexecuted.remove(order)
+                self.executed[order.id] = order
 
                 order.attach(self)
                 order.execute()
 
-        for order in self._unexecuted + list(self._executed.values()):
-            if order.is_active() and order.is_expired():
+        for order in self.unexecuted + list(self.executed.values()):
+            if order.is_active and order.is_expired:
                 self.cancel(order)
 
-    def on_fill(self, order: Order, trade: 'Trade'):
-        if trade.order_id in self._executed and trade not in self._trades:
-            self._trades[trade.order_id] = self._trades.get(trade.order_id, [])
-            self._trades[trade.order_id] += [trade]
+    def on_fill(self, order: "Order", trade: "Trade") -> None:
+        """Updates the broker after an order has been filled.
 
-            if order.is_complete():
+        Parameters
+        ----------
+        order : `Order`
+            The order that is being filled.
+        trade : `Trade`
+            The trade that is being made to fill the order.
+        """
+        if trade.order_id in self.executed and trade not in self.trades:
+            self.trades[trade.order_id] = self.trades.get(trade.order_id, [])
+            self.trades[trade.order_id] += [trade]
+
+            if order.is_complete:
                 next_order = order.complete()
 
                 if next_order:
-                    if next_order.is_executable():
-                        self._executed[next_order.id] = next_order
+                    if next_order.is_executable:
+                        self.executed[next_order.id] = next_order
 
                         next_order.attach(self)
                         next_order.execute()
                     else:
                         self.submit(next_order)
 
-    def reset(self):
-        self._unexecuted = []
-        self._executed = {}
-        self._trades = OrderedDict()
+    def reset(self) -> None:
+        """Resets the broker."""
+        self.unexecuted = []
+        self.executed = {}
+        self.trades = OrderedDict()

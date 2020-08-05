@@ -12,50 +12,111 @@
 # See the License for the specific language governing permissions and
 # limitations under the License
 
+from typing import Any
 
-from typing import Union
-from sympy import Symbol
+from tensortrade.oms.instruments.quantity import Quantity
+from tensortrade.oms.instruments.trading_pair import TradingPair
 
-from .quantity import Quantity
-from .trading_pair import TradingPair
 
 registry = {}
 
 
 class Instrument:
-    """A financial instrument for use in trading."""
+    """A financial instrument for use in trading.
 
-    def __init__(self, symbol: Union[Symbol, str], precision: int, name: str = None):
-        self._symbol = Symbol(symbol) if isinstance(symbol, str) else symbol
-        self._precision = precision
-        self._name = name
+    Parameters
+    ----------
+    symbol : str
+        The symbol used on an exchange for a particular instrument.
+        (e.g. AAPL, BTC, TSLA)
+    precision : int
+        The precision the amount of the instrument is denoted with.
+        (e.g. BTC=8, AAPL=1)
+    name : str, optional
+        The name of the instrument being created.
+    """
+
+    def __init__(self, symbol: str, precision: int, name: str = None) -> None:
+        self.symbol = symbol
+        self.precision = precision
+        self.name = name
 
         registry[symbol] = self
 
-    @property
-    def symbol(self) -> str:
-        return str(self._symbol)
+    def __eq__(self, other: "Any") -> bool:
+        """Checks if two instruments are equal.
 
-    @property
-    def precision(self) -> int:
-        return self._precision
+        Parameters
+        ----------
+        other : `Any`
+            The instrument being compared.
 
-    @property
-    def name(self) -> str:
-        return self._name
+        Returns
+        -------
+        bool
+            Whether the instruments are equal.
+        """
+        if not isinstance(other, Instrument):
+            return False
+        c1 = self.symbol == other.symbol
+        c2 = self.precision == other.precision
+        c3 = self.name == other.name
+        return c1 and c2 and c3
 
-    def __eq__(self, other: 'Instrument') -> bool:
-        return self.symbol == other.symbol and self.precision == other.precision and self.name == other.name
+    def __ne__(self, other: "Any") -> bool:
+        """Checks if two instruments are not equal.
 
-    def __ne__(self, other: 'Instrument') -> bool:
-        return self.symbol != other.symbol or self.precision != other.precision or self.name != other.name
+        Parameters
+        ----------
+        other : `Any`
+            The instrument being compared.
 
-    def __rmul__(self, other: float) -> Quantity:
+        Returns
+        -------
+        bool
+            Whether the instruments are not equal.
+        """
+        return not self.__eq__(other)
+
+    def __rmul__(self, other: float) -> "Quantity":
+        """Enables reverse multiplication.
+
+        Parameters
+        ----------
+        other : float
+            The number used to create a quantity.
+
+        Returns
+        -------
+        `Quantity`
+            The quantity created by the number and the instrument involved with
+            this operation.
+        """
         return Quantity(instrument=self, size=other)
 
-    def __truediv__(self, other):
+    def __truediv__(self, other: "Instrument") -> "TradingPair":
+        """Creates a trading pair through division.
+
+        Parameters
+        ----------
+        other : `Instrument`
+            The instrument that will be the quote of the pair.
+
+        Returns
+        -------
+        `TradingPair`
+            The trading pair created from the two instruments.
+
+        Raises
+        ------
+        InvalidTradingPair
+            Raised if `other` is the same instrument as `self`.
+        Exception
+            Raised if `other` is not an instrument.
+        """
         if isinstance(other, Instrument):
             return TradingPair(self, other)
+        raise Exception(f"Invalid trading pair: {other} is not a valid instrument.")
 
     def __hash__(self):
         return hash(self.symbol)

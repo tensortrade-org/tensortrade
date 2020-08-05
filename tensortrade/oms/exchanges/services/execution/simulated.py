@@ -13,6 +13,28 @@ def execute_buy_order(order: 'Order',
                       current_price: float,
                       options: 'ExchangeOptions',
                       clock: 'Clock') -> 'Trade':
+    """Executes a buy order on the exchange.
+
+    Parameters
+    ----------
+    order : `Order`
+        The order that is being filled.
+    base_wallet : `Wallet`
+        The wallet of the base instrument.
+    quote_wallet : `Wallet`
+        The wallet of the quote instrument.
+    current_price : float
+        The current price of the exchange pair.
+    options : `ExchangeOptions`
+        The exchange options.
+    clock : `Clock`
+        The clock for the trading process..
+
+    Returns
+    -------
+    `Trade`
+        The executed trade that was made.
+    """
     if order.type == TradeType.LIMIT and order.price < current_price:
         return None
 
@@ -58,6 +80,28 @@ def execute_sell_order(order: 'Order',
                        current_price: float,
                        options: 'ExchangeOptions',
                        clock: 'Clock') -> 'Trade':
+    """Executes a sell order on the exchange.
+
+    Parameters
+    ----------
+    order : `Order`
+        The order that is being filled.
+    base_wallet : `Wallet`
+        The wallet of the base instrument.
+    quote_wallet : `Wallet`
+        The wallet of the quote instrument.
+    current_price : float
+        The current price of the exchange pair.
+    options : `ExchangeOptions`
+        The exchange options.
+    clock : `Clock`
+        The clock for the trading process..
+
+    Returns
+    -------
+    `Trade`
+        The executed trade that was made.
+    """
     if order.type == TradeType.LIMIT and order.price > current_price:
         return None
 
@@ -100,6 +144,28 @@ def execute_order(order: 'Order',
                   current_price: float,
                   options: 'Options',
                   clock: 'Clock') -> 'Trade':
+    """Executes an order on the exchange.
+
+    Parameters
+    ----------
+    order : `Order`
+        The order that is being filled.
+    base_wallet : `Wallet`
+        The wallet of the base instrument.
+    quote_wallet : `Wallet`
+        The wallet of the quote instrument.
+    current_price : float
+        The current price of the exchange pair.
+    options : `ExchangeOptions`
+        The exchange options.
+    clock : `Clock`
+        The clock for the trading process..
+
+    Returns
+    -------
+    `Trade`
+        The executed trade that was made.
+    """
     kwargs = {"order": order,
               "base_wallet": base_wallet,
               "quote_wallet": quote_wallet,

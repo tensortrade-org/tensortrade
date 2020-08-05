@@ -1,8 +1,8 @@
 
-import pandas as pd
-
 from typing import List
 from collections import namedtuple
+
+import pandas as pd
 
 
 Transaction = namedtuple('Transaction', [
@@ -19,16 +19,33 @@ Transaction = namedtuple('Transaction', [
 
 
 class Ledger:
+    """A ledger to keep track of transactions that occur in the order
+    management system."""
 
     def __init__(self):
-        self._transactions = []
+        self.transactions: 'List[Transaction]' = []
 
-    @property
-    def transactions(self) -> List['Transaction']:
-        return self._transactions
+    def commit(self,
+               wallet: 'Wallet',
+               quantity: 'Quantity',
+               source: str,
+               target: str,
+               memo: str) -> None:
+        """Commits a transaction to the ledger records.
 
-    def commit(self, wallet: 'Wallet', quantity: 'Quantity', source: str, target: str, memo: str):
-
+        Parameters
+        ----------
+        wallet : `Wallet`
+            The wallet involved in this transaction.
+        quantity : `Quantity`
+            The amount being used.
+        source : str
+            The source of funds being transferred.
+        target : str
+            The destination the funds are being transferred to.
+        memo : str
+            A description of the transaction.
+        """
         poid = quantity.path_id
         locked_poid_balance = None if poid not in wallet.locked.keys() else wallet.locked[poid]
 
@@ -44,9 +61,21 @@ class Ledger:
             locked_poid_balance
         )
 
-        self._transactions += [transaction]
+        self.transactions += [transaction]
 
-    def as_frame(self, sort_by_order_seq=False) -> pd.DataFrame:
+    def as_frame(self, sort_by_order_seq: bool = False) -> 'pd.DataFrame':
+        """Converts the ledger records into a data frame.
+
+        Parameters
+        ----------
+        sort_by_order_seq : bool, default False
+            If records should be sorted by each order path.
+
+        Returns
+        -------
+        `pd.DataFrame`
+            A data frame containing all the records in the ledger.
+        """
 
         if not sort_by_order_seq:
             return pd.DataFrame(self.transactions)
@@ -59,4 +88,5 @@ class Ledger:
         return pd.concat(frames, ignore_index=True, axis=0)
 
     def reset(self):
-        self._transactions = []
+        """Resets the ledger."""
+        self.transactions = []

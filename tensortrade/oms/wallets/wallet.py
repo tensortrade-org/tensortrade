@@ -1,4 +1,4 @@
-# Copyright 2019 The TensorTrade Authors.
+# Copyright 2020 The TensorTrade Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,67 +12,51 @@
 # See the License for the specific language governing permissions and
 # limitations under the License
 
-import numpy as np
-
 from typing import Dict, Tuple
 from collections import namedtuple
 from decimal import Decimal
 
-from tensortrade.core import Identifiable
-from tensortrade.core.exceptions import InsufficientFunds, DoubleLockedQuantity, DoubleUnlockedQuantity, QuantityNotLocked
-from tensortrade.oms.instruments import Quantity, ExchangePair
+import numpy as np
 
-from .ledger import Ledger
+from tensortrade.core import Identifiable
+from tensortrade.core.exceptions import (
+    InsufficientFunds,
+    DoubleLockedQuantity,
+    DoubleUnlockedQuantity,
+    QuantityNotLocked
+)
+from tensortrade.oms.instruments import Instrument, Quantity, ExchangePair
+from tensortrade.oms.orders import Order
+from tensortrade.oms.exchanges import Exchange
+from tensortrade.oms.wallets.ledger import Ledger
 
 
 Transfer = namedtuple("Transfer", ["quantity", "commission", "price"])
 
 
 class Wallet(Identifiable):
-    """A wallet stores the balance of a specific instrument on a specific exchange."""
+    """A wallet stores the balance of a specific instrument on a specific exchange.
+
+    Parameters
+    ----------
+    exchange : `Exchange`
+        The exchange associated with this wallet.
+    balance : `Quantity`
+        The initial balance quantity for the wallet.
+    """
 
     ledger = Ledger()
 
-    def __init__(self, exchange: 'Exchange', quantity: 'Quantity'):
-        self._exchange = exchange
-        self._initial_size = quantity.size
-        self._instrument = quantity.instrument
-        self._balance = quantity.quantize()
+    def __init__(self, exchange: 'Exchange', balance: 'Quantity'):
+        self.exchange = exchange
+        self._initial_size = balance.size
+        self.instrument = balance.instrument
+        self.balance = balance.quantize()
         self._locked = {}
-
-    @classmethod
-    def from_tuple(cls, wallet_tuple: Tuple['Exchange', 'Instrument', float]):
-        exchange, instrument, balance = wallet_tuple
-        return cls(exchange, Quantity(instrument, balance))
-
-    @property
-    def exchange(self) -> 'Exchange':
-        return self._exchange
-
-    @exchange.setter
-    def exchange(self, exchange: 'Exchange'):
-        raise ValueError("You cannot change a Wallet's Exchange after initialization.")
-
-    @property
-    def instrument(self) -> 'Instrument':
-        return self._instrument
-
-    @instrument.setter
-    def instrument(self, instrument: 'Exchange'):
-        raise ValueError("You cannot change a Wallet's Instrument after initialization.")
-
-    @property
-    def balance(self) -> 'Quantity':
-        """The total balance of the wallet available for use."""
-        return self._balance
-
-    @balance.setter
-    def balance(self, balance: 'Quantity'):
-        self._balance = balance
 
     @property
     def locked_balance(self) -> 'Quantity':
-        """The total balance of the wallet locked in orders."""
+        """The total balance of the wallet locked in orders. (`Quantity`, read-only)"""
         locked_balance = Quantity(self.instrument, 0)
 
         for quantity in self._locked.values():
@@ -82,8 +66,8 @@ class Wallet(Identifiable):
 
     @property
     def total_balance(self) -> 'Quantity':
-        """The total balance of the wallet, both available for use and locked in orders."""
-        total_balance = self._balance
+        """The total balance of the wallet available for use and locked in orders. (`Quantity`, read-only)"""
+        total_balance = self.balance
 
         for quantity in self._locked.values():
             total_balance += quantity.size
@@ -91,17 +75,41 @@ class Wallet(Identifiable):
         return total_balance
 
     @property
-    def locked(self) -> Dict[str, 'Quantity']:
+    def locked(self) -> 'Dict[str, Quantity]':
+        """The current quantities that are locked for orders. (`Dict[str, Quantity]`, read-only)"""
         return self._locked
 
-    def lock(self, quantity, order: 'Order', reason: str):
+    def lock(self, quantity, order: 'Order', reason: str) -> 'Quantity':
+        """Locks funds for specified order.
+
+        Parameters
+        ----------
+        quantity : `Quantity`
+            The amount of funds to lock for the order.
+        order : `Order`
+            The order funds will be locked for.
+        reason : str
+            The reason for locking funds.
+
+        Returns
+        -------
+        `Quantity`
+            The locked quantity for `order`.
+
+        Raises
+        ------
+        DoubleLockedQuantity
+            Raised if the given amount is already a locked quantity.
+        InsufficientFunds
+            Raised if amount is greater the current balance.
+        """
         if quantity.is_locked:
             raise DoubleLockedQuantity(quantity)
 
-        if quantity > self._balance:
+        if quantity > self.balance:
             raise InsufficientFunds(self.balance, quantity)
 
-        self._balance -= quantity
+        self.balance -= quantity
 
         quantity = quantity.lock_for(order.path_id)
 
@@ -111,7 +119,7 @@ class Wallet(Identifiable):
             self._locked[quantity.path_id] += quantity
 
         self._locked[quantity.path_id] = self._locked[quantity.path_id].quantize()
-        self._balance = self._balance.quantize()
+        self.balance = self.balance.quantize()
 
         self.ledger.commit(wallet=self,
                            quantity=quantity,
@@ -121,7 +129,33 @@ class Wallet(Identifiable):
 
         return quantity
 
-    def unlock(self, quantity: 'Quantity', reason: str):
+    def unlock(self, quantity: 'Quantity', reason: str) -> 'Quantity':
+        """Unlocks a certain amount from the locked funds of the wallet that
+        are associated with the given `quantity` path id.
+
+        Parameters
+        ----------
+        quantity : `Quantity`
+            The quantity to unlock from the funds.
+        reason : str
+            The reason for unlocking funds.
+
+        Returns
+        -------
+        `Quantity`
+            The free quantity.
+
+        Raises
+        ------
+        DoubleUnlockedFunds
+            Raised if `quantity` is not a locked quantity.
+        QuantityNotLocked
+            Raised if  `quantity` has a path id that is not currently allocated
+            in this wallet.
+        InsufficientFunds
+            Raised if `quantity` is greater than the amount currently allocated
+            for the associated path id.
+        """
         if not quantity.is_locked:
             raise DoubleUnlockedQuantity(quantity)
 
@@ -132,10 +166,10 @@ class Wallet(Identifiable):
             raise InsufficientFunds(self._locked[quantity.path_id], quantity)
 
         self._locked[quantity.path_id] -= quantity
-        self._balance += quantity.free()
+        self.balance += quantity.free()
 
         self._locked[quantity.path_id] = self._locked[quantity.path_id].quantize()
-        self._balance = self._balance.quantize()
+        self.balance = self.balance.quantize()
 
         self.ledger.commit(wallet=self,
                            quantity=quantity,
@@ -145,16 +179,30 @@ class Wallet(Identifiable):
 
         return quantity
 
-    def deposit(self, quantity: 'Quantity', reason: str):
+    def deposit(self, quantity: 'Quantity', reason: str) -> 'Quantity':
+        """Deposits funds into the wallet.
+
+        Parameters
+        ----------
+        quantity : `Quantity`
+            The amount to deposit into this wallet.
+        reason : str
+            The reason for depositing the amount.
+
+        Returns
+        -------
+        `Quantity`
+            The deposited amount.
+        """
         if quantity.is_locked:
             if quantity.path_id not in self._locked:
                 self._locked[quantity.path_id] = quantity
             else:
                 self._locked[quantity.path_id] += quantity
         else:
-            self._balance += quantity
+            self.balance += quantity
 
-        self._balance = self._balance.quantize()
+        self.balance = self.balance.quantize()
 
         self.ledger.commit(wallet=self,
                            quantity=quantity,
@@ -164,7 +212,21 @@ class Wallet(Identifiable):
 
         return quantity
 
-    def withdraw(self, quantity: 'Quantity', reason: str):
+    def withdraw(self, quantity: 'Quantity', reason: str) -> 'Quantity':
+        """Withdraws funds from the wallet.
+
+        Parameters
+        ----------
+        quantity : `Quantity`
+            The amount to withdraw from this wallet.
+        reason : str
+            The reason for withdrawing the amount.
+
+        Returns
+        -------
+        `Quantity`
+            The withdrawn amount.
+        """
         if quantity.is_locked and self._locked.get(quantity.path_id, False):
             locked_quantity = self._locked[quantity.path_id]
             if quantity > locked_quantity:
@@ -172,11 +234,11 @@ class Wallet(Identifiable):
             self._locked[quantity.path_id] -= quantity
 
         elif not quantity.is_locked:
-            if quantity > self._balance:
+            if quantity > self.balance:
                 raise InsufficientFunds(self.balance, quantity)
-            self._balance -= quantity
+            self.balance -= quantity
 
-        self._balance = self._balance.quantize()
+        self.balance = self.balance.quantize()
 
         self.ledger.commit(wallet=self,
                            quantity=quantity,
@@ -186,28 +248,59 @@ class Wallet(Identifiable):
 
         return quantity
 
+    @classmethod
+    def from_tuple(cls, wallet_tuple: 'Tuple[Exchange, Instrument, float]') -> 'Wallet':
+        """Creates a wallet from a wallet tuple.
+
+        Parameters
+        ----------
+        wallet_tuple : `Tuple[Exchange, Instrument, float]`
+            A tuple containing an exchange, instrument, and amount.
+
+        Returns
+        -------
+        `Wallet`
+            A wallet corresponding to the arguments given in the tuple.
+        """
+        exchange, instrument, balance = wallet_tuple
+        return cls(exchange, Quantity(instrument, balance))
+
     @staticmethod
     def transfer(source: 'Wallet',
                  target: 'Wallet',
                  quantity: 'Quantity',
                  commission: 'Quantity',
                  exchange_pair: 'ExchangePair',
-                 reason: str):
-        """
+                 reason: str) -> 'Transfer':
+        """Transfers funds from one wallet to another.
+
         Parameters
         ----------
-            source : 'Wallet'
-                The wallet in which funds will be transferred from
-            target : 'Wallet'
-                The wallet in which funds will be transferred to
-            quantity : 'Quantity'
-                The quantity to be transferred from the source to the target.
-                In terms of the instrument of the source wallet.
-            commission :  'Quantity'
-                The commission to be taken from the source wallet for performing
-                the transfer of funds.
-            exchange_pair : 'ExchangePair'
-                The exchange pair associated with the transfer
+        source : `Wallet`
+            The wallet in which funds will be transferred from
+        target : `Wallet`
+            The wallet in which funds will be transferred to
+        quantity : `Quantity`
+            The quantity to be transferred from the source to the target.
+            In terms of the instrument of the source wallet.
+        commission :  `Quantity`
+            The commission to be taken from the source wallet for performing
+            the transfer of funds.
+        exchange_pair : `ExchangePair`
+            The exchange pair associated with the transfer
+        reason : str
+            The reason for transferring the funds.
+
+        Returns
+        -------
+        `Transfer`
+            A transfer object describing the transaction.
+
+        Raises
+        ------
+        Exception
+            Raised if an equation that describes the conservation of funds
+            is broken.
         """
         quantity = quantity.quantize()
         commission = commission.quantize()
@@ -260,12 +353,13 @@ class Wallet(Identifiable):
 
         return Transfer(quantity, commission, exchange_pair.price)
 
-    def reset(self):
-        self._balance = Quantity(self._instrument, self._initial_size).quantize()
+    def reset(self) -> None:
+        """Resets the wallet."""
+        self.balance = Quantity(self.instrument, self._initial_size).quantize()
         self._locked = {}
 
-    def __str__(self):
+    def __str__(self) -> str:
         return '<Wallet: balance={}, locked={}>'.format(self.balance, self.locked_balance)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return str(self)

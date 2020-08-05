@@ -1,5 +1,8 @@
 """Holds all the exceptions for the project."""
 
+from typing import Union
+from numbers import Number
+
 
 # =============================================================================
 # Quantity Exceptions
@@ -28,13 +31,13 @@ class InvalidNonNumericQuantity(Exception):
 
     Parameters
     ----------
-    size : float
+    size : `Union[float, int, Number]`
         The value that was specified for the `Quantity`.
     *args : positional arguments
         More positional arguments for the exception.
     """
 
-    def __init__(self, size: float, *args) -> None:
+    def __init__(self, size: Union[float, int, Number], *args) -> None:
         super().__init__(
             "Invalid Quantity: {}. Amounts cannot be non-numeric.".format(size),
             *args
@@ -74,7 +77,7 @@ class DoubleLockedQuantity(Exception):
         More positional arguments for the exception.
     """
 
-    def __init__(self, quantity: 'Quantity', *args) -> None:
+    def __init__(self, quantity: "Quantity", *args) -> None:
         super().__init__(
             "Cannot lock quantity that has previously been locked: {}.".format(quantity),
             *args
@@ -92,7 +95,7 @@ class DoubleUnlockedQuantity(Exception):
         More positional arguments for the exception.
     """
 
-    def __init__(self, quantity: 'Quantity', *args) -> None:
+    def __init__(self, quantity: "Quantity", *args) -> None:
         super().__init__(
             "Cannot unlock quantity that has previously been unlocked: {}.".format(quantity),
             *args
@@ -111,7 +114,7 @@ class QuantityNotLocked(Exception):
         More positional arguments for the exception.
     """
 
-    def __init__(self, quantity, *args) -> None:
+    def __init__(self, quantity: "Quantity", *args) -> None:
         super().__init__(
             "Cannot unlock quantity that has not been locked in this wallet: {}.".format(quantity),
             *args
@@ -134,7 +137,7 @@ class IncompatibleInstrumentOperation(Exception):
         More positional arguments for the exception.
     """
 
-    def __init__(self, left: 'Quantity', right: 'Quantity', *args) -> None:
+    def __init__(self, left: "Quantity", right: "Quantity", *args) -> None:
         super().__init__(
             "Instruments are not of the same type ({} and {}).".format(left, right),
             *args

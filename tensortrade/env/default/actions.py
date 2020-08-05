@@ -225,7 +225,7 @@ class ManagedRiskOrders(TensorTradeActionScheme):
         '4' = 25%, 50%, 75%, or 100% of balance is tradable.)
     durations : List[int]
         A list of durations to select from when submitting an order.
-    trade_type : TradeType
+    trade_type : `TradeType`
         A type of trade to make.
     order_listener : OrderListener
         A callback class to use for listening to steps of the order process.
@@ -278,6 +278,8 @@ class ManagedRiskOrders(TensorTradeActionScheme):
 
         (ep, (stop, take, proportion, duration, side)) = self.actions[action]
 
+        side = TradeSide(side)
+
         instrument = side.instrument(ep.pair)
         wallet = portfolio.get_wallet(ep.exchange.id, instrument=instrument)
 
@@ -290,7 +292,6 @@ class ManagedRiskOrders(TensorTradeActionScheme):
             return []
 
         params = {
-            'step': self.clock.step,
             'side': side,
             'exchange_pair': ep,
             'price': ep.price,

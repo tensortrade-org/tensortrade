@@ -12,25 +12,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License
 
-
 from enum import Enum
 
 from tensortrade.core import TimedIdentifiable
 
 
 class TradeType(Enum):
-    LIMIT = 'limit'
-    MARKET = 'market'
+
+    LIMIT: str = "limit"
+    MARKET: str = "market"
 
     def __str__(self):
         return str(self.value)
 
 
 class TradeSide(Enum):
-    BUY = 'buy'
-    SELL = 'sell'
 
-    def instrument(self, pair: 'TradingPair') -> 'Instrument':
+    BUY: str = "buy"
+    SELL: str = "sell"
+
+    def instrument(self, pair: "TradingPair") -> "Instrument":
         return pair.base if self == TradeSide.BUY else pair.quote
 
     def __str__(self):

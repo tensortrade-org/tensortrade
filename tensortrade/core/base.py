@@ -91,11 +91,11 @@ class TimedIdentifiable(Identifiable, TimeIndexed, metaclass=ABCMeta):
         clock.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.created_at = self._clock.now()
 
     @property
-    def clock(self) -> Clock:
+    def clock(self) -> "Clock":
         """Gets the clock associated with the object.
 
         Returns
@@ -106,7 +106,7 @@ class TimedIdentifiable(Identifiable, TimeIndexed, metaclass=ABCMeta):
         return self._clock
 
     @clock.setter
-    def clock(self, clock: Clock) -> None:
+    def clock(self, clock: "Clock") -> None:
         """Sets the clock associated with this object.
 
         In addition, the `created_at` attribute is set according to the new clock.
@@ -142,7 +142,7 @@ class Observable:
     def __init__(self):
         self.listeners = []
 
-    def attach(self, listener):
+    def attach(self, listener) -> "Observable":
         """Adds a listener to receive alerts.
 
         Parameters
@@ -157,7 +157,7 @@ class Observable:
         self.listeners += [listener]
         return self
 
-    def detach(self, listener):
+    def detach(self, listener) -> "Observable":
         """Removes a listener from receiving alerts.
 
         Parameters
