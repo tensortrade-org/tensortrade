@@ -13,7 +13,7 @@
 # limitations under the License
 
 from tensortrade.oms.instruments import ExchangePair
-from tensortrade.oms.portfolio import Portfolio
+from tensortrade.oms.wallets import Portfolio
 from tensortrade.oms.orders import Order, OrderSpec, TradeSide, TradeType
 from tensortrade.oms.orders.criteria import Stop, Limit
 

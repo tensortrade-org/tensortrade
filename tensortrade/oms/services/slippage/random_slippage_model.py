@@ -14,7 +14,7 @@
 
 import numpy as np
 
-from tensortrade.oms.exchanges.services.slippage.slippage_model import SlippageModel
+from tensortrade.oms.services.slippage.slippage_model import SlippageModel
 from tensortrade.oms.orders import Trade, TradeType, TradeSide
 
 

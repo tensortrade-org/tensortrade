@@ -3,7 +3,6 @@
 from typing import Callable
 
 from tensortrade.oms.exchanges.exchange import Exchange, ExchangeOptions
-from tensortrade.oms.exchanges import services
 
 
 _registry = {
