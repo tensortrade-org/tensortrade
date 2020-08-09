@@ -38,7 +38,7 @@ class TradingContext(UserDict):
 
     References
     ----------
-    .. [1] https://github.com/pymc-devs/pymc3/blob/master/pymc3/model.py
+    [1] https://github.com/pymc-devs/pymc3/blob/master/pymc3/model.py
     """
 
     contexts = threading.local()

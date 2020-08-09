@@ -1,0 +1,435 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>TradingEnvironment &mdash; TensorTrade 0.2.0-beta.2 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/theme_overrides.css" type="text/css" />
+
+  
+  
+    <link rel="shortcut icon" href="../../_static/favicon.ico"/>
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Exchange" href="../exchanges/Exchange.html" />
+    <link rel="prev" title="Trading Strategy" href="../component_types/trading_strategy.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html">
+          
+
+          
+            
+            <img src="../../_static/logo.jpg" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../index.html">Home</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Overview</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../overview/getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../overview/getting_started.html#installation">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../overview/getting_started.html#docker">Docker</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/overview.html">Code Structure</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Component Types</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../components.html">Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../component_types/trading_environment.html">Trading Environment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../component_types/exchange.html">Exchange</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../component_types/feature_pipeline.html">Feature Pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../component_types/action_scheme.html">Action Scheme</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../component_types/reward_scheme.html">Reward Scheme</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../component_types/trading_strategy.html">Trading Strategy</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Trading Environment</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">TradingEnvironment</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#openai-gym-primer">OpenAI Gym Primer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#functions">Functions:</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#private">Private</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#public">Public</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Exchanges</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../exchanges/Exchange.html">Exchange</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../exchanges/simulated/SimulatedExchange.html">SimulatedExchange</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../exchanges/simulated/FBMExchange.html">FBMExchange</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../exchanges/live/CCXTExchange.html">CCXTExchange</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../exchanges/live/InteractiveBrokersExchange.html">InteractiveBrokersExchange</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Features</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../features/FeaturePipeline.html">FeaturePipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/FeatureTransformer.html">FeatureTransformer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/scalers/MinMaxNormalizer.html">MinMaxNormalizer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/scalers/StandardNormalizer.html">StandardNormalizer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/stationarity/FractionalDifference.html">FractionalDifference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../features/indicators/TAlibIndicator.html">TAlibIndicator</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Actions</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../actions/ActionScheme.html">ActionScheme</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../actions/ContinuousActions.html">ContinuousActions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../actions/DiscreteActions.html">DiscreteActions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../actions/MultiDiscreteActions.html">MultiDiscreteActions</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Rewards</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../rewards/RewardScheme.html">Reward Scheme</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../rewards/RiskAdjustedReturns.html">Risk Adjusted Returns</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../rewards/SimpleProfit.html">Simple Profit</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Learning Agents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../agents/learning_agents.html">Learning Agents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../agents/stable_baselines.html">Stable Baselines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../agents/tensorforce.html">Tensorforce</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Strategies</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../strategies/TradingStrategy.html">TradingStrategy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../strategies/StableBaselinesTradingStrategy.html">StableBaselinesTradingStrategy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../strategies/TensorforceTradingStrategy.html">TensorforceTradingStrategy</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api/modules.html">API reference</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">TensorTrade</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>TradingEnvironment</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/components/environments/TradingEnvironment.md.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="tradingenvironment">
+<h1>TradingEnvironment<a class="headerlink" href="#tradingenvironment" title="Permalink to this headline">¶</a></h1>
+<p>A trading environment is a reinforcement learning environment that follows OpenAI’s <code class="docutils literal notranslate"><span class="pre">gym.Env</span></code> specification. This allows us to leverage many of the existing reinforcement learning models in our trading agent, if we’d like.</p>
+<p><code class="docutils literal notranslate"><span class="pre">TradingEnvironment</span></code> steps through the various interfaces from the <code class="docutils literal notranslate"><span class="pre">tensortrade</span></code> library in a consistent way, and will likely not change too often as all other parts of <code class="docutils literal notranslate"><span class="pre">tensortrade</span></code> changes. We’re going to go through an overview of the Trading environment below.</p>
+<p>Trading environments are fully configurable gym environments with highly composable <code class="docutils literal notranslate"><span class="pre">Exchange</span></code>, <code class="docutils literal notranslate"><span class="pre">FeaturePipeline</span></code>, <code class="docutils literal notranslate"><span class="pre">ActionScheme</span></code>, and <code class="docutils literal notranslate"><span class="pre">RewardScheme</span></code> components.</p>
+<ul class="simple">
+<li><p>The <code class="docutils literal notranslate"><span class="pre">Exchange</span></code> provides observations to the environment and executes the agent’s trades.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">FeaturePipeline</span></code> optionally transforms the exchange output into a more meaningful set of features before it is passed to the agent.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">ActionScheme</span></code> converts the agent’s actions into executable trades.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">RewardScheme</span></code> calculates the reward for each time step based on the agent’s performance.</p></li>
+</ul>
+<p>That’s all there is to it, now it’s just a matter of composing each of these components into a complete environment.</p>
+<p>When the reset method of a <code class="docutils literal notranslate"><span class="pre">TradingEnvironment</span></code> is called, all of the child components will also be reset. The internal state of each exchange, feature pipeline, transformer, action scheme, and reward scheme will be set back to their default values, ready for the next episode.</p>
+<p>Let’s begin with an example environment. As mentioned before, initializing a <code class="docutils literal notranslate"><span class="pre">TradingEnvironment</span></code> requires an exchange, an action scheme, and a reward scheme, the feature pipeline is optional.</p>
+<div class="section" id="openai-gym-primer">
+<h2>OpenAI Gym Primer<a class="headerlink" href="#openai-gym-primer" title="Permalink to this headline">¶</a></h2>
+<p>Usually the OpenAI gym runs in the following way:</p>
+<div class="highlight-py notranslate"><div class="highlight"><pre><span></span><span class="c1"># Declare the environment</span>
+<span class="n">env</span> <span class="o">=</span> <span class="n">TrainingEnvironment</span><span class="p">()</span>
+<span class="c1"># Declare and agent with an action_space, usually declared inside of the environment itself</span>
+<span class="n">agent</span> <span class="o">=</span> <span class="n">RandomAgent</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">action_space</span><span class="p">)</span>
+<span class="n">reward</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">done</span> <span class="o">=</span> <span class="kc">False</span>
+
+<span class="c1"># Reset all of the variables</span>
+<span class="n">ob</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span> <span class="c1"># Gets an observation as a response to resetting the variables</span>
+<span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+    <span class="c1"># Get an observation, and input the previous reward, and indicator if the episode is complete or not (done).</span>
+    <span class="n">action</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">act</span><span class="p">(</span><span class="n">ob</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">done</span><span class="p">)</span>
+    <span class="n">ob</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">done</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">done</span><span class="p">:</span>
+        <span class="k">break</span>
+</pre></div>
+</div>
+<p>As such, the TradingEnvironment runs largely like this as well.</p>
+<div class="highlight-py notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">tensortrade.environments</span> <span class="kn">import</span> <span class="n">TradingEnvironment</span>
+<span class="kn">from</span> <span class="nn">tensortrade.strategies</span> <span class="kn">import</span> <span class="n">StableBaselinesTradingStrategy</span>
+
+
+<span class="n">environment</span> <span class="o">=</span> <span class="n">TradingEnvironment</span><span class="p">(</span><span class="n">exchange</span><span class="o">=</span><span class="n">exchange</span><span class="p">,</span>
+                                 <span class="n">action_scheme</span><span class="o">=</span><span class="n">action_scheme</span><span class="p">,</span>
+                                 <span class="n">reward_scheme</span><span class="o">=</span><span class="n">reward_scheme</span><span class="p">,</span>
+                                 <span class="n">feature_pipeline</span><span class="o">=</span><span class="n">feature_pipeline</span><span class="p">)</span>
+
+<span class="n">strategy</span><span class="o">.</span><span class="n">environment</span> <span class="o">=</span> <span class="n">environment</span>
+<span class="n">test_performance</span> <span class="o">=</span> <span class="n">strategy</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">episodes</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">testing</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Here you may notice that we don’t have the same training code we saw above:</p>
+<div class="highlight-py notranslate"><div class="highlight"><pre><span></span><span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+    <span class="c1"># Get an observation, and input the previous reward, and indicator if the episode is complete or not (done).</span>
+    <span class="n">action</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">act</span><span class="p">(</span><span class="n">ob</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">done</span><span class="p">)</span>
+    <span class="n">ob</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">done</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">done</span><span class="p">:</span>
+        <span class="k">break</span>
+</pre></div>
+</div>
+<p>That’s because the code to run that exist directly inside of the <code class="docutils literal notranslate"><span class="pre">TradingStrategy</span></code> codebase. The command <code class="docutils literal notranslate"><span class="pre">run</span></code>, has abstractions of that code. Please refer to the Strategies codebase.</p>
+</div>
+<div class="section" id="functions">
+<h2>Functions:<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h2>
+<p>To better understand what’s inside of the <code class="docutils literal notranslate"><span class="pre">TradingEnvironment</span></code>, you should understand the notation. Everything that begins with an underscore <code class="docutils literal notranslate"><span class="pre">_</span></code> is a relatively private function. While everything that doesn’t have the underscore is a public facing function.</p>
+<div class="section" id="private">
+<h3>Private<a class="headerlink" href="#private" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">_take_action</span></code></p>
+<ul>
+<li><p>Determines a specific trade to be taken and executes it within the exchange.</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">_next_observation</span></code></p>
+<ul>
+<li><p>Returns the next observation from the exchange.</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">_get_reward</span></code></p>
+<ul>
+<li><p>Returns the reward for the current timestep.</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">_done</span></code></p>
+<ul>
+<li><p>Returns whether or not the environment is done and should be restarted. The two key conditions to determine if the environment is completed is if either <code class="docutils literal notranslate"><span class="pre">90%</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">funds</span> <span class="pre">are</span> <span class="pre">lost</span></code> or if there are <code class="docutils literal notranslate"><span class="pre">no</span> <span class="pre">more</span> <span class="pre">observations</span> <span class="pre">left</span></code>.</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">_info</span></code></p>
+<ul>
+<li><p>Returns any auxiliary, diagnostic, or debugging information for the current timestep.</p></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="public">
+<h3>Public<a class="headerlink" href="#public" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">step</span></code></p>
+<ul>
+<li><p>Run one timestep within the environment based on the specified action.</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">reset</span></code></p>
+<ul>
+<li><p>Resets the state of the environment and returns an initial observation.</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">render</span></code></p>
+<ul>
+<li><p>This sends an output of what’s occuring in the gym enviornment for the user to keep track of.</p></li>
+</ul>
+</li>
+</ul>
+<p>Almost 100% of the private functions belong in the step function.</p>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../exchanges/Exchange.html" class="btn btn-neutral float-right" title="Exchange" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="../component_types/trading_strategy.html" class="btn btn-neutral float-left" title="Trading Strategy" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

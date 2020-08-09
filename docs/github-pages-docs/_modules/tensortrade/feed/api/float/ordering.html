@@ -1,0 +1,383 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>tensortrade.feed.api.float.ordering &mdash; TensorTrade 0.2.0-beta.2 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../../_static/theme_overrides.css" type="text/css" />
+
+  
+  
+    <link rel="shortcut icon" href="../../../../../_static/favicon.ico"/>
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../../../" src="../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../_static/jquery.js"></script>
+        <script src="../../../../../_static/underscore.js"></script>
+        <script src="../../../../../_static/doctools.js"></script>
+        <script src="../../../../../_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    
+    <script type="text/javascript" src="../../../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../../../index.html">
+          
+
+          
+            
+            <img src="../../../../../_static/logo.jpg" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../index.html">Home</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Overview</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../overview/getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../overview/getting_started.html#installation">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../overview/getting_started.html#docker">Docker</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../examples/overview.html">Code Structure</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Component Types</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../components/components.html">Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../components/component_types/trading_environment.html">Trading Environment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../components/component_types/exchange.html">Exchange</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../components/component_types/feature_pipeline.html">Feature Pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../components/component_types/action_scheme.html">Action Scheme</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../components/component_types/reward_scheme.html">Reward Scheme</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../components/component_types/trading_strategy.html">Trading Strategy</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Trading Environment</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../components/environments/TradingEnvironment.html">TradingEnvironment</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Exchanges</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../components/exchanges/Exchange.html">Exchange</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../components/exchanges/simulated/SimulatedExchange.html">SimulatedExchange</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../components/exchanges/simulated/FBMExchange.html">FBMExchange</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../components/exchanges/live/CCXTExchange.html">CCXTExchange</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../components/exchanges/live/InteractiveBrokersExchange.html">InteractiveBrokersExchange</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Features</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../components/features/FeaturePipeline.html">FeaturePipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../components/features/FeatureTransformer.html">FeatureTransformer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../components/features/scalers/MinMaxNormalizer.html">MinMaxNormalizer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../components/features/scalers/StandardNormalizer.html">StandardNormalizer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../components/features/stationarity/FractionalDifference.html">FractionalDifference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../components/features/indicators/TAlibIndicator.html">TAlibIndicator</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Actions</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../components/actions/ActionScheme.html">ActionScheme</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../components/actions/ContinuousActions.html">ContinuousActions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../components/actions/DiscreteActions.html">DiscreteActions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../components/actions/MultiDiscreteActions.html">MultiDiscreteActions</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Rewards</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../components/rewards/RewardScheme.html">Reward Scheme</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../components/rewards/RiskAdjustedReturns.html">Risk Adjusted Returns</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../components/rewards/SimpleProfit.html">Simple Profit</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Learning Agents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../agents/learning_agents.html">Learning Agents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../agents/stable_baselines.html">Stable Baselines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../agents/tensorforce.html">Tensorforce</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Strategies</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../components/strategies/TradingStrategy.html">TradingStrategy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../components/strategies/StableBaselinesTradingStrategy.html">StableBaselinesTradingStrategy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../components/strategies/TensorforceTradingStrategy.html">TensorforceTradingStrategy</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../api/modules.html">API reference</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">TensorTrade</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../../../index.html">Module code</a> &raquo;</li>
+        
+          <li><a href="../float.html">tensortrade.feed.api.float</a> &raquo;</li>
+        
+      <li>tensortrade.feed.api.float.ordering</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for tensortrade.feed.api.float.ordering</h1><div class="highlight"><pre>
+<span></span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">tensortrade.feed.core.base</span> <span class="kn">import</span> <span class="n">Stream</span>
+<span class="kn">from</span> <span class="nn">tensortrade.feed.core.operators</span> <span class="kn">import</span> <span class="n">BinOp</span>
+<span class="kn">from</span> <span class="nn">tensortrade.feed.api.float</span> <span class="kn">import</span> <span class="n">Float</span>
+
+
+<div class="viewcode-block" id="clamp_min"><a class="viewcode-back" href="../../../../../api/tensortrade.feed.api.float.ordering.html#tensortrade.feed.api.float.ordering.clamp_min">[docs]</a><span class="nd">@Float</span><span class="o">.</span><span class="n">register</span><span class="p">([</span><span class="s2">&quot;clamp_min&quot;</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">clamp_min</span><span class="p">(</span><span class="n">s</span><span class="p">:</span> <span class="s2">&quot;Stream[float]&quot;</span><span class="p">,</span> <span class="n">c_min</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Stream[float]&quot;</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Clamps the minimum value of a stream.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    s : `Stream[float]`</span>
+<span class="sd">        A float stream.</span>
+<span class="sd">    c_min : float</span>
+<span class="sd">        The mimimum value to clamp by.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    `Stream[float]`</span>
+<span class="sd">        The minimum clamped stream of `s`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">BinOp</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">)(</span><span class="n">s</span><span class="p">,</span> <span class="n">Stream</span><span class="o">.</span><span class="n">constant</span><span class="p">(</span><span class="n">c_min</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;float&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="clamp_max"><a class="viewcode-back" href="../../../../../api/tensortrade.feed.api.float.ordering.html#tensortrade.feed.api.float.ordering.clamp_max">[docs]</a><span class="nd">@Float</span><span class="o">.</span><span class="n">register</span><span class="p">([</span><span class="s2">&quot;clamp_max&quot;</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">clamp_max</span><span class="p">(</span><span class="n">s</span><span class="p">:</span> <span class="s2">&quot;Stream[float]&quot;</span><span class="p">,</span> <span class="n">c_max</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Stream[float]&quot;</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Clamps the maximum value of a stream.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    s : `Stream[float]`</span>
+<span class="sd">        A float stream.</span>
+<span class="sd">    c_max : float</span>
+<span class="sd">        The maximum value to clamp by.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    `Stream[float]`</span>
+<span class="sd">        The maximum clamped stream of `s`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">BinOp</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">)(</span><span class="n">s</span><span class="p">,</span> <span class="n">Stream</span><span class="o">.</span><span class="n">constant</span><span class="p">(</span><span class="n">c_max</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;float&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="clamp"><a class="viewcode-back" href="../../../../../api/tensortrade.feed.api.float.ordering.html#tensortrade.feed.api.float.ordering.clamp">[docs]</a><span class="nd">@Float</span><span class="o">.</span><span class="n">register</span><span class="p">([</span><span class="s2">&quot;clamp&quot;</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">clamp</span><span class="p">(</span><span class="n">s</span><span class="p">:</span> <span class="s2">&quot;Stream[float]&quot;</span><span class="p">,</span> <span class="n">c_min</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">c_max</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Stream[float]&quot;</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Clamps the minimum and maximum value of a stream.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    s : `Stream[float]`</span>
+<span class="sd">        A float stream.</span>
+<span class="sd">    c_min : float</span>
+<span class="sd">        The mimimum value to clamp by.</span>
+<span class="sd">    c_max : float</span>
+<span class="sd">        The maximum value to clamp by.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    `Stream[float]`</span>
+<span class="sd">        The clamped stream of `s`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">stream</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">clamp_min</span><span class="p">(</span><span class="n">c_min</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;float&quot;</span><span class="p">)</span>
+    <span class="n">stream</span> <span class="o">=</span> <span class="n">stream</span><span class="o">.</span><span class="n">clamp_max</span><span class="p">(</span><span class="n">c_max</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;float&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">stream</span></div>
+
+
+<div class="viewcode-block" id="min"><a class="viewcode-back" href="../../../../../api/tensortrade.feed.api.float.ordering.html#tensortrade.feed.api.float.ordering.min">[docs]</a><span class="nd">@Float</span><span class="o">.</span><span class="n">register</span><span class="p">([</span><span class="s2">&quot;min&quot;</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">min</span><span class="p">(</span><span class="n">s1</span><span class="p">:</span> <span class="s2">&quot;Stream[float]&quot;</span><span class="p">,</span> <span class="n">s2</span><span class="p">:</span> <span class="s2">&quot;Stream[float]&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Stream[float]&quot;</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Computes the minimum of two streams.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    s1 : `Stream[float]`</span>
+<span class="sd">        The first float stream.</span>
+<span class="sd">    s2 : `Stream[float]`</span>
+<span class="sd">        The second float stream.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    `Stream[float]`</span>
+<span class="sd">        The minimum stream of `s1` and `s2`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">BinOp</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">)(</span><span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;float&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="max"><a class="viewcode-back" href="../../../../../api/tensortrade.feed.api.float.ordering.html#tensortrade.feed.api.float.ordering.max">[docs]</a><span class="nd">@Float</span><span class="o">.</span><span class="n">register</span><span class="p">([</span><span class="s2">&quot;max&quot;</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">max</span><span class="p">(</span><span class="n">s1</span><span class="p">:</span> <span class="s2">&quot;Stream[float]&quot;</span><span class="p">,</span> <span class="n">s2</span><span class="p">:</span> <span class="s2">&quot;Stream[float]&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Stream[float]&quot;</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Computes the maximum of two streams.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    s1 : `Stream[float]`</span>
+<span class="sd">        The first float stream.</span>
+<span class="sd">    s2 : `Stream[float]`</span>
+<span class="sd">        The second float stream.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    `Stream[float]`</span>
+<span class="sd">        The maximum stream of `s1` and `s2`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">BinOp</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">)(</span><span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;float&quot;</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

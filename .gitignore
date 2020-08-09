@@ -22,3 +22,6 @@ Pipfile
 # agent storage
 examples/agents
 examples/training_logs
+
+# virtual environment
+venv

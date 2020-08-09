@@ -6,5 +6,5 @@ sphinx_autodoc_typehints
 sphinxcontrib.apidoc
 nbsphinx
 nbsphinx_link
-m2r
+recommonmark
 ipykernel

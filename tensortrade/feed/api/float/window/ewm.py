@@ -12,7 +12,7 @@ from tensortrade.feed.api.float import Float
 
 
 class ExponentialWeightedMovingAverage(Stream[float]):
-    """A stream operator that computes an exponential weighted moving average
+    r"""A stream operator that computes an exponential weighted moving average
     on a given float stream.
 
     Parameters
@@ -98,7 +98,7 @@ class ExponentialWeightedMovingAverage(Stream[float]):
 
 
 class ExponentialWeightedMovingCovariance(Stream[float]):
-    """A stream operator that computes an exponential weighted moving average
+    r"""A stream operator that computes an exponential weighted moving average
     on a given float stream.
 
     Parameters
@@ -239,11 +239,9 @@ class ExponentialWeightedMovingCovariance(Stream[float]):
 
 
 class EWM(Stream[List[float]]):
-    """Provide exponential weighted (EW) functions.
+    r"""Provide exponential weighted (EW) functions.
 
-    Available EW functions: ``mean()``, ``var()``, ``std()``, ``corr()``, ``cov()``.
-
-    Exactly one parameter: ``com``, ``span``, ``halflife``, or ``alpha`` must be
+    Exactly one parameter: `com`, `span`, `halflife`, or `alpha` must be
     provided.
 
     Parameters
@@ -261,7 +259,6 @@ class EWM(Stream[List[float]]):
         If ``times`` is specified, the time unit (str or timedelta) over which an
         observation decays to half its value. Only applicable to ``mean()``
         and halflife value will not apply to the other functions.
-        .. versionadded:: 1.1.0
     alpha : float, optional
         Specify smoothing factor :math:`\alpha` directly,
         :math:`0 < \alpha \leq 1`.
@@ -291,11 +288,11 @@ class EWM(Stream[List[float]]):
 
     See Also
     --------
-    [1] https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.ewm.html
+    .. https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.ewm.html
 
     References
     ----------
-    [1] https://github.com/pandas-dev/pandas/blob/d9fff2792bf16178d4e450fe7384244e50635733/pandas/core/window/ewm.py#L65
+    .. https://github.com/pandas-dev/pandas/blob/d9fff2792bf16178d4e450fe7384244e50635733/pandas/core/window/ewm.py#L65
     """
 
     def __init__(
@@ -409,7 +406,7 @@ def ewm(s: "Stream[float]",
         min_periods: int = 0,
         adjust: bool = True,
         ignore_na: bool = False) -> "Stream[Tuple[List[float], List[float]]]":
-    """Computes the weights and values in order to perform an exponential
+    r"""Computes the weights and values in order to perform an exponential
     weighted moving operation.
 
     Parameters

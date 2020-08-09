@@ -1,0 +1,388 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Code Structure &mdash; TensorTrade 0.2.0-beta.2 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/theme_overrides.css" type="text/css" />
+
+  
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Components" href="../components/components.html" />
+    <link rel="prev" title="Getting Started" href="../overview/getting_started.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html">
+          
+
+          
+            
+            <img src="../_static/logo.jpg" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Home</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Overview</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../overview/getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../overview/getting_started.html#installation">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../overview/getting_started.html#docker">Docker</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Examples</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Code Structure</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#example-of-structure">Example of Structure:</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Component Types</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../components/components.html">Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../components/component_types/trading_environment.html">Trading Environment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../components/component_types/exchange.html">Exchange</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../components/component_types/feature_pipeline.html">Feature Pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../components/component_types/action_scheme.html">Action Scheme</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../components/component_types/reward_scheme.html">Reward Scheme</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../components/component_types/trading_strategy.html">Trading Strategy</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Trading Environment</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../components/environments/TradingEnvironment.html">TradingEnvironment</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Exchanges</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../components/exchanges/Exchange.html">Exchange</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../components/exchanges/simulated/SimulatedExchange.html">SimulatedExchange</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../components/exchanges/simulated/FBMExchange.html">FBMExchange</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../components/exchanges/live/CCXTExchange.html">CCXTExchange</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../components/exchanges/live/InteractiveBrokersExchange.html">InteractiveBrokersExchange</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Features</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../components/features/FeaturePipeline.html">FeaturePipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../components/features/FeatureTransformer.html">FeatureTransformer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../components/features/scalers/MinMaxNormalizer.html">MinMaxNormalizer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../components/features/scalers/StandardNormalizer.html">StandardNormalizer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../components/features/stationarity/FractionalDifference.html">FractionalDifference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../components/features/indicators/TAlibIndicator.html">TAlibIndicator</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Actions</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../components/actions/ActionScheme.html">ActionScheme</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../components/actions/ContinuousActions.html">ContinuousActions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../components/actions/DiscreteActions.html">DiscreteActions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../components/actions/MultiDiscreteActions.html">MultiDiscreteActions</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Rewards</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../components/rewards/RewardScheme.html">Reward Scheme</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../components/rewards/RiskAdjustedReturns.html">Risk Adjusted Returns</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../components/rewards/SimpleProfit.html">Simple Profit</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Learning Agents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../agents/learning_agents.html">Learning Agents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../agents/stable_baselines.html">Stable Baselines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../agents/tensorforce.html">Tensorforce</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Strategies</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../components/strategies/TradingStrategy.html">TradingStrategy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../components/strategies/StableBaselinesTradingStrategy.html">StableBaselinesTradingStrategy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../components/strategies/TensorforceTradingStrategy.html">TensorforceTradingStrategy</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api/modules.html">API reference</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">TensorTrade</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Code Structure</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/examples/overview.md.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="code-structure">
+<h1>Code Structure<a class="headerlink" href="#code-structure" title="Permalink to this headline">¶</a></h1>
+<p>The TensorTrade library is modular. The <code class="docutils literal notranslate"><span class="pre">tensortrade</span></code> library usually has a common setup:</p>
+<ol class="simple">
+<li><p>An abstract <code class="docutils literal notranslate"><span class="pre">MetaABC</span></code> class that highlights the methods that will generally be called inside of the main <code class="docutils literal notranslate"><span class="pre">TradingEnvironment</span></code>.</p></li>
+<li><p>Specific applications of that abstract class are then specified later to make more detailed specifications.</p></li>
+</ol>
+<div class="section" id="example-of-structure">
+<h2>Example of Structure:<a class="headerlink" href="#example-of-structure" title="Permalink to this headline">¶</a></h2>
+<p>A good example of this structure is the <code class="docutils literal notranslate"><span class="pre">Exchange</span></code> component. It represents all exchange interactions.</p>
+<p>The beginning of the code in <a class="reference external" href="https://github.com/notadamking/tensortrade/blob/master/tensortrade/exchanges/exchange.py">Exchange</a> is seen here.</p>
+<div class="highlight-py notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Exchange</span><span class="p">(</span><span class="nb">object</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;An abstract exchange for use within a trading environment.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base_instrument</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;USD&#39;</span><span class="p">,</span> <span class="n">dtype</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">type</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">feature_pipeline</span><span class="p">:</span> <span class="n">FeaturePipeline</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Arguments:</span>
+<span class="sd">            base_instrument: The exchange symbol of the instrument to store/measure value in.</span>
+<span class="sd">            dtype: A type or str corresponding to the dtype of the `observation_space`.</span>
+<span class="sd">            feature_pipeline: A pipeline of feature transformations for transforming observations.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_base_instrument</span> <span class="o">=</span> <span class="n">base_instrument</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span> <span class="o">=</span> <span class="n">dtype</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_feature_pipeline</span> <span class="o">=</span> <span class="n">feature_pipeline</span>
+</pre></div>
+</div>
+<p>As you can see above, the <a class="reference external" href="https://github.com/notadamking/tensortrade/blob/master/tensortrade/exchanges/exchange.py">Exchange</a> has a large majority of the instantiation details that carries over to all other reprentations of that type of class. <code class="docutils literal notranslate"><span class="pre">ABCMeta</span></code> represents that all classes that inherit it shall be recognizable as an instance of <code class="docutils literal notranslate"><span class="pre">Exchange</span></code>. This is nice when you need to do type checking.</p>
+<p>When creating a new exchange type (everything that’s an inheritance of the <code class="docutils literal notranslate"><span class="pre">Exchange</span></code>), one needs to add further details for how information should be declared by default. Once you create a new type of exchange, you can have new rules placed in by default. Let’s look at the SimulatedExchange and it can have parameters dynamically set via the <code class="docutils literal notranslate"><span class="pre">**kwargs</span></code> arguement in later exchanges.</p>
+<p><strong>SimulatedExchange:</strong></p>
+<div class="highlight-py notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">SimulatedExchange</span><span class="p">(</span><span class="n">Exchange</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;An exchange, in which the price history is based off the supplied data frame and</span>
+<span class="sd">    trade execution is largely decided by the designated slippage model.</span>
+<span class="sd">    If the `data_frame` parameter is not supplied upon initialization, it must be set before</span>
+<span class="sd">    the exchange can be used within a trading environment.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_frame</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">default</span><span class="p">(</span><span class="s1">&#39;dtype&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
+            <span class="n">feature_pipeline</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">default</span><span class="p">(</span><span class="s1">&#39;feature_pipeline&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_commission_percent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default</span><span class="p">(</span><span class="s1">&#39;commission_percent&#39;</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_base_precision</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default</span><span class="p">(</span><span class="s1">&#39;base_precision&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_instrument_precision</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default</span><span class="p">(</span><span class="s1">&#39;instrument_precision&#39;</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_min_trade_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default</span><span class="p">(</span><span class="s1">&#39;min_trade_size&#39;</span><span class="p">,</span> <span class="mf">1e-6</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_max_trade_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default</span><span class="p">(</span><span class="s1">&#39;max_trade_size&#39;</span><span class="p">,</span> <span class="mf">1e6</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_initial_balance</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default</span><span class="p">(</span><span class="s1">&#39;initial_balance&#39;</span><span class="p">,</span> <span class="mf">1e4</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_observation_columns</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default</span><span class="p">(</span>
+            <span class="s1">&#39;observation_columns&#39;</span><span class="p">,</span>
+            <span class="p">[</span><span class="s1">&#39;open&#39;</span><span class="p">,</span> <span class="s1">&#39;high&#39;</span><span class="p">,</span> <span class="s1">&#39;low&#39;</span><span class="p">,</span> <span class="s1">&#39;close&#39;</span><span class="p">,</span> <span class="s1">&#39;volume&#39;</span><span class="p">],</span>
+            <span class="n">kwargs</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_price_column</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default</span><span class="p">(</span><span class="s1">&#39;price_column&#39;</span><span class="p">,</span> <span class="s1">&#39;close&#39;</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_window_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default</span><span class="p">(</span><span class="s1">&#39;window_size&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pretransform</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default</span><span class="p">(</span><span class="s1">&#39;pretransform&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_price_history</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_frame</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default</span><span class="p">(</span><span class="s1">&#39;data_frame&#39;</span><span class="p">,</span> <span class="n">data_frame</span><span class="p">)</span>
+
+        <span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default</span><span class="p">(</span><span class="s1">&#39;slippage_model&#39;</span><span class="p">,</span> <span class="s1">&#39;uniform&#39;</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_slippage_model</span> <span class="o">=</span> <span class="n">slippage</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">model</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="n">model</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Everything that inherits <code class="docutils literal notranslate"><span class="pre">SimulatedExchange</span></code> uses the specified kwargs to set the parameters.</p>
+<p>Therefore, even when we don’t directly see the parameters inside of <code class="docutils literal notranslate"><span class="pre">FBMExchange</span></code>, all of the defaults are being called.</p>
+<p><strong>An example:</strong></p>
+<div class="highlight-py notranslate"><div class="highlight"><pre><span></span><span class="n">exchange</span> <span class="o">=</span> <span class="n">FBMExchange</span><span class="p">(</span><span class="n">base_instrument</span><span class="o">=</span><span class="s1">&#39;BTC&#39;</span><span class="p">,</span> <span class="n">timeframe</span><span class="o">=</span><span class="s1">&#39;1h&#39;</span><span class="p">,</span> <span class="n">base_precision</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span> <span class="c1"># we&#39;re replacing the default base precision.</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../components/components.html" class="btn btn-neutral float-right" title="Components" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="../overview/getting_started.html" class="btn btn-neutral float-left" title="Getting Started" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

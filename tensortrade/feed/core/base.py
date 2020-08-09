@@ -13,6 +13,7 @@ from typing import (
 
 from tensortrade.core import Observable
 from tensortrade.feed.core.accessors import CachedAccessor
+from tensortrade.feed.core.mixins import DataTypeMixin
 
 
 T = TypeVar("T")
@@ -125,7 +126,7 @@ class Stream(Generic[T], Named, Observable):
         Converts the data type to `dtype`.
     """
 
-    _mixins: "Dict[str, DataTypeMixIn]" = {}
+    _mixins: "Dict[str, DataTypeMixin]" = {}
     _accessors: "List[CachedAccessor]" = []
     generic_name: str = "stream"
 

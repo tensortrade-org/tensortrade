@@ -1,0 +1,421 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>tensortrade.oms.instruments.instrument module &mdash; TensorTrade 0.2.0-beta.2 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/theme_overrides.css" type="text/css" />
+
+  
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="tensortrade.oms.instruments.quantity module" href="tensortrade.oms.instruments.quantity.html" />
+    <link rel="prev" title="tensortrade.oms.instruments.exchange_pair module" href="tensortrade.oms.instruments.exchange_pair.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html">
+          
+
+          
+            
+            <img src="../_static/logo.jpg" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Home</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Overview</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../overview/getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../overview/getting_started.html#installation">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../overview/getting_started.html#docker">Docker</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../examples/overview.html">Code Structure</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Component Types</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../components/components.html">Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../components/component_types/trading_environment.html">Trading Environment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../components/component_types/exchange.html">Exchange</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../components/component_types/feature_pipeline.html">Feature Pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../components/component_types/action_scheme.html">Action Scheme</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../components/component_types/reward_scheme.html">Reward Scheme</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../components/component_types/trading_strategy.html">Trading Strategy</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Trading Environment</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../components/environments/TradingEnvironment.html">TradingEnvironment</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Exchanges</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../components/exchanges/Exchange.html">Exchange</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../components/exchanges/simulated/SimulatedExchange.html">SimulatedExchange</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../components/exchanges/simulated/FBMExchange.html">FBMExchange</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../components/exchanges/live/CCXTExchange.html">CCXTExchange</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../components/exchanges/live/InteractiveBrokersExchange.html">InteractiveBrokersExchange</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Features</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../components/features/FeaturePipeline.html">FeaturePipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../components/features/FeatureTransformer.html">FeatureTransformer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../components/features/scalers/MinMaxNormalizer.html">MinMaxNormalizer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../components/features/scalers/StandardNormalizer.html">StandardNormalizer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../components/features/stationarity/FractionalDifference.html">FractionalDifference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../components/features/indicators/TAlibIndicator.html">TAlibIndicator</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Actions</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../components/actions/ActionScheme.html">ActionScheme</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../components/actions/ContinuousActions.html">ContinuousActions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../components/actions/DiscreteActions.html">DiscreteActions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../components/actions/MultiDiscreteActions.html">MultiDiscreteActions</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Rewards</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../components/rewards/RewardScheme.html">Reward Scheme</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../components/rewards/RiskAdjustedReturns.html">Risk Adjusted Returns</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../components/rewards/SimpleProfit.html">Simple Profit</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Learning Agents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../agents/learning_agents.html">Learning Agents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../agents/stable_baselines.html">Stable Baselines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../agents/tensorforce.html">Tensorforce</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Strategies</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../components/strategies/TradingStrategy.html">TradingStrategy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../components/strategies/StableBaselinesTradingStrategy.html">StableBaselinesTradingStrategy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../components/strategies/TensorforceTradingStrategy.html">TensorforceTradingStrategy</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">API reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="tensortrade.html">tensortrade package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="tensortrade.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="tensortrade.agents.html">tensortrade.agents package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tensortrade.contrib.html">tensortrade.contrib package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tensortrade.core.html">tensortrade.core package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tensortrade.data.html">tensortrade.data package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tensortrade.env.html">tensortrade.env package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tensortrade.feed.html">tensortrade.feed package</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="tensortrade.oms.html">tensortrade.oms package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tensortrade.stochastic.html">tensortrade.stochastic package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="tensortrade.html#submodules">Submodules</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">TensorTrade</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="modules.html">tensortrade</a> &raquo;</li>
+        
+          <li><a href="tensortrade.html">tensortrade package</a> &raquo;</li>
+        
+          <li><a href="tensortrade.oms.html">tensortrade.oms package</a> &raquo;</li>
+        
+          <li><a href="tensortrade.oms.instruments.html">tensortrade.oms.instruments package</a> &raquo;</li>
+        
+      <li>tensortrade.oms.instruments.instrument module</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/api/tensortrade.oms.instruments.instrument.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="module-tensortrade.oms.instruments.instrument">
+<span id="tensortrade-oms-instruments-instrument-module"></span><h1>tensortrade.oms.instruments.instrument module<a class="headerlink" href="#module-tensortrade.oms.instruments.instrument" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt id="tensortrade.oms.instruments.instrument.Instrument">
+<em class="property">class </em><code class="sig-prename descclassname">tensortrade.oms.instruments.instrument.</code><code class="sig-name descname">Instrument</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">symbol</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a></span></em>, <em class="sig-param"><span class="n">precision</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)">int</a></span></em>, <em class="sig-param"><span class="n">name</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tensortrade/oms/instruments/instrument.html#Instrument"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tensortrade.oms.instruments.instrument.Instrument" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>A financial instrument for use in trading.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>symbol</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – The symbol used on an exchange for a particular instrument.
+(e.g. AAPL, BTC, TSLA)</p></li>
+<li><p><strong>precision</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – The precision the amount of the instrument is denoted with.
+(e.g. BTC=8, AAPL=1)</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <em>optional</em>) – The name of the instrument being created.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="tensortrade.oms.instruments.instrument.Instrument.__eq__">
+<code class="sig-name descname">__eq__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">other</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)">bool</a><a class="reference internal" href="../_modules/tensortrade/oms/instruments/instrument.html#Instrument.__eq__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tensortrade.oms.instruments.instrument.Instrument.__eq__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if two instruments are equal.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>other</strong> (<cite>Any</cite>) – The instrument being compared.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><em>bool</em> – Whether the instruments are equal.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="tensortrade.oms.instruments.instrument.Instrument.__ne__">
+<code class="sig-name descname">__ne__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">other</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)">bool</a><a class="reference internal" href="../_modules/tensortrade/oms/instruments/instrument.html#Instrument.__ne__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tensortrade.oms.instruments.instrument.Instrument.__ne__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if two instruments are not equal.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>other</strong> (<cite>Any</cite>) – The instrument being compared.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><em>bool</em> – Whether the instruments are not equal.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="tensortrade.oms.instruments.instrument.Instrument.__rmul__">
+<code class="sig-name descname">__rmul__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">other</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)">float</a></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="tensortrade.oms.instruments.quantity.html#tensortrade.oms.instruments.quantity.Quantity" title="tensortrade.oms.instruments.quantity.Quantity">tensortrade.oms.instruments.quantity.Quantity</a><a class="reference internal" href="../_modules/tensortrade/oms/instruments/instrument.html#Instrument.__rmul__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tensortrade.oms.instruments.instrument.Instrument.__rmul__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Enables reverse multiplication.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>other</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – The number used to create a quantity.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><cite>Quantity</cite> – The quantity created by the number and the instrument involved with
+this operation.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="tensortrade.oms.instruments.instrument.Instrument.__truediv__">
+<code class="sig-name descname">__truediv__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">other</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#tensortrade.oms.instruments.instrument.Instrument" title="tensortrade.oms.instruments.instrument.Instrument">tensortrade.oms.instruments.instrument.Instrument</a></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="tensortrade.oms.instruments.trading_pair.html#tensortrade.oms.instruments.trading_pair.TradingPair" title="tensortrade.oms.instruments.trading_pair.TradingPair">tensortrade.oms.instruments.trading_pair.TradingPair</a><a class="reference internal" href="../_modules/tensortrade/oms/instruments/instrument.html#Instrument.__truediv__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tensortrade.oms.instruments.instrument.Instrument.__truediv__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a trading pair through division.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>other</strong> (<cite>Instrument</cite>) – The instrument that will be the quote of the pair.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><cite>TradingPair</cite> – The trading pair created from the two instruments.</p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="tensortrade.core.exceptions.html#tensortrade.core.exceptions.InvalidTradingPair" title="tensortrade.core.exceptions.InvalidTradingPair"><strong>InvalidTradingPair</strong></a> – Raised if <cite>other</cite> is the same instrument as <cite>self</cite>.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.8)"><strong>Exception</strong></a> – Raised if <cite>other</cite> is not an instrument.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="tensortrade.oms.instruments.quantity.html" class="btn btn-neutral float-right" title="tensortrade.oms.instruments.quantity module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="tensortrade.oms.instruments.exchange_pair.html" class="btn btn-neutral float-left" title="tensortrade.oms.instruments.exchange_pair module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
