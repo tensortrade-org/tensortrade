@@ -1,5 +1,5 @@
-from .portfolio import Portfolio
 from .wallet import Wallet
+from .portfolio import Portfolio
 
 
 _registry = {}
