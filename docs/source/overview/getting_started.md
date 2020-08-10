@@ -1,6 +1,6 @@
 ## Getting Started
 
-You can get started testing on Google Colab or your local machine, by viewing our [many examples](https://github.com/notadamking/tensortrade/tree/master/examples)
+You can get started testing on Google Colab or your local machine, by viewing our [many examples](https://github.com/tensortrade-org/tensortrade/tree/master/examples)
 
 ---
 
@@ -17,7 +17,7 @@ pip install tensortrade
 OR
 
 ```bash
-pip install git+https://github.com/notadamking/tensortrade.git
+pip install git+https://github.com/tensortrade-org/tensortrade.git
 ```
 
 Some functionality included in TensorTrade is optional. To install all optional dependencies, run the following command:
@@ -29,12 +29,12 @@ pip install tensortrade[tf,tensorforce,baselines,ccxt,fbm]
 OR
 
 ```bash
-pip install git+https://github.com/notadamking/tensortrade.git[tf,tensorforce,baselines,ccxt,fbm]
+pip install git+https://github.com/tensortrade-org/tensortrade.git[tf,tensorforce,baselines,ccxt,fbm]
 ```
 
 
 ## Docker
-  
+
 To run the commands below ensure Docker is installed. Visit https://docs.docker.com/install/ for more information
 
 ### Run Jupyter Notebooks
@@ -45,7 +45,7 @@ To run a jupyter notebook execute the following
 make run-notebook
 ```
 
-which will generate a link of the form 127.0.0.1:8888/?token=... Paste this link into your browers and select the notebook you'd like to explore
+which will generate a link of the form 127.0.0.1:8888/?token=... Paste this link into your browsers and select the notebook you'd like to explore
 
 
 ### Build Documentation

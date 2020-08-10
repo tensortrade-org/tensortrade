@@ -31,7 +31,7 @@ class ExponentialWeightedMovingAverage(Stream[float]):
 
     References
     ----------
-    [1] https://github.com/pandas-dev/pandas/blob/d9fff2792bf16178d4e450fe7384244e50635733/pandas/_libs/window/aggregations.pyx#L1801
+    .. [1] https://github.com/pandas-dev/pandas/blob/d9fff2792bf16178d4e450fe7384244e50635733/pandas/_libs/window/aggregations.pyx#L1801
     """
 
     def __init__(self,
@@ -288,11 +288,11 @@ class EWM(Stream[List[float]]):
 
     See Also
     --------
-    .. https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.ewm.html
+    .. [1] https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.ewm.html
 
     References
     ----------
-    .. https://github.com/pandas-dev/pandas/blob/d9fff2792bf16178d4e450fe7384244e50635733/pandas/core/window/ewm.py#L65
+    .. [1] https://github.com/pandas-dev/pandas/blob/d9fff2792bf16178d4e450fe7384244e50635733/pandas/core/window/ewm.py#L65
     """
 
     def __init__(
