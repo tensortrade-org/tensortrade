@@ -1,5 +1,0 @@
-# Renderer
-
-### Overview
-
-### API Reference

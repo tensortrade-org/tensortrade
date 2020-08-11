@@ -1,5 +1,0 @@
-# Observer
-
-### Overview
-
-### API Reference

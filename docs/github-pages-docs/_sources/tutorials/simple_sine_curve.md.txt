@@ -1,0 +1,1 @@
+# Simple Sine Curve

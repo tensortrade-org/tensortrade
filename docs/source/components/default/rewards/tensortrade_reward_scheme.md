@@ -1,1 +1,0 @@
-# TensorTrade Reward Scheme

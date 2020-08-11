@@ -1,5 +1,0 @@
-# Stopper
-
-### Overview
-
-### API Reference

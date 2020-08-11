@@ -42,8 +42,8 @@
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Trading Environment" href="component_types/trading_environment.html" />
-    <link rel="prev" title="Code Structure" href="../examples/overview.html" /> 
+    <link rel="next" title="Action Scheme" href="action_scheme.html" />
+    <link rel="prev" title="Pairs Trading" href="../tutorials/pairs_trading.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -104,61 +104,41 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../examples/overview.html">Code Structure</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Component Types</span></p>
+<p class="caption"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/simple_sine_curve.html">Simple Sine Curve</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/pairs_trading.html">Pairs Trading</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Components</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Components</a></li>
-<li class="toctree-l1"><a class="reference internal" href="component_types/trading_environment.html">Trading Environment</a></li>
-<li class="toctree-l1"><a class="reference internal" href="component_types/exchange.html">Exchange</a></li>
-<li class="toctree-l1"><a class="reference internal" href="component_types/feature_pipeline.html">Feature Pipeline</a></li>
-<li class="toctree-l1"><a class="reference internal" href="component_types/action_scheme.html">Action Scheme</a></li>
-<li class="toctree-l1"><a class="reference internal" href="component_types/reward_scheme.html">Reward Scheme</a></li>
-<li class="toctree-l1"><a class="reference internal" href="component_types/trading_strategy.html">Trading Strategy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="action_scheme.html">Action Scheme</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reward_scheme.html">Reward Scheme</a></li>
+<li class="toctree-l1"><a class="reference internal" href="observer.html">Observer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stopper.html">Stopper</a></li>
+<li class="toctree-l1"><a class="reference internal" href="informer.html">Informer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="renderer.html">Renderer</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Trading Environment</span></p>
+<p class="caption"><span class="caption-text">Environments</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="environments/TradingEnvironment.html">TradingEnvironment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../envs/trading_env.html">TradingEnvironment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../envs/generic.html">Generic</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../envs/default.html">Default</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Exchanges</span></p>
+<p class="caption"><span class="caption-text">Feed</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="exchanges/Exchange.html">Exchange</a></li>
-<li class="toctree-l1"><a class="reference internal" href="exchanges/simulated/SimulatedExchange.html">SimulatedExchange</a></li>
-<li class="toctree-l1"><a class="reference internal" href="exchanges/simulated/FBMExchange.html">FBMExchange</a></li>
-<li class="toctree-l1"><a class="reference internal" href="exchanges/live/CCXTExchange.html">CCXTExchange</a></li>
-<li class="toctree-l1"><a class="reference internal" href="exchanges/live/InteractiveBrokersExchange.html">InteractiveBrokersExchange</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../feed/overview.html">Overview</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Features</span></p>
+<p class="caption"><span class="caption-text">Order Management System (OMS)</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="features/FeaturePipeline.html">FeaturePipeline</a></li>
-<li class="toctree-l1"><a class="reference internal" href="features/FeatureTransformer.html">FeatureTransformer</a></li>
-<li class="toctree-l1"><a class="reference internal" href="features/scalers/MinMaxNormalizer.html">MinMaxNormalizer</a></li>
-<li class="toctree-l1"><a class="reference internal" href="features/scalers/StandardNormalizer.html">StandardNormalizer</a></li>
-<li class="toctree-l1"><a class="reference internal" href="features/stationarity/FractionalDifference.html">FractionalDifference</a></li>
-<li class="toctree-l1"><a class="reference internal" href="features/indicators/TAlibIndicator.html">TAlibIndicator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../oms/overview.html">Order Management System (OMS)</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Actions</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="actions/ActionScheme.html">ActionScheme</a></li>
-<li class="toctree-l1"><a class="reference internal" href="actions/ContinuousActions.html">ContinuousActions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="actions/DiscreteActions.html">DiscreteActions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="actions/MultiDiscreteActions.html">MultiDiscreteActions</a></li>
-</ul>
-<p class="caption"><span class="caption-text">Rewards</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="rewards/RewardScheme.html">Reward Scheme</a></li>
-<li class="toctree-l1"><a class="reference internal" href="rewards/RiskAdjustedReturns.html">Risk Adjusted Returns</a></li>
-<li class="toctree-l1"><a class="reference internal" href="rewards/SimpleProfit.html">Simple Profit</a></li>
-</ul>
-<p class="caption"><span class="caption-text">Learning Agents</span></p>
+<p class="caption"><span class="caption-text">Agents</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../agents/learning_agents.html">Learning Agents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../agents/ray.html">Ray</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../agents/stable_baselines.html">Stable Baselines</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../agents/tensorforce.html">Tensorforce</a></li>
-</ul>
-<p class="caption"><span class="caption-text">Strategies</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="strategies/TradingStrategy.html">TradingStrategy</a></li>
-<li class="toctree-l1"><a class="reference internal" href="strategies/StableBaselinesTradingStrategy.html">StableBaselinesTradingStrategy</a></li>
-<li class="toctree-l1"><a class="reference internal" href="strategies/TensorforceTradingStrategy.html">TensorforceTradingStrategy</a></li>
 </ul>
 <p class="caption"><span class="caption-text">API reference</span></p>
 <ul>
@@ -266,10 +246,10 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="component_types/trading_environment.html" class="btn btn-neutral float-right" title="Trading Environment" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="action_scheme.html" class="btn btn-neutral float-right" title="Action Scheme" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="../examples/overview.html" class="btn btn-neutral float-left" title="Code Structure" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="../tutorials/pairs_trading.html" class="btn btn-neutral float-left" title="Pairs Trading" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

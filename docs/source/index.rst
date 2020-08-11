@@ -90,16 +90,16 @@ TensorTrade suitable for advanced research and production use.
 
 
 .. toctree::
-    :glob:
-    :maxdepth: 2
+    :maxdepth: 1
     :caption: Components
 
     components/components.md
-    components/generic/*
-    components/default/actions/*
-    components/default/rewards/*
-    components/default/observers/*
-    components/default/renderers/*
+    components/action_scheme.md
+    components/reward_scheme.md
+    components/observer.md
+    components/stopper.md
+    components/informer.md
+    components/renderer.md
 
 
 .. toctree::

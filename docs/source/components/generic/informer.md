@@ -1,5 +1,0 @@
-# Informer
-
-### Overview
-
-### API Reference

@@ -61,109 +61,81 @@ TensorTrade suitable for advanced research and production use.
 
 
 .. toctree::
-  :maxdepth: 1
-  :hidden:
+    :maxdepth: 1
+    :hidden:
 
-  Home <self>
-
-
-.. toctree::
-  :maxdepth: 1
-  :caption: Overview
-
-  overview/getting_started.md
+    Home <self>
 
 
 .. toctree::
-   :maxdepth: 1
-   :caption: Examples
+    :maxdepth: 1
+    :caption: Overview
 
-   examples/overview.md
-
-
-.. toctree::
-  :maxdepth: 1
-  :caption: Component Types
-
-  components/components.md
-  components/component_types/trading_environment.md
-  components/component_types/exchange.md
-  components/component_types/feature_pipeline.md
-  components/component_types/action_scheme.md
-  components/component_types/reward_scheme.md
-  components/component_types/trading_strategy.md
+    overview/getting_started.md
 
 
 .. toctree::
-  :maxdepth: 1
-  :caption: Trading Environment
+    :maxdepth: 1
+    :caption: Examples
 
-  components/environments/TradingEnvironment.md
-
-
-.. toctree::
-  :maxdepth: 1
-  :caption: Exchanges
-
-  components/exchanges/Exchange.md
-  components/exchanges/simulated/SimulatedExchange.md
-  components/exchanges/simulated/FBMExchange.md
-  components/exchanges/live/CCXTExchange.md
-  components/exchanges/live/InteractiveBrokersExchange.md
+    examples/overview.md
 
 
 .. toctree::
-  :maxdepth: 1
-  :caption: Features
+    :maxdepth: 1
+    :caption: Tutorials
 
-
-  components/features/FeaturePipeline.md
-  components/features/FeatureTransformer.md
-  components/features/scalers/MinMaxNormalizer.md
-  components/features/scalers/StandardNormalizer.md
-  components/features/stationarity/FractionalDifference.md
-  components/features/indicators/TAlibIndicator.md
+    tutorials/simple_sine_curve.md
+    tutorials/pairs_trading.md
 
 
 .. toctree::
-  :maxdepth: 1
-  :caption: Actions
+    :maxdepth: 1
+    :caption: Components
 
-  components/actions/ActionScheme.md
-  components/actions/ContinuousActions.md
-  components/actions/DiscreteActions.md
-  components/actions/MultiDiscreteActions.md
-
-
-.. toctree::
-  :maxdepth: 1
-  :caption: Rewards
-
-  components/rewards/RewardScheme.md
-  components/rewards/RiskAdjustedReturns.md
-  components/rewards/SimpleProfit.md
+    components/components.md
+    components/action_scheme.md
+    components/reward_scheme.md
+    components/observer.md
+    components/stopper.md
+    components/informer.md
+    components/renderer.md
 
 
 .. toctree::
-  :maxdepth: 1
-  :caption: Learning Agents
+    :maxdepth: 1
+    :caption: Environments
 
-  agents/learning_agents.md
-  agents/stable_baselines.md
-  agents/tensorforce.md
-
-
-.. toctree::
-  :maxdepth: 1
-  :caption: Strategies
-
-  components/strategies/TradingStrategy.md
-  components/strategies/StableBaselinesTradingStrategy.md
-  components/strategies/TensorforceTradingStrategy.md
+    envs/trading_env.md
+    envs/generic.md
+    envs/default.md
 
 
 .. toctree::
-   :maxdepth: 1
-   :caption: API reference
+    :maxdepth: 1
+    :caption: Feed
 
-   API reference <api/modules>
+    feed/overview.md
+
+.. toctree::
+    :maxdepth: 1
+    :caption: Order Management System (OMS)
+
+    oms/overview.md
+
+
+.. toctree::
+    :maxdepth: 1
+    :caption: Agents
+
+    agents/learning_agents.md
+    agents/ray.md
+    agents/stable_baselines.md
+    agents/tensorforce.md
+
+
+.. toctree::
+    :maxdepth: 1
+    :caption: API reference
+
+    API reference <api/modules>

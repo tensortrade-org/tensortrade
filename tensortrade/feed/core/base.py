@@ -1,4 +1,6 @@
 
+import inspect
+
 from abc import abstractmethod
 from typing import (
     Generic,
@@ -476,7 +478,7 @@ class _Stream(Stream[T]):
 
     Parameters
     ----------
-    iterable : `Iterable[T]`
+    source : `Iterable[T]`
         The iterable to be used for providing the data.
     dtype : str, optional
         The data type of the source.
@@ -484,10 +486,18 @@ class _Stream(Stream[T]):
 
     generic_name = "stream"
 
-    def __init__(self, iterable: "Iterable[T]", dtype: str = None):
+    def __init__(self, source: "Iterable[T]", dtype: str = None):
         super().__init__(dtype=dtype)
-        self.iterable = iterable
-        self.generator = iter(iterable)
+        self.is_gen = False
+        self.iterable = None
+
+        if inspect.isgeneratorfunction(source):
+            self.gen_fn = source
+            self.is_gen = True
+            self.generator = self.gen_fn()
+        else:
+            self.iterable = source
+            self.generator = iter(source)
 
         self.stop = False
 
@@ -508,7 +518,10 @@ class _Stream(Stream[T]):
         return not self.stop
 
     def reset(self):
-        self.generator = iter(self.iterable)
+        if self.is_gen:
+            self.generator = self.gen_fn()
+        else:
+            self.generator = iter(self.iterable)
         self.stop = False
 
         try:
