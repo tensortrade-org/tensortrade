@@ -119,7 +119,7 @@ TensorTrade suitable for advanced research and production use.
 
 .. toctree::
     :maxdepth: 1
-    :caption: Order Management System (OMS)
+    :caption: Order Management System
 
     oms/overview.md
 

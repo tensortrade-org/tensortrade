@@ -2,7 +2,7 @@
 
 The `feed` package provides useful tools when building trading environments. The primary reason for using this package is to help build the mechanisms that generate observations from an environment. Therefore, it is fitting that their primary location of use is in the `Observer` component. The `Stream` API provides the granularity needed to connect specific data sources to the `Observer`.
 
-## What is a `Stream`?
+# What is a `Stream`?
 A `Stream` is the basic building block for the `DataFeed`, which is also a stream itself. Each stream has a name and a data type and they can be set after the stream is created.  Streams can be created through the following mechanisms:
 * generators
 * iterables
@@ -82,7 +82,7 @@ As the agent and the environment are interacting with one another, this stream w
 
 Now that we have seen the different ways we can create streams, we need to understand the ways in which we can aggregate new streams from old. This is where the data type of a stream becomes important.
 
-## Using Data Types
+# Using Data Types
 The purpose of the data type of a stream, `dtype`, is to add additional functionality and behavior to a stream such that it can be aggregated with other streams of the same type in an easy and intuitive way. For example, what if the number of executed orders from the `broker` is not important by itself, but is important with respect to the current time of the process. This can be taken into account if we create a stream for keeping count of the active orders and another one for keeping track of the step in the process. Here is what that would look like.
 
 ```python
@@ -124,7 +124,7 @@ Since the most common data type is `float` in these tasks, the following is a li
 
 There are many more useful functions that can be utilized, too many to list in fact. You can find all of the. however, in the API reference section of the documentation.
 
-## Advanced Usages
+# Advanced Usages
 The `Stream` API is very robust and can handle complex streaming operations, particularly for the `float` data type. Some of the more advanced usages include performance tracking and developing reward schemes for the `default` trading environment. In the following example, we will show how to track the net worth of a portfolio. This implementation will be coming directly from the wallets that are defined in the `portfolio`.
 
 ```python

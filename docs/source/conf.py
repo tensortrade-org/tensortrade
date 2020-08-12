@@ -54,6 +54,7 @@ extensions = [
     'nbsphinx',
     'nbsphinx_link',  # for linking notebooks from outside sphinx source root
     'recommonmark',   # for including markdown
+    'sphinx_markdown_tables' # Support rendering tables in markdown
 ]
 
 # nbsphinx settings

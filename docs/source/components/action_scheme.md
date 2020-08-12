@@ -80,13 +80,26 @@ Blank.
 ### BSH
 
 <br> **Overview** <br>
-Blank.
+The buy/sell/hold (BSH) action scheme was made to capture the simplest type of
+action space that can be made. If the agent is in state 0, then all of its net worth
+is located in our `cash` wallet (e.g. USD). If the agent is in state 1, then all of
+its net worth is located in our `asset` wallet (e.g. BTC).
+
 <br> **Action Space** <br>
-Blank.
+* `Discrete(2)`
+
 <br> **Perform** <br>
-Blank.
+Below is a table that shows the mapping `(state, action) -> (state)`. <br>
+
+State | Action | Meaning |
+----- | ------ | ------- |
+0 | 0 | Keep net worth in `cash` wallet (HOLD) |
+0 | 1 | Transition net worth from `cash` wallet to `asset` wallet (BUY) |
+1 | 0 | Transition net worth from `asset` wallet to `cash` wallet. (SELL) |
+1 | 1 | Keep net worth in `asset` wallet (HOLD) |
+
 <br> **Compatibility** <br>
-Blank.
+* `PBR` (position-based reward)
 <hr>
 
 ### Pairs
