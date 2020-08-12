@@ -1,0 +1,710 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>tensortrade.feed.api.float.window.ewm &mdash; TensorTrade 0.2.0-beta.2 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../../../_static/theme_overrides.css" type="text/css" />
+
+  
+  
+    <link rel="shortcut icon" href="../../../../../../_static/favicon.ico"/>
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../../../../" src="../../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../../_static/jquery.js"></script>
+        <script src="../../../../../../_static/underscore.js"></script>
+        <script src="../../../../../../_static/doctools.js"></script>
+        <script src="../../../../../../_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    
+    <script type="text/javascript" src="../../../../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../../../../index.html">
+          
+
+          
+            
+            <img src="../../../../../../_static/logo.jpg" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../index.html">Home</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Overview</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../overview/getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../overview/getting_started.html#installation">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../overview/getting_started.html#docker">Docker</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../examples/overview.html">Code Structure</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../tutorials/simple_sine_curve.html">Simple Sine Curve</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../tutorials/pairs_trading.html">Pairs Trading</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Components</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../components/components.html">Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../components/action_scheme.html">Action Scheme</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../components/reward_scheme.html">Reward Scheme</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../components/observer.html">Observer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../components/stopper.html">Stopper</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../components/informer.html">Informer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../components/renderer.html">Renderer</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Environments</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../envs/trading_env.html">TradingEnvironment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../envs/generic.html">Generic</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../envs/default.html">Default</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Feed</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../feed/overview.html">Overview</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Order Management System (OMS)</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../oms/overview.html">Order Management System (OMS)</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Agents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../agents/learning_agents.html">Learning Agents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../agents/ray.html">Ray</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../agents/stable_baselines.html">Stable Baselines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../agents/tensorforce.html">Tensorforce</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../api/modules.html">API reference</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../../index.html">TensorTrade</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../../../../index.html">Module code</a> &raquo;</li>
+        
+          <li><a href="../../float.html">tensortrade.feed.api.float</a> &raquo;</li>
+        
+      <li>tensortrade.feed.api.float.window.ewm</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for tensortrade.feed.api.float.window.ewm</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">ewm.py contains functions and classes for exponential weighted moving stream</span>
+<span class="sd">operations.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">tensortrade.feed.core.base</span> <span class="kn">import</span> <span class="n">Stream</span>
+<span class="kn">from</span> <span class="nn">tensortrade.feed.api.float</span> <span class="kn">import</span> <span class="n">Float</span>
+
+
+<div class="viewcode-block" id="ExponentialWeightedMovingAverage"><a class="viewcode-back" href="../../../../../../api/tensortrade.feed.api.float.window.ewm.html#tensortrade.feed.api.float.window.ewm.ExponentialWeightedMovingAverage">[docs]</a><span class="k">class</span> <span class="nc">ExponentialWeightedMovingAverage</span><span class="p">(</span><span class="n">Stream</span><span class="p">[</span><span class="nb">float</span><span class="p">]):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;A stream operator that computes an exponential weighted moving average</span>
+<span class="sd">    on a given float stream.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    alpha : float</span>
+<span class="sd">        The smoothing factor :math:`\alpha` directly,</span>
+<span class="sd">        :math:`0 &lt; \alpha \leq 1`.</span>
+<span class="sd">    adjust : bool</span>
+<span class="sd">        Divide by decaying adjustment factor in beginning periods to account</span>
+<span class="sd">        for imbalance in relative weightings (viewing EWMA as a moving average).</span>
+<span class="sd">    ignore_na : bool</span>
+<span class="sd">        Ignore missing values when calculating weights.</span>
+<span class="sd">    min_periods : int</span>
+<span class="sd">        Minimum number of observations in window required to have a value</span>
+<span class="sd">        (otherwise result is NA).</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [1] https://github.com/pandas-dev/pandas/blob/d9fff2792bf16178d4e450fe7384244e50635733/pandas/_libs/window/aggregations.pyx#L1801</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+                 <span class="n">adjust</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+                 <span class="n">ignore_na</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+                 <span class="n">min_periods</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">=</span> <span class="n">alpha</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">adjust</span> <span class="o">=</span> <span class="n">adjust</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ignore_na</span> <span class="o">=</span> <span class="n">ignore_na</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_periods</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">min_periods</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">avg</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">factor</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">alpha</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">new_wt</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">adjust</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">old_wt</span> <span class="o">=</span> <span class="mi">1</span>
+
+<div class="viewcode-block" id="ExponentialWeightedMovingAverage.forward"><a class="viewcode-back" href="../../../../../../api/tensortrade.feed.api.float.window.ewm.html#tensortrade.feed.api.float.window.ewm.ExponentialWeightedMovingAverage.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">avg</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">is_observation</span> <span class="o">=</span> <span class="p">(</span><span class="n">value</span> <span class="o">==</span> <span class="n">value</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">+=</span> <span class="nb">int</span><span class="p">(</span><span class="n">is_observation</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">avg</span> <span class="o">=</span> <span class="n">value</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">avg</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_periods</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+
+        <span class="n">is_observation</span> <span class="o">=</span> <span class="p">(</span><span class="n">value</span> <span class="o">==</span> <span class="n">value</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">+=</span> <span class="n">is_observation</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">avg</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">avg</span><span class="p">:</span>
+
+            <span class="k">if</span> <span class="n">is_observation</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">ignore_na</span><span class="p">:</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">old_wt</span> <span class="o">*=</span> <span class="bp">self</span><span class="o">.</span><span class="n">factor</span>
+                <span class="k">if</span> <span class="n">is_observation</span><span class="p">:</span>
+                    <span class="c1"># avoid numerical errors on constant series</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">avg</span> <span class="o">!=</span> <span class="n">value</span><span class="p">:</span>
+                        <span class="n">num</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">old_wt</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">avg</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">new_wt</span> <span class="o">*</span> <span class="n">value</span>
+                        <span class="n">den</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">old_wt</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">new_wt</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">avg</span> <span class="o">=</span> <span class="n">num</span> <span class="o">/</span> <span class="n">den</span>
+
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">adjust</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">old_wt</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">new_wt</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">old_wt</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="k">elif</span> <span class="n">is_observation</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">avg</span> <span class="o">=</span> <span class="n">value</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">avg</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_periods</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span></div>
+
+<div class="viewcode-block" id="ExponentialWeightedMovingAverage.has_next"><a class="viewcode-back" href="../../../../../../api/tensortrade.feed.api.float.window.ewm.html#tensortrade.feed.api.float.window.ewm.ExponentialWeightedMovingAverage.has_next">[docs]</a>    <span class="k">def</span> <span class="nf">has_next</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="ExponentialWeightedMovingAverage.reset"><a class="viewcode-back" href="../../../../../../api/tensortrade.feed.api.float.window.ewm.html#tensortrade.feed.api.float.window.ewm.ExponentialWeightedMovingAverage.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">avg</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">old_wt</span> <span class="o">=</span> <span class="mi">1</span></div></div>
+
+
+<div class="viewcode-block" id="ExponentialWeightedMovingCovariance"><a class="viewcode-back" href="../../../../../../api/tensortrade.feed.api.float.window.ewm.html#tensortrade.feed.api.float.window.ewm.ExponentialWeightedMovingCovariance">[docs]</a><span class="k">class</span> <span class="nc">ExponentialWeightedMovingCovariance</span><span class="p">(</span><span class="n">Stream</span><span class="p">[</span><span class="nb">float</span><span class="p">]):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;A stream operator that computes an exponential weighted moving average</span>
+<span class="sd">    on a given float stream.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    alpha : float</span>
+<span class="sd">        The smoothing factor :math:`\alpha` directly,</span>
+<span class="sd">        :math:`0 &lt; \alpha \leq 1`.</span>
+<span class="sd">    adjust : bool</span>
+<span class="sd">        Divide by decaying adjustment factor in beginning periods to account</span>
+<span class="sd">        for imbalance in relative weightings (viewing EWMA as a moving average).</span>
+<span class="sd">    ignore_na : bool</span>
+<span class="sd">        Ignore missing values when calculating weights.</span>
+<span class="sd">    min_periods : int</span>
+<span class="sd">        Minimum number of observations in window required to have a value</span>
+<span class="sd">        (otherwise result is NA).</span>
+<span class="sd">    bias : bool</span>
+<span class="sd">        Use a standard estimation bias correction</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+                 <span class="n">adjust</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+                 <span class="n">ignore_na</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+                 <span class="n">min_periods</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                 <span class="n">bias</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">=</span> <span class="n">alpha</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">adjust</span> <span class="o">=</span> <span class="n">adjust</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ignore_na</span> <span class="o">=</span> <span class="n">ignore_na</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_periods</span> <span class="o">=</span> <span class="n">min_periods</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bias</span> <span class="o">=</span> <span class="n">bias</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">minp</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">min_periods</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">avg</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">factor</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">alpha</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">new_wt</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">adjust</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">old_wt</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">mean_x</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mean_y</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">cov</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sum_wt</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sum_wt2</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">old_wt</span> <span class="o">=</span> <span class="mi">1</span>
+
+<div class="viewcode-block" id="ExponentialWeightedMovingCovariance.forward"><a class="viewcode-back" href="../../../../../../api/tensortrade.feed.api.float.window.ewm.html#tensortrade.feed.api.float.window.ewm.ExponentialWeightedMovingCovariance.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="n">v1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
+        <span class="n">v2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_x</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_y</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mean_x</span> <span class="o">=</span> <span class="n">v1</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mean_y</span> <span class="o">=</span> <span class="n">v2</span>
+            <span class="n">is_observation</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mean_x</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_x</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mean_y</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_y</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">+=</span> <span class="nb">int</span><span class="p">(</span><span class="n">is_observation</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">is_observation</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">mean_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">mean_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+            <span class="k">return</span> <span class="p">(</span><span class="mf">0.</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bias</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">minp</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+
+        <span class="n">is_observation</span> <span class="o">=</span> <span class="p">(</span><span class="n">v1</span> <span class="o">==</span> <span class="n">v1</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">v2</span> <span class="o">==</span> <span class="n">v2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">+=</span> <span class="n">is_observation</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_x</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_x</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">is_observation</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">ignore_na</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">sum_wt</span> <span class="o">*=</span> <span class="bp">self</span><span class="o">.</span><span class="n">factor</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">sum_wt2</span> <span class="o">*=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">factor</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">factor</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">old_wt</span> <span class="o">*=</span> <span class="bp">self</span><span class="o">.</span><span class="n">factor</span>
+                <span class="k">if</span> <span class="n">is_observation</span><span class="p">:</span>
+                    <span class="n">old_mean_x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_x</span>
+                    <span class="n">old_mean_y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_y</span>
+
+                    <span class="c1"># avoid numerical errors on constant streams</span>
+                    <span class="n">wt_sum</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">old_wt</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">new_wt</span>
+
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_x</span> <span class="o">!=</span> <span class="n">v1</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">mean_x</span> <span class="o">=</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">old_wt</span> <span class="o">*</span> <span class="n">old_mean_x</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">new_wt</span> <span class="o">*</span> <span class="n">v1</span><span class="p">))</span> <span class="o">/</span> <span class="n">wt_sum</span>
+
+                    <span class="c1"># avoid numerical errors on constant series</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_y</span> <span class="o">!=</span> <span class="n">v2</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">mean_y</span> <span class="o">=</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">old_wt</span> <span class="o">*</span> <span class="n">old_mean_y</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">new_wt</span> <span class="o">*</span> <span class="n">v2</span><span class="p">))</span> <span class="o">/</span> <span class="n">wt_sum</span>
+
+                    <span class="n">d1</span> <span class="o">=</span> <span class="n">old_mean_x</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_x</span>
+                    <span class="n">d2</span> <span class="o">=</span> <span class="n">old_mean_y</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_y</span>
+
+                    <span class="n">d3</span> <span class="o">=</span> <span class="n">v1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_x</span>
+                    <span class="n">d4</span> <span class="o">=</span> <span class="n">v2</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_y</span>
+
+                    <span class="n">t1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">old_wt</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cov</span> <span class="o">+</span> <span class="n">d1</span> <span class="o">*</span> <span class="n">d2</span><span class="p">)</span>
+                    <span class="n">t2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">new_wt</span> <span class="o">*</span> <span class="n">d3</span> <span class="o">*</span> <span class="n">d4</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">cov</span> <span class="o">=</span> <span class="p">(</span><span class="n">t1</span> <span class="o">+</span> <span class="n">t2</span><span class="p">)</span> <span class="o">/</span> <span class="n">wt_sum</span>
+
+                    <span class="bp">self</span><span class="o">.</span><span class="n">sum_wt</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">new_wt</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">sum_wt2</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">new_wt</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">new_wt</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">old_wt</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">new_wt</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">adjust</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">sum_wt</span> <span class="o">/=</span> <span class="bp">self</span><span class="o">.</span><span class="n">old_wt</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">sum_wt2</span> <span class="o">/=</span> <span class="bp">self</span><span class="o">.</span><span class="n">old_wt</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">old_wt</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">old_wt</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="k">elif</span> <span class="n">is_observation</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mean_x</span> <span class="o">=</span> <span class="n">v1</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mean_y</span> <span class="o">=</span> <span class="n">v2</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">minp</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">bias</span><span class="p">:</span>
+                <span class="n">numerator</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sum_wt</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">sum_wt</span>
+                <span class="n">denominator</span> <span class="o">=</span> <span class="n">numerator</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">sum_wt2</span>
+                <span class="k">if</span> <span class="n">denominator</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">output</span> <span class="o">=</span> <span class="p">((</span><span class="n">numerator</span> <span class="o">/</span> <span class="n">denominator</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">cov</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">output</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cov</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">output</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+
+        <span class="k">return</span> <span class="n">output</span></div>
+
+<div class="viewcode-block" id="ExponentialWeightedMovingCovariance.has_next"><a class="viewcode-back" href="../../../../../../api/tensortrade.feed.api.float.window.ewm.html#tensortrade.feed.api.float.window.ewm.ExponentialWeightedMovingCovariance.has_next">[docs]</a>    <span class="k">def</span> <span class="nf">has_next</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="ExponentialWeightedMovingCovariance.reset"><a class="viewcode-back" href="../../../../../../api/tensortrade.feed.api.float.window.ewm.html#tensortrade.feed.api.float.window.ewm.ExponentialWeightedMovingCovariance.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">avg</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">new_wt</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">adjust</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">old_wt</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">mean_x</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mean_y</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">cov</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sum_wt</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sum_wt2</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">old_wt</span> <span class="o">=</span> <span class="mi">1</span></div></div>
+
+
+<div class="viewcode-block" id="EWM"><a class="viewcode-back" href="../../../../../../api/tensortrade.feed.api.float.window.ewm.html#tensortrade.feed.api.float.window.ewm.EWM">[docs]</a><span class="k">class</span> <span class="nc">EWM</span><span class="p">(</span><span class="n">Stream</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]]):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Provide exponential weighted (EW) functions.</span>
+
+<span class="sd">    Exactly one parameter: `com`, `span`, `halflife`, or `alpha` must be</span>
+<span class="sd">    provided.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    com : float, optional</span>
+<span class="sd">        Specify decay in terms of center of mass,</span>
+<span class="sd">        :math:`\alpha = 1 / (1 + com)`, for :math:`com \geq 0`.</span>
+<span class="sd">    span : float, optional</span>
+<span class="sd">        Specify decay in terms of span,</span>
+<span class="sd">        :math:`\alpha = 2 / (span + 1)`, for :math:`span \geq 1`.</span>
+<span class="sd">    halflife : float, str, timedelta, optional</span>
+<span class="sd">        Specify decay in terms of half-life,</span>
+<span class="sd">        :math:`\alpha = 1 - \exp\left(-\ln(2) / halflife\right)`, for</span>
+<span class="sd">        :math:`halflife &gt; 0`.</span>
+<span class="sd">        If ``times`` is specified, the time unit (str or timedelta) over which an</span>
+<span class="sd">        observation decays to half its value. Only applicable to ``mean()``</span>
+<span class="sd">        and halflife value will not apply to the other functions.</span>
+<span class="sd">    alpha : float, optional</span>
+<span class="sd">        Specify smoothing factor :math:`\alpha` directly,</span>
+<span class="sd">        :math:`0 &lt; \alpha \leq 1`.</span>
+<span class="sd">    min_periods : int, default 0</span>
+<span class="sd">        Minimum number of observations in window required to have a value</span>
+<span class="sd">        (otherwise result is NA).</span>
+<span class="sd">    adjust : bool, default True</span>
+<span class="sd">        Divide by decaying adjustment factor in beginning periods to account</span>
+<span class="sd">        for imbalance in relative weightings (viewing EWMA as a moving average).</span>
+<span class="sd">        - When ``adjust=True`` (default), the EW function is calculated using weights</span>
+<span class="sd">          :math:`w_i = (1 - \alpha)^i`. For example, the EW moving average of the series</span>
+<span class="sd">          [:math:`x_0, x_1, ..., x_t`] would be:</span>
+<span class="sd">        .. math::</span>
+<span class="sd">            y_t = \frac{x_t + (1 - \alpha)x_{t-1} + (1 - \alpha)^2 x_{t-2} + ... + (1 -</span>
+<span class="sd">            \alpha)^t x_0}{1 + (1 - \alpha) + (1 - \alpha)^2 + ... + (1 - \alpha)^t}</span>
+<span class="sd">        - When ``adjust=False``, the exponentially weighted function is calculated</span>
+<span class="sd">          recursively:</span>
+<span class="sd">        .. math::</span>
+<span class="sd">            \begin{split}</span>
+<span class="sd">                y_0 &amp;= x_0\\</span>
+<span class="sd">                y_t &amp;= (1 - \alpha) y_{t-1} + \alpha x_t,</span>
+<span class="sd">            \end{split}</span>
+<span class="sd">    ignore_na : bool, default False</span>
+<span class="sd">        Ignore missing values when calculating weights.</span>
+<span class="sd">        - When ``ignore_na=False`` (default), weights are based on absolute positions.</span>
+<span class="sd">        - When ``ignore_na=True``, weights are based on relative positions.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    .. [1] https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.ewm.html</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [1] https://github.com/pandas-dev/pandas/blob/d9fff2792bf16178d4e450fe7384244e50635733/pandas/core/window/ewm.py#L65</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">com</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">span</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">halflife</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">min_periods</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="n">adjust</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="n">ignore_na</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">com</span> <span class="o">=</span> <span class="n">com</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">span</span> <span class="o">=</span> <span class="n">span</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">halflife</span> <span class="o">=</span> <span class="n">halflife</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_periods</span> <span class="o">=</span> <span class="n">min_periods</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">adjust</span> <span class="o">=</span> <span class="n">adjust</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ignore_na</span> <span class="o">=</span> <span class="n">ignore_na</span>
+
+        <span class="k">if</span> <span class="n">alpha</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="mi">0</span> <span class="o">&lt;</span> <span class="n">alpha</span> <span class="o">&lt;=</span> <span class="mi">1</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">=</span> <span class="n">alpha</span>
+        <span class="k">elif</span> <span class="n">com</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="n">com</span> <span class="o">&gt;=</span> <span class="mi">0</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">com</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">span</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="n">span</span> <span class="o">&gt;=</span> <span class="mi">1</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">span</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">halflife</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="n">halflife</span> <span class="o">&gt;</span> <span class="mi">0</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span> <span class="o">/</span> <span class="n">halflife</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">history</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weights</span> <span class="o">=</span> <span class="p">[]</span>
+
+<div class="viewcode-block" id="EWM.forward"><a class="viewcode-back" href="../../../../../../api/tensortrade.feed.api.float.window.ewm.html#tensortrade.feed.api.float.window.ewm.EWM.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Tuple[List[float], List[float]]&quot;</span><span class="p">:</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ignore_na</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">history</span> <span class="o">+=</span> <span class="p">[</span><span class="n">value</span><span class="p">]</span>
+
+                <span class="c1"># Compute weights</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">adjust</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">*=</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">weights</span> <span class="o">+=</span> <span class="p">[(</span><span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="p">)</span> <span class="o">**</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">)]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">history</span> <span class="o">+=</span> <span class="p">[</span><span class="n">value</span><span class="p">]</span>
+
+            <span class="c1"># Compute weights</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">adjust</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">*=</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">weights</span> <span class="o">+=</span> <span class="p">[(</span><span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="p">)</span><span class="o">**</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">)]</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">weights</span></div>
+
+<div class="viewcode-block" id="EWM.has_next"><a class="viewcode-back" href="../../../../../../api/tensortrade.feed.api.float.window.ewm.html#tensortrade.feed.api.float.window.ewm.EWM.has_next">[docs]</a>    <span class="k">def</span> <span class="nf">has_next</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="EWM.mean"><a class="viewcode-back" href="../../../../../../api/tensortrade.feed.api.float.window.ewm.html#tensortrade.feed.api.float.window.ewm.EWM.mean">[docs]</a>    <span class="k">def</span> <span class="nf">mean</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Stream[float]&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Computes the exponential weighted moving average.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        `Stream[float]`</span>
+<span class="sd">            The exponential weighted moving average stream based on the</span>
+<span class="sd">            underlying stream of values.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">ExponentialWeightedMovingAverage</span><span class="p">(</span>
+            <span class="n">alpha</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="p">,</span>
+            <span class="n">min_periods</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">min_periods</span><span class="p">,</span>
+            <span class="n">adjust</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">adjust</span><span class="p">,</span>
+            <span class="n">ignore_na</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ignore_na</span>
+        <span class="p">)(</span><span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;float&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="EWM.var"><a class="viewcode-back" href="../../../../../../api/tensortrade.feed.api.float.window.ewm.html#tensortrade.feed.api.float.window.ewm.EWM.var">[docs]</a>    <span class="k">def</span> <span class="nf">var</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Stream[float]&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Computes the exponential weighted moving variance.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        `Stream[float]`</span>
+<span class="sd">            The exponential weighted moving variance stream based on the</span>
+<span class="sd">            underlying stream of values.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">ExponentialWeightedMovingCovariance</span><span class="p">(</span>
+            <span class="n">alpha</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="p">,</span>
+            <span class="n">adjust</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">adjust</span><span class="p">,</span>
+            <span class="n">ignore_na</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ignore_na</span><span class="p">,</span>
+            <span class="n">min_periods</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">min_periods</span><span class="p">,</span>
+            <span class="n">bias</span><span class="o">=</span><span class="n">bias</span>
+        <span class="p">)(</span><span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;float&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="EWM.std"><a class="viewcode-back" href="../../../../../../api/tensortrade.feed.api.float.window.ewm.html#tensortrade.feed.api.float.window.ewm.EWM.std">[docs]</a>    <span class="k">def</span> <span class="nf">std</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Stream[float]&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Computes the exponential weighted moving standard deviation.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        `Stream[float]`</span>
+<span class="sd">            The exponential weighted moving standard deviation stream based on</span>
+<span class="sd">            the underlying stream of values.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">bias</span><span class="p">)</span><span class="o">.</span><span class="n">sqrt</span><span class="p">()</span></div></div>
+
+
+<div class="viewcode-block" id="ewm"><a class="viewcode-back" href="../../../../../../api/tensortrade.feed.api.float.window.ewm.html#tensortrade.feed.api.float.window.ewm.ewm">[docs]</a><span class="nd">@Float</span><span class="o">.</span><span class="n">register</span><span class="p">([</span><span class="s2">&quot;ewm&quot;</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">ewm</span><span class="p">(</span><span class="n">s</span><span class="p">:</span> <span class="s2">&quot;Stream[float]&quot;</span><span class="p">,</span>
+        <span class="n">com</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">span</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">halflife</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">min_periods</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">adjust</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">ignore_na</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Stream[Tuple[List[float], List[float]]]&quot;</span><span class="p">:</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Computes the weights and values in order to perform an exponential</span>
+<span class="sd">    weighted moving operation.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    s : `Stream[float]`</span>
+<span class="sd">        A float stream.</span>
+<span class="sd">    com : float, optional</span>
+<span class="sd">        Specify decay in terms of center of mass,</span>
+<span class="sd">        :math:`\alpha = 1 / (1 + com)`, for :math:`com \geq 0`.</span>
+<span class="sd">    span : float, optional</span>
+<span class="sd">        Specify decay in terms of span,</span>
+<span class="sd">        :math:`\alpha = 2 / (span + 1)`, for :math:`span \geq 1`.</span>
+<span class="sd">    halflife : float, optional</span>
+<span class="sd">        Specify decay in terms of half-life,</span>
+<span class="sd">        :math:`\alpha = 1 - \exp\left(-\ln(2) / halflife\right)`, for</span>
+<span class="sd">        :math:`halflife &gt; 0`.</span>
+<span class="sd">    alpha : float, optional</span>
+<span class="sd">        Specify smoothing factor :math:`\alpha` directly,</span>
+<span class="sd">        :math:`0 &lt; \alpha \leq 1`.</span>
+<span class="sd">    min_periods : int, default 0</span>
+<span class="sd">        Minimum number of observations in window required to have a value</span>
+<span class="sd">        (otherwise result is NA).</span>
+<span class="sd">    adjust : bool, default True</span>
+<span class="sd">        Divide by decaying adjustment factor in beginning periods to account</span>
+<span class="sd">        for imbalance in relative weightings (viewing EWMA as a moving average).</span>
+<span class="sd">    ignore_na : bool, default False</span>
+<span class="sd">        Ignore missing values when calculating weights.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    `Stream[Tuple[List[float], List[float]]]`</span>
+<span class="sd">        A stream of weights and values to be used for computation of exponential</span>
+<span class="sd">        weighted moving operations.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">EWM</span><span class="p">(</span>
+        <span class="n">com</span><span class="o">=</span><span class="n">com</span><span class="p">,</span>
+        <span class="n">span</span><span class="o">=</span><span class="n">span</span><span class="p">,</span>
+        <span class="n">halflife</span><span class="o">=</span><span class="n">halflife</span><span class="p">,</span>
+        <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span>
+        <span class="n">min_periods</span><span class="o">=</span><span class="n">min_periods</span><span class="p">,</span>
+        <span class="n">adjust</span><span class="o">=</span><span class="n">adjust</span><span class="p">,</span>
+        <span class="n">ignore_na</span><span class="o">=</span><span class="n">ignore_na</span>
+    <span class="p">)(</span><span class="n">s</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

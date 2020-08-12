@@ -1,0 +1,420 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>tensortrade.oms.exchanges.exchange &mdash; TensorTrade 0.2.0-beta.2 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/theme_overrides.css" type="text/css" />
+
+  
+  
+    <link rel="shortcut icon" href="../../../../_static/favicon.ico"/>
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+        <script src="../../../../_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    
+    <script type="text/javascript" src="../../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../../index.html">
+          
+
+          
+            
+            <img src="../../../../_static/logo.jpg" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../index.html">Home</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Overview</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../overview/getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../overview/getting_started.html#installation">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../overview/getting_started.html#docker">Docker</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../examples/overview.html">Code Structure</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/simple_sine_curve.html">Simple Sine Curve</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/pairs_trading.html">Pairs Trading</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Components</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../components/components.html">Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../components/action_scheme.html">Action Scheme</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../components/reward_scheme.html">Reward Scheme</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../components/observer.html">Observer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../components/stopper.html">Stopper</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../components/informer.html">Informer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../components/renderer.html">Renderer</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Environments</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../envs/trading_env.html">TradingEnvironment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../envs/generic.html">Generic</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../envs/default.html">Default</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Feed</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../feed/overview.html">Overview</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Order Management System (OMS)</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../oms/overview.html">Order Management System (OMS)</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Agents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../agents/learning_agents.html">Learning Agents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../agents/ray.html">Ray</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../agents/stable_baselines.html">Stable Baselines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../agents/tensorforce.html">Tensorforce</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/modules.html">API reference</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">TensorTrade</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+        
+      <li>tensortrade.oms.exchanges.exchange</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for tensortrade.oms.exchanges.exchange</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2019 The TensorTrade Authors.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span>
+<span class="kn">from</span> <span class="nn">decimal</span> <span class="kn">import</span> <span class="n">Decimal</span>
+
+<span class="kn">from</span> <span class="nn">tensortrade.core</span> <span class="kn">import</span> <span class="n">Component</span><span class="p">,</span> <span class="n">TimedIdentifiable</span>
+<span class="kn">from</span> <span class="nn">tensortrade.oms.instruments</span> <span class="kn">import</span> <span class="n">TradingPair</span>
+
+
+<div class="viewcode-block" id="ExchangeOptions"><a class="viewcode-back" href="../../../../api/tensortrade.oms.exchanges.exchange.html#tensortrade.oms.exchanges.exchange.ExchangeOptions">[docs]</a><span class="k">class</span> <span class="nc">ExchangeOptions</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;An options class to specify the settings of an exchange.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    commission : float, default 0.003</span>
+<span class="sd">        The percentage of the order size taken by the exchange.</span>
+<span class="sd">    min_trade_size : float, default 1e-6</span>
+<span class="sd">        The minimum trade size an order can have.</span>
+<span class="sd">    max_trade_size : float, default 1e6</span>
+<span class="sd">        The maximum trade size an order can have.</span>
+<span class="sd">    min_trade_price : float, default 1e-8</span>
+<span class="sd">        The minimum price an exchange can have.</span>
+<span class="sd">    max_trade_price : float, default 1e8</span>
+<span class="sd">        The maximum price an exchange can have.</span>
+<span class="sd">    is_live : bool, default False</span>
+<span class="sd">        Whether live orders should be submitted to the exchange.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">commission</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.003</span><span class="p">,</span>
+                 <span class="n">min_trade_size</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-6</span><span class="p">,</span>
+                 <span class="n">max_trade_size</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e6</span><span class="p">,</span>
+                 <span class="n">min_trade_price</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-8</span><span class="p">,</span>
+                 <span class="n">max_trade_price</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e8</span><span class="p">,</span>
+                 <span class="n">is_live</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">commission</span> <span class="o">=</span> <span class="n">commission</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_trade_size</span> <span class="o">=</span> <span class="n">min_trade_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_trade_size</span> <span class="o">=</span> <span class="n">max_trade_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_trade_price</span> <span class="o">=</span> <span class="n">min_trade_price</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_trade_price</span> <span class="o">=</span> <span class="n">max_trade_price</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_live</span> <span class="o">=</span> <span class="n">is_live</span></div>
+
+
+<div class="viewcode-block" id="Exchange"><a class="viewcode-back" href="../../../../api/tensortrade.oms.exchanges.exchange.html#tensortrade.oms.exchanges.exchange.Exchange">[docs]</a><span class="k">class</span> <span class="nc">Exchange</span><span class="p">(</span><span class="n">Component</span><span class="p">,</span> <span class="n">TimedIdentifiable</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;An abstract exchange for use within a trading environment.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    name : str</span>
+<span class="sd">        The name of the exchange.</span>
+<span class="sd">    service : `Union[Callable, str]`</span>
+<span class="sd">        The service to be used for filling orders.</span>
+<span class="sd">    options : `ExchangeOptions`</span>
+<span class="sd">        The options used to specify the setting of the exchange.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">registered_name</span> <span class="o">=</span> <span class="s2">&quot;exchanges&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                 <span class="n">service</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
+                 <span class="n">options</span><span class="p">:</span> <span class="n">ExchangeOptions</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_service</span> <span class="o">=</span> <span class="n">service</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">options</span> <span class="o">=</span> <span class="n">options</span> <span class="k">if</span> <span class="n">options</span> <span class="k">else</span> <span class="n">ExchangeOptions</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_price_streams</span> <span class="o">=</span> <span class="p">{}</span>
+
+<div class="viewcode-block" id="Exchange.__call__"><a class="viewcode-back" href="../../../../api/tensortrade.oms.exchanges.exchange.html#tensortrade.oms.exchanges.exchange.Exchange.__call__">[docs]</a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">streams</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Exchange&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Sets up the price streams used to generate the prices.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        *streams</span>
+<span class="sd">            The positional arguments each being a price stream.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        `Exchange`</span>
+<span class="sd">            The exchange the price streams were passed in for.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">streams</span><span class="p">:</span>
+            <span class="n">pair</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">c</span> <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">isalnum</span><span class="p">()</span> <span class="k">else</span> <span class="s2">&quot;/&quot;</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">s</span><span class="o">.</span><span class="n">name</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_price_streams</span><span class="p">[</span><span class="n">pair</span><span class="p">]</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot;:/&quot;</span> <span class="o">+</span> <span class="n">s</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+<div class="viewcode-block" id="Exchange.streams"><a class="viewcode-back" href="../../../../api/tensortrade.oms.exchanges.exchange.html#tensortrade.oms.exchanges.exchange.Exchange.streams">[docs]</a>    <span class="k">def</span> <span class="nf">streams</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;List[Stream[float]]&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Gets the price streams for the exchange.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        `List[Stream[float]]`</span>
+<span class="sd">            The price streams for the exchange.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_price_streams</span><span class="o">.</span><span class="n">values</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="Exchange.quote_price"><a class="viewcode-back" href="../../../../api/tensortrade.oms.exchanges.exchange.html#tensortrade.oms.exchanges.exchange.Exchange.quote_price">[docs]</a>    <span class="k">def</span> <span class="nf">quote_price</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trading_pair</span><span class="p">:</span> <span class="s2">&quot;TradingPair&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Decimal&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;The quote price of a trading pair on the exchange, denoted in the</span>
+<span class="sd">        core instrument.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        trading_pair : `TradingPair`</span>
+<span class="sd">            The trading pair to get the quote price for.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        `Decimal`</span>
+<span class="sd">            The quote price of the specified trading pair, denoted in the core instrument.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">price</span> <span class="o">=</span> <span class="n">Decimal</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_price_streams</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">trading_pair</span><span class="p">)]</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+        <span class="n">price</span> <span class="o">=</span> <span class="n">price</span><span class="o">.</span><span class="n">quantize</span><span class="p">(</span><span class="n">Decimal</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">**-</span><span class="n">trading_pair</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">precision</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">price</span></div>
+
+<div class="viewcode-block" id="Exchange.is_pair_tradable"><a class="viewcode-back" href="../../../../api/tensortrade.oms.exchanges.exchange.html#tensortrade.oms.exchanges.exchange.Exchange.is_pair_tradable">[docs]</a>    <span class="k">def</span> <span class="nf">is_pair_tradable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trading_pair</span><span class="p">:</span> <span class="s1">&#39;TradingPair&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Whether or not the specified trading pair is tradable on this</span>
+<span class="sd">        exchange.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        trading_pair : `TradingPair`</span>
+<span class="sd">            The trading pair to test the tradability of.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        bool</span>
+<span class="sd">            Whether or not the pair is tradable.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">trading_pair</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_price_streams</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Exchange.execute_order"><a class="viewcode-back" href="../../../../api/tensortrade.oms.exchanges.exchange.html#tensortrade.oms.exchanges.exchange.Exchange.execute_order">[docs]</a>    <span class="k">def</span> <span class="nf">execute_order</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span><span class="p">:</span> <span class="s1">&#39;Order&#39;</span><span class="p">,</span> <span class="n">portfolio</span><span class="p">:</span> <span class="s1">&#39;Portfolio&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Execute an order on the exchange.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        order: `Order`</span>
+<span class="sd">            The order to execute.</span>
+<span class="sd">        portfolio : `Portfolio`</span>
+<span class="sd">            The portfolio to use.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">trade</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_service</span><span class="p">(</span>
+            <span class="n">order</span><span class="o">=</span><span class="n">order</span><span class="p">,</span>
+            <span class="n">base_wallet</span><span class="o">=</span><span class="n">portfolio</span><span class="o">.</span><span class="n">get_wallet</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">order</span><span class="o">.</span><span class="n">pair</span><span class="o">.</span><span class="n">base</span><span class="p">),</span>
+            <span class="n">quote_wallet</span><span class="o">=</span><span class="n">portfolio</span><span class="o">.</span><span class="n">get_wallet</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">order</span><span class="o">.</span><span class="n">pair</span><span class="o">.</span><span class="n">quote</span><span class="p">),</span>
+            <span class="n">current_price</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">quote_price</span><span class="p">(</span><span class="n">order</span><span class="o">.</span><span class="n">pair</span><span class="p">),</span>
+            <span class="n">options</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">,</span>
+            <span class="n">clock</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">clock</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">trade</span><span class="p">:</span>
+            <span class="n">order</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">trade</span><span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

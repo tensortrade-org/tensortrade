@@ -10,7 +10,7 @@ class CumSum(Stream[float]):
 
     References
     ----------
-    [1] https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.cumsum.html
+    .. [1] https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.cumsum.html
     """
 
     def __init__(self) -> None:
@@ -33,7 +33,7 @@ class CumProd(Stream[float]):
 
     References
     ----------
-    [1] https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.cumprod.html
+    .. [1] https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.cumprod.html
     """
 
     def __init__(self) -> None:

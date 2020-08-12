@@ -1,0 +1,598 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>tensortrade.env.default.actions &mdash; TensorTrade 0.2.0-beta.2 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/theme_overrides.css" type="text/css" />
+
+  
+  
+    <link rel="shortcut icon" href="../../../../_static/favicon.ico"/>
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+        <script src="../../../../_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    
+    <script type="text/javascript" src="../../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../../index.html">
+          
+
+          
+            
+            <img src="../../../../_static/logo.jpg" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../index.html">Home</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Overview</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../overview/getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../overview/getting_started.html#installation">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../overview/getting_started.html#docker">Docker</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../examples/overview.html">Code Structure</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/simple_sine_curve.html">Simple Sine Curve</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/pairs_trading.html">Pairs Trading</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Components</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../components/components.html">Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../components/action_scheme.html">Action Scheme</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../components/reward_scheme.html">Reward Scheme</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../components/observer.html">Observer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../components/stopper.html">Stopper</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../components/informer.html">Informer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../components/renderer.html">Renderer</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Environments</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../envs/trading_env.html">TradingEnvironment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../envs/generic.html">Generic</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../envs/default.html">Default</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Feed</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../feed/overview.html">Overview</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Order Management System (OMS)</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../oms/overview.html">Order Management System (OMS)</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Agents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../agents/learning_agents.html">Learning Agents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../agents/ray.html">Ray</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../agents/stable_baselines.html">Stable Baselines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../agents/tensorforce.html">Tensorforce</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/modules.html">API reference</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">TensorTrade</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+        
+          <li><a href="../default.html">tensortrade.env.default</a> &raquo;</li>
+        
+      <li>tensortrade.env.default.actions</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for tensortrade.env.default.actions</h1><div class="highlight"><pre>
+<span></span>
+<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">abstractmethod</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Any</span>
+<span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">product</span>
+
+<span class="kn">from</span> <span class="nn">gym.spaces</span> <span class="kn">import</span> <span class="n">Space</span><span class="p">,</span> <span class="n">Discrete</span>
+
+<span class="kn">from</span> <span class="nn">tensortrade.env.generic</span> <span class="kn">import</span> <span class="n">ActionScheme</span><span class="p">,</span> <span class="n">TradingEnv</span>
+<span class="kn">from</span> <span class="nn">tensortrade.core</span> <span class="kn">import</span> <span class="n">Clock</span>
+<span class="kn">from</span> <span class="nn">tensortrade.oms.wallets</span> <span class="kn">import</span> <span class="n">Portfolio</span>
+<span class="kn">from</span> <span class="nn">tensortrade.oms.orders</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Broker</span><span class="p">,</span>
+    <span class="n">Order</span><span class="p">,</span>
+    <span class="n">TradeSide</span><span class="p">,</span>
+    <span class="n">TradeType</span><span class="p">,</span>
+    <span class="n">OrderListener</span><span class="p">,</span>
+    <span class="n">risk_managed_order</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="TensorTradeActionScheme"><a class="viewcode-back" href="../../../../api/tensortrade.env.default.actions.html#tensortrade.env.default.actions.TensorTradeActionScheme">[docs]</a><span class="k">class</span> <span class="nc">TensorTradeActionScheme</span><span class="p">(</span><span class="n">ActionScheme</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;An abstract base class for any `ActionScheme` that wants to be</span>
+<span class="sd">    compatible with the built in OMS.</span>
+
+<span class="sd">    The structure of the action scheme is built to make sure that action space</span>
+<span class="sd">    can be used with the system, provided that the user defines the methods to</span>
+<span class="sd">    interpret that action.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    portfolio : &#39;Portfolio&#39;</span>
+<span class="sd">        The portfolio object to be used in defining actions.</span>
+<span class="sd">    broker : &#39;Broker&#39;</span>
+<span class="sd">        The broker object to be used for placing orders in the OMS.</span>
+
+<span class="sd">    Methods</span>
+<span class="sd">    -------</span>
+<span class="sd">    perform(env,portfolio)</span>
+<span class="sd">        Performs the action on the given environment.</span>
+<span class="sd">    get_orders(action,portfolio)</span>
+<span class="sd">        Gets the list of orders to be submitted for the given action.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">portfolio</span><span class="p">:</span> <span class="s1">&#39;Portfolio&#39;</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">broker</span><span class="p">:</span> <span class="s1">&#39;Broker&#39;</span> <span class="o">=</span> <span class="n">Broker</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">clock</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;Clock&#39;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;The reference clock from the environment. (`Clock`)</span>
+
+<span class="sd">        When the clock is set for the we also set the clock for the portfolio</span>
+<span class="sd">        as well as the exchanges defined in the portfolio.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        `Clock`</span>
+<span class="sd">            The environment clock.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_clock</span>
+
+    <span class="nd">@clock</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">clock</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">clock</span><span class="p">:</span> <span class="s1">&#39;Clock&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_clock</span> <span class="o">=</span> <span class="n">clock</span>
+
+        <span class="n">components</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">portfolio</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">portfolio</span><span class="o">.</span><span class="n">exchanges</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">components</span><span class="p">:</span>
+            <span class="n">c</span><span class="o">.</span><span class="n">clock</span> <span class="o">=</span> <span class="n">clock</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">broker</span><span class="o">.</span><span class="n">clock</span> <span class="o">=</span> <span class="n">clock</span>
+
+<div class="viewcode-block" id="TensorTradeActionScheme.perform"><a class="viewcode-back" href="../../../../api/tensortrade.env.default.actions.html#tensortrade.env.default.actions.TensorTradeActionScheme.perform">[docs]</a>    <span class="k">def</span> <span class="nf">perform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env</span><span class="p">:</span> <span class="s1">&#39;TradingEnv&#39;</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Performs the action on the given environment.</span>
+
+<span class="sd">        Under the TT action scheme, the subclassed action scheme is expected</span>
+<span class="sd">        to provide a method for getting a list of orders to be submitted to</span>
+<span class="sd">        the broker for execution in the OMS.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        env : &#39;TradingEnv&#39;</span>
+<span class="sd">            The environment to perform the action on.</span>
+<span class="sd">        action : Any</span>
+<span class="sd">            The specific action selected from the action space.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">orders</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_orders</span><span class="p">(</span><span class="n">action</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">portfolio</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">order</span> <span class="ow">in</span> <span class="n">orders</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">broker</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="n">order</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">broker</span><span class="o">.</span><span class="n">update</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="TensorTradeActionScheme.get_orders"><a class="viewcode-back" href="../../../../api/tensortrade.env.default.actions.html#tensortrade.env.default.actions.TensorTradeActionScheme.get_orders">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">get_orders</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">portfolio</span><span class="p">:</span> <span class="s1">&#39;Portfolio&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;List[Order]&#39;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Gets the list of orders to be submitted for the given action.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        action : Any</span>
+<span class="sd">            The action to be interpreted.</span>
+<span class="sd">        portfolio : &#39;Portfolio&#39;</span>
+<span class="sd">            The portfolio defined for the environment.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        List[Order]</span>
+<span class="sd">            A list of orders to be submitted to the broker.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="TensorTradeActionScheme.reset"><a class="viewcode-back" href="../../../../api/tensortrade.env.default.actions.html#tensortrade.env.default.actions.TensorTradeActionScheme.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Resets the action scheme.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">portfolio</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">broker</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span></div></div>
+
+
+<div class="viewcode-block" id="SimpleOrders"><a class="viewcode-back" href="../../../../api/tensortrade.env.default.actions.html#tensortrade.env.default.actions.SimpleOrders">[docs]</a><span class="k">class</span> <span class="nc">SimpleOrders</span><span class="p">(</span><span class="n">TensorTradeActionScheme</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A discrete action scheme that determines actions based on a list of</span>
+<span class="sd">    trading pairs, order criteria, and trade sizes.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    criteria : List[OrderCriteria]</span>
+<span class="sd">        A list of order criteria to select from when submitting an order.</span>
+<span class="sd">        (e.g. MarketOrder, LimitOrder w/ price, StopLoss, etc.)</span>
+<span class="sd">    trade_sizes : List[float]</span>
+<span class="sd">        A list of trade sizes to select from when submitting an order.</span>
+<span class="sd">        (e.g. &#39;[1, 1/3]&#39; = 100% or 33% of balance is tradable.</span>
+<span class="sd">        &#39;4&#39; = 25%, 50%, 75%, or 100% of balance is tradable.)</span>
+<span class="sd">    durations : List[int]</span>
+<span class="sd">        A list of durations to select from when submitting an order.</span>
+<span class="sd">    trade_type : TradeType</span>
+<span class="sd">        A type of trade to make.</span>
+<span class="sd">    order_listener : OrderListener</span>
+<span class="sd">        A callback class to use for listening to steps of the order process.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">criteria</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="s1">&#39;OrderCriteria&#39;</span><span class="p">],</span> <span class="s1">&#39;OrderCriteria&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">trade_sizes</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+                 <span class="n">durations</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">trade_type</span><span class="p">:</span> <span class="n">TradeType</span> <span class="o">=</span> <span class="n">TradeType</span><span class="o">.</span><span class="n">MARKET</span><span class="p">,</span>
+                 <span class="n">order_listener</span><span class="p">:</span> <span class="n">OrderListener</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="n">criteria</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default</span><span class="p">(</span><span class="s1">&#39;criteria&#39;</span><span class="p">,</span> <span class="n">criteria</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">criteria</span> <span class="o">=</span> <span class="n">criteria</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">criteria</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="p">[</span><span class="n">criteria</span><span class="p">]</span>
+
+        <span class="n">trade_sizes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default</span><span class="p">(</span><span class="s1">&#39;trade_sizes&#39;</span><span class="p">,</span> <span class="n">trade_sizes</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">trade_sizes</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">trade_sizes</span> <span class="o">=</span> <span class="n">trade_sizes</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">trade_sizes</span> <span class="o">=</span> <span class="p">[(</span><span class="n">x</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">trade_sizes</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">trade_sizes</span><span class="p">)]</span>
+
+        <span class="n">durations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default</span><span class="p">(</span><span class="s1">&#39;durations&#39;</span><span class="p">,</span> <span class="n">durations</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">durations</span> <span class="o">=</span> <span class="n">durations</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">durations</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="p">[</span><span class="n">durations</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_trade_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default</span><span class="p">(</span><span class="s1">&#39;trade_type&#39;</span><span class="p">,</span> <span class="n">trade_type</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_order_listener</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default</span><span class="p">(</span><span class="s1">&#39;order_listener&#39;</span><span class="p">,</span> <span class="n">order_listener</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_action_space</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">actions</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">action_space</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Space</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_action_space</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">actions</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">product</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">criteria</span><span class="p">,</span>
+                                        <span class="bp">self</span><span class="o">.</span><span class="n">trade_sizes</span><span class="p">,</span>
+                                        <span class="bp">self</span><span class="o">.</span><span class="n">durations</span><span class="p">,</span>
+                                        <span class="p">[</span><span class="n">TradeSide</span><span class="o">.</span><span class="n">BUY</span><span class="p">,</span> <span class="n">TradeSide</span><span class="o">.</span><span class="n">SELL</span><span class="p">]))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">actions</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">product</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">portfolio</span><span class="o">.</span><span class="n">exchange_pairs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">actions</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">actions</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">actions</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_action_space</span> <span class="o">=</span> <span class="n">Discrete</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">actions</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_action_space</span>
+
+<div class="viewcode-block" id="SimpleOrders.get_orders"><a class="viewcode-back" href="../../../../api/tensortrade.env.default.actions.html#tensortrade.env.default.actions.SimpleOrders.get_orders">[docs]</a>    <span class="k">def</span> <span class="nf">get_orders</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">portfolio</span><span class="p">:</span> <span class="s1">&#39;Portfolio&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;List[Order]&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">action</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span>
+
+        <span class="p">(</span><span class="n">ep</span><span class="p">,</span> <span class="p">(</span><span class="n">criteria</span><span class="p">,</span> <span class="n">proportion</span><span class="p">,</span> <span class="n">duration</span><span class="p">,</span> <span class="n">side</span><span class="p">))</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">actions</span><span class="p">[</span><span class="n">action</span><span class="p">]</span>
+
+        <span class="n">instrument</span> <span class="o">=</span> <span class="n">side</span><span class="o">.</span><span class="n">instrument</span><span class="p">(</span><span class="n">ep</span><span class="o">.</span><span class="n">pair</span><span class="p">)</span>
+        <span class="n">wallet</span> <span class="o">=</span> <span class="n">portfolio</span><span class="o">.</span><span class="n">get_wallet</span><span class="p">(</span><span class="n">ep</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">instrument</span><span class="o">=</span><span class="n">instrument</span><span class="p">)</span>
+
+        <span class="n">balance</span> <span class="o">=</span> <span class="n">wallet</span><span class="o">.</span><span class="n">balance</span><span class="o">.</span><span class="n">as_float</span><span class="p">()</span>
+        <span class="n">size</span> <span class="o">=</span> <span class="p">(</span><span class="n">balance</span> <span class="o">*</span> <span class="n">proportion</span><span class="p">)</span>
+        <span class="n">size</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">balance</span><span class="p">,</span> <span class="n">size</span><span class="p">)</span>
+
+        <span class="n">quantity</span> <span class="o">=</span> <span class="p">(</span><span class="n">size</span> <span class="o">*</span> <span class="n">instrument</span><span class="p">)</span><span class="o">.</span><span class="n">quantize</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">size</span> <span class="o">&lt;</span> <span class="mi">10</span> <span class="o">**</span> <span class="o">-</span><span class="n">instrument</span><span class="o">.</span><span class="n">precision</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span>
+
+        <span class="n">order</span> <span class="o">=</span> <span class="n">Order</span><span class="p">(</span>
+            <span class="n">step</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">clock</span><span class="o">.</span><span class="n">step</span><span class="p">,</span>
+            <span class="n">side</span><span class="o">=</span><span class="n">side</span><span class="p">,</span>
+            <span class="n">trade_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_trade_type</span><span class="p">,</span>
+            <span class="n">exchange_pair</span><span class="o">=</span><span class="n">ep</span><span class="p">,</span>
+            <span class="n">price</span><span class="o">=</span><span class="n">ep</span><span class="o">.</span><span class="n">price</span><span class="p">,</span>
+            <span class="n">quantity</span><span class="o">=</span><span class="n">quantity</span><span class="p">,</span>
+            <span class="n">criteria</span><span class="o">=</span><span class="n">criteria</span><span class="p">,</span>
+            <span class="n">end</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">clock</span><span class="o">.</span><span class="n">step</span> <span class="o">+</span> <span class="n">duration</span> <span class="k">if</span> <span class="n">duration</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">portfolio</span><span class="o">=</span><span class="n">portfolio</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_order_listener</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">order</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_order_listener</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">[</span><span class="n">order</span><span class="p">]</span></div></div>
+
+
+<div class="viewcode-block" id="ManagedRiskOrders"><a class="viewcode-back" href="../../../../api/tensortrade.env.default.actions.html#tensortrade.env.default.actions.ManagedRiskOrders">[docs]</a><span class="k">class</span> <span class="nc">ManagedRiskOrders</span><span class="p">(</span><span class="n">TensorTradeActionScheme</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A discrete action scheme that determines actions based on managing risk,</span>
+<span class="sd">       through setting a follow-up stop loss and take profit on every order.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    stop : List[float]</span>
+<span class="sd">        A list of possible stop loss percentages for each order.</span>
+<span class="sd">    take : List[float]</span>
+<span class="sd">        A list of possible take profit percentages for each order.</span>
+<span class="sd">    trade_sizes : List[float]</span>
+<span class="sd">        A list of trade sizes to select from when submitting an order.</span>
+<span class="sd">        (e.g. &#39;[1, 1/3]&#39; = 100% or 33% of balance is tradable.</span>
+<span class="sd">        &#39;4&#39; = 25%, 50%, 75%, or 100% of balance is tradable.)</span>
+<span class="sd">    durations : List[int]</span>
+<span class="sd">        A list of durations to select from when submitting an order.</span>
+<span class="sd">    trade_type : `TradeType`</span>
+<span class="sd">        A type of trade to make.</span>
+<span class="sd">    order_listener : OrderListener</span>
+<span class="sd">        A callback class to use for listening to steps of the order process.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">stop</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.02</span><span class="p">,</span> <span class="mf">0.04</span><span class="p">,</span> <span class="mf">0.06</span><span class="p">],</span>
+                 <span class="n">take</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.02</span><span class="p">,</span> <span class="mf">0.03</span><span class="p">],</span>
+                 <span class="n">trade_sizes</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+                 <span class="n">durations</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">trade_type</span><span class="p">:</span> <span class="n">TradeType</span> <span class="o">=</span> <span class="n">TradeType</span><span class="o">.</span><span class="n">MARKET</span><span class="p">,</span>
+                 <span class="n">order_listener</span><span class="p">:</span> <span class="n">OrderListener</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stop</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default</span><span class="p">(</span><span class="s1">&#39;stop&#39;</span><span class="p">,</span> <span class="n">stop</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">take</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default</span><span class="p">(</span><span class="s1">&#39;take&#39;</span><span class="p">,</span> <span class="n">take</span><span class="p">)</span>
+
+        <span class="n">trade_sizes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default</span><span class="p">(</span><span class="s1">&#39;trade_sizes&#39;</span><span class="p">,</span> <span class="n">trade_sizes</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">trade_sizes</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">trade_sizes</span> <span class="o">=</span> <span class="n">trade_sizes</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">trade_sizes</span> <span class="o">=</span> <span class="p">[(</span><span class="n">x</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">trade_sizes</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">trade_sizes</span><span class="p">)]</span>
+
+        <span class="n">durations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default</span><span class="p">(</span><span class="s1">&#39;durations&#39;</span><span class="p">,</span> <span class="n">durations</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">durations</span> <span class="o">=</span> <span class="n">durations</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">durations</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="p">[</span><span class="n">durations</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_trade_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default</span><span class="p">(</span><span class="s1">&#39;trade_type&#39;</span><span class="p">,</span> <span class="n">trade_type</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_order_listener</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default</span><span class="p">(</span><span class="s1">&#39;order_listener&#39;</span><span class="p">,</span> <span class="n">order_listener</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_action_space</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">actions</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">action_space</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Space</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_action_space</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">actions</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">product</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="p">,</span>
+                                        <span class="bp">self</span><span class="o">.</span><span class="n">take</span><span class="p">,</span>
+                                        <span class="bp">self</span><span class="o">.</span><span class="n">trade_sizes</span><span class="p">,</span>
+                                        <span class="bp">self</span><span class="o">.</span><span class="n">durations</span><span class="p">,</span>
+                                        <span class="p">[</span><span class="n">TradeSide</span><span class="o">.</span><span class="n">BUY</span><span class="p">,</span> <span class="n">TradeSide</span><span class="o">.</span><span class="n">SELL</span><span class="p">]))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">actions</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">product</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">portfolio</span><span class="o">.</span><span class="n">exchange_pairs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">actions</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">actions</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">actions</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_action_space</span> <span class="o">=</span> <span class="n">Discrete</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">actions</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_action_space</span>
+
+<div class="viewcode-block" id="ManagedRiskOrders.get_orders"><a class="viewcode-back" href="../../../../api/tensortrade.env.default.actions.html#tensortrade.env.default.actions.ManagedRiskOrders.get_orders">[docs]</a>    <span class="k">def</span> <span class="nf">get_orders</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">portfolio</span><span class="p">:</span> <span class="s1">&#39;Portfolio&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Order</span><span class="p">]:</span>
+
+        <span class="k">if</span> <span class="n">action</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span>
+
+        <span class="p">(</span><span class="n">ep</span><span class="p">,</span> <span class="p">(</span><span class="n">stop</span><span class="p">,</span> <span class="n">take</span><span class="p">,</span> <span class="n">proportion</span><span class="p">,</span> <span class="n">duration</span><span class="p">,</span> <span class="n">side</span><span class="p">))</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">actions</span><span class="p">[</span><span class="n">action</span><span class="p">]</span>
+
+        <span class="n">side</span> <span class="o">=</span> <span class="n">TradeSide</span><span class="p">(</span><span class="n">side</span><span class="p">)</span>
+
+        <span class="n">instrument</span> <span class="o">=</span> <span class="n">side</span><span class="o">.</span><span class="n">instrument</span><span class="p">(</span><span class="n">ep</span><span class="o">.</span><span class="n">pair</span><span class="p">)</span>
+        <span class="n">wallet</span> <span class="o">=</span> <span class="n">portfolio</span><span class="o">.</span><span class="n">get_wallet</span><span class="p">(</span><span class="n">ep</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">instrument</span><span class="o">=</span><span class="n">instrument</span><span class="p">)</span>
+
+        <span class="n">balance</span> <span class="o">=</span> <span class="n">wallet</span><span class="o">.</span><span class="n">balance</span><span class="o">.</span><span class="n">as_float</span><span class="p">()</span>
+        <span class="n">size</span> <span class="o">=</span> <span class="p">(</span><span class="n">balance</span> <span class="o">*</span> <span class="n">proportion</span><span class="p">)</span>
+        <span class="n">size</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">balance</span><span class="p">,</span> <span class="n">size</span><span class="p">)</span>
+        <span class="n">quantity</span> <span class="o">=</span> <span class="p">(</span><span class="n">size</span> <span class="o">*</span> <span class="n">instrument</span><span class="p">)</span><span class="o">.</span><span class="n">quantize</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">size</span> <span class="o">&lt;</span> <span class="mi">10</span> <span class="o">**</span> <span class="o">-</span><span class="n">ep</span><span class="o">.</span><span class="n">pair</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">precision</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span>
+
+        <span class="n">params</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;side&#39;</span><span class="p">:</span> <span class="n">side</span><span class="p">,</span>
+            <span class="s1">&#39;exchange_pair&#39;</span><span class="p">:</span> <span class="n">ep</span><span class="p">,</span>
+            <span class="s1">&#39;price&#39;</span><span class="p">:</span> <span class="n">ep</span><span class="o">.</span><span class="n">price</span><span class="p">,</span>
+            <span class="s1">&#39;quantity&#39;</span><span class="p">:</span> <span class="n">quantity</span><span class="p">,</span>
+            <span class="s1">&#39;down_percent&#39;</span><span class="p">:</span> <span class="n">stop</span><span class="p">,</span>
+            <span class="s1">&#39;up_percent&#39;</span><span class="p">:</span> <span class="n">take</span><span class="p">,</span>
+            <span class="s1">&#39;portfolio&#39;</span><span class="p">:</span> <span class="n">portfolio</span><span class="p">,</span>
+            <span class="s1">&#39;trade_type&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trade_type</span><span class="p">,</span>
+            <span class="s1">&#39;end&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">clock</span><span class="o">.</span><span class="n">step</span> <span class="o">+</span> <span class="n">duration</span> <span class="k">if</span> <span class="n">duration</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="p">}</span>
+
+        <span class="n">order</span> <span class="o">=</span> <span class="n">risk_managed_order</span><span class="p">(</span><span class="o">**</span><span class="n">params</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_order_listener</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">order</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_order_listener</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">[</span><span class="n">order</span><span class="p">]</span></div></div>
+
+
+<span class="n">_registry</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;simple&#39;</span><span class="p">:</span> <span class="n">SimpleOrders</span><span class="p">,</span>
+    <span class="s1">&#39;managed-risk&#39;</span><span class="p">:</span> <span class="n">ManagedRiskOrders</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<div class="viewcode-block" id="get"><a class="viewcode-back" href="../../../../api/tensortrade.env.default.actions.html#tensortrade.env.default.actions.get">[docs]</a><span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="n">identifier</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;ActionScheme&#39;</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Gets the `ActionScheme` that matches with the identifier.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    identifier : str</span>
+<span class="sd">        The identifier for the `ActionScheme`.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    &#39;ActionScheme&#39;</span>
+<span class="sd">        The action scheme associated with the `identifier`.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    KeyError:</span>
+<span class="sd">        Raised if the `identifier` is not associated with any `ActionScheme`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">identifier</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_registry</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Identifier </span><span class="si">{</span><span class="n">identifier</span><span class="si">}</span><span class="s2"> is not associated with any `ActionScheme`.&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_registry</span><span class="p">[</span><span class="n">identifier</span><span class="p">]()</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

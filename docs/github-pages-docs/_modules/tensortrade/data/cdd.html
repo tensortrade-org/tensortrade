@@ -1,0 +1,407 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>tensortrade.data.cdd &mdash; TensorTrade 0.2.0-beta.2 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/theme_overrides.css" type="text/css" />
+
+  
+  
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html">
+          
+
+          
+            
+            <img src="../../../_static/logo.jpg" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../index.html">Home</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Overview</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../overview/getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../overview/getting_started.html#installation">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../overview/getting_started.html#docker">Docker</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/overview.html">Code Structure</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/simple_sine_curve.html">Simple Sine Curve</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/pairs_trading.html">Pairs Trading</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Components</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../components/components.html">Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../components/action_scheme.html">Action Scheme</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../components/reward_scheme.html">Reward Scheme</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../components/observer.html">Observer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../components/stopper.html">Stopper</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../components/informer.html">Informer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../components/renderer.html">Renderer</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Environments</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../envs/trading_env.html">TradingEnvironment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../envs/generic.html">Generic</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../envs/default.html">Default</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Feed</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../feed/overview.html">Overview</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Order Management System (OMS)</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../oms/overview.html">Order Management System (OMS)</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Agents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../agents/learning_agents.html">Learning Agents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../agents/ray.html">Ray</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../agents/stable_baselines.html">Stable Baselines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../agents/tensorforce.html">Tensorforce</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/modules.html">API reference</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">TensorTrade</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>tensortrade.data.cdd</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for tensortrade.data.cdd</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Contains methods and classes to collect data from</span>
+<span class="sd">https://www.cryptodatadownload.com.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">ssl</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+
+<span class="n">ssl</span><span class="o">.</span><span class="n">_create_default_https_context</span> <span class="o">=</span> <span class="n">ssl</span><span class="o">.</span><span class="n">_create_unverified_context</span>
+
+
+<div class="viewcode-block" id="CryptoDataDownload"><a class="viewcode-back" href="../../../api/tensortrade.data.cdd.html#tensortrade.data.cdd.CryptoDataDownload">[docs]</a><span class="k">class</span> <span class="nc">CryptoDataDownload</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Provides methods for retrieving data on different cryptocurrencies from</span>
+<span class="sd">    https://www.cryptodatadownload.com/cdd/.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    url : str</span>
+<span class="sd">        The url for collecting data from CryptoDataDownload.</span>
+
+<span class="sd">    Methods</span>
+<span class="sd">    -------</span>
+<span class="sd">    fetch(exchange_name,base_symbol,quote_symbol,timeframe,include_all_volumes=False)</span>
+<span class="sd">        Fetches data for different exchanges and cryptocurrency pairs.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://www.cryptodatadownload.com/cdd/&quot;</span>
+
+<div class="viewcode-block" id="CryptoDataDownload.fetch_default"><a class="viewcode-back" href="../../../api/tensortrade.data.cdd.html#tensortrade.data.cdd.CryptoDataDownload.fetch_default">[docs]</a>    <span class="k">def</span> <span class="nf">fetch_default</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                      <span class="n">exchange_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                      <span class="n">base_symbol</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                      <span class="n">quote_symbol</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                      <span class="n">timeframe</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                      <span class="n">include_all_volumes</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Fetches data from all exchanges that match the evaluation structure.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        exchange_name : str</span>
+<span class="sd">            The name of the exchange.</span>
+<span class="sd">        base_symbol : str</span>
+<span class="sd">            The base symbol fo the cryptocurrency pair.</span>
+<span class="sd">        quote_symbol : str</span>
+<span class="sd">            The quote symbol fo the cryptocurrency pair.</span>
+<span class="sd">        timeframe : {&quot;d&quot;, &quot;h&quot;, &quot;m&quot;}</span>
+<span class="sd">            The timeframe to collect data from.</span>
+<span class="sd">        include_all_volumes : bool, optional</span>
+<span class="sd">            Whether or not to include both base and quote volume.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        `pd.DataFrame`</span>
+<span class="sd">            A open, high, low, close and volume for the specified exchange and</span>
+<span class="sd">            cryptocurrency pair.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">filename</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">_</span><span class="si">{}{}</span><span class="s2">_</span><span class="si">{}</span><span class="s2">.csv&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">exchange_name</span><span class="p">,</span> <span class="n">quote_symbol</span><span class="p">,</span> <span class="n">base_symbol</span><span class="p">,</span> <span class="n">timeframe</span><span class="p">)</span>
+        <span class="n">base_vc</span> <span class="o">=</span> <span class="s2">&quot;Volume </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">base_symbol</span><span class="p">)</span>
+        <span class="n">new_base_vc</span> <span class="o">=</span> <span class="s2">&quot;volume_base&quot;</span>
+        <span class="n">quote_vc</span> <span class="o">=</span> <span class="s2">&quot;Volume </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">quote_symbol</span><span class="p">)</span>
+        <span class="n">new_quote_vc</span> <span class="o">=</span> <span class="s2">&quot;volume_quote&quot;</span>
+
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span> <span class="o">+</span> <span class="n">filename</span><span class="p">,</span> <span class="n">skiprows</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="s2">&quot;Symbol&quot;</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">rename</span><span class="p">({</span><span class="n">base_vc</span><span class="p">:</span> <span class="n">new_base_vc</span><span class="p">,</span> <span class="n">quote_vc</span><span class="p">:</span> <span class="n">new_quote_vc</span><span class="p">,</span> <span class="s2">&quot;Date&quot;</span><span class="p">:</span> <span class="s2">&quot;date&quot;</span><span class="p">},</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s2">&quot;d&quot;</span> <span class="ow">in</span> <span class="n">timeframe</span><span class="p">:</span>
+            <span class="n">df</span><span class="p">[</span><span class="s2">&quot;date&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;date&quot;</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="s2">&quot;h&quot;</span> <span class="ow">in</span> <span class="n">timeframe</span><span class="p">:</span>
+            <span class="n">df</span><span class="p">[</span><span class="s2">&quot;date&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;date&quot;</span><span class="p">],</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2"> %I-%p&quot;</span><span class="p">)</span>
+
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s2">&quot;date&quot;</span><span class="p">)</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">]</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">include_all_volumes</span><span class="p">:</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="n">new_quote_vc</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">rename</span><span class="p">({</span><span class="n">new_base_vc</span><span class="p">:</span> <span class="s2">&quot;volume&quot;</span><span class="p">},</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">df</span>
+        <span class="k">return</span> <span class="n">df</span></div>
+
+<div class="viewcode-block" id="CryptoDataDownload.fetch_gemini"><a class="viewcode-back" href="../../../api/tensortrade.data.cdd.html#tensortrade.data.cdd.CryptoDataDownload.fetch_gemini">[docs]</a>    <span class="k">def</span> <span class="nf">fetch_gemini</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                     <span class="n">base_symbol</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                     <span class="n">quote_symbol</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                     <span class="n">timeframe</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Fetches data from the gemini exchange.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        base_symbol : str</span>
+<span class="sd">            The base symbol fo the cryptocurrency pair.</span>
+<span class="sd">        quote_symbol : str</span>
+<span class="sd">            The quote symbol fo the cryptocurrency pair.</span>
+<span class="sd">        timeframe : {&quot;d&quot;, &quot;h&quot;, &quot;m&quot;}</span>
+<span class="sd">            The timeframe to collect data from.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        `pd.DataFrame`</span>
+<span class="sd">            A open, high, low, close and volume for the specified</span>
+<span class="sd">            cryptocurrency pair.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">timeframe</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;h&quot;</span><span class="p">):</span>
+            <span class="n">timeframe</span> <span class="o">=</span> <span class="n">timeframe</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;hr&quot;</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">_</span><span class="si">{}{}</span><span class="s2">_</span><span class="si">{}</span><span class="s2">.csv&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;gemini&quot;</span><span class="p">,</span> <span class="n">quote_symbol</span><span class="p">,</span> <span class="n">base_symbol</span><span class="p">,</span> <span class="n">timeframe</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span> <span class="o">+</span> <span class="n">filename</span><span class="p">,</span> <span class="n">skiprows</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="s2">&quot;Symbol&quot;</span><span class="p">,</span> <span class="s2">&quot;Unix Timestamp&quot;</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">]</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s2">&quot;date&quot;</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">df</span></div>
+
+<div class="viewcode-block" id="CryptoDataDownload.fetch"><a class="viewcode-back" href="../../../api/tensortrade.data.cdd.html#tensortrade.data.cdd.CryptoDataDownload.fetch">[docs]</a>    <span class="k">def</span> <span class="nf">fetch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+              <span class="n">exchange_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+              <span class="n">base_symbol</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+              <span class="n">quote_symbol</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+              <span class="n">timeframe</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+              <span class="n">include_all_volumes</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Fetches data for different exchanges and cryptocurrency pairs.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        exchange_name : str</span>
+<span class="sd">            The name of the exchange.</span>
+<span class="sd">        base_symbol : str</span>
+<span class="sd">            The base symbol fo the cryptocurrency pair.</span>
+<span class="sd">        quote_symbol : str</span>
+<span class="sd">            The quote symbol fo the cryptocurrency pair.</span>
+<span class="sd">        timeframe : {&quot;d&quot;, &quot;h&quot;, &quot;m&quot;}</span>
+<span class="sd">            The timeframe to collect data from.</span>
+<span class="sd">        include_all_volumes : bool, optional</span>
+<span class="sd">            Whether or not to include both base and quote volume.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        `pd.DataFrame`</span>
+<span class="sd">            A open, high, low, close and volume for the specified exchange and</span>
+<span class="sd">            cryptocurrency pair.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">exchange_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;gemini&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fetch_gemini</span><span class="p">(</span><span class="n">base_symbol</span><span class="p">,</span> <span class="n">quote_symbol</span><span class="p">,</span> <span class="n">timeframe</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fetch_default</span><span class="p">(</span><span class="n">exchange_name</span><span class="p">,</span>
+                                  <span class="n">base_symbol</span><span class="p">,</span>
+                                  <span class="n">quote_symbol</span><span class="p">,</span>
+                                  <span class="n">timeframe</span><span class="p">,</span>
+                                  <span class="n">include_all_volumes</span><span class="o">=</span><span class="n">include_all_volumes</span><span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

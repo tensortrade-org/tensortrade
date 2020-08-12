@@ -1,0 +1,426 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>tensortrade.agents.parallel.parallel_dqn_agent &mdash; TensorTrade 0.2.0-beta.2 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/theme_overrides.css" type="text/css" />
+
+  
+  
+    <link rel="shortcut icon" href="../../../../_static/favicon.ico"/>
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+        <script src="../../../../_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    
+    <script type="text/javascript" src="../../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../../index.html">
+          
+
+          
+            
+            <img src="../../../../_static/logo.jpg" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../index.html">Home</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Overview</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../overview/getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../overview/getting_started.html#installation">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../overview/getting_started.html#docker">Docker</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../examples/overview.html">Code Structure</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/simple_sine_curve.html">Simple Sine Curve</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/pairs_trading.html">Pairs Trading</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Components</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../components/components.html">Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../components/action_scheme.html">Action Scheme</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../components/reward_scheme.html">Reward Scheme</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../components/observer.html">Observer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../components/stopper.html">Stopper</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../components/informer.html">Informer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../components/renderer.html">Renderer</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Environments</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../envs/trading_env.html">TradingEnvironment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../envs/generic.html">Generic</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../envs/default.html">Default</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Feed</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../feed/overview.html">Overview</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Order Management System (OMS)</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../oms/overview.html">Order Management System (OMS)</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Agents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../agents/learning_agents.html">Learning Agents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../agents/ray.html">Ray</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../agents/stable_baselines.html">Stable Baselines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../agents/tensorforce.html">Tensorforce</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/modules.html">API reference</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">TensorTrade</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+        
+      <li>tensortrade.agents.parallel.parallel_dqn_agent</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for tensortrade.agents.parallel.parallel_dqn_agent</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2019 The TensorTrade Authors.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License</span>
+
+
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">multiprocessing</span> <span class="k">as</span> <span class="nn">mp</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span>
+
+<span class="kn">from</span> <span class="nn">tensortrade.agents</span> <span class="kn">import</span> <span class="n">Agent</span>
+<span class="kn">from</span> <span class="nn">tensortrade.agents.parallel.parallel_dqn_model</span> <span class="kn">import</span> <span class="n">ParallelDQNModel</span>
+<span class="kn">from</span> <span class="nn">tensortrade.agents.parallel.parallel_dqn_optimizer</span> <span class="kn">import</span> <span class="n">ParallelDQNOptimizer</span>
+<span class="kn">from</span> <span class="nn">tensortrade.agents.parallel.parallel_dqn_trainer</span> <span class="kn">import</span> <span class="n">ParallelDQNTrainer</span>
+<span class="kn">from</span> <span class="nn">tensortrade.agents.parallel.parallel_queue</span> <span class="kn">import</span> <span class="n">ParallelQueue</span>
+
+
+<div class="viewcode-block" id="ParallelDQNAgent"><a class="viewcode-back" href="../../../../api/tensortrade.agents.parallel.parallel_dqn_agent.html#tensortrade.agents.parallel.parallel_dqn_agent.ParallelDQNAgent">[docs]</a><span class="k">class</span> <span class="nc">ParallelDQNAgent</span><span class="p">(</span><span class="n">Agent</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">create_env</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="kc">None</span><span class="p">],</span> <span class="s1">&#39;TradingEnvironment&#39;</span><span class="p">],</span>
+                 <span class="n">model</span><span class="p">:</span> <span class="n">ParallelDQNModel</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">create_env</span> <span class="o">=</span> <span class="n">create_env</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span> <span class="ow">or</span> <span class="n">ParallelDQNModel</span><span class="p">(</span><span class="n">create_env</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">create_env</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ParallelDQNAgent.restore"><a class="viewcode-back" href="../../../../api/tensortrade.agents.parallel.parallel_dqn_agent.html#tensortrade.agents.parallel.parallel_dqn_agent.ParallelDQNAgent.restore">[docs]</a>    <span class="k">def</span> <span class="nf">restore</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">restore</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ParallelDQNAgent.save"><a class="viewcode-back" href="../../../../api/tensortrade.agents.parallel.parallel_dqn_agent.html#tensortrade.agents.parallel.parallel_dqn_agent.ParallelDQNAgent.save">[docs]</a>    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">agent_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ParallelDQNAgent.get_action"><a class="viewcode-back" href="../../../../api/tensortrade.agents.parallel.parallel_dqn_agent.html#tensortrade.agents.parallel.parallel_dqn_agent.ParallelDQNAgent.get_action">[docs]</a>    <span class="k">def</span> <span class="nf">get_action</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">get_action</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ParallelDQNAgent.update_networks"><a class="viewcode-back" href="../../../../api/tensortrade.agents.parallel.parallel_dqn_agent.html#tensortrade.agents.parallel.parallel_dqn_agent.ParallelDQNAgent.update_networks">[docs]</a>    <span class="k">def</span> <span class="nf">update_networks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="s1">&#39;ParallelDQNModel&#39;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">update_networks</span><span class="p">(</span><span class="n">model</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ParallelDQNAgent.update_target_network"><a class="viewcode-back" href="../../../../api/tensortrade.agents.parallel.parallel_dqn_agent.html#tensortrade.agents.parallel.parallel_dqn_agent.ParallelDQNAgent.update_target_network">[docs]</a>    <span class="k">def</span> <span class="nf">update_target_network</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">update_target_network</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="nf">_start_trainer_process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                               <span class="n">create_env</span><span class="p">,</span>
+                               <span class="n">memory_queue</span><span class="p">,</span>
+                               <span class="n">model_update_queue</span><span class="p">,</span>
+                               <span class="n">done_queue</span><span class="p">,</span>
+                               <span class="n">n_steps</span><span class="p">,</span>
+                               <span class="n">n_episodes</span><span class="p">,</span>
+                               <span class="n">eps_start</span><span class="p">,</span>
+                               <span class="n">eps_end</span><span class="p">,</span>
+                               <span class="n">eps_decay_steps</span><span class="p">,</span>
+                               <span class="n">update_target_every</span><span class="p">):</span>
+        <span class="n">trainer_process</span> <span class="o">=</span> <span class="n">ParallelDQNTrainer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                             <span class="n">create_env</span><span class="p">,</span>
+                                             <span class="n">memory_queue</span><span class="p">,</span>
+                                             <span class="n">model_update_queue</span><span class="p">,</span>
+                                             <span class="n">done_queue</span><span class="p">,</span>
+                                             <span class="n">n_steps</span><span class="p">,</span>
+                                             <span class="n">n_episodes</span><span class="p">,</span>
+                                             <span class="n">eps_start</span><span class="p">,</span>
+                                             <span class="n">eps_end</span><span class="p">,</span>
+                                             <span class="n">eps_decay_steps</span><span class="p">,</span>
+                                             <span class="n">update_target_every</span><span class="p">)</span>
+
+        <span class="n">trainer_process</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">trainer_process</span>
+
+    <span class="k">def</span> <span class="nf">_start_optimizer_process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                 <span class="n">model</span><span class="p">,</span>
+                                 <span class="n">n_envs</span><span class="p">,</span>
+                                 <span class="n">memory_queue</span><span class="p">,</span>
+                                 <span class="n">model_update_queue</span><span class="p">,</span>
+                                 <span class="n">done_queue</span><span class="p">,</span>
+                                 <span class="n">discount_factor</span><span class="p">,</span>
+                                 <span class="n">batch_size</span><span class="p">,</span>
+                                 <span class="n">learning_rate</span><span class="p">,</span>
+                                 <span class="n">memory_capacity</span><span class="p">):</span>
+        <span class="n">optimizer_process</span> <span class="o">=</span> <span class="n">ParallelDQNOptimizer</span><span class="p">(</span><span class="n">model</span><span class="p">,</span>
+                                                 <span class="n">n_envs</span><span class="p">,</span>
+                                                 <span class="n">memory_queue</span><span class="p">,</span>
+                                                 <span class="n">model_update_queue</span><span class="p">,</span>
+                                                 <span class="n">done_queue</span><span class="p">,</span>
+                                                 <span class="n">discount_factor</span><span class="p">,</span>
+                                                 <span class="n">batch_size</span><span class="p">,</span>
+                                                 <span class="n">learning_rate</span><span class="p">,</span>
+                                                 <span class="n">memory_capacity</span><span class="p">)</span>
+
+        <span class="n">optimizer_process</span><span class="o">.</span><span class="n">daemon</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">optimizer_process</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">optimizer_process</span>
+
+<div class="viewcode-block" id="ParallelDQNAgent.train"><a class="viewcode-back" href="../../../../api/tensortrade.agents.parallel.parallel_dqn_agent.html#tensortrade.agents.parallel.parallel_dqn_agent.ParallelDQNAgent.train">[docs]</a>    <span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+              <span class="n">n_steps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+              <span class="n">n_episodes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+              <span class="n">save_every</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+              <span class="n">save_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+              <span class="n">callback</span><span class="p">:</span> <span class="n">callable</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+              <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="n">n_envs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;n_envs&#39;</span><span class="p">,</span> <span class="n">mp</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">())</span>
+        <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;batch_size&#39;</span><span class="p">,</span> <span class="mi">128</span><span class="p">)</span>
+        <span class="n">discount_factor</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;discount_factor&#39;</span><span class="p">,</span> <span class="mf">0.9999</span><span class="p">)</span>
+        <span class="n">learning_rate</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;learning_rate&#39;</span><span class="p">,</span> <span class="mf">0.0001</span><span class="p">)</span>
+        <span class="n">eps_start</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;eps_start&#39;</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">)</span>
+        <span class="n">eps_end</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;eps_end&#39;</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">)</span>
+        <span class="n">eps_decay_steps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;eps_decay_steps&#39;</span><span class="p">,</span> <span class="mi">2000</span><span class="p">)</span>
+        <span class="n">update_target_every</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;update_target_every&#39;</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
+        <span class="n">memory_capacity</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;memory_capacity&#39;</span><span class="p">,</span> <span class="mi">10000</span><span class="p">)</span>
+
+        <span class="n">memory_queue</span> <span class="o">=</span> <span class="n">ParallelQueue</span><span class="p">()</span>
+        <span class="n">model_update_queue</span> <span class="o">=</span> <span class="n">ParallelQueue</span><span class="p">()</span>
+        <span class="n">done_queue</span> <span class="o">=</span> <span class="n">ParallelQueue</span><span class="p">()</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;====      AGENT ID: </span><span class="si">{}</span><span class="s1">      ====&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">))</span>
+
+        <span class="n">trainers</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_start_trainer_process</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">create_env</span><span class="p">,</span>
+                                                <span class="n">memory_queue</span><span class="p">,</span>
+                                                <span class="n">model_update_queue</span><span class="p">,</span>
+                                                <span class="n">done_queue</span><span class="p">,</span>
+                                                <span class="n">n_steps</span><span class="p">,</span>
+                                                <span class="n">n_episodes</span><span class="p">,</span>
+                                                <span class="n">eps_start</span><span class="p">,</span>
+                                                <span class="n">eps_end</span><span class="p">,</span>
+                                                <span class="n">eps_decay_steps</span><span class="p">,</span>
+                                                <span class="n">update_target_every</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_envs</span><span class="p">)]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_start_optimizer_process</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
+                                      <span class="n">n_envs</span><span class="p">,</span>
+                                      <span class="n">memory_queue</span><span class="p">,</span>
+                                      <span class="n">model_update_queue</span><span class="p">,</span>
+                                      <span class="n">done_queue</span><span class="p">,</span>
+                                      <span class="n">discount_factor</span><span class="p">,</span>
+                                      <span class="n">batch_size</span><span class="p">,</span>
+                                      <span class="n">learning_rate</span><span class="p">,</span>
+                                      <span class="n">memory_capacity</span><span class="p">)</span>
+
+        <span class="k">while</span> <span class="n">done_queue</span><span class="o">.</span><span class="n">qsize</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">n_envs</span><span class="p">:</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+
+        <span class="n">total_reward</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">while</span> <span class="n">done_queue</span><span class="o">.</span><span class="n">qsize</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">total_reward</span> <span class="o">+=</span> <span class="n">done_queue</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">queue</span> <span class="ow">in</span> <span class="p">[</span><span class="n">memory_queue</span><span class="p">,</span> <span class="n">model_update_queue</span><span class="p">,</span> <span class="n">done_queue</span><span class="p">]:</span>
+            <span class="n">queue</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">queue</span> <span class="ow">in</span> <span class="p">[</span><span class="n">memory_queue</span><span class="p">,</span> <span class="n">model_update_queue</span><span class="p">,</span> <span class="n">done_queue</span><span class="p">]:</span>
+            <span class="n">queue</span><span class="o">.</span><span class="n">join_thread</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">trainer</span> <span class="ow">in</span> <span class="n">trainers</span><span class="p">:</span>
+            <span class="n">trainer</span><span class="o">.</span><span class="n">terminate</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">trainer</span> <span class="ow">in</span> <span class="n">trainers</span><span class="p">:</span>
+            <span class="n">trainer</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+
+        <span class="n">mean_reward</span> <span class="o">=</span> <span class="n">total_reward</span> <span class="o">/</span> <span class="n">n_envs</span>
+
+        <span class="k">return</span> <span class="n">mean_reward</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

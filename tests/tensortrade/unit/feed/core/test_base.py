@@ -23,7 +23,7 @@ class Counter(Stream):
         self.count = None
 
 
-def test_node():
+def test_stream():
 
     counter = Counter()
 
@@ -38,7 +38,7 @@ def test_node():
     assert counter.forward() == 1
 
 
-def test_node_head():
+def test_stream_head():
 
     c1 = Counter().rename("c1")
 
@@ -47,3 +47,37 @@ def test_node_head():
 
     assert c1.name == "c1"
     assert c2.name == "world:/c1"
+
+
+
+def test_stream_source():
+
+    s = Stream.source(range(10))
+
+    assert s.forward() == 0
+    assert s.forward() == 1
+
+    s.reset()
+
+    assert s.forward() == 0
+    assert s.forward() == 1
+
+
+    def g():
+        done = False
+        i = 0
+        yield i
+
+        while not done:
+            i += 1
+            yield i
+
+    s = Stream.source(g)
+
+    assert s.forward() == 0
+    assert s.forward() == 1
+
+    s.reset()
+
+    assert s.forward() == 0
+    assert s.forward() == 1

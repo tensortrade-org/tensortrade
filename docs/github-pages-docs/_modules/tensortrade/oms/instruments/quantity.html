@@ -1,0 +1,574 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>tensortrade.oms.instruments.quantity &mdash; TensorTrade 0.2.0-beta.2 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/theme_overrides.css" type="text/css" />
+
+  
+  
+    <link rel="shortcut icon" href="../../../../_static/favicon.ico"/>
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+        <script src="../../../../_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    
+    <script type="text/javascript" src="../../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../../index.html">
+          
+
+          
+            
+            <img src="../../../../_static/logo.jpg" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../index.html">Home</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Overview</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../overview/getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../overview/getting_started.html#installation">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../overview/getting_started.html#docker">Docker</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../examples/overview.html">Code Structure</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/simple_sine_curve.html">Simple Sine Curve</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/pairs_trading.html">Pairs Trading</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Components</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../components/components.html">Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../components/action_scheme.html">Action Scheme</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../components/reward_scheme.html">Reward Scheme</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../components/observer.html">Observer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../components/stopper.html">Stopper</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../components/informer.html">Informer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../components/renderer.html">Renderer</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Environments</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../envs/trading_env.html">TradingEnvironment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../envs/generic.html">Generic</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../envs/default.html">Default</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Feed</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../feed/overview.html">Overview</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Order Management System (OMS)</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../oms/overview.html">Order Management System (OMS)</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Agents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../agents/learning_agents.html">Learning Agents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../agents/ray.html">Ray</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../agents/stable_baselines.html">Stable Baselines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../agents/tensorforce.html">Tensorforce</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/modules.html">API reference</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">TensorTrade</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+        
+      <li>tensortrade.oms.instruments.quantity</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for tensortrade.oms.instruments.quantity</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2019 The TensorTrade Authors.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License</span>
+
+<span class="kn">import</span> <span class="nn">operator</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">TypeVar</span>
+<span class="kn">from</span> <span class="nn">numbers</span> <span class="kn">import</span> <span class="n">Number</span>
+<span class="kn">from</span> <span class="nn">decimal</span> <span class="kn">import</span> <span class="n">Decimal</span><span class="p">,</span> <span class="n">ROUND_DOWN</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">total_ordering</span>
+
+<span class="kn">from</span> <span class="nn">tensortrade.core.exceptions</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">InvalidNegativeQuantity</span><span class="p">,</span>
+    <span class="n">IncompatibleInstrumentOperation</span><span class="p">,</span>
+    <span class="n">InvalidNonNumericQuantity</span><span class="p">,</span>
+    <span class="n">QuantityOpPathMismatch</span>
+<span class="p">)</span>
+
+
+<span class="n">T</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;T&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="Quantity"><a class="viewcode-back" href="../../../../api/tensortrade.oms.instruments.quantity.html#tensortrade.oms.instruments.quantity.Quantity">[docs]</a><span class="nd">@total_ordering</span>
+<span class="k">class</span> <span class="nc">Quantity</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;A size of a financial instrument for use in trading.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    instrument : `Instrument`</span>
+<span class="sd">        The unit of the quantity.</span>
+<span class="sd">    size : `Union[float, Decimal]`</span>
+<span class="sd">        The number of units of the instrument.</span>
+<span class="sd">    path_id : str, optional</span>
+<span class="sd">        The path order_id that this quantity is allocated for and associated</span>
+<span class="sd">        with.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    InvalidNegativeQuantity</span>
+<span class="sd">        Raised if the `size` of the quantity being created is negative.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instrument</span><span class="p">:</span> <span class="s1">&#39;Instrument&#39;</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Decimal</span><span class="p">,</span> <span class="n">Number</span><span class="p">],</span> <span class="n">path_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">size</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">InvalidNegativeQuantity</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">instrument</span> <span class="o">=</span> <span class="n">instrument</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">=</span> <span class="n">size</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="n">Decimal</span><span class="p">)</span> <span class="k">else</span> <span class="n">Decimal</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">path_id</span> <span class="o">=</span> <span class="n">path_id</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">is_locked</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;If quantity is locked for an order. (bool, read-only)&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path_id</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Quantity.lock_for"><a class="viewcode-back" href="../../../../api/tensortrade.oms.instruments.quantity.html#tensortrade.oms.instruments.quantity.Quantity.lock_for">[docs]</a>    <span class="k">def</span> <span class="nf">lock_for</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Quantity&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Locks a quantity for an `Order` identified associated with `path_id`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        path_id : str</span>
+<span class="sd">            The identification of the order path.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        `Quantity`</span>
+<span class="sd">            A locked quantity for an order path.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">Quantity</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instrument</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">path_id</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Quantity.convert"><a class="viewcode-back" href="../../../../api/tensortrade.oms.instruments.quantity.html#tensortrade.oms.instruments.quantity.Quantity.convert">[docs]</a>    <span class="k">def</span> <span class="nf">convert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exchange_pair</span><span class="p">:</span> <span class="s2">&quot;ExchangePair&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Quantity&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Converts the quantity into the value of another instrument based</span>
+<span class="sd">        on its exchange rate from an exchange.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        exchange_pair : `ExchangePair`</span>
+<span class="sd">            The exchange pair to use for getting the quoted price to perform</span>
+<span class="sd">            the conversion.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        `Quantity`</span>
+<span class="sd">            The value of the current quantity in terms of the quote instrument.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">instrument</span> <span class="o">==</span> <span class="n">exchange_pair</span><span class="o">.</span><span class="n">pair</span><span class="o">.</span><span class="n">base</span><span class="p">:</span>
+            <span class="n">instrument</span> <span class="o">=</span> <span class="n">exchange_pair</span><span class="o">.</span><span class="n">pair</span><span class="o">.</span><span class="n">quote</span>
+            <span class="n">converted_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">/</span> <span class="n">exchange_pair</span><span class="o">.</span><span class="n">price</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">instrument</span> <span class="o">=</span> <span class="n">exchange_pair</span><span class="o">.</span><span class="n">pair</span><span class="o">.</span><span class="n">base</span>
+            <span class="n">converted_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">*</span> <span class="n">exchange_pair</span><span class="o">.</span><span class="n">price</span>
+        <span class="k">return</span> <span class="n">Quantity</span><span class="p">(</span><span class="n">instrument</span><span class="p">,</span> <span class="n">converted_size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">path_id</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Quantity.free"><a class="viewcode-back" href="../../../../api/tensortrade.oms.instruments.quantity.html#tensortrade.oms.instruments.quantity.Quantity.free">[docs]</a>    <span class="k">def</span> <span class="nf">free</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Quantity&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Gets the free version of this quantity.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        `Quantity`</span>
+<span class="sd">            The free version of the quantity.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">Quantity</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instrument</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Quantity.quantize"><a class="viewcode-back" href="../../../../api/tensortrade.oms.instruments.quantity.html#tensortrade.oms.instruments.quantity.Quantity.quantize">[docs]</a>    <span class="k">def</span> <span class="nf">quantize</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Quantity&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Computes the quantization of current quantity in terms of the instrument&#39;s</span>
+<span class="sd">        precision.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        `Quantity`</span>
+<span class="sd">            The quantized quantity.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">Quantity</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instrument</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="o">.</span><span class="n">quantize</span><span class="p">(</span><span class="n">Decimal</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">**-</span><span class="bp">self</span><span class="o">.</span><span class="n">instrument</span><span class="o">.</span><span class="n">precision</span><span class="p">),</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">path_id</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Quantity.as_float"><a class="viewcode-back" href="../../../../api/tensortrade.oms.instruments.quantity.html#tensortrade.oms.instruments.quantity.Quantity.as_float">[docs]</a>    <span class="k">def</span> <span class="nf">as_float</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Gets the size as a `float`.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float</span>
+<span class="sd">            The size as a floating point number.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Quantity.contain"><a class="viewcode-back" href="../../../../api/tensortrade.oms.instruments.quantity.html#tensortrade.oms.instruments.quantity.Quantity.contain">[docs]</a>    <span class="k">def</span> <span class="nf">contain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exchange_pair</span><span class="p">:</span> <span class="s2">&quot;ExchangePair&quot;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Contains the size of the quantity to be compatible with the settings</span>
+<span class="sd">        of a given exchange.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        exchange_pair : `ExchangePair`</span>
+<span class="sd">            The exchange pair containing the exchange the quantity must be</span>
+<span class="sd">            compatible with.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        `Quantity`</span>
+<span class="sd">            A quantity compatible with the given exchange.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">options</span> <span class="o">=</span> <span class="n">exchange_pair</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">options</span>
+        <span class="n">price</span> <span class="o">=</span> <span class="n">exchange_pair</span><span class="o">.</span><span class="n">price</span>
+
+        <span class="k">if</span> <span class="n">exchange_pair</span><span class="o">.</span><span class="n">pair</span><span class="o">.</span><span class="n">base</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">instrument</span><span class="p">:</span>
+            <span class="n">size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span>
+            <span class="k">return</span> <span class="n">Quantity</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instrument</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="n">options</span><span class="o">.</span><span class="n">max_trade_size</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">path_id</span><span class="p">)</span>
+
+        <span class="n">size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">*</span> <span class="n">price</span>
+        <span class="k">if</span> <span class="n">size</span> <span class="o">&lt;</span> <span class="n">options</span><span class="o">.</span><span class="n">max_trade_size</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Quantity</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instrument</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">path_id</span><span class="p">)</span>
+
+        <span class="n">max_trade_size</span> <span class="o">=</span> <span class="n">Decimal</span><span class="p">(</span><span class="n">options</span><span class="o">.</span><span class="n">max_trade_size</span><span class="p">)</span>
+        <span class="n">contained_size</span> <span class="o">=</span> <span class="n">max_trade_size</span> <span class="o">/</span> <span class="n">price</span>
+        <span class="n">contained_size</span> <span class="o">=</span> <span class="n">contained_size</span><span class="o">.</span><span class="n">quantize</span><span class="p">(</span><span class="n">Decimal</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">**-</span><span class="bp">self</span><span class="o">.</span><span class="n">instrument</span><span class="o">.</span><span class="n">precision</span><span class="p">,</span> <span class="n">rounding</span><span class="o">=</span><span class="n">ROUND_DOWN</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Quantity</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instrument</span><span class="p">,</span> <span class="n">contained_size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">path_id</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Quantity.validate"><a class="viewcode-back" href="../../../../api/tensortrade.oms.instruments.quantity.html#tensortrade.oms.instruments.quantity.Quantity.validate">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">validate</span><span class="p">(</span><span class="n">left</span><span class="p">:</span> <span class="s2">&quot;Union[Quantity, Number]&quot;</span><span class="p">,</span>
+                 <span class="n">right</span><span class="p">:</span> <span class="s2">&quot;Union[Quantity, Number]&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Tuple[Quantity, Quantity]&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Validates the given left and right arguments of a numeric or boolean</span>
+<span class="sd">        operation.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        left : `Union[Quantity, Number]`</span>
+<span class="sd">            The left argument of an operation.</span>
+<span class="sd">        right : `Union[Quantity, Number]`</span>
+<span class="sd">            The right argument of an operation.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        `Tuple[Quantity, Quantity]`</span>
+<span class="sd">            The validated quantity arguments to use in a numeric or boolean</span>
+<span class="sd">            operation.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        IncompatibleInstrumentOperation</span>
+<span class="sd">            Raised if the instruments left and right quantities are not equal.</span>
+<span class="sd">        QuantityOpPathMismatch</span>
+<span class="sd">            Raised if</span>
+<span class="sd">                - One argument is locked and the other argument is not.</span>
+<span class="sd">                - Both arguments are locked quantities with unequal path_ids.</span>
+<span class="sd">        InvalidNonNumericQuantity</span>
+<span class="sd">            Raised if either argument is a non-numeric object.</span>
+<span class="sd">        Exception</span>
+<span class="sd">            If the operation is not valid.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">Quantity</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">right</span><span class="p">,</span> <span class="n">Quantity</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">left</span><span class="o">.</span><span class="n">instrument</span> <span class="o">!=</span> <span class="n">right</span><span class="o">.</span><span class="n">instrument</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">IncompatibleInstrumentOperation</span><span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="p">(</span><span class="n">left</span><span class="o">.</span><span class="n">path_id</span> <span class="ow">and</span> <span class="n">right</span><span class="o">.</span><span class="n">path_id</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">left</span><span class="o">.</span><span class="n">path_id</span> <span class="o">!=</span> <span class="n">right</span><span class="o">.</span><span class="n">path_id</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="n">QuantityOpPathMismatch</span><span class="p">(</span><span class="n">left</span><span class="o">.</span><span class="n">path_id</span><span class="p">,</span> <span class="n">right</span><span class="o">.</span><span class="n">path_id</span><span class="p">)</span>
+
+            <span class="k">elif</span> <span class="n">left</span><span class="o">.</span><span class="n">path_id</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">right</span><span class="o">.</span><span class="n">path_id</span><span class="p">:</span>
+                <span class="n">right</span><span class="o">.</span><span class="n">path_id</span> <span class="o">=</span> <span class="n">left</span><span class="o">.</span><span class="n">path_id</span>
+
+            <span class="k">elif</span> <span class="ow">not</span> <span class="n">left</span><span class="o">.</span><span class="n">path_id</span> <span class="ow">and</span> <span class="n">right</span><span class="o">.</span><span class="n">path_id</span><span class="p">:</span>
+                <span class="n">left</span><span class="o">.</span><span class="n">path_id</span> <span class="o">=</span> <span class="n">right</span><span class="o">.</span><span class="n">path_id</span>
+
+            <span class="k">return</span> <span class="n">left</span><span class="p">,</span> <span class="n">right</span>
+
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">Number</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">right</span><span class="p">,</span> <span class="n">Quantity</span><span class="p">):</span>
+            <span class="n">left</span> <span class="o">=</span> <span class="n">Quantity</span><span class="p">(</span><span class="n">right</span><span class="o">.</span><span class="n">instrument</span><span class="p">,</span> <span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="o">.</span><span class="n">path_id</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">left</span><span class="p">,</span> <span class="n">right</span>
+
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">Quantity</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">right</span><span class="p">,</span> <span class="n">Number</span><span class="p">):</span>
+            <span class="n">right</span> <span class="o">=</span> <span class="n">Quantity</span><span class="p">(</span><span class="n">left</span><span class="o">.</span><span class="n">instrument</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">left</span><span class="o">.</span><span class="n">path_id</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">left</span><span class="p">,</span> <span class="n">right</span>
+
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">Quantity</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">InvalidNonNumericQuantity</span><span class="p">(</span><span class="n">right</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">right</span><span class="p">,</span> <span class="n">Quantity</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">InvalidNonNumericQuantity</span><span class="p">(</span><span class="n">left</span><span class="p">)</span>
+
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid quantity operation arguments: </span><span class="si">{</span><span class="n">left</span><span class="si">}</span><span class="s2"> and </span><span class="si">{</span><span class="n">right</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_bool_op</span><span class="p">(</span><span class="n">left</span><span class="p">:</span> <span class="s2">&quot;Union[Quantity, Number]&quot;</span><span class="p">,</span>
+                 <span class="n">right</span><span class="p">:</span> <span class="s2">&quot;Union[Quantity,Number]&quot;</span><span class="p">,</span>
+                 <span class="n">op</span><span class="p">:</span> <span class="s2">&quot;Callable[[T, T], bool]&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Performs a generic boolean operation on two quantities.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        left : `Union[Quantity, Number]`</span>
+<span class="sd">            The left argument of the operation.</span>
+<span class="sd">        right : `Union[Quantity, Number]`</span>
+<span class="sd">            The right argument of the operation.</span>
+<span class="sd">        op : `Callable[[T, T], bool]`</span>
+<span class="sd">            The boolean operation to be used.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        bool</span>
+<span class="sd">            The result of performing `op` on with `left` and `right`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">left</span><span class="p">,</span> <span class="n">right</span> <span class="o">=</span> <span class="n">Quantity</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">)</span>
+        <span class="n">boolean</span> <span class="o">=</span> <span class="n">op</span><span class="p">(</span><span class="n">left</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">right</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">boolean</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_math_op</span><span class="p">(</span><span class="n">left</span><span class="p">:</span> <span class="s2">&quot;Union[Quantity, Number]&quot;</span><span class="p">,</span>
+                 <span class="n">right</span><span class="p">:</span> <span class="s2">&quot;Union[Quantity, Number]&quot;</span><span class="p">,</span>
+                 <span class="n">op</span><span class="p">:</span> <span class="s2">&quot;Callable[[T, T], T]&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Quantity&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Performs a generic numeric operation on two quantities.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        left : `Union[Quantity, Number]`</span>
+<span class="sd">            The left argument of the operation.</span>
+<span class="sd">        right : `Union[Quantity, Number]`</span>
+<span class="sd">            The right argument of the operation.</span>
+<span class="sd">        op : `Callable[[T, T], bool]`</span>
+<span class="sd">            The numeric operation to be used.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        `Quantity`</span>
+<span class="sd">            The result of performing `op` on with `left` and `right`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">left</span><span class="p">,</span> <span class="n">right</span> <span class="o">=</span> <span class="n">Quantity</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">)</span>
+        <span class="n">size</span> <span class="o">=</span> <span class="n">op</span><span class="p">(</span><span class="n">left</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">right</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Quantity</span><span class="p">(</span><span class="n">left</span><span class="o">.</span><span class="n">instrument</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">left</span><span class="o">.</span><span class="n">path_id</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__add__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">&quot;Quantity&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Quantity&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Quantity</span><span class="o">.</span><span class="n">_math_op</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="n">operator</span><span class="o">.</span><span class="n">add</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__sub__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">&quot;Union[Quantity, Number]&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Quantity&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Quantity</span><span class="o">.</span><span class="n">_math_op</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="n">operator</span><span class="o">.</span><span class="n">sub</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__iadd__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">&quot;Union[Quantity, Number]&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Quantity&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Quantity</span><span class="o">.</span><span class="n">_math_op</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="n">operator</span><span class="o">.</span><span class="n">iadd</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__isub__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">&quot;Union[Quantity, Number]&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Quantity&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Quantity</span><span class="o">.</span><span class="n">_math_op</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="n">operator</span><span class="o">.</span><span class="n">isub</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__mul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">&quot;Union[Quantity, Number]&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Quantity&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Quantity</span><span class="o">.</span><span class="n">_math_op</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="n">operator</span><span class="o">.</span><span class="n">mul</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__rmul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">&quot;Union[Quantity, Number]&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Quantity&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Quantity</span><span class="o">.</span><span class="fm">__mul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__lt__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">&quot;Union[Quantity, Number]&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Quantity</span><span class="o">.</span><span class="n">_bool_op</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="n">operator</span><span class="o">.</span><span class="n">lt</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">&quot;Union[Quantity, Number]&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Quantity</span><span class="o">.</span><span class="n">_bool_op</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="n">operator</span><span class="o">.</span><span class="n">eq</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__ne__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">&quot;Union[Quantity, Number]&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Quantity</span><span class="o">.</span><span class="n">_bool_op</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="n">operator</span><span class="o">.</span><span class="n">ne</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__neg__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">operator</span><span class="o">.</span><span class="n">neg</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="s2">&quot;{0:.&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instrument</span><span class="o">.</span><span class="n">precision</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;f}&quot;</span> <span class="o">+</span> <span class="s2">&quot; </span><span class="si">{1}</span><span class="s2">&quot;</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">instrument</span><span class="o">.</span><span class="n">symbol</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">s</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+
+
+
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

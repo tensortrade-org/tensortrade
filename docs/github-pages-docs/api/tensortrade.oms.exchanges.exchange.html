@@ -1,0 +1,429 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>tensortrade.oms.exchanges.exchange module &mdash; TensorTrade 0.2.0-beta.2 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/theme_overrides.css" type="text/css" />
+
+  
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="tensortrade.oms.instruments package" href="tensortrade.oms.instruments.html" />
+    <link rel="prev" title="tensortrade.oms.exchanges package" href="tensortrade.oms.exchanges.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html">
+          
+
+          
+            
+            <img src="../_static/logo.jpg" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Home</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Overview</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../overview/getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../overview/getting_started.html#installation">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../overview/getting_started.html#docker">Docker</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../examples/overview.html">Code Structure</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/simple_sine_curve.html">Simple Sine Curve</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/pairs_trading.html">Pairs Trading</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Components</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../components/components.html">Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../components/action_scheme.html">Action Scheme</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../components/reward_scheme.html">Reward Scheme</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../components/observer.html">Observer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../components/stopper.html">Stopper</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../components/informer.html">Informer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../components/renderer.html">Renderer</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Environments</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../envs/trading_env.html">TradingEnvironment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../envs/generic.html">Generic</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../envs/default.html">Default</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Feed</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../feed/overview.html">Overview</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Order Management System (OMS)</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../oms/overview.html">Order Management System (OMS)</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Agents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../agents/learning_agents.html">Learning Agents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../agents/ray.html">Ray</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../agents/stable_baselines.html">Stable Baselines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../agents/tensorforce.html">Tensorforce</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">API reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="tensortrade.html">tensortrade package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="tensortrade.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="tensortrade.agents.html">tensortrade.agents package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tensortrade.contrib.html">tensortrade.contrib package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tensortrade.core.html">tensortrade.core package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tensortrade.data.html">tensortrade.data package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tensortrade.env.html">tensortrade.env package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tensortrade.feed.html">tensortrade.feed package</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="tensortrade.oms.html">tensortrade.oms package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tensortrade.stochastic.html">tensortrade.stochastic package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="tensortrade.html#submodules">Submodules</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">TensorTrade</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="modules.html">tensortrade</a> &raquo;</li>
+        
+          <li><a href="tensortrade.html">tensortrade package</a> &raquo;</li>
+        
+          <li><a href="tensortrade.oms.html">tensortrade.oms package</a> &raquo;</li>
+        
+          <li><a href="tensortrade.oms.exchanges.html">tensortrade.oms.exchanges package</a> &raquo;</li>
+        
+      <li>tensortrade.oms.exchanges.exchange module</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/api/tensortrade.oms.exchanges.exchange.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="module-tensortrade.oms.exchanges.exchange">
+<span id="tensortrade-oms-exchanges-exchange-module"></span><h1>tensortrade.oms.exchanges.exchange module<a class="headerlink" href="#module-tensortrade.oms.exchanges.exchange" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt id="tensortrade.oms.exchanges.exchange.Exchange">
+<em class="property">class </em><code class="sig-prename descclassname">tensortrade.oms.exchanges.exchange.</code><code class="sig-name descname">Exchange</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tensortrade/oms/exchanges/exchange.html#Exchange"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tensortrade.oms.exchanges.exchange.Exchange" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="tensortrade.core.component.html#tensortrade.core.component.Component" title="tensortrade.core.component.Component"><code class="xref py py-class docutils literal notranslate"><span class="pre">tensortrade.core.component.Component</span></code></a>, <a class="reference internal" href="tensortrade.core.base.html#tensortrade.core.base.TimedIdentifiable" title="tensortrade.core.base.TimedIdentifiable"><code class="xref py py-class docutils literal notranslate"><span class="pre">tensortrade.core.base.TimedIdentifiable</span></code></a></p>
+<p>An abstract exchange for use within a trading environment.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – The name of the exchange.</p></li>
+<li><p><strong>service</strong> (:class:<code class="docutils literal notranslate"><span class="pre">Union[Callable`,</span> <span class="pre">:class:`str]</span></code>) – The service to be used for filling orders.</p></li>
+<li><p><strong>options</strong> (<cite>ExchangeOptions</cite>) – The options used to specify the setting of the exchange.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="tensortrade.oms.exchanges.exchange.Exchange.__call__">
+<code class="sig-name descname">__call__</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">streams</span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#tensortrade.oms.exchanges.exchange.Exchange" title="tensortrade.oms.exchanges.exchange.Exchange">tensortrade.oms.exchanges.exchange.Exchange</a><a class="reference internal" href="../_modules/tensortrade/oms/exchanges/exchange.html#Exchange.__call__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tensortrade.oms.exchanges.exchange.Exchange.__call__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets up the price streams used to generate the prices.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>*streams</strong> – The positional arguments each being a price stream.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><cite>Exchange</cite> – The exchange the price streams were passed in for.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="tensortrade.oms.exchanges.exchange.Exchange.execute_order">
+<code class="sig-name descname">execute_order</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">order</span><span class="p">:</span> <span class="n">Order</span></em>, <em class="sig-param"><span class="n">portfolio</span><span class="p">:</span> <span class="n">Portfolio</span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)">None</a><a class="reference internal" href="../_modules/tensortrade/oms/exchanges/exchange.html#Exchange.execute_order"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tensortrade.oms.exchanges.exchange.Exchange.execute_order" title="Permalink to this definition">¶</a></dt>
+<dd><p>Execute an order on the exchange.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>order</strong> (<cite>Order</cite>) – The order to execute.</p></li>
+<li><p><strong>portfolio</strong> (<cite>Portfolio</cite>) – The portfolio to use.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="tensortrade.oms.exchanges.exchange.Exchange.is_pair_tradable">
+<code class="sig-name descname">is_pair_tradable</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">trading_pair</span><span class="p">:</span> <span class="n"><a class="reference internal" href="tensortrade.oms.instruments.trading_pair.html#tensortrade.oms.instruments.trading_pair.TradingPair" title="tensortrade.oms.instruments.trading_pair.TradingPair">tensortrade.oms.instruments.trading_pair.TradingPair</a></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)">bool</a><a class="reference internal" href="../_modules/tensortrade/oms/exchanges/exchange.html#Exchange.is_pair_tradable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tensortrade.oms.exchanges.exchange.Exchange.is_pair_tradable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Whether or not the specified trading pair is tradable on this
+exchange.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>trading_pair</strong> (<cite>TradingPair</cite>) – The trading pair to test the tradability of.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><em>bool</em> – Whether or not the pair is tradable.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="tensortrade.oms.exchanges.exchange.Exchange.quote_price">
+<code class="sig-name descname">quote_price</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">trading_pair</span><span class="p">:</span> <span class="n"><a class="reference internal" href="tensortrade.oms.instruments.trading_pair.html#tensortrade.oms.instruments.trading_pair.TradingPair" title="tensortrade.oms.instruments.trading_pair.TradingPair">tensortrade.oms.instruments.trading_pair.TradingPair</a></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/decimal.html#decimal.Decimal" title="(in Python v3.8)">decimal.Decimal</a><a class="reference internal" href="../_modules/tensortrade/oms/exchanges/exchange.html#Exchange.quote_price"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tensortrade.oms.exchanges.exchange.Exchange.quote_price" title="Permalink to this definition">¶</a></dt>
+<dd><p>The quote price of a trading pair on the exchange, denoted in the
+core instrument.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>trading_pair</strong> (<cite>TradingPair</cite>) – The trading pair to get the quote price for.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><cite>Decimal</cite> – The quote price of the specified trading pair, denoted in the core instrument.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="tensortrade.oms.exchanges.exchange.Exchange.registered_name">
+<code class="sig-name descname">registered_name</code><em class="property"> = 'exchanges'</em><a class="headerlink" href="#tensortrade.oms.exchanges.exchange.Exchange.registered_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="tensortrade.oms.exchanges.exchange.Exchange.streams">
+<code class="sig-name descname">streams</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; List<span class="p">[</span>Stream<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)">float</a><span class="p">]</span><span class="p">]</span><a class="reference internal" href="../_modules/tensortrade/oms/exchanges/exchange.html#Exchange.streams"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tensortrade.oms.exchanges.exchange.Exchange.streams" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the price streams for the exchange.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><cite>List[Stream[float]]</cite> – The price streams for the exchange.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="tensortrade.oms.exchanges.exchange.ExchangeOptions">
+<em class="property">class </em><code class="sig-prename descclassname">tensortrade.oms.exchanges.exchange.</code><code class="sig-name descname">ExchangeOptions</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">commission</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)">float</a></span> <span class="o">=</span> <span class="default_value">0.003</span></em>, <em class="sig-param"><span class="n">min_trade_size</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)">float</a></span> <span class="o">=</span> <span class="default_value">1e-06</span></em>, <em class="sig-param"><span class="n">max_trade_size</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)">float</a></span> <span class="o">=</span> <span class="default_value">1000000.0</span></em>, <em class="sig-param"><span class="n">min_trade_price</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)">float</a></span> <span class="o">=</span> <span class="default_value">1e-08</span></em>, <em class="sig-param"><span class="n">max_trade_price</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)">float</a></span> <span class="o">=</span> <span class="default_value">100000000.0</span></em>, <em class="sig-param"><span class="n">is_live</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)">bool</a></span> <span class="o">=</span> <span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tensortrade/oms/exchanges/exchange.html#ExchangeOptions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tensortrade.oms.exchanges.exchange.ExchangeOptions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>An options class to specify the settings of an exchange.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>commission</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <em>default</em> <code class="docutils literal notranslate"><span class="pre">0.003</span></code>) – The percentage of the order size taken by the exchange.</p></li>
+<li><p><strong>min_trade_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <em>default</em> <code class="docutils literal notranslate"><span class="pre">1e-6</span></code>) – The minimum trade size an order can have.</p></li>
+<li><p><strong>max_trade_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <em>default</em> <code class="docutils literal notranslate"><span class="pre">1e6</span></code>) – The maximum trade size an order can have.</p></li>
+<li><p><strong>min_trade_price</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <em>default</em> <code class="docutils literal notranslate"><span class="pre">1e-8</span></code>) – The minimum price an exchange can have.</p></li>
+<li><p><strong>max_trade_price</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <em>default</em> <code class="docutils literal notranslate"><span class="pre">1e8</span></code>) – The maximum price an exchange can have.</p></li>
+<li><p><strong>is_live</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>, <em>default</em> <a class="reference external" href="https://docs.python.org/3/library/constants.html#False" title="(in Python v3.8)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">False</span></code></a>) – Whether live orders should be submitted to the exchange.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="tensortrade.oms.instruments.html" class="btn btn-neutral float-right" title="tensortrade.oms.instruments package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="tensortrade.oms.exchanges.html" class="btn btn-neutral float-left" title="tensortrade.oms.exchanges package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

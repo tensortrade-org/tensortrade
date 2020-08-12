@@ -1,0 +1,474 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>tensortrade.oms.orders.criteria &mdash; TensorTrade 0.2.0-beta.2 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/theme_overrides.css" type="text/css" />
+
+  
+  
+    <link rel="shortcut icon" href="../../../../_static/favicon.ico"/>
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+        <script src="../../../../_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    
+    <script type="text/javascript" src="../../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../../index.html">
+          
+
+          
+            
+            <img src="../../../../_static/logo.jpg" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../index.html">Home</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Overview</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../overview/getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../overview/getting_started.html#installation">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../overview/getting_started.html#docker">Docker</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../examples/overview.html">Code Structure</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/simple_sine_curve.html">Simple Sine Curve</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/pairs_trading.html">Pairs Trading</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Components</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../components/components.html">Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../components/action_scheme.html">Action Scheme</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../components/reward_scheme.html">Reward Scheme</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../components/observer.html">Observer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../components/stopper.html">Stopper</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../components/informer.html">Informer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../components/renderer.html">Renderer</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Environments</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../envs/trading_env.html">TradingEnvironment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../envs/generic.html">Generic</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../envs/default.html">Default</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Feed</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../feed/overview.html">Overview</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Order Management System (OMS)</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../oms/overview.html">Order Management System (OMS)</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Agents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../agents/learning_agents.html">Learning Agents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../agents/ray.html">Ray</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../agents/stable_baselines.html">Stable Baselines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../agents/tensorforce.html">Tensorforce</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/modules.html">API reference</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">TensorTrade</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+        
+      <li>tensortrade.oms.orders.criteria</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for tensortrade.oms.orders.criteria</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2020 The TensorTrade Authors.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License</span>
+
+
+<span class="kn">import</span> <span class="nn">operator</span>
+
+<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">abstractmethod</span><span class="p">,</span> <span class="n">ABCMeta</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">TypeVar</span>
+<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
+
+<span class="kn">from</span> <span class="nn">tensortrade.oms.orders</span> <span class="kn">import</span> <span class="n">TradeSide</span><span class="p">,</span> <span class="n">Order</span>
+<span class="kn">from</span> <span class="nn">tensortrade.oms.exchanges</span> <span class="kn">import</span> <span class="n">Exchange</span>
+
+
+<div class="viewcode-block" id="Criteria"><a class="viewcode-back" href="../../../../api/tensortrade.oms.orders.criteria.html#tensortrade.oms.orders.criteria.Criteria">[docs]</a><span class="k">class</span> <span class="nc">Criteria</span><span class="p">(</span><span class="nb">object</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A criteria to be satisfied before an order will be executed.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Criteria.check"><a class="viewcode-back" href="../../../../api/tensortrade.oms.orders.criteria.html#tensortrade.oms.orders.criteria.Criteria.check">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">check</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span><span class="p">:</span> <span class="s1">&#39;Order&#39;</span><span class="p">,</span> <span class="n">exchange</span><span class="p">:</span> <span class="s1">&#39;Exchange&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Checks whether the `order` is executable on `exchange`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        order : `Order`</span>
+<span class="sd">            An order.</span>
+<span class="sd">        exchange : `Exchange`</span>
+<span class="sd">            The exchange to check.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        bool</span>
+<span class="sd">            Whether `order` is executable on `exchange`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span><span class="p">:</span> <span class="s1">&#39;Order&#39;</span><span class="p">,</span> <span class="n">exchange</span><span class="p">:</span> <span class="s1">&#39;Exchange&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">exchange</span><span class="o">.</span><span class="n">is_pair_tradable</span><span class="p">(</span><span class="n">order</span><span class="o">.</span><span class="n">pair</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">check</span><span class="p">(</span><span class="n">order</span><span class="p">,</span> <span class="n">exchange</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__and__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s1">&#39;Callable[[Order, Exchange], bool]&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;Criteria&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">CriteriaBinOp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="n">operator</span><span class="o">.</span><span class="n">and_</span><span class="p">,</span> <span class="s2">&quot;&amp;&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__or__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s1">&#39;Callable[[Order, Exchange], bool]&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;Criteria&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">CriteriaBinOp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="n">operator</span><span class="o">.</span><span class="n">or_</span><span class="p">,</span> <span class="s2">&quot;|&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__xor__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s1">&#39;Callable[[Order, Exchange], bool]&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;Criteria&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">CriteriaBinOp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="n">operator</span><span class="o">.</span><span class="n">xor</span><span class="p">,</span> <span class="s2">&quot;^&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__invert__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">NotCriteria</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="CriteriaBinOp"><a class="viewcode-back" href="../../../../api/tensortrade.oms.orders.criteria.html#tensortrade.oms.orders.criteria.CriteriaBinOp">[docs]</a><span class="k">class</span> <span class="nc">CriteriaBinOp</span><span class="p">(</span><span class="n">Criteria</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A class for using a binary operation for criteria.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    left : `Callable[[Order, Exchange], bool]`</span>
+<span class="sd">        The left criteria argument.</span>
+<span class="sd">    right : `Callable[[Order, Exchange], bool]`</span>
+<span class="sd">        The right criteria argument.</span>
+<span class="sd">    op : `Callable[[bool, bool], bool]`</span>
+<span class="sd">        The binary boolean operation.</span>
+<span class="sd">    op_str : str</span>
+<span class="sd">        The string representing the op.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">left</span><span class="p">:</span> <span class="s1">&#39;Callable[[Order, Exchange], bool]&#39;</span><span class="p">,</span>
+                 <span class="n">right</span><span class="p">:</span> <span class="s1">&#39;Callable[[Order, Exchange], bool]&#39;</span><span class="p">,</span>
+                 <span class="n">op</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">bool</span><span class="p">],</span> <span class="nb">bool</span><span class="p">],</span>
+                 <span class="n">op_str</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">left</span> <span class="o">=</span> <span class="n">left</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">right</span> <span class="o">=</span> <span class="n">right</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">op</span> <span class="o">=</span> <span class="n">op</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">op_str</span> <span class="o">=</span> <span class="n">op_str</span>
+
+<div class="viewcode-block" id="CriteriaBinOp.check"><a class="viewcode-back" href="../../../../api/tensortrade.oms.orders.criteria.html#tensortrade.oms.orders.criteria.CriteriaBinOp.check">[docs]</a>    <span class="k">def</span> <span class="nf">check</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span><span class="p">:</span> <span class="s1">&#39;Order&#39;</span><span class="p">,</span> <span class="n">exchange</span><span class="p">:</span> <span class="s1">&#39;Exchange&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="n">left</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">left</span><span class="p">(</span><span class="n">order</span><span class="p">,</span> <span class="n">exchange</span><span class="p">)</span>
+        <span class="n">right</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">right</span><span class="p">(</span><span class="n">order</span><span class="p">,</span> <span class="n">exchange</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">op</span><span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">is_left_op</span> <span class="o">=</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">left</span><span class="p">,</span> <span class="n">CriteriaBinOp</span><span class="p">)</span>
+        <span class="n">is_right_op</span> <span class="o">=</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">right</span><span class="p">,</span> <span class="n">CriteriaBinOp</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">is_left_op</span> <span class="ow">and</span> <span class="n">is_right_op</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) </span><span class="si">{}</span><span class="s2"> (</span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">left</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">op_str</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">right</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">is_left_op</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">is_right_op</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">left</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">op_str</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">right</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="n">is_left_op</span> <span class="ow">and</span> <span class="n">is_right_op</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> (</span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">left</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">op_str</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">right</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">left</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">op_str</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">right</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="NotCriteria"><a class="viewcode-back" href="../../../../api/tensortrade.oms.orders.criteria.html#tensortrade.oms.orders.criteria.NotCriteria">[docs]</a><span class="k">class</span> <span class="nc">NotCriteria</span><span class="p">(</span><span class="n">Criteria</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A criteria to invert the truth value of another criteria.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    criteria : `Callable[[Order, Exchange], bool]`</span>
+<span class="sd">        The criteria to invert the truth value of.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">criteria</span><span class="p">:</span> <span class="s1">&#39;Callable[[Order, Exchange], bool]&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">criteria</span> <span class="o">=</span> <span class="n">criteria</span>
+
+<div class="viewcode-block" id="NotCriteria.check"><a class="viewcode-back" href="../../../../api/tensortrade.oms.orders.criteria.html#tensortrade.oms.orders.criteria.NotCriteria.check">[docs]</a>    <span class="k">def</span> <span class="nf">check</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span><span class="p">:</span> <span class="s1">&#39;Order&#39;</span><span class="p">,</span> <span class="n">exchange</span><span class="p">:</span> <span class="s1">&#39;Exchange&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">criteria</span><span class="p">(</span><span class="n">order</span><span class="p">,</span> <span class="n">exchange</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">criteria</span><span class="p">,</span> <span class="n">CriteriaBinOp</span><span class="p">):</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;~(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">criteria</span><span class="si">}</span><span class="s2">)&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;~</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">criteria</span><span class="si">}</span><span class="s2">&quot;</span></div>
+
+
+<div class="viewcode-block" id="Limit"><a class="viewcode-back" href="../../../../api/tensortrade.oms.orders.criteria.html#tensortrade.oms.orders.criteria.Limit">[docs]</a><span class="k">class</span> <span class="nc">Limit</span><span class="p">(</span><span class="n">Criteria</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;An order criteria that allows execution when the quote price for a</span>
+<span class="sd">    trading pair is at or below a specific price, hidden from the public</span>
+<span class="sd">    order book.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    limit_price : float</span>
+<span class="sd">        The quote price to check for execution.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">limit_price</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">limit_price</span> <span class="o">=</span> <span class="n">limit_price</span>
+
+<div class="viewcode-block" id="Limit.check"><a class="viewcode-back" href="../../../../api/tensortrade.oms.orders.criteria.html#tensortrade.oms.orders.criteria.Limit.check">[docs]</a>    <span class="k">def</span> <span class="nf">check</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span><span class="p">:</span> <span class="s1">&#39;Order&#39;</span><span class="p">,</span> <span class="n">exchange</span><span class="p">:</span> <span class="s1">&#39;Exchange&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="n">price</span> <span class="o">=</span> <span class="n">exchange</span><span class="o">.</span><span class="n">quote_price</span><span class="p">(</span><span class="n">order</span><span class="o">.</span><span class="n">pair</span><span class="p">)</span>
+
+        <span class="n">buy_satisfied</span> <span class="o">=</span> <span class="p">(</span><span class="n">order</span><span class="o">.</span><span class="n">side</span> <span class="o">==</span> <span class="n">TradeSide</span><span class="o">.</span><span class="n">BUY</span> <span class="ow">and</span> <span class="n">price</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">limit_price</span><span class="p">)</span>
+        <span class="n">sell_satisfied</span> <span class="o">=</span> <span class="p">(</span><span class="n">order</span><span class="o">.</span><span class="n">side</span> <span class="o">==</span> <span class="n">TradeSide</span><span class="o">.</span><span class="n">SELL</span> <span class="ow">and</span> <span class="n">price</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">limit_price</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">buy_satisfied</span> <span class="ow">or</span> <span class="n">sell_satisfied</span></div>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;Limit: price=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">limit_price</span><span class="si">}</span><span class="s2">&gt;&quot;</span></div>
+
+
+<div class="viewcode-block" id="StopDirection"><a class="viewcode-back" href="../../../../api/tensortrade.oms.orders.criteria.html#tensortrade.oms.orders.criteria.StopDirection">[docs]</a><span class="k">class</span> <span class="nc">StopDirection</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;An enumeration for the directions of a stop criteria.&quot;&quot;&quot;</span>
+
+    <span class="n">UP</span> <span class="o">=</span> <span class="s2">&quot;up&quot;</span>
+    <span class="n">DOWN</span> <span class="o">=</span> <span class="s2">&quot;down&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Stop"><a class="viewcode-back" href="../../../../api/tensortrade.oms.orders.criteria.html#tensortrade.oms.orders.criteria.Stop">[docs]</a><span class="k">class</span> <span class="nc">Stop</span><span class="p">(</span><span class="n">Criteria</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;An order criteria that allows execution when the quote price for a</span>
+<span class="sd">    trading pair is above or below a specific price.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    direction : `Union[StopDirection, str]`</span>
+<span class="sd">        The direction to watch for the stop criteria.</span>
+<span class="sd">    percent : float</span>
+<span class="sd">        The percentage of the current price to use for watching.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">direction</span><span class="p">:</span> <span class="s1">&#39;Union[StopDirection, str]&#39;</span><span class="p">,</span>
+                 <span class="n">percent</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">direction</span> <span class="o">=</span> <span class="n">StopDirection</span><span class="p">(</span><span class="n">direction</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">percent</span> <span class="o">=</span> <span class="n">percent</span>
+
+<div class="viewcode-block" id="Stop.check"><a class="viewcode-back" href="../../../../api/tensortrade.oms.orders.criteria.html#tensortrade.oms.orders.criteria.Stop.check">[docs]</a>    <span class="k">def</span> <span class="nf">check</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span><span class="p">:</span> <span class="s1">&#39;Order&#39;</span><span class="p">,</span> <span class="n">exchange</span><span class="p">:</span> <span class="s1">&#39;Exchange&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="n">price</span> <span class="o">=</span> <span class="n">exchange</span><span class="o">.</span><span class="n">quote_price</span><span class="p">(</span><span class="n">order</span><span class="o">.</span><span class="n">pair</span><span class="p">)</span>
+        <span class="n">percent</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">price</span> <span class="o">-</span> <span class="n">order</span><span class="o">.</span><span class="n">price</span><span class="p">)</span> <span class="o">/</span> <span class="n">order</span><span class="o">.</span><span class="n">price</span>
+
+        <span class="n">is_take_profit</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">direction</span> <span class="o">==</span> <span class="n">StopDirection</span><span class="o">.</span><span class="n">UP</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">price</span> <span class="o">&gt;=</span> <span class="n">order</span><span class="o">.</span><span class="n">price</span><span class="p">)</span>
+        <span class="n">is_stop_loss</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">direction</span> <span class="o">==</span> <span class="n">StopDirection</span><span class="o">.</span><span class="n">DOWN</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">price</span> <span class="o">&lt;=</span> <span class="n">order</span><span class="o">.</span><span class="n">price</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">(</span><span class="n">is_take_profit</span> <span class="ow">or</span> <span class="n">is_stop_loss</span><span class="p">)</span> <span class="ow">and</span> <span class="n">percent</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">percent</span></div>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;Stop: direction=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">direction</span><span class="si">}</span><span class="s2">, percent=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">percent</span><span class="si">}</span><span class="s2">&gt;&quot;</span></div>
+
+
+<div class="viewcode-block" id="Timed"><a class="viewcode-back" href="../../../../api/tensortrade.oms.orders.criteria.html#tensortrade.oms.orders.criteria.Timed">[docs]</a><span class="k">class</span> <span class="nc">Timed</span><span class="p">(</span><span class="n">Criteria</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;An order criteria for waiting a certain amount of time for execution.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    duration : float</span>
+<span class="sd">        The amount of time to wait.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">duration</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">duration</span> <span class="o">=</span> <span class="n">duration</span>
+
+<div class="viewcode-block" id="Timed.check"><a class="viewcode-back" href="../../../../api/tensortrade.oms.orders.criteria.html#tensortrade.oms.orders.criteria.Timed.check">[docs]</a>    <span class="k">def</span> <span class="nf">check</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span><span class="p">:</span> <span class="s1">&#39;Order&#39;</span><span class="p">,</span> <span class="n">exchange</span><span class="p">:</span> <span class="s1">&#39;Exchange&#39;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">order</span><span class="o">.</span><span class="n">clock</span><span class="o">.</span><span class="n">step</span> <span class="o">-</span> <span class="n">order</span><span class="o">.</span><span class="n">created_at</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">duration</span></div>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;Timed: duration=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">duration</span><span class="si">}</span><span class="s2">&gt;&quot;</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

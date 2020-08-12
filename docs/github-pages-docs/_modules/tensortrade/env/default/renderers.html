@@ -1,0 +1,1002 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>tensortrade.env.default.renderers &mdash; TensorTrade 0.2.0-beta.2 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/theme_overrides.css" type="text/css" />
+
+  
+  
+    <link rel="shortcut icon" href="../../../../_static/favicon.ico"/>
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+        <script src="../../../../_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    
+    <script type="text/javascript" src="../../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../../index.html">
+          
+
+          
+            
+            <img src="../../../../_static/logo.jpg" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../index.html">Home</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Overview</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../overview/getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../overview/getting_started.html#installation">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../overview/getting_started.html#docker">Docker</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../examples/overview.html">Code Structure</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/simple_sine_curve.html">Simple Sine Curve</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/pairs_trading.html">Pairs Trading</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Components</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../components/components.html">Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../components/action_scheme.html">Action Scheme</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../components/reward_scheme.html">Reward Scheme</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../components/observer.html">Observer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../components/stopper.html">Stopper</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../components/informer.html">Informer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../components/renderer.html">Renderer</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Environments</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../envs/trading_env.html">TradingEnvironment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../envs/generic.html">Generic</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../envs/default.html">Default</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Feed</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../feed/overview.html">Overview</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Order Management System (OMS)</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../oms/overview.html">Order Management System (OMS)</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Agents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../agents/learning_agents.html">Learning Agents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../agents/ray.html">Ray</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../agents/stable_baselines.html">Stable Baselines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../agents/tensorforce.html">Tensorforce</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/modules.html">API reference</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">TensorTrade</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+        
+          <li><a href="../default.html">tensortrade.env.default</a> &raquo;</li>
+        
+      <li>tensortrade.env.default.renderers</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for tensortrade.env.default.renderers</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2020 The TensorTrade Authors.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">importlib</span>
+
+<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">abstractmethod</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Tuple</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">display</span><span class="p">,</span> <span class="n">clear_output</span>
+<span class="kn">from</span> <span class="nn">pandas.plotting</span> <span class="kn">import</span> <span class="n">register_matplotlib_converters</span>
+
+<span class="kn">from</span> <span class="nn">tensortrade.oms.orders</span> <span class="kn">import</span> <span class="n">TradeSide</span>
+<span class="kn">from</span> <span class="nn">tensortrade.env.generic</span> <span class="kn">import</span> <span class="n">Renderer</span><span class="p">,</span> <span class="n">TradingEnv</span>
+
+
+<span class="k">if</span> <span class="n">importlib</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">find_spec</span><span class="p">(</span><span class="s2">&quot;matplotlib&quot;</span><span class="p">):</span>
+    <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+    <span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">style</span>
+
+    <span class="n">style</span><span class="o">.</span><span class="n">use</span><span class="p">(</span><span class="s2">&quot;ggplot&quot;</span><span class="p">)</span>
+    <span class="n">register_matplotlib_converters</span><span class="p">()</span>
+
+<span class="k">if</span> <span class="n">importlib</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">find_spec</span><span class="p">(</span><span class="s2">&quot;plotly&quot;</span><span class="p">):</span>
+    <span class="kn">import</span> <span class="nn">plotly.graph_objects</span> <span class="k">as</span> <span class="nn">go</span>
+
+    <span class="kn">from</span> <span class="nn">plotly.subplots</span> <span class="kn">import</span> <span class="n">make_subplots</span>
+
+
+<span class="k">def</span> <span class="nf">_create_auto_file_name</span><span class="p">(</span><span class="n">filename_prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                           <span class="n">ext</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                           <span class="n">timestamp_format</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">_%H%M%S&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="n">timestamp</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="n">timestamp_format</span><span class="p">)</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="n">filename_prefix</span> <span class="o">+</span> <span class="n">timestamp</span> <span class="o">+</span> <span class="s1">&#39;.&#39;</span> <span class="o">+</span> <span class="n">ext</span>
+    <span class="k">return</span> <span class="n">filename</span>
+
+
+<span class="k">def</span> <span class="nf">_check_path</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">auto_create</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">path</span> <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+        <span class="k">return</span>
+
+    <span class="k">if</span> <span class="n">auto_create</span><span class="p">:</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">OSError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Path &#39;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&#39; not found.&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="BaseRenderer"><a class="viewcode-back" href="../../../../api/tensortrade.env.default.renderers.html#tensortrade.env.default.renderers.BaseRenderer">[docs]</a><span class="k">class</span> <span class="nc">BaseRenderer</span><span class="p">(</span><span class="n">Renderer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;The abstract base renderer to be subclassed when making a renderer</span>
+<span class="sd">    the incorporates a `Portfolio`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_max_episodes</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_max_steps</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_create_log_entry</span><span class="p">(</span><span class="n">episode</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                          <span class="n">max_episodes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                          <span class="n">step</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                          <span class="n">max_steps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                          <span class="n">date_format</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2"> %H:%M:%S %p&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Creates a log entry to be used by a renderer.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        episode : int</span>
+<span class="sd">            The current episode.</span>
+<span class="sd">        max_episodes : int</span>
+<span class="sd">            The maximum number of episodes that can occur.</span>
+<span class="sd">        step : int</span>
+<span class="sd">            The current step of the current episode.</span>
+<span class="sd">        max_steps : int</span>
+<span class="sd">            The maximum number of steps within an episode that can occur.</span>
+<span class="sd">        date_format : str</span>
+<span class="sd">            The format for logging the date.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        str</span>
+<span class="sd">            a log entry</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">log_entry</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="n">date_format</span><span class="p">)</span><span class="si">}</span><span class="s2">]&quot;</span>
+
+        <span class="k">if</span> <span class="n">episode</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">log_entry</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot; Episode: </span><span class="si">{</span><span class="n">episode</span> <span class="o">+</span> <span class="mi">1</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">max_episodes</span> <span class="k">if</span> <span class="n">max_episodes</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span><span class="si">}</span><span class="s2">&quot;</span>
+
+        <span class="k">if</span> <span class="n">step</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">log_entry</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot; Step: </span><span class="si">{</span><span class="n">step</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">max_steps</span> <span class="k">if</span> <span class="n">max_steps</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span><span class="si">}</span><span class="s2">&quot;</span>
+
+        <span class="k">return</span> <span class="n">log_entry</span>
+
+<div class="viewcode-block" id="BaseRenderer.render"><a class="viewcode-back" href="../../../../api/tensortrade.env.default.renderers.html#tensortrade.env.default.renderers.BaseRenderer.render">[docs]</a>    <span class="k">def</span> <span class="nf">render</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env</span><span class="p">:</span> <span class="s1">&#39;TradingEnv&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+        <span class="n">price_history</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">observer</span><span class="o">.</span><span class="n">renderer_history</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">price_history</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">observer</span><span class="o">.</span><span class="n">renderer_history</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">render_env</span><span class="p">(</span>
+            <span class="n">episode</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;episode&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="n">max_episodes</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;max_episodes&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="n">step</span><span class="o">=</span><span class="n">env</span><span class="o">.</span><span class="n">clock</span><span class="o">.</span><span class="n">step</span><span class="p">,</span>
+            <span class="n">max_steps</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;max_steps&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="n">price_history</span><span class="o">=</span><span class="n">price_history</span><span class="p">,</span>
+            <span class="n">net_worth</span><span class="o">=</span><span class="n">env</span><span class="o">.</span><span class="n">action_scheme</span><span class="o">.</span><span class="n">portfolio</span><span class="o">.</span><span class="n">performance</span><span class="o">.</span><span class="n">net_worth</span><span class="p">,</span>
+            <span class="n">performance</span><span class="o">=</span><span class="n">env</span><span class="o">.</span><span class="n">action_scheme</span><span class="o">.</span><span class="n">portfolio</span><span class="o">.</span><span class="n">performance</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;base_symbol&#39;</span><span class="p">]),</span>
+            <span class="n">trades</span><span class="o">=</span><span class="n">env</span><span class="o">.</span><span class="n">action_scheme</span><span class="o">.</span><span class="n">broker</span><span class="o">.</span><span class="n">trades</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="BaseRenderer.render_env"><a class="viewcode-back" href="../../../../api/tensortrade.env.default.renderers.html#tensortrade.env.default.renderers.BaseRenderer.render_env">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">render_env</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                   <span class="n">episode</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                   <span class="n">max_episodes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                   <span class="n">step</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                   <span class="n">max_steps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                   <span class="n">price_history</span><span class="p">:</span> <span class="s1">&#39;pd.DataFrame&#39;</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                   <span class="n">net_worth</span><span class="p">:</span> <span class="s1">&#39;pd.Series&#39;</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                   <span class="n">performance</span><span class="p">:</span> <span class="s1">&#39;pd.DataFrame&#39;</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                   <span class="n">trades</span><span class="p">:</span> <span class="s1">&#39;OrderedDict&#39;</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Renderers the current state of the environment.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        episode : int</span>
+<span class="sd">            The episode that the environment is being rendered for.</span>
+<span class="sd">        max_episodes : int</span>
+<span class="sd">            The maximum number of episodes that will occur.</span>
+<span class="sd">        step : int</span>
+<span class="sd">            The step of the current episode that is happening.</span>
+<span class="sd">        max_steps : int</span>
+<span class="sd">            The maximum number of steps that will occur in an episode.</span>
+<span class="sd">        price_history : `pd.DataFrame`</span>
+<span class="sd">            The history of instrument involved with the environment. The</span>
+<span class="sd">            required columns are: date, open, high, low, close, and volume.</span>
+<span class="sd">        net_worth : `pd.Series`</span>
+<span class="sd">            The history of the net worth of the `portfolio`.</span>
+<span class="sd">        performance : `pd.Series`</span>
+<span class="sd">            The history of performance of the `portfolio`.</span>
+<span class="sd">        trades : `OrderedDict`</span>
+<span class="sd">            The history of trades for the current episode.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="BaseRenderer.save"><a class="viewcode-back" href="../../../../api/tensortrade.env.default.renderers.html#tensortrade.env.default.renderers.BaseRenderer.save">[docs]</a>    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Saves the rendering of the `TradingEnv`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="BaseRenderer.reset"><a class="viewcode-back" href="../../../../api/tensortrade.env.default.renderers.html#tensortrade.env.default.renderers.BaseRenderer.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Resets the renderer.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div></div>
+
+
+<div class="viewcode-block" id="EmptyRenderer"><a class="viewcode-back" href="../../../../api/tensortrade.env.default.renderers.html#tensortrade.env.default.renderers.EmptyRenderer">[docs]</a><span class="k">class</span> <span class="nc">EmptyRenderer</span><span class="p">(</span><span class="n">Renderer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A renderer that does renders nothing.</span>
+
+<span class="sd">    Needed to make sure that environment can function without requiring a</span>
+<span class="sd">    renderer.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="EmptyRenderer.render"><a class="viewcode-back" href="../../../../api/tensortrade.env.default.renderers.html#tensortrade.env.default.renderers.EmptyRenderer.render">[docs]</a>    <span class="k">def</span> <span class="nf">render</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">pass</span></div></div>
+
+
+<div class="viewcode-block" id="ScreenLogger"><a class="viewcode-back" href="../../../../api/tensortrade.env.default.renderers.html#tensortrade.env.default.renderers.ScreenLogger">[docs]</a><span class="k">class</span> <span class="nc">ScreenLogger</span><span class="p">(</span><span class="n">BaseRenderer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Logs information the screen of the user.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    date_format : str</span>
+<span class="sd">        The format for logging the date.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">DEFAULT_FORMAT</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;[</span><span class="si">%(asctime)-15s</span><span class="s2">] </span><span class="si">%(message)s</span><span class="s2">&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">date_format</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2"> %-I:%M:%S %p&quot;</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_date_format</span> <span class="o">=</span> <span class="n">date_format</span>
+
+<div class="viewcode-block" id="ScreenLogger.render_env"><a class="viewcode-back" href="../../../../api/tensortrade.env.default.renderers.html#tensortrade.env.default.renderers.ScreenLogger.render_env">[docs]</a>    <span class="k">def</span> <span class="nf">render_env</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                   <span class="n">episode</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                   <span class="n">max_episodes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                   <span class="n">step</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                   <span class="n">max_steps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                   <span class="n">price_history</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                   <span class="n">net_worth</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                   <span class="n">performance</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                   <span class="n">trades</span><span class="p">:</span> <span class="s1">&#39;OrderedDict&#39;</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_create_log_entry</span><span class="p">(</span><span class="n">episode</span><span class="p">,</span> <span class="n">max_episodes</span><span class="p">,</span> <span class="n">step</span><span class="p">,</span> <span class="n">max_steps</span><span class="p">,</span> <span class="n">date_format</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_date_format</span><span class="p">))</span></div></div>
+
+
+<div class="viewcode-block" id="FileLogger"><a class="viewcode-back" href="../../../../api/tensortrade.env.default.renderers.html#tensortrade.env.default.renderers.FileLogger">[docs]</a><span class="k">class</span> <span class="nc">FileLogger</span><span class="p">(</span><span class="n">BaseRenderer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Logs information to a file.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    filename : str</span>
+<span class="sd">        The file name of the log file. If omitted, a file name will be</span>
+<span class="sd">        created automatically.</span>
+<span class="sd">    path : str</span>
+<span class="sd">        The path to save the log files to. None to save to same script directory.</span>
+<span class="sd">    log_format : str</span>
+<span class="sd">        The log entry format as per Python logging. None for default. For</span>
+<span class="sd">        more details, refer to https://docs.python.org/3/library/logging.html</span>
+<span class="sd">    timestamp_format : str</span>
+<span class="sd">        The format of the timestamp of the log entry. Node for default.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">DEFAULT_LOG_FORMAT</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;[</span><span class="si">%(asctime)-15s</span><span class="s1">] </span><span class="si">%(message)s</span><span class="s1">&#39;</span>
+    <span class="n">DEFAULT_TIMESTAMP_FORMAT</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1"> %H:%M:%S&#39;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;log&#39;</span><span class="p">,</span>
+                 <span class="n">log_format</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">timestamp_format</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="n">_check_path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">filename</span><span class="p">:</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="n">_create_auto_file_name</span><span class="p">(</span><span class="s1">&#39;log_&#39;</span><span class="p">,</span> <span class="s1">&#39;log&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">path</span><span class="p">:</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+        <span class="n">handler</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">FileHandler</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+        <span class="n">handler</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">Formatter</span><span class="p">(</span>
+                <span class="n">log_format</span> <span class="k">if</span> <span class="n">log_format</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">DEFAULT_LOG_FORMAT</span><span class="p">,</span>
+                <span class="n">datefmt</span><span class="o">=</span><span class="n">timestamp_format</span> <span class="k">if</span> <span class="n">timestamp_format</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">DEFAULT_TIMESTAMP_FORMAT</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">handler</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">log_file</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;The filename information is being logged to. (str, read-only)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">handlers</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">baseFilename</span>
+
+<div class="viewcode-block" id="FileLogger.render_env"><a class="viewcode-back" href="../../../../api/tensortrade.env.default.renderers.html#tensortrade.env.default.renderers.FileLogger.render_env">[docs]</a>    <span class="k">def</span> <span class="nf">render_env</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                   <span class="n">episode</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                   <span class="n">max_episodes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                   <span class="n">step</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                   <span class="n">max_steps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                   <span class="n">price_history</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                   <span class="n">net_worth</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                   <span class="n">performance</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                   <span class="n">trades</span><span class="p">:</span> <span class="s1">&#39;OrderedDict&#39;</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">log_entry</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_log_entry</span><span class="p">(</span><span class="n">episode</span><span class="p">,</span> <span class="n">max_episodes</span><span class="p">,</span> <span class="n">step</span><span class="p">,</span> <span class="n">max_steps</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">log_entry</span><span class="si">}</span><span class="s2"> - Performance:</span><span class="se">\n</span><span class="si">{</span><span class="n">performance</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="MatplotlibTradingChart"><a class="viewcode-back" href="../../../../api/tensortrade.env.default.renderers.html#tensortrade.env.default.renderers.MatplotlibTradingChart">[docs]</a><span class="k">class</span> <span class="nc">MatplotlibTradingChart</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;An OHLCV trading visualization using matplotlib made to renderers gym</span>
+<span class="sd">    environments using matplotlib.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    df : `pd.DataFrame`</span>
+<span class="sd">        The data to use for rendering the visualization.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">VOLUME_CHART_HEIGHT</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.33</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="s1">&#39;pd.DataFrame&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="n">df</span>
+
+        <span class="c1"># Create a figure on screen and set the title</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+
+        <span class="c1"># Create top subplot for net worth axis</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">net_worth_ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot2grid</span><span class="p">((</span><span class="mi">6</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">rowspan</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">colspan</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Create bottom subplot for shared price/volume axis</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">price_ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot2grid</span><span class="p">((</span><span class="mi">6</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">rowspan</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+                                         <span class="n">colspan</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">sharex</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">net_worth_ax</span><span class="p">)</span>
+
+        <span class="c1"># Create a new axis for volume which shares its x-axis with price</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">volume_ax</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">price_ax</span><span class="o">.</span><span class="n">twinx</span><span class="p">()</span>
+
+        <span class="c1"># Add padding to make graph easier to view</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">left</span><span class="o">=</span><span class="mf">0.11</span><span class="p">,</span> <span class="n">bottom</span><span class="o">=</span><span class="mf">0.24</span><span class="p">,</span> <span class="n">right</span><span class="o">=</span><span class="mf">0.90</span><span class="p">,</span> <span class="n">top</span><span class="o">=</span><span class="mf">0.90</span><span class="p">,</span> <span class="n">wspace</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">hspace</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># Show the graph without blocking the rest of the program</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">block</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_render_net_worth</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                          <span class="n">step_range</span><span class="p">,</span>
+                          <span class="n">times</span><span class="p">,</span>
+                          <span class="n">current_step</span><span class="p">,</span>
+                          <span class="n">net_worths</span><span class="p">,</span>
+                          <span class="n">benchmarks</span><span class="p">):</span>
+        <span class="c1"># Clear the frame rendered last step</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">net_worth_ax</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="c1"># Plot net worths</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">net_worth_ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">net_worths</span><span class="p">[</span><span class="n">step_range</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Net Worth&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;g&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_render_benchmarks</span><span class="p">(</span><span class="n">step_range</span><span class="p">,</span> <span class="n">times</span><span class="p">,</span> <span class="n">benchmarks</span><span class="p">)</span>
+
+        <span class="c1"># Show legend, which uses the label we defined for the plot above</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">net_worth_ax</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+        <span class="n">legend</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">net_worth_ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">ncol</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">prop</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;size&#39;</span><span class="p">:</span> <span class="mi">8</span><span class="p">})</span>
+        <span class="n">legend</span><span class="o">.</span><span class="n">get_frame</span><span class="p">()</span><span class="o">.</span><span class="n">set_alpha</span><span class="p">(</span><span class="mf">0.4</span><span class="p">)</span>
+
+        <span class="n">last_time</span> <span class="o">=</span> <span class="n">times</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">last_net_worth</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">net_worths</span><span class="p">[</span><span class="n">step_range</span><span class="p">])[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="c1"># print (f&quot;Net Worth\t: {last_net_worth}&quot;)</span>
+        <span class="c1"># Annotate the current net worth on the net worth graph</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">net_worth_ax</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{0:.2f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">last_net_worth</span><span class="p">),</span> <span class="p">(</span><span class="n">last_time</span><span class="p">,</span> <span class="n">last_net_worth</span><span class="p">),</span>
+                                   <span class="n">xytext</span><span class="o">=</span><span class="p">(</span><span class="n">last_time</span><span class="p">,</span> <span class="n">last_net_worth</span><span class="p">),</span>
+                                   <span class="n">bbox</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">boxstyle</span><span class="o">=</span><span class="s1">&#39;round&#39;</span><span class="p">,</span>
+                                             <span class="n">fc</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">ec</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+                                   <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span>
+                                   <span class="n">fontsize</span><span class="o">=</span><span class="s2">&quot;small&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Add space above and below min/max net worth</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">net_worth_ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">net_worths</span><span class="p">)</span> <span class="o">/</span> <span class="mf">1.25</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="n">net_worths</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1.25</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_render_benchmarks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_range</span><span class="p">,</span> <span class="n">times</span><span class="p">,</span> <span class="n">benchmarks</span><span class="p">):</span>
+        <span class="n">colors</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;orange&#39;</span><span class="p">,</span> <span class="s1">&#39;cyan&#39;</span><span class="p">,</span> <span class="s1">&#39;purple&#39;</span><span class="p">,</span> <span class="s1">&#39;blue&#39;</span><span class="p">,</span>
+                  <span class="s1">&#39;magenta&#39;</span><span class="p">,</span> <span class="s1">&#39;yellow&#39;</span><span class="p">,</span> <span class="s1">&#39;black&#39;</span><span class="p">,</span> <span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">benchmark</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">benchmarks</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">net_worth_ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">benchmark</span><span class="p">[</span><span class="s1">&#39;values&#39;</span><span class="p">][</span><span class="n">step_range</span><span class="p">],</span>
+                                   <span class="n">label</span><span class="o">=</span><span class="n">benchmark</span><span class="p">[</span><span class="s1">&#39;label&#39;</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="n">colors</span><span class="p">[</span><span class="n">i</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">colors</span><span class="p">)],</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_render_price</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_range</span><span class="p">,</span> <span class="n">times</span><span class="p">,</span> <span class="n">current_step</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">price_ax</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+
+        <span class="c1"># Plot price using candlestick graph from mpl_finance</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">price_ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;close&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">step_range</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">)</span>
+
+        <span class="n">last_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">current_step</span><span class="p">]</span>
+        <span class="n">last_close</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;close&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">current_step</span><span class="p">]</span>
+        <span class="n">last_high</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;high&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">current_step</span><span class="p">]</span>
+
+        <span class="c1"># Print the current price to the price axis</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">price_ax</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{0:.2f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">last_close</span><span class="p">),</span> <span class="p">(</span><span class="n">last_time</span><span class="p">,</span> <span class="n">last_close</span><span class="p">),</span>
+                               <span class="n">xytext</span><span class="o">=</span><span class="p">(</span><span class="n">last_time</span><span class="p">,</span> <span class="n">last_high</span><span class="p">),</span>
+                               <span class="n">bbox</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">boxstyle</span><span class="o">=</span><span class="s1">&#39;round&#39;</span><span class="p">,</span>
+                                         <span class="n">fc</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">ec</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+                               <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span>
+                               <span class="n">fontsize</span><span class="o">=</span><span class="s2">&quot;small&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Shift price axis up to give volume chart space</span>
+        <span class="n">ylim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">price_ax</span><span class="o">.</span><span class="n">get_ylim</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">price_ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="n">ylim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="p">(</span><span class="n">ylim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">ylim</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">VOLUME_CHART_HEIGHT</span><span class="p">,</span> <span class="n">ylim</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">_render_volume</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_range</span><span class="p">,</span> <span class="n">times</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">volume_ax</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+
+        <span class="n">volume</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;volume&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">step_range</span><span class="p">])</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">volume_ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">volume</span><span class="p">,</span>  <span class="n">color</span><span class="o">=</span><span class="s1">&#39;blue&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">volume_ax</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">volume</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">volume_ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="n">volume</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">VOLUME_CHART_HEIGHT</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">volume_ax</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">set_ticks</span><span class="p">([])</span>
+
+    <span class="k">def</span> <span class="nf">_render_trades</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_range</span><span class="p">,</span> <span class="n">trades</span><span class="p">):</span>
+        <span class="n">trades</span> <span class="o">=</span> <span class="p">[</span><span class="n">trade</span> <span class="k">for</span> <span class="n">sublist</span> <span class="ow">in</span> <span class="n">trades</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">for</span> <span class="n">trade</span> <span class="ow">in</span> <span class="n">sublist</span><span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">trade</span> <span class="ow">in</span> <span class="n">trades</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">trade</span><span class="o">.</span><span class="n">step</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">maxsize</span><span class="p">)[</span><span class="n">step_range</span><span class="p">]:</span>
+                <span class="n">date</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">trade</span><span class="o">.</span><span class="n">step</span><span class="p">]</span>
+                <span class="n">close</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;close&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">trade</span><span class="o">.</span><span class="n">step</span><span class="p">]</span>
+                <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;green&#39;</span>
+
+                <span class="k">if</span> <span class="n">trade</span><span class="o">.</span><span class="n">side</span> <span class="ow">is</span> <span class="n">TradeSide</span><span class="o">.</span><span class="n">SELL</span><span class="p">:</span>
+                    <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;red&#39;</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">price_ax</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="p">(</span><span class="n">date</span><span class="p">,</span> <span class="n">close</span><span class="p">),</span>
+                                       <span class="n">xytext</span><span class="o">=</span><span class="p">(</span><span class="n">date</span><span class="p">,</span> <span class="n">close</span><span class="p">),</span>
+                                       <span class="n">size</span><span class="o">=</span><span class="s2">&quot;large&quot;</span><span class="p">,</span>
+                                       <span class="n">arrowprops</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">arrowstyle</span><span class="o">=</span><span class="s1">&#39;simple&#39;</span><span class="p">,</span> <span class="n">facecolor</span><span class="o">=</span><span class="n">color</span><span class="p">))</span>
+
+<div class="viewcode-block" id="MatplotlibTradingChart.render_env"><a class="viewcode-back" href="../../../../api/tensortrade.env.default.renderers.html#tensortrade.env.default.renderers.MatplotlibTradingChart.render_env">[docs]</a>    <span class="k">def</span> <span class="nf">render_env</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                   <span class="n">current_step</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                   <span class="n">net_worths</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span>
+                   <span class="n">benchmarks</span><span class="p">,</span>
+                   <span class="n">trades</span><span class="p">:</span> <span class="n">OrderedDict</span><span class="p">,</span>
+                   <span class="n">window_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+
+        <span class="n">net_worth</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">net_worths</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">initial_net_worth</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">net_worths</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">profit_percent</span> <span class="o">=</span> <span class="nb">round</span><span class="p">((</span><span class="n">net_worth</span> <span class="o">-</span> <span class="n">initial_net_worth</span><span class="p">)</span> <span class="o">/</span> <span class="n">initial_net_worth</span> <span class="o">*</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">fig</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="s1">&#39;Net worth: $&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">net_worth</span><span class="p">)</span> <span class="o">+</span>
+                          <span class="s1">&#39; | Profit: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">profit_percent</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;%&#39;</span><span class="p">)</span>
+
+        <span class="n">window_start</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">current_step</span> <span class="o">-</span> <span class="n">window_size</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">step_range</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="n">window_start</span><span class="p">,</span> <span class="n">current_step</span><span class="p">)</span>
+        <span class="n">times</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">step_range</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_render_net_worth</span><span class="p">(</span><span class="n">step_range</span><span class="p">,</span> <span class="n">times</span><span class="p">,</span> <span class="n">current_step</span><span class="p">,</span> <span class="n">net_worths</span><span class="p">,</span> <span class="n">benchmarks</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_render_price</span><span class="p">(</span><span class="n">step_range</span><span class="p">,</span> <span class="n">times</span><span class="p">,</span> <span class="n">current_step</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_render_volume</span><span class="p">(</span><span class="n">step_range</span><span class="p">,</span> <span class="n">times</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_render_trades</span><span class="p">(</span><span class="n">step_range</span><span class="p">,</span> <span class="n">trades</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">price_ax</span><span class="o">.</span><span class="n">set_xticklabels</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">rotation</span><span class="o">=</span><span class="mi">45</span><span class="p">,</span> <span class="n">horizontalalignment</span><span class="o">=</span><span class="s1">&#39;right&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Hide duplicate net worth date labels</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">setp</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">net_worth_ax</span><span class="o">.</span><span class="n">get_xticklabels</span><span class="p">(),</span> <span class="n">visible</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="c1"># Necessary to view frames before they are unrendered</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">pause</span><span class="p">(</span><span class="mf">0.001</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="MatplotlibTradingChart.close"><a class="viewcode-back" href="../../../../api/tensortrade.env.default.renderers.html#tensortrade.env.default.renderers.MatplotlibTradingChart.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div></div>
+
+
+<div class="viewcode-block" id="PlotlyTradingChart"><a class="viewcode-back" href="../../../../api/tensortrade.env.default.renderers.html#tensortrade.env.default.renderers.PlotlyTradingChart">[docs]</a><span class="k">class</span> <span class="nc">PlotlyTradingChart</span><span class="p">(</span><span class="n">BaseRenderer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Trading visualization for TensorTrade using Plotly.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    display : bool</span>
+<span class="sd">        True to display the chart on the screen, False for not.</span>
+<span class="sd">    height : int</span>
+<span class="sd">        Chart height in pixels. Affects both display and saved file</span>
+<span class="sd">        charts. Set to None for 100% height. Default is None.</span>
+<span class="sd">    save_format : float</span>
+<span class="sd">        A format to save the chart to. Acceptable formats are</span>
+<span class="sd">        html, png, jpeg, webp, svg, pdf, eps. All the formats except for</span>
+<span class="sd">        &#39;html&#39; require Orca. Default is None for no saving.</span>
+<span class="sd">    path : str</span>
+<span class="sd">        The path to save the char to if save_format is not None. The folder</span>
+<span class="sd">        will be created if not found.</span>
+<span class="sd">    filename_prefix : str</span>
+<span class="sd">        A string that precedes automatically-created file name</span>
+<span class="sd">        when charts are saved. Default &#39;chart_&#39;.</span>
+<span class="sd">    timestamp_format : str</span>
+<span class="sd">        The format of the date shown in the chart title.</span>
+<span class="sd">    auto_open_html : bool</span>
+<span class="sd">        Works for save_format=&#39;html&#39; only. True to automatically</span>
+<span class="sd">        open the saved chart HTML file in the default browser, False otherwise.</span>
+<span class="sd">    include_plotlyjs : Union[bool, str]</span>
+<span class="sd">        Whether to include/load the plotly.js library in the saved</span>
+<span class="sd">        file. &#39;cdn&#39; results in a smaller file by loading the library online but</span>
+<span class="sd">        requires an Internet connect while True includes the library resulting</span>
+<span class="sd">        in much larger file sizes. False to not include the library. For more</span>
+<span class="sd">        details, refer to https://plot.ly/python-api-reference/generated/plotly.graph_objects.Figure.html</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Possible Future Enhancements:</span>
+<span class="sd">        - Saving images without using Orca.</span>
+<span class="sd">        - Limit displayed step range for the case of a large number of steps and let</span>
+<span class="sd">          the shown part of the chart slide after filling that range to keep showing</span>
+<span class="sd">          recent data as it&#39;s being added.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. https://plot.ly/python-api-reference/generated/plotly.graph_objects.Figure.html</span>
+<span class="sd">    .. https://plot.ly/python/figurewidget/</span>
+<span class="sd">    .. https://plot.ly/python/subplots/</span>
+<span class="sd">    .. https://plot.ly/python/reference/#candlestick</span>
+<span class="sd">    .. https://plot.ly/python/#chart-events</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">display</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+                 <span class="n">height</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">timestamp_format</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1"> %H:%M:%S&#39;</span><span class="p">,</span>
+                 <span class="n">save_format</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;charts&#39;</span><span class="p">,</span>
+                 <span class="n">filename_prefix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;chart_&#39;</span><span class="p">,</span>
+                 <span class="n">auto_open_html</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                 <span class="n">include_plotlyjs</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;cdn&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_height</span> <span class="o">=</span> <span class="n">height</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_timestamp_format</span> <span class="o">=</span> <span class="n">timestamp_format</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_save_format</span> <span class="o">=</span> <span class="n">save_format</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_path</span> <span class="o">=</span> <span class="n">path</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_filename_prefix</span> <span class="o">=</span> <span class="n">filename_prefix</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_include_plotlyjs</span> <span class="o">=</span> <span class="n">include_plotlyjs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_auto_open_html</span> <span class="o">=</span> <span class="n">auto_open_html</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_save_format</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_path</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">fig</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_price_chart</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_volume_chart</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_performance_chart</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_net_worth_chart</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_base_annotations</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_last_trade_step</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_show_chart</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="k">def</span> <span class="nf">_create_figure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">performance_keys</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">fig</span> <span class="o">=</span> <span class="n">make_subplots</span><span class="p">(</span>
+            <span class="n">rows</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">cols</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">shared_xaxes</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">vertical_spacing</span><span class="o">=</span><span class="mf">0.03</span><span class="p">,</span>
+            <span class="n">row_heights</span><span class="o">=</span><span class="p">[</span><span class="mf">0.55</span><span class="p">,</span> <span class="mf">0.15</span><span class="p">,</span> <span class="mf">0.15</span><span class="p">,</span> <span class="mf">0.15</span><span class="p">],</span>
+        <span class="p">)</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">add_trace</span><span class="p">(</span><span class="n">go</span><span class="o">.</span><span class="n">Candlestick</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Price&#39;</span><span class="p">,</span> <span class="n">xaxis</span><span class="o">=</span><span class="s1">&#39;x1&#39;</span><span class="p">,</span> <span class="n">yaxis</span><span class="o">=</span><span class="s1">&#39;y1&#39;</span><span class="p">,</span>
+                                     <span class="n">showlegend</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span> <span class="n">row</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">col</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">update_layout</span><span class="p">(</span><span class="n">xaxis_rangeslider_visible</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="n">fig</span><span class="o">.</span><span class="n">add_trace</span><span class="p">(</span><span class="n">go</span><span class="o">.</span><span class="n">Bar</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Volume&#39;</span><span class="p">,</span> <span class="n">showlegend</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                             <span class="n">marker</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;DodgerBlue&#39;</span><span class="p">}),</span>
+                      <span class="n">row</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">col</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">performance_keys</span><span class="p">:</span>
+            <span class="n">fig</span><span class="o">.</span><span class="n">add_trace</span><span class="p">(</span><span class="n">go</span><span class="o">.</span><span class="n">Scatter</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;lines&#39;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">k</span><span class="p">),</span> <span class="n">row</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">col</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">fig</span><span class="o">.</span><span class="n">add_trace</span><span class="p">(</span><span class="n">go</span><span class="o">.</span><span class="n">Scatter</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;lines&#39;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Net Worth&#39;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;color&#39;</span><span class="p">:</span> <span class="s1">&#39;DarkGreen&#39;</span><span class="p">}),</span>
+                      <span class="n">row</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">col</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">fig</span><span class="o">.</span><span class="n">update_xaxes</span><span class="p">(</span><span class="n">linecolor</span><span class="o">=</span><span class="s1">&#39;Grey&#39;</span><span class="p">,</span> <span class="n">gridcolor</span><span class="o">=</span><span class="s1">&#39;Gainsboro&#39;</span><span class="p">)</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">update_yaxes</span><span class="p">(</span><span class="n">linecolor</span><span class="o">=</span><span class="s1">&#39;Grey&#39;</span><span class="p">,</span> <span class="n">gridcolor</span><span class="o">=</span><span class="s1">&#39;Gainsboro&#39;</span><span class="p">)</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">update_xaxes</span><span class="p">(</span><span class="n">title_text</span><span class="o">=</span><span class="s1">&#39;Price&#39;</span><span class="p">,</span> <span class="n">row</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">update_xaxes</span><span class="p">(</span><span class="n">title_text</span><span class="o">=</span><span class="s1">&#39;Volume&#39;</span><span class="p">,</span> <span class="n">row</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">update_xaxes</span><span class="p">(</span><span class="n">title_text</span><span class="o">=</span><span class="s1">&#39;Performance&#39;</span><span class="p">,</span> <span class="n">row</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">update_xaxes</span><span class="p">(</span><span class="n">title_text</span><span class="o">=</span><span class="s1">&#39;Net Worth&#39;</span><span class="p">,</span> <span class="n">row</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">update_xaxes</span><span class="p">(</span><span class="n">title_standoff</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span> <span class="n">title_font</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="mi">12</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">fig</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">FigureWidget</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_price_chart</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fig</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_volume_chart</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fig</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_performance_chart</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fig</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_net_worth_chart</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fig</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">fig</span><span class="o">.</span><span class="n">update_annotations</span><span class="p">({</span><span class="s1">&#39;font&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;size&#39;</span><span class="p">:</span> <span class="mi">12</span><span class="p">}})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fig</span><span class="o">.</span><span class="n">update_layout</span><span class="p">(</span><span class="n">template</span><span class="o">=</span><span class="s1">&#39;plotly_white&#39;</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_height</span><span class="p">,</span> <span class="n">margin</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">t</span><span class="o">=</span><span class="mi">50</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_base_annotations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fig</span><span class="o">.</span><span class="n">layout</span><span class="o">.</span><span class="n">annotations</span>
+
+    <span class="k">def</span> <span class="nf">_create_trade_annotations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                  <span class="n">trades</span><span class="p">:</span> <span class="s1">&#39;OrderedDict&#39;</span><span class="p">,</span>
+                                  <span class="n">price_history</span><span class="p">:</span> <span class="s1">&#39;pd.DataFrame&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;Tuple[go.layout.Annotation]&#39;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Creates annotations of the new trades after the last one in the chart.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        trades : `OrderedDict`</span>
+<span class="sd">            The history of trades for the current episode.</span>
+<span class="sd">        price_history : `pd.DataFrame`</span>
+<span class="sd">            The price history of the current episode.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        `Tuple[go.layout.Annotation]`</span>
+<span class="sd">            A tuple of annotations used in the renderering process.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">annotations</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">trade</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">trades</span><span class="o">.</span><span class="n">values</span><span class="p">()):</span>
+            <span class="n">trade</span> <span class="o">=</span> <span class="n">trade</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+            <span class="n">tp</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">trade</span><span class="o">.</span><span class="n">price</span><span class="p">)</span>
+            <span class="n">ts</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">trade</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">trade</span><span class="o">.</span><span class="n">step</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_trade_step</span><span class="p">:</span>
+                <span class="k">break</span>
+
+            <span class="k">if</span> <span class="n">trade</span><span class="o">.</span><span class="n">side</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="s1">&#39;buy&#39;</span><span class="p">:</span>
+                <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;DarkGreen&#39;</span>
+                <span class="n">ay</span> <span class="o">=</span> <span class="mi">15</span>
+                <span class="n">qty</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">ts</span> <span class="o">/</span> <span class="n">tp</span><span class="p">,</span> <span class="n">trade</span><span class="o">.</span><span class="n">quote_instrument</span><span class="o">.</span><span class="n">precision</span><span class="p">)</span>
+
+                <span class="n">text_info</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+                    <span class="n">step</span><span class="o">=</span><span class="n">trade</span><span class="o">.</span><span class="n">step</span><span class="p">,</span>
+                    <span class="n">datetime</span><span class="o">=</span><span class="n">price_history</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">trade</span><span class="o">.</span><span class="n">step</span> <span class="o">-</span> <span class="mi">1</span><span class="p">][</span><span class="s1">&#39;date&#39;</span><span class="p">],</span>
+                    <span class="n">side</span><span class="o">=</span><span class="n">trade</span><span class="o">.</span><span class="n">side</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span>
+                    <span class="n">qty</span><span class="o">=</span><span class="n">qty</span><span class="p">,</span>
+                    <span class="n">size</span><span class="o">=</span><span class="n">ts</span><span class="p">,</span>
+                    <span class="n">quote_instrument</span><span class="o">=</span><span class="n">trade</span><span class="o">.</span><span class="n">quote_instrument</span><span class="p">,</span>
+                    <span class="n">price</span><span class="o">=</span><span class="n">tp</span><span class="p">,</span>
+                    <span class="n">base_instrument</span><span class="o">=</span><span class="n">trade</span><span class="o">.</span><span class="n">base_instrument</span><span class="p">,</span>
+                    <span class="nb">type</span><span class="o">=</span><span class="n">trade</span><span class="o">.</span><span class="n">type</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span>
+                    <span class="n">commission</span><span class="o">=</span><span class="n">trade</span><span class="o">.</span><span class="n">commission</span>
+                <span class="p">)</span>
+
+            <span class="k">elif</span> <span class="n">trade</span><span class="o">.</span><span class="n">side</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="s1">&#39;sell&#39;</span><span class="p">:</span>
+                <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;FireBrick&#39;</span>
+                <span class="n">ay</span> <span class="o">=</span> <span class="o">-</span><span class="mi">15</span>
+                <span class="c1"># qty = round(ts * tp, trade.quote_instrument.precision)</span>
+
+                <span class="n">text_info</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+                    <span class="n">step</span><span class="o">=</span><span class="n">trade</span><span class="o">.</span><span class="n">step</span><span class="p">,</span>
+                    <span class="n">datetime</span><span class="o">=</span><span class="n">price_history</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">trade</span><span class="o">.</span><span class="n">step</span> <span class="o">-</span> <span class="mi">1</span><span class="p">][</span><span class="s1">&#39;date&#39;</span><span class="p">],</span>
+                    <span class="n">side</span><span class="o">=</span><span class="n">trade</span><span class="o">.</span><span class="n">side</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span>
+                    <span class="n">qty</span><span class="o">=</span><span class="n">ts</span><span class="p">,</span>
+                    <span class="n">size</span><span class="o">=</span><span class="nb">round</span><span class="p">(</span><span class="n">ts</span> <span class="o">*</span> <span class="n">tp</span><span class="p">,</span> <span class="n">trade</span><span class="o">.</span><span class="n">base_instrument</span><span class="o">.</span><span class="n">precision</span><span class="p">),</span>
+                    <span class="n">quote_instrument</span><span class="o">=</span><span class="n">trade</span><span class="o">.</span><span class="n">quote_instrument</span><span class="p">,</span>
+                    <span class="n">price</span><span class="o">=</span><span class="n">tp</span><span class="p">,</span>
+                    <span class="n">base_instrument</span><span class="o">=</span><span class="n">trade</span><span class="o">.</span><span class="n">base_instrument</span><span class="p">,</span>
+                    <span class="nb">type</span><span class="o">=</span><span class="n">trade</span><span class="o">.</span><span class="n">type</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span>
+                    <span class="n">commission</span><span class="o">=</span><span class="n">trade</span><span class="o">.</span><span class="n">commission</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Valid trade side values are &#39;buy&#39; and &#39;sell&#39;. Found &#39;</span><span class="si">{</span><span class="n">trade</span><span class="o">.</span><span class="n">side</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">&#39;.&quot;</span><span class="p">)</span>
+
+            <span class="n">hovertext</span> <span class="o">=</span> <span class="s1">&#39;Step </span><span class="si">{step}</span><span class="s1"> [</span><span class="si">{datetime}</span><span class="s1">]&lt;br&gt;&#39;</span> \
+                        <span class="s1">&#39;</span><span class="si">{side}</span><span class="s1"> </span><span class="si">{qty}</span><span class="s1"> </span><span class="si">{quote_instrument}</span><span class="s1"> @ </span><span class="si">{price}</span><span class="s1"> </span><span class="si">{base_instrument}</span><span class="s1"> </span><span class="si">{type}</span><span class="s1">&lt;br&gt;&#39;</span> \
+                        <span class="s1">&#39;Total: </span><span class="si">{size}</span><span class="s1"> </span><span class="si">{base_instrument}</span><span class="s1"> - Comm.: </span><span class="si">{commission}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">**</span><span class="n">text_info</span><span class="p">)</span>
+
+            <span class="n">annotations</span> <span class="o">+=</span> <span class="p">[</span><span class="n">go</span><span class="o">.</span><span class="n">layout</span><span class="o">.</span><span class="n">Annotation</span><span class="p">(</span>
+                <span class="n">x</span><span class="o">=</span><span class="n">trade</span><span class="o">.</span><span class="n">step</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">tp</span><span class="p">,</span>
+                <span class="n">ax</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ay</span><span class="o">=</span><span class="n">ay</span><span class="p">,</span> <span class="n">xref</span><span class="o">=</span><span class="s1">&#39;x1&#39;</span><span class="p">,</span> <span class="n">yref</span><span class="o">=</span><span class="s1">&#39;y1&#39;</span><span class="p">,</span> <span class="n">showarrow</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">arrowhead</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">arrowcolor</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">arrowwidth</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+                <span class="n">arrowsize</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span> <span class="n">hovertext</span><span class="o">=</span><span class="n">hovertext</span><span class="p">,</span> <span class="n">opacity</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span>
+                <span class="n">hoverlabel</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">bgcolor</span><span class="o">=</span><span class="n">color</span><span class="p">)</span>
+            <span class="p">)]</span>
+
+        <span class="k">if</span> <span class="n">trades</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_last_trade_step</span> <span class="o">=</span> <span class="n">trades</span><span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="n">trades</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">step</span>
+
+        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">annotations</span><span class="p">)</span>
+
+<div class="viewcode-block" id="PlotlyTradingChart.render_env"><a class="viewcode-back" href="../../../../api/tensortrade.env.default.renderers.html#tensortrade.env.default.renderers.PlotlyTradingChart.render_env">[docs]</a>    <span class="k">def</span> <span class="nf">render_env</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                   <span class="n">episode</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                   <span class="n">max_episodes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                   <span class="n">step</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                   <span class="n">max_steps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                   <span class="n">price_history</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                   <span class="n">net_worth</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                   <span class="n">performance</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                   <span class="n">trades</span><span class="p">:</span> <span class="s1">&#39;OrderedDict&#39;</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">price_history</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;renderers() is missing required positional argument &#39;price_history&#39;.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">net_worth</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;renderers() is missing required positional argument &#39;net_worth&#39;.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">performance</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;renderers() is missing required positional argument &#39;performance&#39;.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">trades</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;renderers() is missing required positional argument &#39;trades&#39;.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">fig</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_create_figure</span><span class="p">(</span><span class="n">performance</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_show_chart</span><span class="p">:</span>  <span class="c1"># ensure chart visibility through notebook cell reruns</span>
+            <span class="n">display</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fig</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_show_chart</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">fig</span><span class="o">.</span><span class="n">layout</span><span class="o">.</span><span class="n">title</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_log_entry</span><span class="p">(</span><span class="n">episode</span><span class="p">,</span> <span class="n">max_episodes</span><span class="p">,</span> <span class="n">step</span><span class="p">,</span> <span class="n">max_steps</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_price_chart</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span>
+            <span class="nb">open</span><span class="o">=</span><span class="n">price_history</span><span class="p">[</span><span class="s1">&#39;open&#39;</span><span class="p">],</span>
+            <span class="n">high</span><span class="o">=</span><span class="n">price_history</span><span class="p">[</span><span class="s1">&#39;high&#39;</span><span class="p">],</span>
+            <span class="n">low</span><span class="o">=</span><span class="n">price_history</span><span class="p">[</span><span class="s1">&#39;low&#39;</span><span class="p">],</span>
+            <span class="n">close</span><span class="o">=</span><span class="n">price_history</span><span class="p">[</span><span class="s1">&#39;close&#39;</span><span class="p">]</span>
+        <span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fig</span><span class="o">.</span><span class="n">layout</span><span class="o">.</span><span class="n">annotations</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_trade_annotations</span><span class="p">(</span><span class="n">trades</span><span class="p">,</span> <span class="n">price_history</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_volume_chart</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="n">price_history</span><span class="p">[</span><span class="s1">&#39;volume&#39;</span><span class="p">]})</span>
+
+        <span class="k">for</span> <span class="n">trace</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">fig</span><span class="o">.</span><span class="n">select_traces</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+            <span class="n">trace</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="n">performance</span><span class="p">[</span><span class="n">trace</span><span class="o">.</span><span class="n">name</span><span class="p">]})</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_net_worth_chart</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="n">net_worth</span><span class="p">})</span></div>
+
+
+<div class="viewcode-block" id="PlotlyTradingChart.save"><a class="viewcode-back" href="../../../../api/tensortrade.env.default.renderers.html#tensortrade.env.default.renderers.PlotlyTradingChart.save">[docs]</a>    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Saves the current chart to a file.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        All formats other than HTML require Orca installed and server running.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_save_format</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">valid_formats</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;html&#39;</span><span class="p">,</span> <span class="s1">&#39;png&#39;</span><span class="p">,</span> <span class="s1">&#39;jpeg&#39;</span><span class="p">,</span> <span class="s1">&#39;webp&#39;</span><span class="p">,</span> <span class="s1">&#39;svg&#39;</span><span class="p">,</span> <span class="s1">&#39;pdf&#39;</span><span class="p">,</span> <span class="s1">&#39;eps&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_save_format</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">valid_formats</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Acceptable formats are &#39;</span><span class="si">{}</span><span class="s2">&#39;. Found &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;&#39;, &#39;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">valid_formats</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_save_format</span><span class="p">))</span>
+
+        <span class="n">_check_path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_path</span><span class="p">)</span>
+
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">_create_auto_file_name</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_filename_prefix</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_save_format</span><span class="p">)</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_path</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_save_format</span> <span class="o">==</span> <span class="s1">&#39;html&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fig</span><span class="o">.</span><span class="n">write_html</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span> <span class="n">include_plotlyjs</span><span class="o">=</span><span class="s1">&#39;cdn&#39;</span><span class="p">,</span> <span class="n">auto_open</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_auto_open_html</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fig</span><span class="o">.</span><span class="n">write_image</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="PlotlyTradingChart.reset"><a class="viewcode-back" href="../../../../api/tensortrade.env.default.renderers.html#tensortrade.env.default.renderers.PlotlyTradingChart.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_last_trade_step</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fig</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">fig</span><span class="o">.</span><span class="n">layout</span><span class="o">.</span><span class="n">annotations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_base_annotations</span>
+        <span class="n">clear_output</span><span class="p">(</span><span class="n">wait</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_show_chart</span> <span class="o">=</span> <span class="kc">True</span></div></div>
+
+
+<span class="n">_registry</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;screen-log&quot;</span><span class="p">:</span> <span class="n">ScreenLogger</span><span class="p">,</span>
+    <span class="s2">&quot;file-log&quot;</span><span class="p">:</span> <span class="n">FileLogger</span><span class="p">,</span>
+    <span class="s2">&quot;matplotlib&quot;</span><span class="p">:</span> <span class="n">MatplotlibTradingChart</span><span class="p">,</span>
+    <span class="s2">&quot;plotly&quot;</span><span class="p">:</span> <span class="n">PlotlyTradingChart</span>
+<span class="p">}</span>
+
+
+<div class="viewcode-block" id="get"><a class="viewcode-back" href="../../../../api/tensortrade.env.default.renderers.html#tensortrade.env.default.renderers.get">[docs]</a><span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="n">identifier</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;BaseRenderer&#39;</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Gets the `BaseRenderer` that matches the identifier.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    identifier : str</span>
+<span class="sd">        The identifier for the `BaseRenderer`</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    `BaseRenderer`</span>
+<span class="sd">        The renderer associated with the `identifier`.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    KeyError:</span>
+<span class="sd">        Raised if identifier is not associated with any `BaseRenderer`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">identifier</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_registry</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Identifier </span><span class="si">{</span><span class="n">identifier</span><span class="si">}</span><span class="s2"> is not associated with any `BaseRenderer`.&quot;</span>
+        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_registry</span><span class="p">[</span><span class="n">identifier</span><span class="p">]()</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

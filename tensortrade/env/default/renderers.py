@@ -22,13 +22,11 @@ from datetime import datetime
 from typing import Union, Tuple
 from collections import OrderedDict
 
-
 import numpy as np
 import pandas as pd
 
 from IPython.display import display, clear_output
 from pandas.plotting import register_matplotlib_converters
-
 
 from tensortrade.oms.orders import TradeSide
 from tensortrade.env.generic import Renderer, TradingEnv
@@ -49,14 +47,14 @@ if importlib.util.find_spec("plotly"):
 
 
 def _create_auto_file_name(filename_prefix: str,
-                          ext: str,
-                          timestamp_format: str = '%Y%m%d_%H%M%S'):
+                           ext: str,
+                           timestamp_format: str = '%Y%m%d_%H%M%S') -> str:
     timestamp = datetime.now().strftime(timestamp_format)
     filename = filename_prefix + timestamp + '.' + ext
     return filename
 
 
-def _check_path(path, auto_create: bool = True):
+def _check_path(path: str, auto_create: bool = True) -> None:
     if not path or os.path.exists(path):
         return
 
@@ -136,9 +134,9 @@ class BaseRenderer(Renderer):
                    max_episodes: int = None,
                    step: int = None,
                    max_steps: int = None,
-                   price_history: pd.DataFrame = None,
-                   net_worth: pd.Series = None,
-                   performance: pd.DataFrame = None,
+                   price_history: 'pd.DataFrame' = None,
+                   net_worth: 'pd.Series' = None,
+                   performance: 'pd.DataFrame' = None,
                    trades: 'OrderedDict' = None) -> None:
         """Renderers the current state of the environment.
 
@@ -195,7 +193,7 @@ class ScreenLogger(BaseRenderer):
         The format for logging the date.
     """
 
-    DEFAULT_FORMAT = "[%(asctime)-15s] %(message)s"
+    DEFAULT_FORMAT: str = "[%(asctime)-15s] %(message)s"
 
     def __init__(self, date_format: str = "%Y-%m-%d %-I:%M:%S %p"):
         super().__init__()
@@ -230,8 +228,8 @@ class FileLogger(BaseRenderer):
         The format of the timestamp of the log entry. Node for default.
     """
 
-    DEFAULT_LOG_FORMAT = '[%(asctime)-15s] %(message)s'
-    DEFAULT_TIMESTAMP_FORMAT = '%Y-%m-%d %H:%M:%S'
+    DEFAULT_LOG_FORMAT: str = '[%(asctime)-15s] %(message)s'
+    DEFAULT_TIMESTAMP_FORMAT: str = '%Y-%m-%d %H:%M:%S'
 
     def __init__(self,
                  filename: str = None,
@@ -289,7 +287,7 @@ class MatplotlibTradingChart:
 
     VOLUME_CHART_HEIGHT: float = 0.33
 
-    def __init__(self, df):
+    def __init__(self, df: 'pd.DataFrame') -> None:
         super().__init__()
         self.df = df
 
@@ -479,11 +477,11 @@ class PlotlyTradingChart(BaseRenderer):
 
     References
     ----------
-        - https://plot.ly/python-api-reference/generated/plotly.graph_objects.Figure.html
-        - https://plot.ly/python/figurewidget/
-        - https://plot.ly/python/subplots/
-        - https://plot.ly/python/reference/#candlestick
-        - https://plot.ly/python/#chart-events
+    .. https://plot.ly/python-api-reference/generated/plotly.graph_objects.Figure.html
+    .. https://plot.ly/python/figurewidget/
+    .. https://plot.ly/python/subplots/
+    .. https://plot.ly/python/reference/#candlestick
+    .. https://plot.ly/python/#chart-events
     """
 
     def __init__(self,
@@ -516,7 +514,7 @@ class PlotlyTradingChart(BaseRenderer):
         self._last_trade_step = 0
         self._show_chart = True
 
-    def _create_figure(self, performance_keys: dict):
+    def _create_figure(self, performance_keys: dict) -> None:
         fig = make_subplots(
             rows=4, cols=1, shared_xaxes=True, vertical_spacing=0.03,
             row_heights=[0.55, 0.15, 0.15, 0.15],
@@ -554,20 +552,20 @@ class PlotlyTradingChart(BaseRenderer):
         self._base_annotations = self.fig.layout.annotations
 
     def _create_trade_annotations(self,
-                                  trades: OrderedDict,
-                                  price_history: pd.DataFrame) -> 'Tuple[go.layout.Annotation]':
+                                  trades: 'OrderedDict',
+                                  price_history: 'pd.DataFrame') -> 'Tuple[go.layout.Annotation]':
         """Creates annotations of the new trades after the last one in the chart.
 
         Parameters
         ----------
-        trades : OrderedDict
+        trades : `OrderedDict`
             The history of trades for the current episode.
         price_history : `pd.DataFrame`
             The price history of the current episode.
 
         Returns
         -------
-        Tuple[go.layout.Annotation]
+        `Tuple[go.layout.Annotation]`
             A tuple of annotations used in the renderering process.
         """
         annotations = []
@@ -722,7 +720,7 @@ _registry = {
 }
 
 
-def get(identifier: str) -> BaseRenderer:
+def get(identifier: str) -> 'BaseRenderer':
     """Gets the `BaseRenderer` that matches the identifier.
 
     Parameters

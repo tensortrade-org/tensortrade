@@ -8,7 +8,7 @@ from tensortrade.env.generic import RewardScheme, TradingEnv
 
 
 class TensorTradeRewardScheme(RewardScheme):
-    """The abstract base class for reward schemes for the default environment.
+    """An abstract base class for reward schemes for the default environment.
     """
 
     def reward(self, env: 'TradingEnv') -> float:
