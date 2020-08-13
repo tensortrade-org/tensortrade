@@ -1,7 +1,6 @@
 # Action Scheme
 
-An `ActionScheme` defines the action space of the environment and interprets the
-action of an agent and how it gets applied to the environment.
+An `ActionScheme` defines the action space of the environment and interprets the action of an agent and how it gets applied to the environment.
 
 For example, if we were using a discrete action space of 3 actions (0 = hold, 1 = buy 100 %, 2 = sell 100%), our learning agent does not need to know that returning an action of 1 is equivalent to buying an instrument. Rather, the agent needs to know the reward for returning an action of 1 in specific circumstances, and can leave the implementation details of converting actions to trades to the `ActionScheme`.
 
@@ -53,6 +52,8 @@ class Simplex(Space):
 The default TensorTrade action scheme is made to be compatible with the built-in order management system (OMS). The OMS is a system that is able to have orders be submitted to it for particular financial instruments.
 
 ### Simple
+A discrete action scheme that determines actions based on a list of
+trading pairs, order criteria, and trade sizes.
 
 <br> **Overview** <br>
 Blank.
