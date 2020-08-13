@@ -1,6 +1,6 @@
 # Renderers and Plotly Chart
 
-## Data Loading Function
+<br>**Data Loading Function**<br>
 
 
 ```bash
@@ -54,7 +54,7 @@ df = load_csv('Coinbase_BTCUSD_1h.csv')
 df.head()
 ```
 
-## Data Preparation
+<br>**Data Preparation**<br>
 
 
 ```python
@@ -73,7 +73,7 @@ dataset.drop(columns=['date', 'open', 'high', 'low', 'close', 'volume'], inplace
 ```
 
 
-## Setup Trading Environment
+<br>**Setup Trading Environment**<br>
 
 
 ```python
@@ -158,7 +158,7 @@ feed.next()
 
 
 
-## Trading Environment Renderers
+<br>**Trading Environment Renderers**<br>
 A renderer is a channel for the trading environment to output its current state. One or more renderers can be attached to the environment at the same time. For example, you can let the environment draw a chart and log to a file at the same time.
 
 Notice that while all renderers can technically be used together, you need to select the best combination to avoid undesired results. For example, PlotlyTradingChart can work well with FileLogger but may not display well with ScreenLogger.
@@ -305,7 +305,7 @@ agent.train(n_episodes=2, n_steps=200, render_interval=10)
 
 
 
-## Direct Performance and Net Worth Plotting
+<br>**Direct Performance and Net Worth Plotting**<br>
 Alternatively, the final performance and net worth can be displayed using pandas via Matplotlib.
 
 

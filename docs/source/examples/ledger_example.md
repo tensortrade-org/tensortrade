@@ -1,15 +1,15 @@
 # Ledger Example
 
-## Install master branch of TensorTrade
+<br>**Install master branch of TensorTrade**<br>
 
 
-```python
+```bash
 !pip install git+https://github.com/tensortrade-org/tensortrade.git -U
 ```
 
 
 ```python
-import tensortrade.env.tt as tt
+import tensortrade.env.default as default
 
 from tensortrade.feed.core import Stream, DataFeed
 from tensortrade.data.cdd import CryptoDataDownload
@@ -19,7 +19,7 @@ from tensortrade.oms.exchanges.services.execution.simulated import execute_order
 from tensortrade.oms.instruments import USD, BTC, ETH, LTC
 ```
 
-## Load Data for Exchanges
+<br>**Load Data for Exchanges**<br>
 
 Using the `tensortrade.data.cdd` module you can load data from any `csv` file provided at:
 - https://www.cryptodatadownload.com/data/northamerican/
@@ -37,7 +37,7 @@ bitstamp_eth = cdd.fetch("Bitstamp", "USD", "ETH", "1h")
 bitstamp_ltc = cdd.fetch("Bitstamp", "USD", "LTC", "1h")
 ```
 
-## Inspect Transactions of `SimpleOrders`
+<br>**Inspect Transactions**<br>
 
 
 ```python
@@ -67,10 +67,10 @@ feed = DataFeed([
     Stream.source(list(bitstamp_ltc['volume'][-100:]), dtype="float").rename("volume:/USD-LTC")
 ])
 
-env = tt.create(
+env = default.create(
     portfolio=portfolio,
-    action_scheme=tt.actions.SimpleOrders(),
-    reward_scheme=tt.rewards.SimpleProfit(),
+    action_scheme=default.actions.SimpleOrders(),
+    reward_scheme=default.rewards.SimpleProfit(),
     feed=feed
 )
 
@@ -84,7 +84,7 @@ portfolio.ledger.as_frame().head(7)
 ```
 
 
-## Inspect Transactions of `ManagedRiskOrders`
+<br>**Inspect Transactions of ManagedRiskOrders**<br>
 
 
 ```python
@@ -94,10 +94,10 @@ portfolio = Portfolio(USD, [
     Wallet(coinbase, 0 * ETH),
 ])
 
-env = tt.create(
+env = default.create(
     portfolio=portfolio,
-    action_scheme=tt.actions.ManagedRiskOrders(),
-    reward_scheme=tt.rewards.SimpleProfit(),
+    action_scheme=default.actions.ManagedRiskOrders(),
+    reward_scheme=default.rewards.SimpleProfit(),
     feed=feed
 )
 
@@ -111,7 +111,7 @@ portfolio.ledger.as_frame().head(20)
 ```
 
 
-## Transactions in Spreadsheets
+<br>**Transactions in Spreadsheets**<br>
 
 To take a closer look at the transactions that are happening within the system, copy the transactions to a csv file and load it into any spreadsheet software. If where you are running this allows access to the system clipboard, you can directly copy the frame to your system clipboard by doing the following:
 - `portfolio.ledger.as_frame().to_clipboard(index=False)`
