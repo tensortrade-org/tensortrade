@@ -52,30 +52,43 @@ class Simplex(Space):
 The default TensorTrade action scheme is made to be compatible with the built-in order management system (OMS). The OMS is a system that is able to have orders be submitted to it for particular financial instruments.
 
 ### Simple
-A discrete action scheme that determines actions based on a list of
-trading pairs, order criteria, and trade sizes.
 
 <br> **Overview** <br>
-Blank.
+A discrete action scheme that determines actions based on a list of
+trading pairs, order criteria, and trade sizes.
 <br> **Action Space** <br>
-Blank.
+The action space is a discrete set of N options. The total number of discrete actions is the product of 
+- criteria (order criteria for order creation/completion)
+- trade sizes (e.g. 1/4, 1/2, 1/3)
+- trade durations (e.g. order open for 30 seconds or 60 seconds)
+- trade sides (i.e. Buy or Sell)
+- the number of tradeable pairs (i.e. BTC/USDT, ETH/BTC, etc)
 <br> **Perform** <br>
-Blank.
+Performs as per TensorTradeActionScheme, creates order based on models discrete output and submits it to the broker. The state action mapping varies with the parameters above.
 <br> **Compatibility** <br>
-Blank.
+The following reward schemes are compatible with simple actions 
+- 
 <hr>
 
 
 ### ManagedRisk
 
 <br> **Overview** <br>
-Blank.
+A discrete action scheme that determines actions based on managing risk,
+through setting a follow-up stop loss and take profit on every order.
 <br> **Action Space** <br>
-Blank.
+The action space is a discrete set of N options for the model to take. The total number of discrete actions is determined by taking a product of:
+- stop percents (i.e. [0.02, 0.04, 0.06] percent changes to trigger a stop loss)
+- take percents (i.e. [0.02, 0.03] value percent changes to take profit at)
+- trade sizes (e.g. 1/4, 1/2, 1/3)
+- trade durations (e.g. order open for 30 seconds or 60 seconds)
+- trade sides (i.e. Buy or Sell)
+- the number of tradeable pairs (i.e. BTC/USDT, ETH/BTC, etc)
 <br> **Perform** <br>
-Blank.
+Performs as per TensorTradeActionScheme, creates order based on models discrete output and submits it to the broker. The state action mapping varies with the parameters above.
 <br> **Compatibility** <br>
-Blank.
+The following reward schemes are compatible with simple actions 
+- 
 <hr>
 
 ### BSH
@@ -87,7 +100,7 @@ is located in our `cash` wallet (e.g. USD). If the agent is in state 1, then all
 its net worth is located in our `asset` wallet (e.g. BTC).
 
 <br> **Action Space** <br>
-* `Discrete(2)`
+* `Discrete(2)` options, buy or sell 
 
 <br> **Perform** <br>
 Below is a table that shows the mapping `(state, action) -> (state)`. <br>
