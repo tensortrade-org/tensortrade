@@ -18,7 +18,7 @@ from typing import Callable, Tuple, List, TypeVar
 
 import pandas as pd
 
-from tensortrade import Component, TimedIdentifiable
+from tensortrade.core import Component, TimedIdentifiable
 from tensortrade.oms.exchanges import Exchange
 from tensortrade.oms.orders import OrderListener
 from tensortrade.oms.instruments import Instrument, Quantity, ExchangePair

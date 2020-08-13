@@ -65,3 +65,5 @@ An `Order` is the way in which you can move funds from one wallet to another. Th
 * Limit
 * Stop Loss
 * Take Profit
+
+All the action schemes that are made for the `default` environment are made using these types of orders.

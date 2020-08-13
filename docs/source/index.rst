@@ -79,6 +79,8 @@ TensorTrade suitable for advanced research and production use.
     :caption: Examples
 
     examples/overview.md
+    examples/renderers_and_plotly_chart.md
+    examples/ledger_example.md
 
 
 .. toctree::

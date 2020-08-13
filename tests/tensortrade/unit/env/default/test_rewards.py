@@ -5,7 +5,7 @@ import pandas as pd
 
 import tensortrade.env.default.rewards as rewards
 
-from tensortrade import TradingContext
+from tensortrade.core import TradingContext
 from tensortrade.oms.wallets import Portfolio
 from tensortrade.oms.instruments import USD
 
