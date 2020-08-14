@@ -8,7 +8,6 @@ from tensortrade.oms import (
     exchanges,
     services
 )
-from . import env
 from . import stochastic
 from . import agents
 
