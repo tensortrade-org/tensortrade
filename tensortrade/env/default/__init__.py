@@ -1,14 +1,12 @@
 
-
 from typing import Union
 
-
-import tensortrade.env.default.actions as actions
-import tensortrade.env.default.rewards as rewards
-import tensortrade.env.default.informers as monitors
-import tensortrade.env.default.observers as observers
-import tensortrade.env.default.renderers as renderers
-import tensortrade.env.default.stoppers as stoppers
+from . import actions
+from . import rewards
+from . import observers
+from . import stoppers
+from . import informers
+from . import renderers
 
 from tensortrade.env.generic import TradingEnv
 from tensortrade.env.generic.components.renderer import AggregateRenderer

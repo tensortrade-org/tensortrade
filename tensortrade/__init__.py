@@ -1,6 +1,7 @@
 
 from . import core
 from . import data
+from . import feed
 from tensortrade.oms import (
     orders,
     wallets,
@@ -8,6 +9,7 @@ from tensortrade.oms import (
     exchanges,
     services
 )
+from . import env
 from . import stochastic
 from . import agents
 
