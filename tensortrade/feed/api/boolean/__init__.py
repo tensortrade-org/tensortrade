@@ -39,3 +39,6 @@ class Boolean:
             BooleanMixin.register_method(func, names)
             return func
         return wrapper
+
+
+from .operations import *

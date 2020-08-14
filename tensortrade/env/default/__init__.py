@@ -83,7 +83,7 @@ def create(portfolio: 'Portfolio',
         reward_scheme=reward_scheme,
         observer=observer,
         stopper=kwargs.get("stopper", stopper),
-        informer=kwargs.get("informer", monitors.TensorTradeInformer()),
+        informer=kwargs.get("informer", informers.TensorTradeInformer()),
         renderer=renderer
     )
     return env
