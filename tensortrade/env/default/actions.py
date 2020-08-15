@@ -86,7 +86,8 @@ class TensorTradeActionScheme(ActionScheme):
         orders = self.get_orders(action, self.portfolio)
 
         for order in orders:
-            self.broker.submit(order)
+            if order:
+                self.broker.submit(order)
 
         self.broker.update()
 
