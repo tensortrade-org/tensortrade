@@ -65,7 +65,7 @@ def create(portfolio: 'Portfolio',
         max_allowed_loss=kwargs.get("max_allowed_loss", 0.5)
     )
 
-    renderer_list = kwargs.get("renderers", renderers.EmptyRenderer())
+    renderer_list = kwargs.get("renderer", renderers.EmptyRenderer())
 
     if isinstance(renderer_list, list):
         for i, r in enumerate(renderer_list):
