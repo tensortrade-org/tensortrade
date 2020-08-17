@@ -56,7 +56,7 @@ def create(portfolio: 'Portfolio',
     observer = observers.TensorTradeObserver(
         portfolio=portfolio,
         feed=feed,
-        renderer_feed=kwargs.get(config["renderer_feed"], None),
+        renderer_feed=kwargs.get("renderer_feed", None),
         window_size=window_size,
         min_periods=min_periods
     )
@@ -65,7 +65,7 @@ def create(portfolio: 'Portfolio',
         max_allowed_loss=kwargs.get("max_allowed_loss", 0.5)
     )
 
-    renderer_list = kwargs.get(config["renderers"], renderers.EmptyRenderer())
+    renderer_list = kwargs.get("renderers", renderers.EmptyRenderer())
 
     if isinstance(renderer_list, list):
         for i, r in enumerate(renderer_list):
