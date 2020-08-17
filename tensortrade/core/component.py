@@ -2,8 +2,7 @@
 from abc import ABC, ABCMeta
 from typing import Any
 
-import tensortrade.core.registry as registry
-
+from . import registry
 from tensortrade.core.context import TradingContext, Context
 from tensortrade.core.base import Identifiable
 

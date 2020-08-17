@@ -65,3 +65,5 @@ An `Order` is the way in which you can move funds from one wallet to another. Th
 * Limit
 * Stop Loss
 * Take Profit
+
+Currently all the `default` action schemes use these orders when interpreting agent actions. The stop loss and take profit orders are the most complicated of which and require the use of an `OrderSpec` for them to function properly. An `OrderSpec` is required when an order must be connected with and followed by a successive order. In the case of a stop order, the process is to buy the quantity requested at the current price and then wait until the price hits a particular mark and then sell it. In addition, an `Order` has an optional `criteria` parameter that needs to be satisfied before being able to execute on an exchange.

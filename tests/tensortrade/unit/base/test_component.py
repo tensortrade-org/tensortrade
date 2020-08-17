@@ -1,8 +1,7 @@
 
-import tensortrade as td
-
 from abc import abstractmethod
-from tensortrade.core import Component
+
+from tensortrade.core import Component, TradingContext
 
 
 class DataMessageComponent(Component):
@@ -94,7 +93,7 @@ config = {
 
 def test_injects_concrete_tensor_trade_component_with_context():
 
-    with td.TradingContext(config):
+    with TradingContext(config):
 
         name = 'TensorTrade'
         value = 'the time and effort.'
@@ -105,7 +104,7 @@ def test_injects_concrete_tensor_trade_component_with_context():
 
 def test_inject_multiple_components_with_context():
 
-    with td.TradingContext(config):
+    with TradingContext(config):
         name = 'TensorTrade'
         value = 'the time and effort.'
         instance = WorthMessageComponent(name=name, value=value)
@@ -126,7 +125,7 @@ def test_injects_component_space():
         **config
     }
 
-    with td.TradingContext(c) as c:
+    with TradingContext(c) as c:
         name = 'TensorTrade'
         value = 'the time and effort.'
         instance = WorthMessageComponent(name=name, value=value)
@@ -153,7 +152,7 @@ def test_only_name_registered_component_space():
         **config
     }
 
-    with td.TradingContext(c) as c:
+    with TradingContext(c) as c:
         name = 'TensorTrade'
         value = 'the time and effort.'
         instance = WorthMessageComponent(name=name, value=value)
@@ -181,7 +180,7 @@ def test_inject_contexts_at_different_levels():
         **config
     }
 
-    with td.TradingContext(c1):
+    with TradingContext(c1):
         name = 'TensorTrade'
         value = 'the time and effort.'
         instance1 = WorthMessageComponent(name=name, value=value)
@@ -191,7 +190,7 @@ def test_inject_contexts_at_different_levels():
         assert hasattr(win1.context, 'plans_var')
         assert hasattr(lose1.context, 'plans_var')
 
-        with td.TradingContext(c2):
+        with TradingContext(c2):
             name = 'TensorTrade'
             value = 'the time and effort.'
             instance2 = WorthMessageComponent(name=name, value=value)

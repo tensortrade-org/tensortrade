@@ -39,3 +39,5 @@ class String:
             StringMixin.register_method(func, names)
             return func
         return wrapper
+
+from .operations import *

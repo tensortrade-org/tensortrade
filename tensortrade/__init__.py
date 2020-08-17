@@ -1,7 +1,15 @@
-from .core import *  # core must come before all of the other imports
 
+from . import core
 from . import data
-from tensortrade.oms import orders, wallets, instruments, exchanges, services
+from . import feed
+from tensortrade.oms import (
+    orders,
+    wallets,
+    instruments,
+    exchanges,
+    services
+)
+from . import env
 from . import stochastic
 from . import agents
 from . import feed 

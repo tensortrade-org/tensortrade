@@ -15,7 +15,7 @@
 
 from abc import abstractmethod
 
-from tensortrade import Component
+from tensortrade.core import Component
 from tensortrade.oms.orders import Trade
 
 

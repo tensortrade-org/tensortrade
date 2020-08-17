@@ -6,7 +6,8 @@ from collections import UserDict
 from typing import List
 
 import numpy as np
-import tensortrade.core.registry as registry
+
+from . import registry
 
 
 class TradingContext(UserDict):

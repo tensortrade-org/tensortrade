@@ -19,7 +19,7 @@ class Example(Component):
 From this abstract base class, more concrete and custom subclasses can be made
 that provide the implementation of these methods.
 
-## Example of Structure:
+<br>**Example of Structure**<br>
 A good example of this structure is the `RewardScheme` component. This component
 controls the reward mechanism of a `TradingEnv`.
 
