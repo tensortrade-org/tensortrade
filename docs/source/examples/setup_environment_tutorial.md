@@ -12,7 +12,7 @@ from tensortrade.feed.core import Stream, DataFeed, NameSpace
 from tensortrade.oms.instruments import USD, BTC, ETH, LTC
 from tensortrade.oms.wallets import Wallet, Portfolio
 from tensortrade.oms.exchanges import Exchange
-from tensortrade.oms.exchanges.services.execution.simulated import execute_order
+from tensortrade.oms.services.execution.simulated import execute_order
 ```
 
 <br>**Fetch Historical Data**<br>

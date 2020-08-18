@@ -119,7 +119,7 @@ class RiskAdjustedReturns(TensorTradeRewardScheme):
 
         References
         ----------
-            - https://en.wikipedia.org/wiki/Sharpe_ratio
+        .. [1] https://en.wikipedia.org/wiki/Sharpe_ratio
         """
         return (np.mean(returns) - self._risk_free_rate + 1E-9) / (np.std(returns) + 1E-9)
 
@@ -138,7 +138,7 @@ class RiskAdjustedReturns(TensorTradeRewardScheme):
 
         References
         ----------
-            - https://en.wikipedia.org/wiki/Sortino_ratio
+        .. [1] https://en.wikipedia.org/wiki/Sortino_ratio
         """
         downside_returns = returns.copy()
         downside_returns[returns < self._target_returns] = returns ** 2
@@ -165,6 +165,48 @@ class RiskAdjustedReturns(TensorTradeRewardScheme):
         risk_adjusted_return = self._return_algorithm(returns)
 
         return risk_adjusted_return
+
+
+class PBR(TensorTradeRewardScheme):
+    """A reward scheme for position-based returns.
+
+    * Let :math:`p_t` denote the price at time t.
+    * Let :math:`x_t` denote the position at time t.
+    * Let :math:`R_t` denote the reward at time t.
+
+    Then the reward is defined as,
+    :math:`R_{t} = (p_{t} - p_{t-1}) \cdot x_{t}`.
+
+    Parameters
+    ----------
+    price : `Stream`
+        The price stream to use for computing rewards.
+    """
+
+    registered_name = "pbr"
+
+    def __init__(self, price: 'Stream') -> None:
+        super().__init__()
+        self.position = -1
+
+        r = Stream.sensor(price, lambda p: p.value).diff()
+        position = Stream.sensor(self, lambda rs: rs.position, dtype="float")
+
+        reward = (position * r).rename("reward")
+
+        self.feed = DataFeed([reward])
+        self.feed.compile()
+
+    def on_action(self, action: int) -> None:
+        self.position = -1 if action == 0 else 1
+
+    def get_reward(self, portfolio: 'Portfolio') -> float:
+        return self.feed.next()["reward"]
+
+    def reset(self) -> None:
+        """Resets the `position` and `feed` of the reward scheme."""
+        self.position = -1
+        self.feed.reset()
 
 
 _registry = {

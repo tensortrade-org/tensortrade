@@ -18,7 +18,7 @@ import pandas as pd
 
 from tensortrade.feed.core import Stream, DataFeed, NameSpace
 from tensortrade.oms.exchanges import Exchange
-from tensortrade.oms.exchanges.services.execution.simulated import execute_order
+from tensortrade.oms.services.execution.simulated import execute_order
 from tensortrade.oms.instruments import USD, BTC
 from tensortrade.oms.wallets import Wallet, Portfolio
 

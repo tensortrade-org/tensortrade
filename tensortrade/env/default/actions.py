@@ -115,6 +115,55 @@ class TensorTradeActionScheme(ActionScheme):
         self.broker.reset()
 
 
+class BSH(TensorTradeActionScheme):
+    """A simple discrete action scheme where the only options are to buy, sell,
+    or hold.
+
+    Parameters
+    ----------
+    cash : `Wallet`
+        The wallet to hold funds in the base intrument.
+    asset : `Wallet`
+        The wallet to hold funds in the quote instrument.
+    """
+
+    registered_name = "bsh"
+
+    def __init__(self, cash: 'Wallet', asset: 'Wallet'):
+        super().__init__()
+        self.cash = cash
+        self.asset = asset
+
+        self.listeners = []
+        self.action = 0
+
+    @property
+    def action_space(self):
+        return Discrete(2)
+
+    def attach(self, listener):
+        self.listeners += [listener]
+        return self
+
+    def get_orders(self, action: int, portfolio: 'Portfolio') -> 'Order':
+        order = None
+
+        if abs(action - self.action) > 0:
+            src = self.cash if self.action == 0 else self.asset
+            tgt = self.asset if self.action == 0 else self.cash
+            order = proportion_order(portfolio, src, tgt, 1.0)
+            self.action = action
+
+        for listener in self.listeners:
+            listener.on_action(action)
+
+        return [order]
+
+    def reset(self):
+        super().reset()
+        self.action = 0
+
+
 class SimpleOrders(TensorTradeActionScheme):
     """A discrete action scheme that determines actions based on a list of
     trading pairs, order criteria, and trade sizes.
