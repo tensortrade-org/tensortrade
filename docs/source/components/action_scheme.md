@@ -1,7 +1,6 @@
 # Action Scheme
 
-An `ActionScheme` defines the action space of the environment and interprets the
-action of an agent and how it gets applied to the environment.
+An `ActionScheme` defines the action space of the environment and interprets the action of an agent and how it gets applied to the environment.
 
 For example, if we were using a discrete action space of 3 actions (0 = hold, 1 = buy 100 %, 2 = sell 100%), our learning agent does not need to know that returning an action of 1 is equivalent to buying an instrument. Rather, the agent needs to know the reward for returning an action of 1 in specific circumstances, and can leave the implementation details of converting actions to trades to the `ActionScheme`.
 
@@ -55,26 +54,41 @@ The default TensorTrade action scheme is made to be compatible with the built-in
 ### Simple
 
 <br> **Overview** <br>
-Blank.
+A discrete action scheme that determines actions based on a list of
+trading pairs, order criteria, and trade sizes.
 <br> **Action Space** <br>
-Blank.
+The action space is a discrete set of N options. The total number of discrete actions is the product of 
+- criteria (order criteria for order creation/completion)
+- trade sizes (e.g. 1/4, 1/2, 1/3)
+- trade durations (e.g. order open for 30 seconds or 60 seconds)
+- trade sides (i.e. Buy or Sell)
+- the number of tradeable pairs (i.e. BTC/USDT, ETH/BTC, etc)
 <br> **Perform** <br>
-Blank.
+Performs as per TensorTradeActionScheme, creates order based on models discrete output and submits it to the broker. The state action mapping varies with the parameters above.
 <br> **Compatibility** <br>
-Blank.
+The following reward schemes are compatible with simple actions 
+- 
 <hr>
 
 
 ### ManagedRisk
 
 <br> **Overview** <br>
-Blank.
+A discrete action scheme that determines actions based on managing risk,
+through setting a follow-up stop loss and take profit on every order.
 <br> **Action Space** <br>
-Blank.
+The action space is a discrete set of N options for the model to take. The total number of discrete actions is determined by taking a product of:
+- stop percents (i.e. [0.02, 0.04, 0.06] percent changes to trigger a stop loss)
+- take percents (i.e. [0.02, 0.03] value percent changes to take profit at)
+- trade sizes (e.g. 1/4, 1/2, 1/3)
+- trade durations (e.g. order open for 30 seconds or 60 seconds)
+- trade sides (i.e. Buy or Sell)
+- the number of tradeable pairs (i.e. BTC/USDT, ETH/BTC, etc)
 <br> **Perform** <br>
-Blank.
+Performs as per TensorTradeActionScheme, creates order based on models discrete output and submits it to the broker. The state action mapping varies with the parameters above.
 <br> **Compatibility** <br>
-Blank.
+The following reward schemes are compatible with simple actions 
+- 
 <hr>
 
 ### BSH
@@ -86,7 +100,7 @@ is located in our `cash` wallet (e.g. USD). If the agent is in state 1, then all
 its net worth is located in our `asset` wallet (e.g. BTC).
 
 <br> **Action Space** <br>
-* `Discrete(2)`
+* `Discrete(2)` options, buy or sell 
 
 <br> **Perform** <br>
 Below is a table that shows the mapping `(state, action) -> (state)`. <br>
