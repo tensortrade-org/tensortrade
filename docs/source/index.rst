@@ -111,9 +111,7 @@ TensorTrade suitable for advanced research and production use.
     :maxdepth: 1
     :caption: Environments
 
-    envs/trading_env.md
-    envs/generic.md
-    envs/default.md
+    envs/overview.md
 
 
 .. toctree::
@@ -133,10 +131,7 @@ TensorTrade suitable for advanced research and production use.
     :maxdepth: 1
     :caption: Agents
 
-    agents/learning_agents.md
-    agents/ray.md
-    agents/stable_baselines.md
-    agents/tensorforce.md
+    agents/overview.md
 
 
 .. toctree::

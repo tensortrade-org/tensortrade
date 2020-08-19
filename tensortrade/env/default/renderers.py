@@ -477,11 +477,11 @@ class PlotlyTradingChart(BaseRenderer):
 
     References
     ----------
-    .. https://plot.ly/python-api-reference/generated/plotly.graph_objects.Figure.html
-    .. https://plot.ly/python/figurewidget/
-    .. https://plot.ly/python/subplots/
-    .. https://plot.ly/python/reference/#candlestick
-    .. https://plot.ly/python/#chart-events
+    .. [1] https://plot.ly/python-api-reference/generated/plotly.graph_objects.Figure.html
+    .. [2] https://plot.ly/python/figurewidget/
+    .. [3] https://plot.ly/python/subplots/
+    .. [4] https://plot.ly/python/reference/#candlestick
+    .. [5] https://plot.ly/python/#chart-events
     """
 
     def __init__(self,
