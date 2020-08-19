@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 
 from tensortrade.env.generic import RewardScheme, TradingEnv
+from tensortrade.feed.core import Stream, DataFeed
 
 
 class TensorTradeRewardScheme(RewardScheme):

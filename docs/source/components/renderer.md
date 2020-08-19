@@ -45,4 +45,5 @@ Uses plotly to make a rendering of the environment. This renderer only works for
 * https://plot.ly/python/subplots/
 * https://plot.ly/python/reference/#candlestick
 * https://plot.ly/python/#chart-events
+
 <hr>
