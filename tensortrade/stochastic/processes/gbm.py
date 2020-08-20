@@ -22,16 +22,21 @@ from tensortrade.stochastic.utils.helpers import get_delta, scale_times_to_gener
 from tensortrade.stochastic.utils.parameters import ModelParameters, default
 
 
-def geometric_brownian_motion_log_returns(params: ModelParameters):
-    """
-    Constructs a sequence of log returns which, when exponentiated, produces
-    a random Geometric Brownian Motion (GBM). The GBM is the stochastic process
-    underlying the Black-Scholes options pricing formula.
+def geometric_brownian_motion_log_returns(params: 'ModelParameters') -> 'np.array':
+    """Constructs a sequence of log returns.
 
-    Arguments:
-        params : ModelParameters
-            The parameters for the stochastic model.
-    Returns:
+    When log returns are exponentiated, it produces a random Geometric
+    Brownian Motion (GBM). The GBM is the stochastic process underlying
+    the Black-Scholes options pricing formula.
+
+    Parameters
+    ----------
+    params : `ModelParameters`
+        The parameters for the stochastic model.
+
+    Returns
+    -------
+    `np.array`
         The log returns of a geometric brownian motion process
     """
     wiener_process = np.array(brownian_motion_log_returns(params))
@@ -39,16 +44,18 @@ def geometric_brownian_motion_log_returns(params: ModelParameters):
     return wiener_process + sigma_pow_mu_delta
 
 
-def geometric_brownian_motion_levels(params: ModelParameters):
-    """
-    Constructs a sequence of price levels for an asset which evolves according to
-    a geometric brownian motion.
+def geometric_brownian_motion_levels(params: 'ModelParameters'):
+    """Constructs a sequence of price levels for an asset which evolves
+    according to a geometric brownian motion process.
 
-    Arguments:
-        params : ModelParameters
-            The parameters for the stochastic model.
+    Parameters
+    ----------
+    params : ModelParameters
+        The parameters for the stochastic model.
 
-    Returns:
+    Returns
+    -------
+    `np.array`
         The price levels for the asset
     """
     return convert_to_prices(params, geometric_brownian_motion_log_returns(params))
@@ -60,12 +67,40 @@ def gbm(base_price: int = 1,
         start_date_format: str = '%Y-%m-%d',
         times_to_generate: int = 1000,
         time_frame: str = '1h',
-        model_params: ModelParameters = None):
+        params: 'ModelParameters' = None) -> 'pd.DataFrame':
+    """Generates price data from a GBM process.
+
+    Parameters
+    ----------
+    base_price : int, default 1
+        The base price to use for price generation.
+    base_volume : int, default 1
+        The base volume to use for volume generation.
+    start_date : str, default '2010-01-01'
+        The start date of the generated data
+    start_date_format : str, default '%Y-%m-%d'
+        The format for the start date of the generated data.
+    times_to_generate : int, default 1000
+        The number of bars to make.
+    time_frame : str, default '1h'
+        The time frame.
+    params : `ModelParameters`, optional
+        The model parameters.
+
+    Returns
+    -------
+    `pd.DataFrame`
+        The generated data frame containing the OHLCV bars.
+
+    References
+    ----------
+    [1] https://en.wikipedia.org/wiki/Geometric_Brownian_motion
+    """
 
     delta = get_delta(time_frame)
     times_to_generate = scale_times_to_generate(times_to_generate, time_frame)
 
-    params = model_params or default(base_price, times_to_generate, delta)
+    params = params or default(base_price, times_to_generate, delta)
 
     prices = geometric_brownian_motion_levels(params)
 

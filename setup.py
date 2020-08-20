@@ -65,7 +65,7 @@ setup(
                           'matplotlib>=3.1.1',
                           'plotly>=4.5.0'
                           ],
-        'render': ['plotly>=4.5.0', 'matplotlib>=3.1.1'],
+        'renderers': ['plotly>=4.5.0', 'matplotlib>=3.1.1'],
         'tests': ['pytest>=5.1.1',
                   'ta>=0.4.7',
                   'tensorflow>=2.1.0',

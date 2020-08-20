@@ -1,7 +1,6 @@
 
-import tensortrade as td
 
-from tensortrade.base.context import TradingContext
+from tensortrade.core import TradingContext
 
 
 def get_context():
@@ -12,7 +11,7 @@ def get_context():
 # TradingContext tests
 # =============================================================================
 def test_is_trading_context_class_there():
-    assert td.TradingContext
+    assert TradingContext
 
 
 def test_has_config_attribute():
@@ -51,26 +50,26 @@ def test_init_with_kwargs():
 
 def test_context_creation():
 
-    with td.TradingContext(config) as tc1:
+    with TradingContext(config) as tc1:
         assert tc1.data == config
 
-        with td.TradingContext(config) as tc2:
+        with TradingContext(config) as tc2:
             assert TradingContext.get_context() == tc2
 
         assert TradingContext.get_context() == tc1
 
 
 def test_get_context_from_tensor_trade_level():
-    with td.TradingContext(config) as tc:
+    with TradingContext(config) as tc:
         assert get_context() == tc
 
 
 def test_context_within_context():
 
-    with td.TradingContext(config) as tc1:
+    with TradingContext(config) as tc1:
         assert get_context() == tc1
 
-        with td.TradingContext(config) as tc2:
+        with TradingContext(config) as tc2:
             assert get_context() == tc2
 
         assert get_context() == tc1
@@ -78,7 +77,7 @@ def test_context_within_context():
 
 def test_context_retains_data_outside_with():
 
-    with td.TradingContext(config) as tc:
+    with TradingContext(config) as tc:
         assert tc.data == config
 
     assert tc.data == config
@@ -96,7 +95,7 @@ def test_create_trading_context_from_json():
         "name": "coinbase"
     }
 
-    with td.TradingContext.from_json(path) as tc:
+    with TradingContext.from_json(path) as tc:
         assert tc.shared['base_instrument'] == "EURO"
         assert tc.shared['instruments'] == ["BTC", "ETH"]
         assert tc._config['actions'] == actions
@@ -115,7 +114,7 @@ def test_create_trading_context_from_yaml():
         "name": "coinbase"
     }
 
-    with td.TradingContext.from_yaml(path) as tc:
+    with TradingContext.from_yaml(path) as tc:
 
         assert tc.shared['base_instrument'] == "EURO"
         assert tc.shared['instruments'] == ["BTC", "ETH"]

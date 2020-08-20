@@ -2,9 +2,9 @@
 
 sphinx
 sphinx_rtd_theme
-sphinx_autodoc_typehints
 sphinxcontrib.apidoc
 nbsphinx
 nbsphinx_link
-m2r
+recommonmark
+sphinx_markdown_tables
 ipykernel

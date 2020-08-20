@@ -20,32 +20,47 @@ from multiprocessing.queues import Queue
 
 class SharedCounter(object):
     """ A synchronized shared counter.
+
     The locking done by multiprocessing.Value ensures that only a single
     process or thread may read or write the in-memory ctypes object. However,
     in order to do n += 1, Python performs a read followed by a write, so a
     second process may read the old value before the new one is written by the
     first process. The solution is to use a multiprocessing.Lock to guarantee
     the atomicity of the modifications to Value.
-    This class comes almost entirely from Eli Bendersky's blog:
-    http://eli.thegreenplace.net/2012/01/04/shared-counter-with-pythons-multiprocessing/
+
+    Parameters
+    ----------
+    n : int
+        The count to start at.
+
+    References
+    ----------
+    .. [1] http://eli.thegreenplace.net/2012/01/04/shared-counter-with-pythons-multiprocessing/
     """
 
-    def __init__(self, n=0):
+    def __init__(self, n: int = 0) -> None:
         self.count = mp.Value('i', n)
 
-    def increment(self, n=1):
-        """ Increment the counter by n (default = 1) """
+    def increment(self, n: int = 1) -> None:
+        """Increment the counter by n.
+
+        Parameters
+        ----------
+        n : int
+            The amount to increment the counter by.
+        """
         with self.count.get_lock():
             self.count.value += n
 
     @property
-    def value(self):
-        """ Return the value of the counter """
+    def value(self) -> int:
+        """The value of the counter. (int, read-only) """
         return self.count.value
 
 
 class ParallelQueue(Queue):
-    """ A portable implementation of multiprocessing.Queue.
+    """A portable implementation of multiprocessing.Queue.
+
     Because of multithreading / multiprocessing semantics, Queue.qsize() may
     raise the NotImplementedError exception on Unix platforms like Mac OS X
     where sem_getvalue() is not implemented. This subclass addresses this
@@ -60,18 +75,18 @@ class ParallelQueue(Queue):
         super().__init__(ctx=mp.get_context())
         self.size = SharedCounter(0)
 
-    def put(self, *args, **kwargs):
+    def put(self, *args, **kwargs) -> None:
         self.size.increment(1)
         super().put(*args, **kwargs)
 
-    def get(self, *args, **kwargs):
+    def get(self, *args, **kwargs) -> object:
         self.size.increment(-1)
         return super().get(*args, **kwargs)
 
-    def qsize(self):
-        """ Reliable implementation of multiprocessing.Queue.qsize() """
+    def qsize(self) -> int:
+        """Reliable implementation of multiprocessing.Queue.qsize()."""
         return self.size.value
 
-    def empty(self):
-        """ Reliable implementation of multiprocessing.Queue.empty() """
+    def empty(self) -> bool:
+        """Reliable implementation of multiprocessing.Queue.empty()."""
         return not self.qsize()

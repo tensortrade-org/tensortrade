@@ -21,7 +21,6 @@ sys.path.insert(0, os.path.abspath('../..'))
 # -- Project information -----------------------------------------------------
 
 project = 'TensorTrade'
-copyright = '2019, Adam King'
 author = 'Adam King'
 
 with open(os.path.join('../../', 'tensortrade', 'version.py'), 'r') as filehandle:
@@ -50,12 +49,12 @@ extensions = [
     'sphinx.ext.mathjax',
     'sphinx.ext.ifconfig',
     'sphinx.ext.viewcode',
-    'sphinx.ext.napoleon',
-    'sphinx_autodoc_typehints',
-    'sphinxcontrib.apidoc',  # automatically generate API docs, see https://github.com/rtfd/readthedocs.org/issues/1139
+    'sphinx.ext.napoleon', # reading numpydoc strings
+    'sphinxcontrib.apidoc',  # automatically generate API docs
     'nbsphinx',
     'nbsphinx_link',  # for linking notebooks from outside sphinx source root
-    'm2r'
+    'recommonmark',   # for including markdown
+    'sphinx_markdown_tables' # Support rendering tables in markdown
 ]
 
 # nbsphinx settings
@@ -70,11 +69,16 @@ apidoc_separate_modules = True
 apidoc_extra_args = ['-d 6']
 
 # mock imports
-autodoc_mock_imports = ['tensorflow', 'keras',
-                        'tensorforce', 'ccxt', 'stochastic', 'stable-baselines']
+autodoc_mock_imports = [
+    'tensorflow',
+    'keras',
+    'tensorforce',
+    'ccxt',
+    'stochastic',
+    'stable-baselines'
+]
 
 # Napoleon settings
-napoleon_google_docstring = True
 napoleon_numpy_docstring = True
 napoleon_include_init_with_doc = True
 napoleon_include_private_with_doc = False
@@ -91,9 +95,10 @@ templates_path = ['_templates']
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
-#
-source_suffix = ['.rst', '.md']
-# source_suffix = '.rst'
+source_suffix = [
+    '.rst',
+    '.md'
+]
 
 # The master toctree document.
 master_doc = 'index'
@@ -108,7 +113,10 @@ language = None
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ['build', '**.ipynb_checkpoints']
+exclude_patterns = [
+    'build',
+    '**.ipynb_checkpoints'
+]
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = None
@@ -117,7 +125,6 @@ pygments_style = None
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-#
 html_theme = 'sphinx_rtd_theme'
 html_logo = '_static/logo.jpg'
 html_favicon = '_static/favicon.ico'
@@ -156,7 +163,7 @@ html_context = {
 
 # -- Options for HTMLHelp output ---------------------------------------------
 
-# Output file base name for HTML help builder.
+# Output file core name for HTML help builder.
 htmlhelp_basename = 'tensortradedocs'
 
 # -- Options for LaTeX output ------------------------------------------------
@@ -261,17 +268,17 @@ nbsphinx_prolog = (
 {% if env.metadata[env.docname]['nbsphinx-link-target'] %}
 {% set docpath = env.metadata[env.docname]['nbsphinx-link-target'] %}
 {% else %}
-{% set docpath = env.doc2path(env.docname, base='docs/source/') %}
+{% set docpath = env.doc2path(env.docname, core='docs/source/') %}
 {% endif %}
 
 .. only:: html
 
     .. role:: raw-html(raw)
         :format: html
-    
+
     .. nbinfo::
         This page was generated from `{{ docpath }}`__.
-    
+
     __ https://github.com/notadamking/tensortrade/blob/
         """ +
     git_rev + r"{{ docpath }}"

@@ -1,8 +1,8 @@
 
 
-import tensortrade.base.clock as clock
+import tensortrade.core.clock as clock
 
-from tensortrade.base import Clock, TimeIndexed
+from tensortrade.core import Clock, TimeIndexed
 
 
 def test_basic_clock_init():

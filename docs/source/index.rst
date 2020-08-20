@@ -1,112 +1,140 @@
-.. mdinclude:: landing.md
+TensorTrade
+-----------
+
+|Logo|
+
+`TensorTrade`_ is an open source Python framework for building,
+training, evaluating, and deploying robust trading algorithms using
+reinforcement learning. The framework focuses on being highly composable
+and extensible, to allow the system to scale from simple trading
+strategies on a single CPU, to complex investment strategies run on a
+distribution of HPC machines.
+
+Under the hood, the framework uses many of the APIs from existing
+machine learning libraries to maintain high quality data pipelines and
+learning models. One of the main goals of TensorTrade is to enable fast
+experimentation with algorithmic trading strategies, by leveraging the
+existing tools and pipelines provided by ``numpy``, ``pandas``, ``gym``,
+``keras``, and ``tensorflow``.
+
+Every piece of the framework is split up into re-usable components,
+allowing you to take advantage of the general use components built by
+the community, while keeping your proprietary features private. The aim
+is to simplify the process of testing and deploying robust trading
+agents using deep reinforcement learning, to allow you and I to focus on
+creating profitable strategies.
+
+*The goal of this framework is to enable fast experimentation, while
+maintaining production-quality data pipelines.*
+
+Feel free to also walk through the `Medium tutorial`_.
+
+Guiding principles
+------------------
+
+*Inspired by* `Keras' guiding principles`_.
+
+*User friendliness.* TensorTrade is an API designed for human beings,
+not machines. It puts user experience front and center. TensorTrade
+follows best practices for reducing cognitive load: it offers consistent
+& simple APIs, it minimizes the number of user actions required for
+common use cases, and it provides clear and actionable feedback upon
+user error.
+
+*Modularity.* A trading environment is a conglomeration of fully
+configurable modules that can be plugged together with as few
+restrictions as possible. In particular, exchanges, feature pipelines,
+action schemes, reward schemes, trading agents, and performance reports
+are all standalone modules that you can combine to create new trading
+environments.
+
+*Easy extensibility.* New modules are simple to add (as new classes and
+functions), and existing modules provide ample examples. To be able to
+easily create new modules allows for total expressiveness, making
+TensorTrade suitable for advanced research and production use.
+
+.. _TensorTrade: https://github.com/notadamking/tensortrade
+.. _Medium tutorial: https://medium.com/@notadamking/trade-smarter-w-reinforcement-learning-a5e91163f315
+.. _Keras' guiding principles: https://github.com/keras-team/keras
+
+.. |Logo| image:: _static/logo.jpg
 
 
 .. toctree::
-  :maxdepth: 1
-  :hidden:
+    :maxdepth: 1
+    :hidden:
 
-  Home <self>
-
-
-.. toctree::
-  :maxdepth: 1
-  :caption: Overview
-
-  overview/getting_started.md
+    Home <self>
 
 
 .. toctree::
-   :maxdepth: 1
-   :caption: Examples
+    :maxdepth: 1
+    :caption: Overview
 
-   examples/overview.md
-   examples/train_and_evaluate.ipynb
-   examples/trading_context.ipynb
+    overview/getting_started.md
 
 
 .. toctree::
-  :maxdepth: 1
-  :caption: Component Types
+    :maxdepth: 1
+    :caption: Examples
 
-  components/components.md
-  components/component_types/trading_environment.md
-  components/component_types/exchange.md
-  components/component_types/feature_pipeline.md
-  components/component_types/action_scheme.md
-  components/component_types/reward_scheme.md
-  components/component_types/trading_strategy.md
-
-
-.. toctree::
-  :maxdepth: 1
-  :caption: Trading Environment
-
-  components/environments/TradingEnvironment.md
+    examples/overview.md
+    examples/setup_environment_tutorial.md
+    examples/train_and_evaluate.md
+    examples/renderers_and_plotly_chart.md
+    examples/use_stochastic_data.md
+    examples/ledger_example.md
 
 
 .. toctree::
-  :maxdepth: 1
-  :caption: Exchanges
-  
-  components/exchanges/Exchange.md
-  components/exchanges/simulated/SimulatedExchange.md
-  components/exchanges/simulated/FBMExchange.md
-  components/exchanges/live/CCXTExchange.md
-  components/exchanges/live/InteractiveBrokersExchange.md
+    :maxdepth: 1
+    :caption: Tutorials
+
+    tutorials/ray.md
 
 
 .. toctree::
-  :maxdepth: 1
-  :caption: Features
+    :maxdepth: 1
+    :caption: Components
 
-
-  components/features/FeaturePipeline.md
-  components/features/FeatureTransformer.md
-  components/features/scalers/MinMaxNormalizer.md
-  components/features/scalers/StandardNormalizer.md
-  components/features/stationarity/FractionalDifference.md
-  components/features/indicators/TAlibIndicator.md
-
-
-.. toctree::
-  :maxdepth: 1
-  :caption: Actions
-
-  components/actions/ActionScheme.md
-  components/actions/ContinuousActions.md
-  components/actions/DiscreteActions.md
-  components/actions/MultiDiscreteActions.md
+    components/components.md
+    components/action_scheme.md
+    components/reward_scheme.md
+    components/observer.md
+    components/stopper.md
+    components/informer.md
+    components/renderer.md
 
 
 .. toctree::
-  :maxdepth: 1
-  :caption: Rewards
-  
-  components/rewards/RewardScheme.md
-  components/rewards/RiskAdjustedReturns.md
-  components/rewards/SimpleProfit.md
+    :maxdepth: 1
+    :caption: Environments
+
+    envs/overview.md
 
 
 .. toctree::
-  :maxdepth: 1
-  :caption: Learning Agents
+    :maxdepth: 1
+    :caption: Feed
 
-  agents/learning_agents.md
-  agents/stable_baselines.md
-  agents/tensorforce.md
+    feed/overview.md
+
+.. toctree::
+    :maxdepth: 1
+    :caption: Order Management System
+
+    oms/overview.md
 
 
 .. toctree::
-  :maxdepth: 1
-  :caption: Strategies
-  
-  components/strategies/TradingStrategy.md
-  components/strategies/StableBaselinesTradingStrategy.md
-  components/strategies/TensorforceTradingStrategy.md
+    :maxdepth: 1
+    :caption: Agents
+
+    agents/overview.md
 
 
 .. toctree::
-   :maxdepth: 1
-   :caption: API reference
+    :maxdepth: 1
+    :caption: API reference
 
-   API reference <api/modules>
+    API reference <api/modules>
