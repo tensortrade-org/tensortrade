@@ -122,7 +122,7 @@ class RiskAdjustedReturns(TensorTradeRewardScheme):
         ----------
         .. [1] https://en.wikipedia.org/wiki/Sharpe_ratio
         """
-        return (np.mean(returns) - self._risk_free_rate + 1E-9) / (np.std(returns) + 1E-9)
+        return (np.mean(returns) - self._risk_free_rate + 1e-9) / (np.std(returns) + 1e-9)
 
     def _sortino_ratio(self, returns: 'pd.Series') -> float:
         """Computes the sortino ratio for a given series of a returns.
@@ -147,7 +147,7 @@ class RiskAdjustedReturns(TensorTradeRewardScheme):
         expected_return = np.mean(returns)
         downside_std = np.sqrt(np.std(downside_returns))
 
-        return (expected_return - self._risk_free_rate + 1E-9) / (downside_std + 1E-9)
+        return (expected_return - self._risk_free_rate + 1e-9) / (downside_std + 1e-9)
 
     def get_reward(self, portfolio: 'Portfolio') -> float:
         """Computes the reward corresponding to the selected risk-adjusted return metric.
@@ -190,7 +190,7 @@ class PBR(TensorTradeRewardScheme):
         super().__init__()
         self.position = -1
 
-        r = Stream.sensor(price, lambda p: p.value).diff()
+        r = Stream.sensor(price, lambda p: p.value, dtype="float").diff()
         position = Stream.sensor(self, lambda rs: rs.position, dtype="float")
 
         reward = (position * r).rename("reward")
@@ -216,7 +216,7 @@ _registry = {
 }
 
 
-def get(identifier: str) -> TensorTradeRewardScheme:
+def get(identifier: str) -> 'TensorTradeRewardScheme':
     """Gets the `RewardScheme` that matches with the identifier.
 
     Parameters

@@ -90,8 +90,7 @@ TensorTrade suitable for advanced research and production use.
     :maxdepth: 1
     :caption: Tutorials
 
-    tutorials/simple_sine_curve.md
-    tutorials/pairs_trading.md
+    tutorials/ray.md
 
 
 .. toctree::

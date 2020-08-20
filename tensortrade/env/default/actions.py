@@ -1,99 +1,24 @@
 
 from abc import abstractmethod
-from typing import Union, List, Any
 from itertools import product
+from typing import Union, List, Any
 
 from gym.spaces import Space, Discrete
 
-from tensortrade.env.generic import ActionScheme, TradingEnv
 from tensortrade.core import Clock
-from tensortrade.oms.wallets import Portfolio
+from tensortrade.env.generic import ActionScheme, TradingEnv
+from tensortrade.oms.instruments import ExchangePair
 from tensortrade.oms.orders import (
     Broker,
     Order,
-    TradeSide,
-    TradeType,
     OrderListener,
-    risk_managed_order
+    OrderSpec,
+    proportion_order,
+    risk_managed_order,
+    TradeSide,
+    TradeType
 )
-
-
-def proportion_order(portfolio: 'Portfolio',
-                     source: 'Wallet',
-                     target: 'Wallet',
-                     proportion: float) -> 'Order':
-    """Creates an order that sends a proportion of funds from one wallet to
-    another.
-
-    Parameters
-    ----------
-    portfolio : `Portfolio`
-        The portfolio that contains both wallets.
-    source : `Wallet`
-        The source wallet for the funds.
-    target : `Wallet`
-        The target wallet for the funds.
-    proportion : float
-        The proportion of funds to send.
-    """
-    assert 0.0 < proportion <= 1.0
-    exchange = source.exchange
-
-    base_params = {
-        'step': portfolio.clock.step,
-        'portfolio': portfolio,
-        'trade_type': TradeType.MARKET,
-        'start': portfolio.clock.step,
-        'end': portfolio.clock.step + 1
-    }
-
-    is_source_base = source.instrument == portfolio.base_instrument
-    is_target_base = target.instrument == portfolio.base_instrument
-
-    if is_source_base or is_target_base:
-        pair = source.instrument / target.instrument if is_source_base else target.instrument / source.instrument
-        exchange_pair = ExchangePair(exchange, pair)
-
-        balance = source.balance.as_float()
-        size = min(balance * proportion, balance)
-        quantity = (size * source.instrument).quantize()
-
-        params = {
-            **base_params,
-            'side': TradeSide.BUY if is_source_base else TradeSide.SELL,
-            'exchange_pair': exchange_pair,
-            'price': exchange_pair.price,
-            'quantity': quantity
-        }
-
-        return Order(**params)
-
-    pair = portfolio.base_instrument / source.instrument
-    exchange_pair = ExchangePair(exchange, pair)
-
-    balance = source.balance.as_float()
-    size = min(balance * proportion, balance)
-    quantity = (size * source.instrument).quantize()
-
-    params = {
-        **base_params,
-        'side': TradeSide.SELL,
-        'exchange_pair': exchange_pair,
-        'price': exchange_pair.price,
-        'quantity': quantity
-    }
-
-    order = Order(**params)
-
-    pair = portfolio.base_instrument / target.instrument
-
-    order += OrderSpec(
-        side=TradeSide.BUY,
-        trade_type=TradeType.MARKET,
-        exchange_pair=ExchangePair(exchange, pair),
-        criteria=None
-    )
-    return order
+from tensortrade.oms.wallets import Portfolio
 
 
 class TensorTradeActionScheme(ActionScheme):
@@ -264,11 +189,11 @@ class SimpleOrders(TensorTradeActionScheme):
     """
 
     def __init__(self,
-                 criteria: Union[List['OrderCriteria'], 'OrderCriteria'] = None,
-                 trade_sizes: Union[List[float], int] = 10,
-                 durations: Union[List[int], int] = None,
-                 trade_type: TradeType = TradeType.MARKET,
-                 order_listener: OrderListener = None) -> None:
+                 criteria: 'Union[List[OrderCriteria], OrderCriteria]' = None,
+                 trade_sizes: 'Union[List[float], int]' = 10,
+                 durations: 'Union[List[int], int]' = None,
+                 trade_type: 'TradeType' = TradeType.MARKET,
+                 order_listener: 'OrderListener' = None) -> None:
         super().__init__()
         criteria = self.default('criteria', criteria)
         self.criteria = criteria if isinstance(criteria, list) else [criteria]
@@ -291,10 +216,13 @@ class SimpleOrders(TensorTradeActionScheme):
     @property
     def action_space(self) -> Space:
         if not self._action_space:
-            self.actions = list(product(self.criteria,
-                                        self.trade_sizes,
-                                        self.durations,
-                                        [TradeSide.BUY, TradeSide.SELL]))
+            self.actions = product(
+                self.criteria,
+                self.trade_sizes,
+                self.durations,
+                [TradeSide.BUY, TradeSide.SELL]
+            )
+            self.actions = list(self.actions)
             self.actions = list(product(self.portfolio.exchange_pairs, self.actions))
             self.actions = [None] + self.actions
 
@@ -360,12 +288,12 @@ class ManagedRiskOrders(TensorTradeActionScheme):
     """
 
     def __init__(self,
-                 stop: List[float] = [0.02, 0.04, 0.06],
-                 take: List[float] = [0.01, 0.02, 0.03],
-                 trade_sizes: Union[List[float], int] = 10,
-                 durations: Union[List[int], int] = None,
-                 trade_type: TradeType = TradeType.MARKET,
-                 order_listener: OrderListener = None) -> None:
+                 stop: 'List[float]' = [0.02, 0.04, 0.06],
+                 take: 'List[float]' = [0.01, 0.02, 0.03],
+                 trade_sizes: 'Union[List[float], int]' = 10,
+                 durations: 'Union[List[int], int]' = None,
+                 trade_type: 'TradeType' = TradeType.MARKET,
+                 order_listener: 'OrderListener' = None) -> None:
         super().__init__()
         self.stop = self.default('stop', stop)
         self.take = self.default('take', take)
@@ -386,20 +314,23 @@ class ManagedRiskOrders(TensorTradeActionScheme):
         self.actions = None
 
     @property
-    def action_space(self) -> Space:
+    def action_space(self) -> 'Space':
         if not self._action_space:
-            self.actions = list(product(self.stop,
-                                        self.take,
-                                        self.trade_sizes,
-                                        self.durations,
-                                        [TradeSide.BUY, TradeSide.SELL]))
+            self.actions = product(
+                self.stop,
+                self.take,
+                self.trade_sizes,
+                self.durations,
+                [TradeSide.BUY, TradeSide.SELL]
+            )
+            self.actions = list(self.actions)
             self.actions = list(product(self.portfolio.exchange_pairs, self.actions))
             self.actions = [None] + self.actions
 
             self._action_space = Discrete(len(self.actions))
         return self._action_space
 
-    def get_orders(self, action: int, portfolio: 'Portfolio') -> List[Order]:
+    def get_orders(self, action: int, portfolio: 'Portfolio') -> 'List[Order]':
 
         if action == 0:
             return []

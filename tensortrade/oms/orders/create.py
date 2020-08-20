@@ -226,3 +226,87 @@ def risk_managed_order(side: "TradeSide",
     order.add_order_spec(risk_management)
 
     return order
+
+
+def proportion_order(portfolio: 'Portfolio',
+                     source: 'Wallet',
+                     target: 'Wallet',
+                     proportion: float) -> 'Order':
+    """Creates an order that sends a proportion of funds from one wallet to
+    another.
+
+    Parameters
+    ----------
+    portfolio : `Portfolio`
+        The portfolio that contains both wallets.
+    source : `Wallet`
+        The source wallet for the funds.
+    target : `Wallet`
+        The target wallet for the funds.
+    proportion : float
+        The proportion of funds to send.
+    """
+    assert 0.0 < proportion <= 1.0
+    exchange = source.exchange
+
+    base_params = {
+        'step': portfolio.clock.step,
+        'portfolio': portfolio,
+        'trade_type': TradeType.MARKET,
+        'start': portfolio.clock.step,
+        'end': portfolio.clock.step + 1
+    }
+    pair = None
+
+    is_source_base = (source.instrument == portfolio.base_instrument)
+    is_target_base = (target.instrument == portfolio.base_instrument)
+
+    if is_source_base or is_target_base:
+
+        if is_source_base:
+            pair = source.instrument / target.instrument
+        else:
+            pair = target.instrument / source.instrument
+
+        exchange_pair = ExchangePair(exchange, pair)
+
+        balance = source.balance.as_float()
+        size = min(balance * proportion, balance)
+        quantity = (size * source.instrument).quantize()
+
+        params = {
+            **base_params,
+            'side': TradeSide.BUY if is_source_base else TradeSide.SELL,
+            'exchange_pair': exchange_pair,
+            'price': exchange_pair.price,
+            'quantity': quantity
+        }
+
+        return Order(**params)
+
+    pair = portfolio.base_instrument / source.instrument
+    exchange_pair = ExchangePair(exchange, pair)
+
+    balance = source.balance.as_float()
+    size = min(balance * proportion, balance)
+    quantity = (size * source.instrument).quantize()
+
+    params = {
+        **base_params,
+        'side': TradeSide.SELL,
+        'exchange_pair': exchange_pair,
+        'price': exchange_pair.price,
+        'quantity': quantity
+    }
+
+    order = Order(**params)
+
+    pair = portfolio.base_instrument / target.instrument
+
+    order += OrderSpec(
+        side=TradeSide.BUY,
+        trade_type=TradeType.MARKET,
+        exchange_pair=ExchangePair(exchange, pair),
+        criteria=None
+    )
+    return order

@@ -16,9 +16,7 @@ That's all there is to it, now it's just a matter of composing each of these com
 
 When the reset method of a `TradingEnv` is called, all of the child components will also be reset. The internal state of each action scheme, reward scheme, observer, stopper, and informer will be set back to their default values, ready for the next episode.
 
-Let's begin with an example environment. As mentioned before, initializing a `TradingEnv` requires each component in order to function.
 
+# What if I can't make a particular environment?
 
-# How can I make my own?
-
-If none of the environments currently available in codebase serve your needs let us know! We would love to hear about so we can keep improving the quality of our framework as well as keeping up with the needs of people using it.
+If none of the environments available in codebase serve your needs let us know! We would love to hear about so we can keep improving the quality of our framework as well as keeping up with the needs of the people using it.

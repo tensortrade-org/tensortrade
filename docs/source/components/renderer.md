@@ -1,42 +1,28 @@
 # Renderer
-
-<Insert information about the generic renderer>
+The `Renderer` is the component of the `TradingEnv` that lets us peek into the thoughts and actions of an agent. There are many different ways to render this type of environment, but all you need to do in order to get a different renderering is to subclass `Renderer` and fill in the `render` method. If you want to see more on how to make a `Renderer` from scratch check out the tutorial for using `ray` with TensorTrade.
 
 
 ## Default
-<Insert information about the default renderer>
+The `default` renderers are made to work with any instance of the `BaseRenderer`
+class.
+
 <hr>
 
 ### Screen Logger
+Logs the records of the environment to the screen for the user to see.
 
-<br>**Overview**<br>
-<br>**Renderering**<br>
-<br>**References**<br>
 <hr>
 
 
 ### File Logger
-
-<br>**Overview**<br>
-<br>**Renderering**<br>
-<br>**References**<br>
-<hr>
-
-
-### Matplotlib Trading Chart
-
-<br>**Overview**<br>
-<br>**Renderering**<br>
-<br>**References**<br>
+Logs the records of the environment to a specified file.
 <hr>
 
 
 ### Plotly Trading Chart
 
-<br>**Overview**<br>
 Uses plotly to make a rendering of the environment. This renderer only works for when the action scheme involves trading one asset. The data required for the `render_feed` must include the date, open, high, low, close, and volume of the instrument being traded.
 
-<br>**Renderering**<br>
 ![png](charts/plotly.png)
 
 <br>**References**<br>
