@@ -25,16 +25,16 @@ docs-serve:
 	python3 -m webbrowser http://localhost:8000/docs/build/html/index.html
 	python3 -m http.server 8000
 
-build-cpu: 
+build-cpu:
 	docker build -t ${CPU_IMAGE} .
 
 build-gpu:
 	docker build -t ${GPU_IMAGE} . --build-arg gpu_tag="-gpu"
 
-build-cpu-if-not-built: 
+build-cpu-if-not-built:
 	if [ ! $$(docker images -q ${CPU_IMAGE}) ]; then $(MAKE) build-cpu; fi;
 
-build-gpu-if-not-built: 
+build-gpu-if-not-built:
 	if [ ! $$(docker images -q ${GPU_IMAGE}) ]; then $(MAKE) build-gpu; fi;
 
 run-notebook: build-cpu-if-not-built
@@ -65,7 +65,7 @@ package:
 	python3 setup.py bdist_wheel
 
 test-release: package
-	twine upload --repository-url https://test.pypi.org/legacy/ dist/*
+	python3 -m twine upload --repository-url https://test.pypi.org/legacy/ dist/*
 
 release: package
-	twine upload dist/*
+	python3 -m twine upload dist/*
