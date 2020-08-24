@@ -1,4 +1,4 @@
-# Copyright 2019 The TensorTrade Authors.
+# Copyright 2020 The TensorTrade Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -33,11 +33,10 @@ with open(os.path.join(tensortrade_directory, 'tensortrade', 'version.py'), 'r')
 setup(
     name='tensortrade',
     version=version,
-    description='TensorTrade: a reinforcement learning library for training, evaluating, and deploying robust trading agents.',
-    long_description='TensorTrade: a reinforcement learning library for training, evaluating, and deploying robust trading agents.',
+    description='TensorTrade: A reinforcement learning library for training, evaluating, and deploying robust trading agents.',
+    long_description='TensorTrade: A reinforcement learning library for training, evaluating, and deploying robust trading agents.',
     long_description_content_type='text/markdown',
-    author='Adam King',
-    author_email='adamjking3@gmail.com',
+    author='Adam King <adamjking3@gmail.com>, Matthew Brulhardt <mwbrulhardt@gmail.com>',
     url='https://github.com/tensortrade-org/tensortrade',
     packages=[
         package for package in find_packages(exclude=('tests', 'docs'))
@@ -49,40 +48,58 @@ setup(
         'numpy>=1.16.4',
         'pandas>=0.25.0',
         'gym>=0.14.0',
-        'pyyaml>=5.1.2',
-        'sympy>=1.4'
+        'pyyaml>=5.1.2'
     ],
     extras_require={
-        'tf': ['tensorflow>=2.1.0'],
-        'stochastic': ['stochastic>=0.4.0'],
-        'matplotlib': ['matplotlib>=3.1.1'],
-        'plotly': ['plotly>=4.5.0'],
-        'ipython': ['ipython>=7.12.0'],
-        'ccxt': ['ccxt>=1.18.1220'],
-        'all-framework': ['tensorflow>=2.1.0',
-                          'stochastic>=0.4.0',
-                          'ccxt>=1.18.1220',
-                          'matplotlib>=3.1.1',
-                          'plotly>=4.5.0'
-                          ],
-        'renderers': ['plotly>=4.5.0', 'matplotlib>=3.1.1'],
-        'tests': ['pytest>=5.1.1',
-                  'ta>=0.4.7',
-                  'tensorflow>=2.1.0',
-                  'stochastic>=0.4.0',
-                  'ccxt>=1.18.1220',
-                  'pytest>=5.1.1',
-                  'plotly>=4.5.0',
-                  'ipython>=7.12.0',
-                  ],
-        'docs': ['sphinx',
-                 'sphinx_rtd_theme',
-                 'sphinx_autodoc_typehints',
-                 'sphinxcontrib.apidoc',
-                 'nbsphinx',
-                 'nbsphinx_link',
-                 'm2r',
-                 ],
+        'tf': [
+            'tensorflow>=2.1.0'
+        ],
+        'stochastic': [
+            'stochastic>=0.4.0'
+        ],
+        'matplotlib': [
+            'matplotlib>=3.1.1'
+        ],
+        'plotly': [
+            'plotly>=4.5.0'
+        ],
+        'ipython': [
+            'ipython>=7.12.0'
+        ],
+        'ccxt': [
+            'ccxt>=1.18.1220'
+        ],
+        'all-framework': [
+            'tensorflow>=2.1.0',
+            'stochastic>=0.4.0',
+            'ccxt>=1.18.1220',
+            'matplotlib>=3.1.1',
+            'plotly>=4.5.0'
+        ],
+        'renderers': [
+            'plotly>=4.5.0',
+            'matplotlib>=3.1.1'
+        ],
+        'tests': [
+            'pytest>=5.1.1',
+            'ta>=0.4.7',
+            'tensorflow>=2.1.0',
+            'stochastic>=0.4.0',
+            'ccxt>=1.18.1220',
+            'pytest>=5.1.1',
+            'plotly>=4.5.0',
+            'ipython>=7.12.0',
+        ],
+        'docs': [
+            'sphinx',
+            'sphinx_rtd_theme',
+            'sphinxcontrib.apidoc',
+            'nbsphinx',
+            'nbsphinx_link',
+            'recommonmark',
+            'sphinx_markdown_tables',
+            'ipykernel'
+        ],
     },
     classifiers=[
         'Development Status :: 3 - Alpha',
