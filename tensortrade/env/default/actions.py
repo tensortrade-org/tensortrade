@@ -229,7 +229,11 @@ class SimpleOrders(TensorTradeActionScheme):
             self._action_space = Discrete(len(self.actions))
         return self._action_space
 
-    def get_orders(self, action: int, portfolio: 'Portfolio') -> 'List[Order]':
+    def get_orders(self, 
+                   action: int, 
+                   portfolio: 'Portfolio',
+                   min_order_pct: float = 0.02) -> 'List[Order]':
+        
         if action == 0:
             return []
 
@@ -244,7 +248,8 @@ class SimpleOrders(TensorTradeActionScheme):
 
         quantity = (size * instrument).quantize()
 
-        if size < 10 ** -instrument.precision:
+        if size < 10 ** -instrument.precision \
+                or value < min_order_pct*portfolio.net_worth:
             return []
 
         order = Order(
