@@ -49,6 +49,7 @@ class TensorTradeActionScheme(ActionScheme):
         self.portfolio: 'Portfolio' = None
         self.broker: 'Broker' = Broker()
 
+
     @property
     def clock(self) -> 'Clock':
         """The reference clock from the environment. (`Clock`)
@@ -193,7 +194,8 @@ class SimpleOrders(TensorTradeActionScheme):
                  trade_sizes: 'Union[List[float], int]' = 10,
                  durations: 'Union[List[int], int]' = None,
                  trade_type: 'TradeType' = TradeType.MARKET,
-                 order_listener: 'OrderListener' = None) -> None:
+                 order_listener: 'OrderListener' = None,
+                 min_order_pct: float = 0.02) -> None:
         super().__init__()
         criteria = self.default('criteria', criteria)
         self.criteria = criteria if isinstance(criteria, list) else [criteria]
@@ -231,8 +233,7 @@ class SimpleOrders(TensorTradeActionScheme):
 
     def get_orders(self, 
                    action: int, 
-                   portfolio: 'Portfolio',
-                   min_order_pct: float = 0.02) -> 'List[Order]':
+                   portfolio: 'Portfolio') -> 'List[Order]':
         
         if action == 0:
             return []
@@ -251,7 +252,7 @@ class SimpleOrders(TensorTradeActionScheme):
         price = ep.price
         value = size*float(price)
         if size < 10 ** -instrument.precision \
-                or value < min_order_pct*portfolio.net_worth:
+                or value < self.min_order_pct*portfolio.net_worth:
             return []
 
         order = Order(
