@@ -197,6 +197,7 @@ class SimpleOrders(TensorTradeActionScheme):
                  order_listener: 'OrderListener' = None,
                  min_order_pct: float = 0.02) -> None:
         super().__init__()
+        self.min_order_pct = min_order_pct
         criteria = self.default('criteria', criteria)
         self.criteria = criteria if isinstance(criteria, list) else [criteria]
 
