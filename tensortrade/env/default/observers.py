@@ -11,6 +11,7 @@ from gym.spaces import Box, Space
 from tensortrade.feed.core import Stream, NameSpace, DataFeed
 from tensortrade.oms.wallets import Wallet
 from tensortrade.env.generic import Observer
+from collections import OrderedDict
 
 
 def _create_wallet_source(wallet: 'Wallet', include_worth: bool = True) -> 'List[Stream[float]]':
@@ -100,7 +101,8 @@ class ObservationHistory(object):
 
     def __init__(self, window_size: int) -> None:
         self.window_size = window_size
-        self.rows = pd.DataFrame()
+        self.rows = OrderedDict()
+        self.index = 0
 
     def push(self, row: dict) -> None:
         """Stores an observation.
@@ -110,10 +112,10 @@ class ObservationHistory(object):
         row : dict
             The new observation to store.
         """
-        self.rows = self.rows.append(row, ignore_index=True)
-
-        if len(self.rows) > self.window_size:
-            self.rows = self.rows[-self.window_size:]
+        self.rows[self.index] = row
+        self.index +=1
+        if len(self.rows.keys()) > self.window_size:
+            del self.rows[list(self.rows.keys())[0]]
 
     def observe(self) -> 'np.array':
         """Gets the observation at a given step in an episode
@@ -127,13 +129,12 @@ class ObservationHistory(object):
 
         if len(rows) < self.window_size:
             size = self.window_size - len(rows)
-            padding = np.zeros((size, rows.shape[1]))
-            padding = pd.DataFrame(padding, columns=self.rows.columns)
-            rows = pd.concat([padding, rows], ignore_index=True, sort=False)
+            padding = np.zeros((size, len(rows[list(rows.keys())[0]])))
+            r = np.array([list(inner_dict.values()) for inner_dict in rows.values()])
+            rows = np.concatenate((padding, r))
 
-        if isinstance(rows, pd.DataFrame):
-            rows = rows.fillna(0, axis=1)
-            rows = rows.values
+        if isinstance(rows, OrderedDict):
+            rows = np.array([list(inner_dict.values()) for inner_dict in rows.values()])
 
         rows = np.nan_to_num(rows)
 
@@ -141,7 +142,8 @@ class ObservationHistory(object):
 
     def reset(self) -> None:
         """Resets the observation history"""
-        self.rows = pd.DataFrame()
+        self.rows = OrderedDict()
+        self.index = 0
 
 
 class TensorTradeObserver(Observer):
