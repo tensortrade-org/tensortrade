@@ -2,7 +2,6 @@
 from abc import abstractmethod
 
 import numpy as np
-import pandas as pd
 
 from tensortrade.env.generic import RewardScheme, TradingEnv
 from tensortrade.feed.core import Stream, DataFeed
@@ -48,7 +47,7 @@ class SimpleProfit(TensorTradeRewardScheme):
     """
 
     def __init__(self, window_size: int = 1):
-        self.window_size = self.default('window_size', window_size)
+        self._window_size = self.default('window_size', window_size)
 
     def get_reward(self, portfolio: 'Portfolio') -> float:
         """Rewards the agent for incremental increases in net worth over a
@@ -65,9 +64,11 @@ class SimpleProfit(TensorTradeRewardScheme):
             The cumulative percentage change in net worth over the previous
             `window_size` time steps.
         """
-        returns = portfolio.performance['net_worth'].pct_change().dropna()
-        returns = (1 + returns[-self.window_size:]).cumprod() - 1
-        return 0 if len(returns) < 1 else returns.iloc[-1]
+        net_worths = [nw['net_worth'] for nw in portfolio.performance.values()]
+        # pct_change
+        returns = [(b - a) / a for a, b in zip(net_worths[::1], net_worths[1::1])]
+        returns = np.array([x + 1 for x in returns[-self._window_size:]]).cumprod() -1
+        return 0 if len(returns) < 1 else returns[-1]
 
 
 class RiskAdjustedReturns(TensorTradeRewardScheme):
@@ -105,12 +106,12 @@ class RiskAdjustedReturns(TensorTradeRewardScheme):
         self._target_returns = self.default('target_returns', target_returns)
         self._window_size = self.default('window_size', window_size)
 
-    def _sharpe_ratio(self, returns: 'pd.Series') -> float:
+    def _sharpe_ratio(self, returns: 'np.array') -> float:
         """Computes the sharpe ratio for a given series of a returns.
 
         Parameters
         ----------
-        returns : `pd.Series`
+        returns : `np.array`
             The returns for the `portfolio`.
 
         Returns
@@ -122,14 +123,16 @@ class RiskAdjustedReturns(TensorTradeRewardScheme):
         ----------
         .. [1] https://en.wikipedia.org/wiki/Sharpe_ratio
         """
+        if len(returns) == 0:
+            return np.nan
         return (np.mean(returns) - self._risk_free_rate + 1e-9) / (np.std(returns) + 1e-9)
 
-    def _sortino_ratio(self, returns: 'pd.Series') -> float:
+    def _sortino_ratio(self, returns: 'np.array') -> float:
         """Computes the sortino ratio for a given series of a returns.
 
         Parameters
         ----------
-        returns : `pd.Series`
+        returns : `np.array`
             The returns for the `portfolio`.
 
         Returns
@@ -141,8 +144,9 @@ class RiskAdjustedReturns(TensorTradeRewardScheme):
         ----------
         .. [1] https://en.wikipedia.org/wiki/Sortino_ratio
         """
-        downside_returns = returns.copy()
-        downside_returns[returns < self._target_returns] = returns ** 2
+        if len(returns) == 0:
+            return np.nan
+        downside_returns = np.array([x ** 2 if x < self._target_returns else x for x in returns])
 
         expected_return = np.mean(returns)
         downside_std = np.sqrt(np.std(downside_returns))
@@ -162,7 +166,9 @@ class RiskAdjustedReturns(TensorTradeRewardScheme):
         float
             The reward corresponding to the selected risk-adjusted return metric.
         """
-        returns = portfolio.performance['net_worth'][-(self._window_size + 1):].pct_change().dropna()
+        net_worths = [row['net_worth'] for row in portfolio.performance.values()][-(self._window_size + 1):]
+        # pct_change
+        returns = np.array([(b - a) / a for a, b in zip(net_worths[::1], net_worths[1::1])])
         risk_adjusted_return = self._return_algorithm(returns)
 
         return risk_adjusted_return
