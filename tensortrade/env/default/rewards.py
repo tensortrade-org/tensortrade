@@ -193,7 +193,7 @@ class PBR(TensorTradeRewardScheme):
         r = Stream.sensor(price, lambda p: p.value, dtype="float").diff()
         position = Stream.sensor(self, lambda rs: rs.position, dtype="float")
 
-        reward = (position * r).fillna().rename("reward")
+        reward = (position * r).fillna(0).rename("reward")
 
         self.feed = DataFeed([reward])
         self.feed.compile()
