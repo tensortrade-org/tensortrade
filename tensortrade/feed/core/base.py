@@ -241,7 +241,7 @@ class Stream(Generic[T], Named, Observable):
         `Stream[T]`
             The stream with the data type `dtype` created from `iterable`.
         """
-        return _Stream(iterable, dtype=dtype)
+        return IterableStream(iterable, dtype=dtype)
 
     @staticmethod
     def group(streams: "List[Stream[T]]") -> "Stream[dict]":
@@ -304,7 +304,7 @@ class Stream(Generic[T], Named, Observable):
         Raises
         ------
         Exception
-            Raised of no stream is found to satisfy the given criteria.
+            Raised if no stream is found to satisfy the given criteria.
         """
         for s in streams:
             if func(s):
@@ -328,6 +328,21 @@ class Stream(Generic[T], Named, Observable):
             A stream of the constant value.
         """
         return Constant(value, dtype=dtype)
+
+    def placeholder(dtype: str = None) -> "Stream[T]":
+        """Creates a placholder stream for data to provided to at a later date.
+
+        Parameters
+        ----------
+        dtype : str
+            The data type that will be provided.
+
+        Returns
+        -------
+        `Stream[T]`
+            A stream representing a placeholder.
+        """
+        return Placeholder(dtype=dtype)
 
     @staticmethod
     def _gather(stream: "Stream",
@@ -376,10 +391,10 @@ class Stream(Generic[T], Named, Observable):
             The list of streams sorted with respect to the order in which they
             should be run.
         """
-        source = set([s for s, t in edges])
-        target = set([t for s, t in edges])
+        src = set([s for s, t in edges])
+        tgt = set([t for s, t in edges])
 
-        starting = list(source.difference(target))
+        starting = list(src.difference(tgt))
         process = starting.copy()
 
         while len(starting) > 0:
@@ -387,10 +402,10 @@ class Stream(Generic[T], Named, Observable):
 
             edges = list(filter(lambda e: e[0] != start, edges))
 
-            source = set([s for s, t in edges])
-            target = set([t for s, t in edges])
+            src = set([s for s, t in edges])
+            tgt = set([t for s, t in edges])
 
-            starting += [v for v in source.difference(target) if v not in starting]
+            starting += [v for v in src.difference(tgt) if v not in starting]
 
             if start not in process:
                 process += [start]
@@ -473,7 +488,7 @@ class Stream(Generic[T], Named, Observable):
         return instance
 
 
-class _Stream(Stream[T]):
+class IterableStream(Stream[T]):
     """A private class used the `Stream` class for creating data sources.
 
     Parameters
@@ -573,7 +588,7 @@ class Constant(Stream[T]):
 
     generic_name = "constant"
 
-    def __init__(self, value, dtype=None):
+    def __init__(self, value, dtype: str = None):
         super().__init__(dtype=dtype)
         self.constant = value
 
@@ -582,3 +597,25 @@ class Constant(Stream[T]):
 
     def has_next(self):
         return True
+
+
+class Placeholder(Stream[T]):
+    """A stream that acts as a placeholder for data to be provided at later date.
+    """
+
+    generic_name = "placeholder"
+
+    def __init__(self, dtype: str = None) -> None:
+        super().__init__(dtype=dtype)
+
+    def push(self, value: 'T') -> None:
+        self.value = value
+
+    def forward(self) -> 'T':
+        return self.value
+
+    def has_next(self) -> bool:
+        return True
+
+    def reset(self) -> None:
+        self.value = None
