@@ -20,3 +20,6 @@ from tensortrade.env.generic.components.informer import Informer
 from tensortrade.env.generic.components.renderer import Renderer
 
 from tensortrade.env.generic.environment import TradingEnv
+
+from tensortrade.env.generic.utils.running_stats import Welfords
+from tensortrade.env.generic.utils.running_stats import PctChange
