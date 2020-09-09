@@ -7,15 +7,51 @@ Interactive Colab Demo @
     Utilizing Tulip, Tulipy, PanTulipy and Pandas_TA (which includes the Bukosabino TA Indicators)
 """
 
-import pandas as pd
-
 from .cryptodatadownload import CryptoDataDownload as cdd
 
-# Access Tulip indicators w/default values
+# To access Tulip indicators w/default values
+# Only one of these may be necessary
 import pantulipy
 from pantulipy import * 
 
 import pandas_ta as ta
+
+import pandas as pd
+
+def GetDayOfWeek(datetimes, 
+                 dataframe = None):
+    """ 
+        Convert DateTime Objects to Day of Week
+        Inputting a DataFrame will append the new data column
+        
+        Example:
+            # Return a pd.Series with datetime index
+            series = GetDayOfWeek(datetimes)
+            
+            # Return your dataframe 
+            # with the new data column appended
+            dataframe = GetDayOfWeek(
+                datetimes = dataframe.index,
+                dataframe = dataframe
+            )
+    """
+    
+    def _get_day_of_week(date):
+        """Converts 0-6 to a day string"""
+        days = ['Monday', 'Tuesday', 'Wednesday',
+                'Thursday', 'Friday', 'Saturday', 'Sunday']
+        return days[date.weekday()]
+    
+    # Convert datetimes to int 0-6 then to a day string
+    days_of_week = pd.Series(datetimes, 
+                             index=datetimes
+                            ).apply(_get_day_of_week) 
+    # Attach day strings
+    if dataframe is not None:
+        dataframe = dataframe.assign(day_of_week=days_of_week)
+        return dataframe
+    
+    return days_of_week
 
 
 class TA_Features:
