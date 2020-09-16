@@ -2,6 +2,7 @@
 import pytest
 import numpy as np
 import pandas as pd
+from collections import OrderedDict
 
 import tensortrade.env.default.rewards as rewards
 
@@ -54,20 +55,34 @@ class TestTensorTradeRewardScheme:
 def net_worths():
     return pd.Series([100, 400, 350, 450, 200, 400, 330, 560], name="net_worth")
 
+def net_worths_to_dict(net_worths):
+    result = OrderedDict()
+    index = 0
+    for i in net_worths:
+        result[index] = {"net_worth": i}
+        index += 1
+    return result
+
+
+def stream_net_worths(net_worths):
+    index = 0
+    for i in net_worths:
+        yield index, {"net_worth": i}
+        index += 1
+
 
 class TestSimpleProfit:
 
     def test_get_reward(self, net_worths):
         portfolio = Portfolio(USD)
-        performance = pd.DataFrame({'net_worth': net_worths})
-        portfolio._performance = performance
+        portfolio._performance = net_worths_to_dict(net_worths)
 
         pct_chg = net_worths.pct_change()
 
         reward_scheme = rewards.SimpleProfit()
         assert reward_scheme.get_reward(portfolio) == pct_chg.iloc[-1]  # default window size 1
 
-        reward_scheme.window_size = 3
+        reward_scheme._window_size = 3
         reward = ((1 + pct_chg.iloc[-1]) * (1 + pct_chg.iloc[-2]) * (1 + pct_chg.iloc[-3])) - 1
         assert reward_scheme.get_reward(portfolio) == reward
 

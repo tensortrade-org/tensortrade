@@ -189,7 +189,7 @@ class Order(TimedIdentifiable, Observable):
     @property
     def is_active(self) -> bool:
         """If this order is active. (bool, read-only)"""
-        return self.status not in [OrderStatus.FILLED, OrderStatus.CANCELLED]
+        return self.status != OrderStatus.FILLED and self.status != OrderStatus.CANCELLED
 
     @property
     def is_complete(self) -> bool:

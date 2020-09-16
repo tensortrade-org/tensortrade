@@ -6,7 +6,7 @@ import pandas as pd
 
 from tensortrade.env.generic import RewardScheme, TradingEnv
 from tensortrade.feed.core import Stream, DataFeed
-
+import math
 
 class TensorTradeRewardScheme(RewardScheme):
     """An abstract base class for reward schemes for the default environment.
@@ -48,7 +48,7 @@ class SimpleProfit(TensorTradeRewardScheme):
     """
 
     def __init__(self, window_size: int = 1):
-        self.window_size = self.default('window_size', window_size)
+        self._window_size = self.default('window_size', window_size)
 
     def get_reward(self, portfolio: 'Portfolio') -> float:
         """Rewards the agent for incremental increases in net worth over a
@@ -65,9 +65,10 @@ class SimpleProfit(TensorTradeRewardScheme):
             The cumulative percentage change in net worth over the previous
             `window_size` time steps.
         """
-        returns = portfolio.performance['net_worth'].pct_change().dropna()
-        returns = (1 + returns[-self.window_size:]).cumprod() - 1
-        return 0 if len(returns) < 1 else returns.iloc[-1]
+        net_worths = [nw['net_worth'] for nw in portfolio.performance.values()]
+        returns = [(b - a) / a for a, b in zip(net_worths[::1], net_worths[1::1])]
+        returns = np.array([x + 1 for x in returns[-self._window_size:]]).cumprod() -1
+        return 0 if len(returns) < 1 else returns[-1]
 
 
 class RiskAdjustedReturns(TensorTradeRewardScheme):
@@ -162,11 +163,10 @@ class RiskAdjustedReturns(TensorTradeRewardScheme):
         float
             The reward corresponding to the selected risk-adjusted return metric.
         """
-        returns = portfolio.performance['net_worth'][-(self._window_size + 1):].pct_change().dropna()
+        net_worths = [nw['net_worth'] for nw in portfolio.performance.values()][-(self._window_size + 1):]
+        returns = pd.Series(net_worths).pct_change().dropna()
         risk_adjusted_return = self._return_algorithm(returns)
-
         return risk_adjusted_return
-
 
 class PBR(TensorTradeRewardScheme):
     """A reward scheme for position-based returns.

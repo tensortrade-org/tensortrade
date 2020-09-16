@@ -16,7 +16,6 @@ import re
 
 from typing import Callable, Tuple, List, TypeVar
 
-import pandas as pd
 
 from tensortrade.core import Component, TimedIdentifiable
 from tensortrade.oms.exchanges import Exchange
@@ -24,6 +23,7 @@ from tensortrade.oms.orders import OrderListener
 from tensortrade.oms.instruments import Instrument, Quantity, ExchangePair
 from tensortrade.oms.wallets.wallet import Wallet
 from tensortrade.oms.wallets.ledger import Ledger
+from collections import OrderedDict
 
 
 WalletType = TypeVar("WalletType", Wallet, Tuple[Exchange, Instrument, float])
@@ -40,7 +40,7 @@ class Portfolio(Component, TimedIdentifiable):
         The wallets to be used in the portfolio.
     order_listener : `OrderListener`
         The order listener to set for all orders executed by this portfolio.
-    performance_listener : `Callable[[pd.DataFrame], None]`
+    performance_listener : `Callable[[OrderedDict], None]`
         The performance listener to send all portfolio updates to.
     """
 
@@ -50,7 +50,7 @@ class Portfolio(Component, TimedIdentifiable):
                  base_instrument: Instrument,
                  wallets: List[WalletType] = None,
                  order_listener: 'OrderListener' = None,
-                 performance_listener: Callable[[pd.DataFrame], None] = None):
+                 performance_listener: Callable[[OrderedDict], None] = None):
         super().__init__()
 
         wallets = wallets or []
@@ -123,8 +123,8 @@ class Portfolio(Component, TimedIdentifiable):
         return self.net_worth / self.initial_net_worth
 
     @property
-    def performance(self) -> 'pd.DataFrame':
-        """The performance of the portfolio since the last reset. (`pd.DataFrame`, read-only)"""
+    def performance(self) -> 'OrderedDict':
+        """The performance of the portfolio since the last reset. (`OrderedDict`, read-only)"""
         return self._performance
 
     @property
@@ -299,10 +299,11 @@ class Portfolio(Component, TimedIdentifiable):
         if not self._keys:
             self._keys = self._find_keys(data)
 
-        index = pd.Index([self.clock.step], name="step")
+        index = self.clock.step
         performance_data = {k: data[k] for k in self._keys}
         performance_data['base_symbol'] = self.base_instrument.symbol
-        performance_step = pd.DataFrame(performance_data, index=index)
+        performance_step = OrderedDict()
+        performance_step[index] = performance_data
 
         net_worth = data['net_worth']
 
@@ -311,7 +312,7 @@ class Portfolio(Component, TimedIdentifiable):
             self._initial_net_worth = net_worth
             self._net_worth = net_worth
         else:
-            self._performance = self._performance.append(performance_step)
+            self._performance.update(performance_step)
             self._net_worth = net_worth
 
         if self.performance_listener:
