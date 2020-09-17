@@ -122,14 +122,16 @@ class BaseRenderer(Renderer):
         if len(env.observer.renderer_history) > 0:
             price_history = pd.DataFrame(env.observer.renderer_history)
 
+        performance = pd.DataFrame.from_dict(env.action_scheme.portfolio.performance, orient='index')
+
         self.render_env(
             episode=kwargs.get("episode", None),
             max_episodes=kwargs.get("max_episodes", None),
             step=env.clock.step,
             max_steps=kwargs.get("max_steps", None),
             price_history=price_history,
-            net_worth=env.action_scheme.portfolio.performance.net_worth,
-            performance=env.action_scheme.portfolio.performance.drop(columns=['base_symbol']),
+            net_worth=performance.net_worth,
+            performance=performance.drop(columns=['base_symbol']),
             trades=env.action_scheme.broker.trades
         )
 
