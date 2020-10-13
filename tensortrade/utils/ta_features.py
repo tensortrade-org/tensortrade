@@ -66,7 +66,7 @@ class TA_Features:
             'cg': ta.cg, 'coppock': ta.coppock, 'decreasing': ta.decreasing, 
             'donchian': ta.donchian, 'efi': ta.efi, 'eom': ta.eom, 'fwma': ta.fwma, 
             'ichimoku': ta.ichimoku, 'increasing': ta.increasing, 'kc': ta.kc, 
-            'kst': ta.kst, 'kurtosis': ta.kurtosis, 'linear_decay': ta.linear_decay, 
+            'kst': ta.kst, 'kurtosis': ta.kurtosis, 'linear_decay': ta.decay, 
             'log_return': ta.log_return, 'mad': ta.mad, 'median': ta.median, 
             'midpoint': ta.midpoint, 'midprice': ta.midprice, 
             'percent_return': ta.percent_return, 'pvol': ta.pvol, 'pvt': ta.pvt, 
