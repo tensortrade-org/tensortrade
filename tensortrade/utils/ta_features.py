@@ -85,7 +85,7 @@ class TA_Features:
             'eom': ta.eom, 'fisher': ta.fisher, 'fwma': ta.fwma, 'hma': ta.hma, 
             'ichimoku': ta.ichimoku, 'increasing': ta.increasing, 'kama': ta.kama, 
             'kc': ta.kc, 'kst': ta.kst, 'kurtosis': ta.kurtosis, 
-            'linear_decay': ta.linear_decay, 'log_return': ta.log_return, 
+            'linear_decay': ta.decay, 'log_return': ta.log_return, 
             'macd': ta.macd, 'mad': ta.mad, 'massi': ta.massi, 'median': ta.median, 
             'mfi': ta.mfi, 'midpoint': ta.midpoint, 'midprice': ta.midprice, 
             'mom': ta.mom, 'natr': ta.natr, 'nvi': ta.nvi, 'obv': ta.obv, 
