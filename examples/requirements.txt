@@ -1,0 +1,12 @@
+-r ../requirements.txt
+
+numpy>=1.16.4
+pandas>=0.25.0
+gym>=0.14.0
+pyyaml>=5.1.2
+sympy>=1.4
+tensorflow>=2.1.0
+stochastic>=0.4.0
+ccxt>=1.18.1220
+jupyterlab>=1.1.4
+plotly>=4.5.0
