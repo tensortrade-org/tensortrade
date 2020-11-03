@@ -64,6 +64,7 @@ class TradingEnv(gym.Env, TimeIndexed):
                  stopper: Stopper,
                  informer: Informer,
                  renderer: Renderer,
+                 min_periods: int = None,
                  **kwargs) -> None:
         super().__init__()
         self.clock = Clock()
@@ -74,10 +75,13 @@ class TradingEnv(gym.Env, TimeIndexed):
         self.stopper = stopper
         self.informer = informer
         self.renderer = renderer
+        self.min_periods = min_periods
 
         for c in self.components.values():
             c.clock = self.clock
 
+        self.warmup()
+            
         self.action_space = action_scheme.action_space
         self.observation_space = observer.observation_space
 
@@ -147,12 +151,22 @@ class TradingEnv(gym.Env, TimeIndexed):
         obs = self.observer.observe(self)
 
         self.clock.increment()
+        
+        self.warmup()
+
 
         return obs
 
     def render(self, **kwargs) -> None:
         """Renders the environment."""
         self.renderer.render(self, **kwargs)
+        
+    def warmup(self) -> None:
+        """Warms up the data feed.
+        """
+        if self.min_periods is not None:
+            for _ in range(self.min_periods):
+                self.action_scheme.clock.increment()
 
     def save(self) -> None:
         """Saves the rendered view of the environment."""
