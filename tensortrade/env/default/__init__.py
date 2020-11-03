@@ -86,4 +86,11 @@ def create(portfolio: 'Portfolio',
         informer=kwargs.get("informer", informers.TensorTradeInformer()),
         renderer=renderer
     )
+    
+    #increment clock on action_scheme, so step numbers align with Observer (price_history)
+    if min_periods is not None:
+        for _ in range(min_periods):
+            env.action_scheme.clock.increment()
+    
     return env
+

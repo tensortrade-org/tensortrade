@@ -240,9 +240,12 @@ class TensorTradeObserver(Observer):
         if self.min_periods is not None:
             for _ in range(self.min_periods):
                 if self.has_next():
-                    f = self.feed.next()
-                    self.history.push(f["external"])
-                    self.history.push(f["renderer"])
+                    data = self.feed.next()
+
+                    if "renderer" in data.keys():
+                        self.renderer_history += [data["renderer"]]
+                        
+                    self.history.push(data["external"])
 
     def observe(self, env: 'TradingEnv') -> np.array:
         """Observes the environment.
