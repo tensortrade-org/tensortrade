@@ -122,7 +122,7 @@ class BaseRenderer(Renderer):
         if len(env.observer.renderer_history) > 0:
             price_history = pd.DataFrame(env.observer.renderer_history)
 
-        performance = pd.DataFrame.from_dict(env.action_scheme.portfolio.performance, orient='index')
+        performance = env.action_scheme.portfolio.performance
 
         self.render_env(
             episode=kwargs.get("episode", None),
@@ -524,8 +524,6 @@ class PlotlyTradingChart(BaseRenderer):
             trace.update({'y': performance[trace.name]})
 
         self._net_worth_chart.update({'y': net_worth})
-
-        self.fig.show()
 
 
     def save(self) -> None:
