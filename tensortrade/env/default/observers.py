@@ -242,8 +242,8 @@ class TensorTradeObserver(Observer):
                 if self.has_next():
                     data = self.feed.next()
 
-                    if "renderer" in data.keys():
-                        self.renderer_history += [data["renderer"]]
+                    # if "renderer" in data.keys():
+                        # self.renderer_history += [data["renderer"]]
                         
                     self.history.push(data["external"])
 
