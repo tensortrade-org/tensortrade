@@ -162,11 +162,12 @@ class TradingEnv(gym.Env, TimeIndexed):
         self.renderer.render(self, **kwargs)
         
     def warmup(self) -> None:
-        """Warms up the data feed.
-        """
-        if self.min_periods is not None:
-            for _ in range(self.min_periods):
-                self.action_scheme.clock.increment()
+        pass
+        # """Warms up the data feed.
+        # """
+        # if self.min_periods is not None:
+            # for _ in range(self.min_periods):
+                # self.action_scheme.clock.increment()
 
     def save(self) -> None:
         """Saves the rendered view of the environment."""
