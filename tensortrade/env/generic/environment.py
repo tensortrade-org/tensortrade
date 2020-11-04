@@ -80,8 +80,6 @@ class TradingEnv(gym.Env, TimeIndexed):
         for c in self.components.values():
             c.clock = self.clock
 
-        self.warmup()
-            
         self.action_space = action_scheme.action_space
         self.observation_space = observer.observation_space
 
@@ -151,23 +149,12 @@ class TradingEnv(gym.Env, TimeIndexed):
         obs = self.observer.observe(self)
 
         self.clock.increment()
-        
-        self.warmup()
-
 
         return obs
 
     def render(self, **kwargs) -> None:
         """Renders the environment."""
         self.renderer.render(self, **kwargs)
-        
-    def warmup(self) -> None:
-        pass
-        # """Warms up the data feed.
-        # """
-        # if self.min_periods is not None:
-            # for _ in range(self.min_periods):
-                # self.action_scheme.clock.increment()
 
     def save(self) -> None:
         """Saves the rendered view of the environment."""
