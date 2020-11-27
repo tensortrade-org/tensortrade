@@ -349,6 +349,7 @@ class PlotlyTradingChart(BaseRenderer):
         self._filename_prefix = filename_prefix
         self._include_plotlyjs = include_plotlyjs
         self._auto_open_html = auto_open_html
+        self._display = display
 
         if self._save_format and self._path and not os.path.exists(path):
             os.mkdir(path)
@@ -505,7 +506,7 @@ class PlotlyTradingChart(BaseRenderer):
         if not self.fig:
             self._create_figure(performance.keys())
 
-        if self._show_chart:  # ensure chart visibility through notebook cell reruns
+        if self._show_chart and self._display:  # ensure chart visibility through notebook cell reruns
             display(self.fig)
             self._show_chart = False
 
@@ -525,7 +526,8 @@ class PlotlyTradingChart(BaseRenderer):
 
         self._net_worth_chart.update({'y': net_worth})
 
-        self.fig.show()
+        if(self._display):
+            self.fig.show()
 
 
     def save(self) -> None:
@@ -546,7 +548,7 @@ class PlotlyTradingChart(BaseRenderer):
         filename = _create_auto_file_name(self._filename_prefix, self._save_format)
         filename = os.path.join(self._path, filename)
         if self._save_format == 'html':
-            self.fig.write_html(file=filename, include_plotlyjs='cdn', auto_open=self._auto_open_html)
+            self.fig.write_html(file=filename, include_plotlyjs='cdn', auto_open=self._auto_open_html and self._display)
         else:
             self.fig.write_image(filename)
 
