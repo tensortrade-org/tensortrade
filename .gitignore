@@ -25,3 +25,4 @@ examples/training_logs
 
 # virtual environment
 venv
+examples/tf_board_log/*
