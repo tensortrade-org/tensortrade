@@ -14,8 +14,8 @@
 
 import pandas as pd
 
-from stochastic.noise import GaussianNoise
-from stochastic.continuous import FractionalBrownianMotion
+from stochastic.processes.noise import GaussianNoise
+from stochastic.processes.continuous import FractionalBrownianMotion
 
 from tensortrade.stochastic.utils import scale_times_to_generate
 

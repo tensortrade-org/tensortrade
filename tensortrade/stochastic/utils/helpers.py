@@ -19,7 +19,7 @@ from typing import Callable
 import numpy as np
 import pandas as pd
 
-from stochastic.noise import GaussianNoise
+from stochastic.processes.noise import GaussianNoise
 
 from tensortrade.stochastic.utils.parameters import ModelParameters, default
 
