@@ -45,7 +45,7 @@ setup(
     license='Apache 2.0',
     python_requires='>=3.6',
     install_requires=[
-        'numpy>=1.16.4',
+        'numpy>=1.17.0',
         'pandas>=0.25.0',
         'gym>=0.14.0',
         'pyyaml>=5.1.2',
@@ -56,10 +56,6 @@ setup(
         'plotly>=4.5.0'
     ],
     extras_require={
-        'renderers': [
-            'plotly>=4.5.0',
-            'matplotlib>=3.1.1'
-        ],
         'tests': [
             'pytest>=5.1.1',
             'ta>=0.4.7'
