@@ -59,7 +59,7 @@ def fbm(base_price: int = 1,
     times_to_generate = scale_times_to_generate(times_to_generate, time_frame)
 
     price_fbm = FractionalBrownianMotion(t=times_to_generate, hurst=hurst)
-    price_volatility = price_fbm.sample(times_to_generate, zero=False)
+    price_volatility = price_fbm.sample(times_to_generate - 1)
     prices = price_volatility + base_price
 
     volume_gen = GaussianNoise(times_to_generate)
