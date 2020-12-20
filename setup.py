@@ -45,50 +45,20 @@ setup(
     license='Apache 2.0',
     python_requires='>=3.6',
     install_requires=[
-        'numpy>=1.16.4',
+        'numpy>=1.17.0',
         'pandas>=0.25.0',
         'gym>=0.14.0',
-        'pyyaml>=5.1.2'
+        'pyyaml>=5.1.2',
+        'stochastic>=0.6.0',
+        'tensorflow>=2.1.0',
+        'ipython>=7.12.0',
+        'matplotlib>=3.1.1',
+        'plotly>=4.5.0'
     ],
     extras_require={
-        'tf': [
-            'tensorflow>=2.1.0'
-        ],
-        'stochastic': [
-            'stochastic>=0.4.0'
-        ],
-        'matplotlib': [
-            'matplotlib>=3.1.1'
-        ],
-        'plotly': [
-            'plotly>=4.5.0'
-        ],
-        'ipython': [
-            'ipython>=7.12.0'
-        ],
-        'ccxt': [
-            'ccxt>=1.18.1220'
-        ],
-        'all-framework': [
-            'tensorflow>=2.1.0',
-            'stochastic>=0.4.0',
-            'ccxt>=1.18.1220',
-            'matplotlib>=3.1.1',
-            'plotly>=4.5.0'
-        ],
-        'renderers': [
-            'plotly>=4.5.0',
-            'matplotlib>=3.1.1'
-        ],
         'tests': [
             'pytest>=5.1.1',
-            'ta>=0.4.7',
-            'tensorflow>=2.1.0',
-            'stochastic>=0.4.0',
-            'ccxt>=1.18.1220',
-            'pytest>=5.1.1',
-            'plotly>=4.5.0',
-            'ipython>=7.12.0',
+            'ta>=0.4.7'
         ],
         'docs': [
             'sphinx',

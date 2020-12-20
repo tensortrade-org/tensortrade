@@ -14,7 +14,7 @@
 
 import pandas as pd
 
-from stochastic.noise import GaussianNoise
+from stochastic.processes.noise import GaussianNoise
 
 from tensortrade.stochastic.processes.heston import geometric_brownian_motion_jump_diffusion_levels
 from tensortrade.stochastic.utils.helpers import (
