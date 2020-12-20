@@ -15,7 +15,7 @@ class CachedAccessor:
 
     References
     ----------
-        - https://github.com/pandas-dev/pandas/blob/v1.1.0/pandas/core/accessor.py#L285-L289
+    .. [1] https://github.com/pandas-dev/pandas/blob/v1.1.0/pandas/core/accessor.py#L285-L289
     """
 
     def __init__(self, name: str, accessor) -> None:
