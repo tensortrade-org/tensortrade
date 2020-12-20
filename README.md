@@ -42,7 +42,7 @@ You can get started testing on Google Colab or your local machine, by viewing ou
 
 ## Installation
 
-TensorTrade requires Python >= 3.6 for all functionality to work as expected.
+TensorTrade requires Python >= 3.7 for all functionality to work as expected.
 
 ```bash
 pip install -r requirements.txt
@@ -90,16 +90,6 @@ You can also post **bug reports and feature requests** in [GitHub issues](https:
 If you would like to support this project financially, there are a few ways you can contribute. Your contributions are greatly appreciated and help to keep TensorTrade maintained and always improving.
 
 Github Sponsors: https://github.com/sponsors/notadamking
-
-_All Github Sponsors donations are matched 1:1 by Github up to \$5,000!_
-
-Gitcoin Grants: https://gitcoin.co/grants/155/tensortrade-trade-efficiently-with-reinforcement-l
-
-_All Gitcoin Grants donations go directly towards funding our Gitcoin issues._
-
-BTC Address: `1Lc47bhYvdyKGk1qN8oBHdYQTkbFLL3PFw`
-
-ETH Address: `0x9907A0cF64Ec9Fbf6Ed8FD4971090DE88222a9aC`
 
 ## Contributors
 
