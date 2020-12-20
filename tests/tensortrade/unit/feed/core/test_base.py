@@ -2,6 +2,8 @@
 
 from tensortrade.feed.core import Stream, NameSpace
 
+from tensortrade.feed.core.base import Placeholder
+
 
 class Counter(Stream):
 
@@ -81,3 +83,12 @@ def test_stream_source():
 
     assert s.forward() == 0
     assert s.forward() == 1
+
+
+def test_placholder():
+
+    s = Stream.placeholder(dtype="float")
+
+    s.push(5)
+
+    assert s.value == 5
