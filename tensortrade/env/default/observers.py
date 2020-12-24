@@ -42,8 +42,7 @@ def _create_wallet_source(wallet: 'Wallet', include_worth: bool = True) -> 'List
         streams += [free_balance, locked_balance, total_balance]
 
         if include_worth:
-            price = Stream.select(wallet.exchange.streams(), lambda node: node.name.endswith(symbol))
-            worth = (price * total_balance).rename("worth")
+            worth = Stream.sensor(wallet, lambda w: w.total_worth_value.as_float(), dtype="float").rename("worth")
             streams += [worth]
 
     return streams
@@ -265,7 +264,7 @@ class TensorTradeObserver(Observer):
         self.history.push(obs_row)
 
         obs = self.history.observe()
-        obs = obs.astype(self._observation_dtype)
+        obs = obs.astype(self._observation_dtype) #date
         return obs
 
     def has_next(self) -> bool:

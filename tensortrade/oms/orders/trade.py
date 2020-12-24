@@ -30,9 +30,16 @@ class TradeSide(Enum):
 
     BUY: str = "buy"
     SELL: str = "sell"
+    HOLD: str = "hold"
+    CLOSE: str = "close"
 
     def instrument(self, pair: "TradingPair") -> "Instrument":
-        return pair.base if self == TradeSide.BUY else pair.quote
+        #use pair.base to open Buy/Sell Positions
+        if (self == TradeSide.BUY) or (self== TradeSide.SELL):
+            return pair.base
+        else:
+            #CLOSE
+            return pair.quote
 
     def __str__(self):
         return str(self.value)
@@ -110,6 +117,10 @@ class Trade(TimedIdentifiable):
     @property
     def is_sell(self) -> bool:
         return self.side == TradeSide.SELL
+
+    @property
+    def is_close(self) -> bool:
+        return self.side == TradeSide.CLOSE
 
     @property
     def is_limit_order(self) -> bool:

@@ -197,7 +197,7 @@ class Quantity:
         Exception
             If the operation is not valid.
         """
-        if isinstance(left, Quantity) and isinstance(right, Quantity):
+        if (str(type(left)).find('Quantity')>0) and (str(type(right)).find('Quantity')>0):
             if left.instrument != right.instrument:
                 raise IncompatibleInstrumentOperation(left, right)
 
@@ -212,18 +212,18 @@ class Quantity:
 
             return left, right
 
-        elif isinstance(left, Number) and isinstance(right, Quantity):
+        elif isinstance(left, Number) and (str(type(right)).find('Quantity')>0):
             left = Quantity(right.instrument, left, right.path_id)
             return left, right
 
-        elif isinstance(left, Quantity) and isinstance(right, Number):
+        elif (str(type(left)).find('Quantity')>0) and isinstance(right, Number):
             right = Quantity(left.instrument, right, left.path_id)
             return left, right
 
-        elif isinstance(left, Quantity):
+        elif (str(type(left)).find('Quantity')>0):
             raise InvalidNonNumericQuantity(right)
 
-        elif isinstance(right, Quantity):
+        elif (str(type(right)).find('Quantity')>0):
             raise InvalidNonNumericQuantity(left)
 
         raise Exception(f"Invalid quantity operation arguments: {left} and {right}")

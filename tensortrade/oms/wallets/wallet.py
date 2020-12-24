@@ -52,7 +52,37 @@ class Wallet(Identifiable):
         self._initial_size = balance.size
         self.instrument = balance.instrument
         self.balance = balance.quantize()
+        # collection of live orders
+        self._positions = {}
         self._locked = {}
+
+    def add_position(self, position: 'Position') -> None:
+        """Adds a position to the wallet.
+
+        Parameters
+        ----------
+        position : `Position`
+            The position to add to the wallet.
+        """
+        self._positions[position.id] = position
+
+    def remove_position(self, position: 'Position') -> None:
+        """Removes a positoin from the portfolio.
+
+        Parameters
+        ----------
+        position : `Position`
+            The posiion to be removed.
+        """
+        self._positions.pop(position.id, None)
+
+    def get_positions(self) -> dict:
+        """return currently open-positions"""
+        return self._positions
+
+    def remove_positions(self) -> None:
+        """return currently open-positions"""
+        self._positions = {}
 
     @property
     def locked_balance(self) -> 'Quantity':
@@ -73,6 +103,15 @@ class Wallet(Identifiable):
             total_balance += quantity.size
 
         return total_balance
+
+    @property
+    def total_worth_value(self) -> 'Quantity':
+        """The total worth value of the wallet based on positions. (`Quantity`, read-only)"""
+        total_worth_value = 0
+
+        for position in self._positions.values():
+            total_worth_value += position.get_worth_value()
+        return Quantity(instrument=self.instrument, size=total_worth_value)
 
     @property
     def locked(self) -> 'Dict[str, Quantity]':

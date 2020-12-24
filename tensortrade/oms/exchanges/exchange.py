@@ -39,8 +39,9 @@ class ExchangeOptions:
         Whether live orders should be submitted to the exchange.
     """
 
+    #TODO: Extend Options to be dynmic get from Light-Stream
     def __init__(self,
-                 commission: float = 0.003,
+                 commission: float = 0.03,
                  min_trade_size: float = 1e-6,
                  max_trade_size: float = 1e6,
                  min_trade_price: float = 1e-8,

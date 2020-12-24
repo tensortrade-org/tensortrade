@@ -157,6 +157,10 @@ class Order(TimedIdentifiable, Observable):
         """If this is a sell order. (bool, read-only)"""
         return self.side == TradeSide.SELL
 
+    def is_close(self) -> bool:
+        """If this is a close order. (bool, read-only)"""
+        return self.side == TradeSide.CLOSE
+
     @property
     def is_limit_order(self) -> bool:
         """If this is a limit order. (bool, read-only)"""
@@ -202,8 +206,8 @@ class Order(TimedIdentifiable, Observable):
             self.side.instrument(self.exchange_pair.pair)
         )
         quantity = wallet.locked.get(self.path_id, None)
-
-        return (quantity and quantity.size == 0) or self.remaining.size <= 0
+        result = (quantity and quantity.size == 0) or self.remaining.size <= 0
+        return result
 
     def add_order_spec(self, order_spec: 'OrderSpec') -> 'Order':
         """Adds an order specification to the order.
@@ -243,7 +247,8 @@ class Order(TimedIdentifiable, Observable):
         """
         self.status = OrderStatus.PARTIALLY_FILLED
 
-        filled = trade.quantity + trade.commission
+        filled = trade.quantity
+        filled += trade.commission
 
         self.remaining -= filled
         self.trades += [trade]

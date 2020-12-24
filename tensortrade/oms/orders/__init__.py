@@ -3,6 +3,7 @@ from tensortrade.oms.orders.broker import Broker
 from tensortrade.oms.orders.order import Order, OrderStatus
 from tensortrade.oms.orders.order_listener import OrderListener
 from tensortrade.oms.orders.order_spec import OrderSpec
+from tensortrade.oms.orders.position import Position
 
 from tensortrade.oms.orders.create import (
     market_order,

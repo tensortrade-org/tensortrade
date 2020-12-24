@@ -8,6 +8,8 @@ from gym.spaces import Space, Discrete
 from tensortrade.core import Clock
 from tensortrade.env.generic import ActionScheme, TradingEnv
 from tensortrade.oms.instruments import ExchangePair
+from tensortrade.oms.instruments.quantity import Quantity
+from tensortrade.oms.wallets import Wallet
 from tensortrade.oms.orders import (
     Broker,
     Order,
@@ -215,18 +217,15 @@ class SimpleOrders(TensorTradeActionScheme):
 
         self._action_space = None
         self.actions = None
+        # last saved action
+        self.action  = 0
 
     @property
     def action_space(self) -> Space:
         if not self._action_space:
-            self.actions = product(
-                self.criteria,
-                self.trade_sizes,
-                self.durations,
-                [TradeSide.BUY, TradeSide.SELL]
-            )
-            self.actions = list(self.actions)
+            self.actions = [TradeSide.BUY, TradeSide.SELL]
             self.actions = list(product(self.portfolio.exchange_pairs, self.actions))
+            # Add Hold-Action to beginning
             self.actions = [None] + self.actions
 
             self._action_space = Discrete(len(self.actions))
@@ -236,43 +235,98 @@ class SimpleOrders(TensorTradeActionScheme):
                    action: int, 
                    portfolio: 'Portfolio') -> 'List[Order]':
         
+        # HOLD Action
         if action == 0:
-            return []
+            return [] 
 
-        (ep, (criteria, proportion, duration, side)) = self.actions[action]
+        #(ep, (criteria, proportion, duration, side)) = self.actions[action]
+        #ep = self.actions[action][0]
+        #(criteria, proportion, duration, side) = self.actions[action][1]
+        ep, side = self.actions[action]
 
-        instrument = side.instrument(ep.pair)
-        wallet = portfolio.get_wallet(ep.exchange.id, instrument=instrument)
+        # Empty Orders List
+        orders = []
+        
+        # check different action
+        if (action != self.action):
+            # proportion of used balance
+            proportion = 1
+            duration = None
+            criteria = None            
+            # get base/quote wallets
+            quote_wallet = portfolio.get_wallet(ep.exchange.id, instrument=ep.pair.quote)
+            base_wallet  = portfolio.get_wallet(ep.exchange.id, instrument=ep.pair.base)
 
-        balance = wallet.balance.as_float()
-        size = (balance * proportion)
-        size = min(balance, size)
+            # get current price
+            price = ep.price
 
-        quantity = (size * instrument).quantize()
+            # create orders to close all already open-position
+            positions = quote_wallet.get_positions().values() # avoid RuntimeError: dictionary changed size during iteration, when remove position from dict.
+            for position in positions:
+                if position.is_open:
+                    #close positions based on last opened orders
+                    #quantity = Quantity(instrument=ep.pair.quote, size=position.quantity.size)
+                    # adjut worth quantity - if sell-position already open
+                    quantity = Quantity(instrument=ep.pair.quote, size=position.get_worth_value()/ep.price)
+                    order = Order(
+                        path_id = position.id,
+                        step=self.clock.step,
+                        side=TradeSide.CLOSE,
+                        trade_type=self._trade_type,
+                        exchange_pair=ep,
+                        price=ep.price,
+                        quantity= quantity,
+                        criteria=criteria,
+                        end=self.clock.step + duration if duration else None,
+                        portfolio=portfolio
+                        )
+                    
+                    # Transfer Funds from Quote Wallet to Base Wallet
+                    transfer = Wallet.transfer(
+                        source=quote_wallet,
+                        target=base_wallet,
+                        quantity=order.quantity,
+                        commission= Quantity(instrument=ep.pair.quote, size=0),
+                        exchange_pair=order.exchange_pair,
+                        reason="CLOSE"
+                    )
+                    self.broker.submit(order)
+                    self.broker.update()
+            
+            # return money to base-wallets
+            instrument = side.instrument(ep.pair)
 
-        price = ep.price
-        value = size*float(price)
-        if size < 10 ** -instrument.precision \
-                or value < self.min_order_pct*portfolio.net_worth:
-            return []
+            balance = base_wallet.balance.as_float()
+            size = (balance * proportion)
+            size = min(balance, size)
 
-        order = Order(
-            step=self.clock.step,
-            side=side,
-            trade_type=self._trade_type,
-            exchange_pair=ep,
-            price=ep.price,
-            quantity=quantity,
-            criteria=criteria,
-            end=self.clock.step + duration if duration else None,
-            portfolio=portfolio
-        )
+            quantity = (size * instrument).quantize()
 
-        if self._order_listener is not None:
-            order.attach(self._order_listener)
+            value = size*float(price)
+            if size < 10 ** -instrument.precision \
+                    or value < self.min_order_pct*portfolio.net_worth:
+                return []
 
-        return [order]
+            order = Order(
+                step=self.clock.step,
+                side=side,
+                trade_type=self._trade_type,
+                exchange_pair=ep,
+                price=ep.price,
+                quantity=quantity,
+                criteria=criteria,
+                end=self.clock.step + duration if duration else None,
+                portfolio=portfolio
+            )
+            orders.append(order)
 
+            if self._order_listener is not None:
+                order.attach(self._order_listener)
+
+            # TODO: Check a way to check: check only when order is completed
+            self.action = action
+
+        return orders
 
 class ManagedRiskOrders(TensorTradeActionScheme):
     """A discrete action scheme that determines actions based on managing risk,
