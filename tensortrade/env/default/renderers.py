@@ -594,7 +594,7 @@ class MatplotlibTradingChart(BaseRenderer):
 
         self._save_format = save_format
         self._path = path
-        self.filename_prefix = filename_prefix
+        self._filename_prefix = filename_prefix
 
         if self._save_format and self._path and not os.path.exists(path):
             os.mkdir(path)
@@ -748,7 +748,7 @@ class MatplotlibTradingChart(BaseRenderer):
         _check_path(self._path)
         filename = _create_auto_file_name(self._filename_prefix, self._save_format)
         filename = os.path.join(self._path, filename)
-        self.plt.savefig(filename, format=self._save_format)
+        self.fig.savefig(filename, format=self._save_format)
 
     def reset(self) -> None:
         """Resets the renderer.
