@@ -558,7 +558,6 @@ class PlotlyTradingChart(BaseRenderer):
 
         self.fig.layout.annotations = self._base_annotations
         clear_output(wait=True)
-        self._show_chart = True
 
 
 class MatplotlibTradingChart(BaseRenderer):
