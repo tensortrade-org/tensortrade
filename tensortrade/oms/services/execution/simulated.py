@@ -50,7 +50,7 @@ def execute_buy_order(order: 'Order',
     if commission.size < Decimal(10) ** -quantity.instrument.precision:
         if options.allow_zero_commission_under_precision:
             logging.info("Commission is less than precision. Overriding zero commission value.")
-            commission.size = 0.0
+            commission = filled * 0
             quantity = filled - commission
         else:
             logging.warning("Commission is less than precision. Canceling order. "
@@ -120,7 +120,7 @@ def execute_sell_order(order: 'Order',
     if commission.size < Decimal(10) ** -quantity.instrument.precision:
         if options.allow_zero_commission_under_precision:
             logging.info("Commission is less than precision. Overriding zero commission value.")
-            commission.size = 0.0
+            commission = filled * 0
             quantity = filled - commission
         else:
             logging.warning("Commission is less than precision. Canceling order. "
