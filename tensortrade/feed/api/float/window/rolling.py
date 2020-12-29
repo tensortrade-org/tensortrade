@@ -35,6 +35,10 @@ class RollingNode(Stream[float]):
     def has_next(self) -> bool:
         return True
 
+    def reset(self) -> None:
+        self.n = 0
+        super().reset()
+
 
 class RollingCount(RollingNode):
     """A stream operator that counts the number of non-missing values in the
@@ -193,6 +197,12 @@ class Rolling(Stream[List[float]]):
         """
         func = np.nanmax if self.min_periods < self.window else np.max
         return self.agg(func).astype("float")
+
+    def reset(self) -> None:
+        self.n = 0
+        self.nan = 0
+        self.history = []
+        super().reset()
 
 
 @Float.register(["rolling"])
