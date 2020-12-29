@@ -106,7 +106,7 @@ class BaseRenderer(Renderer):
         str
             a log entry
         """
-        log_entry = f"[{datetime.now().strftime(date_format)}]"
+        log_entry = f"[{datetime.now().isoformat(sep=' ', timespec='seconds')}]"
 
         if episode is not None:
             log_entry += f" Episode: {episode + 1}/{max_episodes if max_episodes else ''}"
