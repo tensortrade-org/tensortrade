@@ -10,7 +10,6 @@ from tensortrade.oms import (
     services
 )
 from . import env
-from . import stochastic
 from . import agents
 
 from .version import __version__
