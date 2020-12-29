@@ -95,6 +95,7 @@ class ExponentialWeightedMovingAverage(Stream[float]):
 
         self.avg = None
         self.old_wt = 1
+        super().reset()
 
 
 class ExponentialWeightedMovingCovariance(Stream[float]):
@@ -236,6 +237,7 @@ class ExponentialWeightedMovingCovariance(Stream[float]):
         self.sum_wt = 1
         self.sum_wt2 = 1
         self.old_wt = 1
+        super().reset()
 
 
 class EWM(Stream[List[float]]):
@@ -396,6 +398,10 @@ class EWM(Stream[List[float]]):
         """
         return self.var(bias).sqrt()
 
+    def reset(self) -> None:
+        self.history = []
+        self.weights = []
+        super().reset()
 
 @Float.register(["ewm"])
 def ewm(s: "Stream[float]",
