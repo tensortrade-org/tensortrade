@@ -166,6 +166,10 @@ class Expanding(Stream[List[float]]):
         """
         return self.agg(np.max).astype("float")
 
+    def reset(self) -> None:
+        self.history = []
+        super().reset()
+
 
 @Float.register(["expanding"])
 def expanding(s: "Stream[float]", min_periods: int = 1) -> "Stream[List[float]]":
