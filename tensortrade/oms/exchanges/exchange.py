@@ -37,6 +37,8 @@ class ExchangeOptions:
         The maximum price an exchange can have.
     is_live : bool, default False
         Whether live orders should be submitted to the exchange.
+    override_min_commission_precision : bool, default False
+        Sets the commission to the minimum value allowed by precision instead of canceling the order
     """
 
     def __init__(self,
@@ -45,13 +47,15 @@ class ExchangeOptions:
                  max_trade_size: float = 1e6,
                  min_trade_price: float = 1e-8,
                  max_trade_price: float = 1e8,
-                 is_live: bool = False):
+                 is_live: bool = False,
+                 override_min_commission_precision: bool = False):
         self.commission = commission
         self.min_trade_size = min_trade_size
         self.max_trade_size = max_trade_size
         self.min_trade_price = min_trade_price
         self.max_trade_price = max_trade_price
         self.is_live = is_live
+        self.override_min_commission_precision = override_min_commission_precision
 
 
 class Exchange(Component, TimedIdentifiable):

@@ -1,4 +1,4 @@
-
+import logging
 from decimal import Decimal
 
 from tensortrade.core import Clock
@@ -47,9 +47,16 @@ def execute_buy_order(order: 'Order',
     commission = options.commission * filled
     quantity = filled - commission
 
-    if commission.size < Decimal(10)**-quantity.instrument.precision:
-        order.cancel("COMMISSION IS LESS THAN PRECISION.")
-        return None
+    if commission.size < Decimal(10) ** -quantity.instrument.precision:
+        if options.override_min_commission_precision:
+            logging.info("Commission is less than precision. Overriding with minimum commission value.")
+            commission.size = Decimal(10) ** -quantity.instrument.precision
+            quantity = filled - commission
+        else:
+            logging.warning("Commission is less than precision. Canceling order. "
+                            "Consider setting override_min_commission_precision in the ExchangeOptions")
+            order.cancel("COMMISSION IS LESS THAN PRECISION.")
+            return None
 
     transfer = Wallet.transfer(
         source=base_wallet,
@@ -110,9 +117,16 @@ def execute_sell_order(order: 'Order',
     commission = options.commission * filled
     quantity = filled - commission
 
-    if commission.size < Decimal(10)**-quantity.instrument.precision:
-        order.cancel("COMMISSION IS LESS THAN PRECISION.")
-        return None
+    if commission.size < Decimal(10) ** -quantity.instrument.precision:
+        if options.override_min_commission_precision:
+            logging.info("Commission is less than precision. Overriding with minimum commission value.")
+            commission.size = Decimal(10) ** -quantity.instrument.precision
+            quantity = filled - commission
+        else:
+            logging.warning("Commission is less than precision. Canceling order. "
+                            "Consider setting override_min_commission_precision in the ExchangeOptions")
+            order.cancel("COMMISSION IS LESS THAN PRECISION.")
+            return None
 
     # Transfer Funds from Quote Wallet to Base Wallet
     transfer = Wallet.transfer(
