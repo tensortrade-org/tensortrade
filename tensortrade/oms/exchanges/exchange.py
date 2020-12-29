@@ -37,8 +37,6 @@ class ExchangeOptions:
         The maximum price an exchange can have.
     is_live : bool, default False
         Whether live orders should be submitted to the exchange.
-    allow_zero_commission_under_precision : bool, default False
-        When under precision, sets the commission to zero of canceling the order
     """
 
     def __init__(self,
@@ -47,15 +45,13 @@ class ExchangeOptions:
                  max_trade_size: float = 1e6,
                  min_trade_price: float = 1e-8,
                  max_trade_price: float = 1e8,
-                 is_live: bool = False,
-                 allow_zero_commission_under_precision: bool = False):
+                 is_live: bool = False):
         self.commission = commission
         self.min_trade_size = min_trade_size
         self.max_trade_size = max_trade_size
         self.min_trade_price = min_trade_price
         self.max_trade_price = max_trade_price
         self.is_live = is_live
-        self.allow_zero_commission_under_precision = allow_zero_commission_under_precision
 
 
 class Exchange(Component, TimedIdentifiable):

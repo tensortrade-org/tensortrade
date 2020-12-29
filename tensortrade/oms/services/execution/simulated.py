@@ -48,15 +48,10 @@ def execute_buy_order(order: 'Order',
     quantity = filled - commission
 
     if commission.size < Decimal(10) ** -quantity.instrument.precision:
-        if options.allow_zero_commission_under_precision:
-            logging.info("Commission is less than precision. Overriding zero commission value.")
-            commission = filled * 0
-            quantity = filled - commission
-        else:
-            logging.warning("Commission is less than precision. Canceling order. "
-                            "Consider setting allow_zero_commission_under_precision in the ExchangeOptions")
-            order.cancel("COMMISSION IS LESS THAN PRECISION.")
-            return None
+        logging.warning("Commission is less than instrument precision. Canceling order. "
+                        "Consider defining a custom instrument with a higher precision.")
+        order.cancel("COMMISSION IS LESS THAN PRECISION.")
+        return None
 
     transfer = Wallet.transfer(
         source=base_wallet,
@@ -118,15 +113,10 @@ def execute_sell_order(order: 'Order',
     quantity = filled - commission
 
     if commission.size < Decimal(10) ** -quantity.instrument.precision:
-        if options.allow_zero_commission_under_precision:
-            logging.info("Commission is less than precision. Overriding zero commission value.")
-            commission = filled * 0
-            quantity = filled - commission
-        else:
-            logging.warning("Commission is less than precision. Canceling order. "
-                            "Consider setting allow_zero_commission_under_precision in the ExchangeOptions")
-            order.cancel("COMMISSION IS LESS THAN PRECISION.")
-            return None
+        logging.warning("Commission is less than instrument precision. Canceling order. "
+                        "Consider defining a custom instrument with a higher precision.")
+        order.cancel("COMMISSION IS LESS THAN PRECISION.")
+        return None
 
     # Transfer Funds from Quote Wallet to Base Wallet
     transfer = Wallet.transfer(
