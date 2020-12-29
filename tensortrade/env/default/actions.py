@@ -155,7 +155,8 @@ class BSH(TensorTradeActionScheme):
         if abs(action - self.action) > 0:
             src = self.cash if self.action == 0 else self.asset
             tgt = self.asset if self.action == 0 else self.cash
-            order = proportion_order(portfolio, src, tgt, 1.0)
+            if src.balance > 0:  # We need to check, regardless of the proposed order, if we have balance in 'src'
+                order = proportion_order(portfolio, src, tgt, 1.0)
             self.action = action
 
         for listener in self.listeners:
