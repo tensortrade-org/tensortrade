@@ -48,13 +48,13 @@ def execute_buy_order(order: 'Order',
     quantity = filled - commission
 
     if commission.size < Decimal(10) ** -quantity.instrument.precision:
-        if options.override_min_commission_precision:
-            logging.info("Commission is less than precision. Overriding with minimum commission value.")
-            commission.size = Decimal(10) ** -quantity.instrument.precision
+        if options.allow_zero_commission_under_precision:
+            logging.info("Commission is less than precision. Overriding zero commission value.")
+            commission.size = 0.0
             quantity = filled - commission
         else:
             logging.warning("Commission is less than precision. Canceling order. "
-                            "Consider setting override_min_commission_precision in the ExchangeOptions")
+                            "Consider setting allow_zero_commission_under_precision in the ExchangeOptions")
             order.cancel("COMMISSION IS LESS THAN PRECISION.")
             return None
 
@@ -118,13 +118,13 @@ def execute_sell_order(order: 'Order',
     quantity = filled - commission
 
     if commission.size < Decimal(10) ** -quantity.instrument.precision:
-        if options.override_min_commission_precision:
-            logging.info("Commission is less than precision. Overriding with minimum commission value.")
-            commission.size = Decimal(10) ** -quantity.instrument.precision
+        if options.allow_zero_commission_under_precision:
+            logging.info("Commission is less than precision. Overriding zero commission value.")
+            commission.size = 0.0
             quantity = filled - commission
         else:
             logging.warning("Commission is less than precision. Canceling order. "
-                            "Consider setting override_min_commission_precision in the ExchangeOptions")
+                            "Consider setting allow_zero_commission_under_precision in the ExchangeOptions")
             order.cancel("COMMISSION IS LESS THAN PRECISION.")
             return None
 
