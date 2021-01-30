@@ -205,6 +205,7 @@ class Stream(Generic[T], Named, Observable):
         `Stream[T]`
             The same stream with the new underlying data type `dtype`.
         """
+        self.dtype = dtype
         mixin = Stream._mixins[dtype]
         return Stream.extend_instance(self, mixin)
 
