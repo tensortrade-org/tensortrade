@@ -45,7 +45,7 @@ def jump_diffusion_process(params: 'ModelParameters') -> 'np.array':
     s_n = time = 0
     small_lamda = -(1.0 / params.lamda)
     jump_sizes = []
-    for k in range(params.all_time):
+    for _ in range(params.all_time):
         jump_sizes.append(0.0)
     while s_n < params.all_time:
         s_n += small_lamda * np.log(np.random.uniform(0, 1))
