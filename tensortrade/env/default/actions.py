@@ -1,4 +1,4 @@
-
+import logging
 from abc import abstractmethod
 from itertools import product
 from typing import Union, List, Any
@@ -91,6 +91,7 @@ class TensorTradeActionScheme(ActionScheme):
 
         for order in orders:
             if order:
+                logging.info('Step {}: {} {}'.format(order.step, order.side, order.quantity))
                 self.broker.submit(order)
 
         self.broker.update()
