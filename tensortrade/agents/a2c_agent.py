@@ -26,6 +26,7 @@ import tensorflow as tf
 from collections import namedtuple
 
 from tensortrade.agents import Agent, ReplayMemory
+from datetime import  datetime
 
 A2CTransition = namedtuple('A2CTransition', ['state', 'action', 'reward', 'done', 'value'])
 
@@ -91,12 +92,12 @@ class A2CAgent(Agent):
         episode: int = kwargs.get('episode', None)
 
         if episode:
-            suffix = self.id + "__" + str(episode).zfill(3) + ".hdf5"
+            suffix = self.id[:7] + "__" + datetime.now().strftime("%Y%m%d_%H%M%S") + ".hdf5"
             actor_filename = "actor_network__" + suffix
             critic_filename = "critic_network__" + suffix
         else:
-            actor_filename = "actor_network__" + self.id + ".hdf5"
-            critic_filename = "critic_network__" + self.id + ".hdf5"
+            actor_filename = "actor_network__" + self.id[:7] + "__" + datetime.now().strftime("%Y%m%d_%H%M%S") + ".hdf5"
+            critic_filename = "critic_network__" + self.id[:7] + "__" + datetime.now().strftime("%Y%m%d_%H%M%S") + ".hdf5"
 
         self.actor_network.save(path + actor_filename)
         self.critic_network.save(path + critic_filename)

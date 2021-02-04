@@ -18,6 +18,7 @@ import tensorflow as tf
 from collections import namedtuple
 
 from tensortrade.agents import Agent, ReplayMemory
+from datetime import datetime
 
 
 DQNTransition = namedtuple('DQNTransition', ['state', 'action', 'reward', 'next_state', 'done'])
@@ -69,9 +70,9 @@ class DQNAgent(Agent):
         episode: int = kwargs.get('episode', None)
 
         if episode:
-            filename = "policy_network__" + self.id + "__" + str(episode).zfill(3) + ".hdf5"
+            filename = "policy_network__" + self.id[:7] + "__" + datetime.now().strftime("%Y%m%d_%H%M%S") + ".hdf5"
         else:
-            filename = "policy_network__" + self.id + ".hdf5"
+            filename = "policy_network__" + self.id[:7] + "__" + datetime.now().strftime("%Y%m%d_%H%M%S") + ".hdf5"
 
         self.policy_network.save(path + filename)
 
