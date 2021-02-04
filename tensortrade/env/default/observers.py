@@ -9,6 +9,7 @@ from gym.spaces import Box, Space
 
 
 from tensortrade.feed.core import Stream, NameSpace, DataFeed
+from tensortrade.feed.api.float.operations import mul
 from tensortrade.oms.wallets import Wallet
 from tensortrade.env.generic import Observer
 from collections import OrderedDict
@@ -43,7 +44,14 @@ def _create_wallet_source(wallet: 'Wallet', include_worth: bool = True) -> 'List
 
         if include_worth:
             price = Stream.select(wallet.exchange.streams(), lambda node: node.name.endswith(symbol))
-            worth = (price * total_balance).rename("worth")
+
+            if price.value is None:
+                price.value = price.forward()
+
+            if total_balance.value is None:
+                total_balance.value = total_balance.forward()
+
+            worth = mul(price, total_balance).rename('worth')
             streams += [worth]
 
     return streams
