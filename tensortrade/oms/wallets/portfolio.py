@@ -119,8 +119,8 @@ class Portfolio(Component, TimedIdentifiable):
 
     @property
     def profit_loss(self) -> float:
-        """The percent change in net worth since the last reset. (float, read-only)"""
-        return self.net_worth / self.initial_net_worth
+        """The percent loss in net worth since the last reset. (float, read-only)"""
+        return 1.0 - self.net_worth / self.initial_net_worth
 
     @property
     def performance(self) -> 'OrderedDict':
