@@ -192,6 +192,10 @@ class SimpleOrders(TensorTradeActionScheme):
         A type of trade to make.
     order_listener : OrderListener
         A callback class to use for listening to steps of the order process.
+    min_order_pct : float
+        The minimum value when placing an order, calculated in percent over net_worth.
+    min_order_abs : float
+        The minimum value when placing an order, calculated in absolute order value.
     """
 
     def __init__(self,
@@ -200,9 +204,11 @@ class SimpleOrders(TensorTradeActionScheme):
                  durations: 'Union[List[int], int]' = None,
                  trade_type: 'TradeType' = TradeType.MARKET,
                  order_listener: 'OrderListener' = None,
-                 min_order_pct: float = 0.02) -> None:
+                 min_order_pct: float = 0.02,
+                 min_order_abs: float = 0.00) -> None:
         super().__init__()
         self.min_order_pct = min_order_pct
+        self.min_order_abs = min_order_abs
         criteria = self.default('criteria', criteria)
         self.criteria = criteria if isinstance(criteria, list) else [criteria]
 
@@ -256,9 +262,10 @@ class SimpleOrders(TensorTradeActionScheme):
         quantity = (size * instrument).quantize()
 
         price = ep.price
-        value = size*float(price)
+        value = size * float(price)
         if size < 10 ** -instrument.precision \
-                or value < self.min_order_pct*portfolio.net_worth:
+                or value < self.min_order_pct * portfolio.net_worth \
+                or value < self.min_order_abs:
             return []
 
         order = Order(
