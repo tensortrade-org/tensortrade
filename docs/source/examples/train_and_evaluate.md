@@ -28,7 +28,7 @@ from tensortrade.agents import DQNAgent
 ```python
 cdd = CryptoDataDownload()
 
-data = cdd.fetch("Coinbase", "USD", "BTC", "1h")
+data = cdd.fetch("Bitfinex", "USD", "BTC", "1h")
 ```
 
 <br>**Create features with the feed module**<br>
@@ -85,13 +85,13 @@ for i in range(5):
 
 
 ```python
-coinbase = Exchange("coinbase", service=execute_order)(
+bitfinex = Exchange("bitfinex", service=execute_order)(
     Stream.source(list(data["close"]), dtype="float").rename("USD-BTC")
 )
 
 portfolio = Portfolio(USD, [
-    Wallet(coinbase, 10000 * USD),
-    Wallet(coinbase, 10 * BTC)
+    Wallet(bitfinex, 10000 * USD),
+    Wallet(bitfinex, 10 * BTC)
 ])
 
 
@@ -124,14 +124,14 @@ env.observer.feed.next()
 
 
 
-    {'internal': {'coinbase:/USD-BTC': 2509.17,
-      'coinbase:/USD:/free': 10000.0,
-      'coinbase:/USD:/locked': 0.0,
-      'coinbase:/USD:/total': 10000.0,
-      'coinbase:/BTC:/free': 10.0,
-      'coinbase:/BTC:/locked': 0.0,
-      'coinbase:/BTC:/total': 10.0,
-      'coinbase:/BTC:/worth': 25091.7,
+    {'internal': {'bitfinex:/USD-BTC': 2509.17,
+      'bitfinex:/USD:/free': 10000.0,
+      'bitfinex:/USD:/locked': 0.0,
+      'bitfinex:/USD:/total': 10000.0,
+      'bitfinex:/BTC:/free': 10.0,
+      'bitfinex:/BTC:/locked': 0.0,
+      'bitfinex:/BTC:/total': 10.0,
+      'bitfinex:/BTC:/worth': 25091.7,
       'net_worth': 35091.7},
      'external': {'lr': nan, 'rsi': nan, 'macd': 0.0},
      'renderer': {'date': Timestamp('2017-07-01 11:00:00'),

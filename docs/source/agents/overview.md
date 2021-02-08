@@ -41,12 +41,12 @@ def create_env(config):
     x = np.arange(0, 2*np.pi, 2*np.pi / 1000)
     p = Stream.source(50*np.sin(3*x) + 100, dtype="float").rename("USD-TTC")
 
-    coinbase = Exchange("coinbase", service=execute_order)(
+    bitfinex = Exchange("bitfinex", service=execute_order)(
         p
     )
 
-    cash = Wallet(coinbase, 100000 * USD)
-    asset = Wallet(coinbase, 0 * TTC)
+    cash = Wallet(bitfinex, 100000 * USD)
+    asset = Wallet(bitfinex, 0 * TTC)
 
     portfolio = Portfolio(USD, [
         cash,

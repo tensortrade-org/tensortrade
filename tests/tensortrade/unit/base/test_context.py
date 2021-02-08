@@ -92,7 +92,7 @@ def test_create_trading_context_from_json():
             "api_key": "487r63835t4323",
             "api_secret_key": "do8u43hgiurwfnlveio"
         },
-        "name": "coinbase"
+        "name": "bitfinex"
     }
 
     with TradingContext.from_json(path) as tc:
@@ -111,7 +111,7 @@ def test_create_trading_context_from_yaml():
             "api_key": "487r63835t4323",
             "api_secret_key": "do8u43hgiurwfnlveio"
         },
-        "name": "coinbase"
+        "name": "bitfinex"
     }
 
     with TradingContext.from_yaml(path) as tc:

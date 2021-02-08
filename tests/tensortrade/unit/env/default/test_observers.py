@@ -22,19 +22,19 @@ def test_exchange_feed():
     btc_price = Stream.source([7000, 7500, 8300], dtype="float").rename("USD-BTC")
     eth_price = Stream.source([200, 212, 400], dtype="float").rename("USD-ETH")
 
-    exchange = Exchange("coinbase", service=execute_order)(
+    exchange = Exchange("bitfinex", service=execute_order)(
         btc_price,
         eth_price
     )
 
     feed = DataFeed(exchange.streams())
 
-    assert feed.next() == {"coinbase:/USD-BTC": 7000, "coinbase:/USD-ETH": 200}
+    assert feed.next() == {"bitfinex:/USD-BTC": 7000, "bitfinex:/USD-ETH": 200}
 
 
 def test_create_internal_data_feed():
 
-    ex1 = Exchange("coinbase", service=execute_order)(
+    ex1 = Exchange("bitfinex", service=execute_order)(
         Stream.source([7000, 7500, 8300], dtype="float").rename("USD-BTC"),
         Stream.source([200, 212, 400], dtype="float").rename("USD-ETH")
     )
@@ -58,19 +58,19 @@ def test_create_internal_data_feed():
     feed = DataFeed(_create_internal_streams(portfolio))
 
     data = {
-        "coinbase:/USD-BTC": 7000,
-        "coinbase:/USD-ETH": 200,
-        "coinbase:/USD:/free": 10000,
-        "coinbase:/USD:/locked": 0,
-        "coinbase:/USD:/total": 10000,
-        "coinbase:/BTC:/free": 10,
-        "coinbase:/BTC:/locked": 0,
-        "coinbase:/BTC:/total": 10,
-        "coinbase:/BTC:/worth": 7000 * 10,
-        "coinbase:/ETH:/free": 5,
-        "coinbase:/ETH:/locked": 0,
-        "coinbase:/ETH:/total": 5,
-        "coinbase:/ETH:/worth": 200 * 5,
+        "bitfinex:/USD-BTC": 7000,
+        "bitfinex:/USD-ETH": 200,
+        "bitfinex:/USD:/free": 10000,
+        "bitfinex:/USD:/locked": 0,
+        "bitfinex:/USD:/total": 10000,
+        "bitfinex:/BTC:/free": 10,
+        "bitfinex:/BTC:/locked": 0,
+        "bitfinex:/BTC:/total": 10,
+        "bitfinex:/BTC:/worth": 7000 * 10,
+        "bitfinex:/ETH:/free": 5,
+        "bitfinex:/ETH:/locked": 0,
+        "bitfinex:/ETH:/total": 5,
+        "bitfinex:/ETH:/worth": 200 * 5,
         "binance:/USD-BTC": 7005,
         "binance:/USD-ETH": 201,
         "binance:/USD-LTC": 56,
@@ -91,7 +91,7 @@ def test_create_internal_data_feed():
         "binance:/LTC:/worth": 56 * 3,
     }
 
-    coinbase_net_worth = 10000 + (10 * 7000) + (5 * 200)
+    bitfinex_net_worth = 10000 + (10 * 7000) + (5 * 200)
     binance_net_worth = 1000 + (5 * 7005) + (20 * 201) + (3 * 56)
 
     data['net_worth'] = sum(data[k] if k.endswith("worth") or k.endswith("USD:/total") else 0 for k in data.keys())
@@ -101,7 +101,7 @@ def test_create_internal_data_feed():
 
 def test_exchange_with_wallets_feed():
 
-    ex1 = Exchange("coinbase", service=execute_order)(
+    ex1 = Exchange("bitfinex", service=execute_order)(
         Stream.source([7000, 7500, 8300], dtype="float").rename("USD-BTC"),
         Stream.source([200, 212, 400], dtype="float").rename("USD-ETH")
     )
@@ -130,12 +130,12 @@ def test_exchange_with_wallets_feed():
     feed = DataFeed(streams)
 
     assert feed.next() == {
-        "coinbase:/USD-BTC": 7000,
-        "coinbase:/USD-ETH": 200,
-        "coinbase:/BTC:/free": 10,
-        "coinbase:/BTC:/locked": 0,
-        "coinbase:/BTC:/total": 10,
-        "coinbase:/BTC:/worth": 70000,
+        "bitfinex:/USD-BTC": 7000,
+        "bitfinex:/USD-ETH": 200,
+        "bitfinex:/BTC:/free": 10,
+        "bitfinex:/BTC:/locked": 0,
+        "bitfinex:/BTC:/total": 10,
+        "bitfinex:/BTC:/worth": 70000,
         "binance:/USD-BTC": 7005,
         "binance:/USD-ETH": 201,
         "binance:/USD-LTC": 56,

@@ -30,7 +30,7 @@ def assert_execute_order(current_price,
     options = ExchangeOptions()
     mock_exchange = mock.Mock()
     exchange = mock_exchange.return_value
-    exchange.name = "coinbase"
+    exchange.name = "bitfinex"
     exchange.options = options
     exchange.quote_price = lambda pair: current_price
 

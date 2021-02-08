@@ -7,7 +7,7 @@ from tensortrade.oms.instruments import ExchangePair, BTC, USD
 def test_valid_init(mock_exchange):
 
     exchange = mock_exchange.return_value
-    exchange.name = "coinbase"
+    exchange.name = "bitfinex"
 
     exchange_pair = ExchangePair(exchange, USD/BTC)
     assert exchange_pair
@@ -18,8 +18,8 @@ def test_valid_init(mock_exchange):
 @mock.patch('tensortrade.exchanges.Exchange')
 def test_str(mock_exchange):
     exchange = mock_exchange.return_value
-    exchange.name = "coinbase"
+    exchange.name = "bitfinex"
 
     exchange_pair = ExchangePair(exchange, USD/BTC)
 
-    assert str(exchange_pair) == "coinbase:USD/BTC"
+    assert str(exchange_pair) == "bitfinex:USD/BTC"

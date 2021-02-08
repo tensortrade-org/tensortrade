@@ -128,7 +128,7 @@ def test_on_fill(mock_trade_class,
     exchange = mock_exchange_class.return_value
     exchange.options.max_trade_size = 1e6
     exchange.id = "fake_exchange_id"
-    exchange.name = "coinbase"
+    exchange.name = "bitfinex"
     exchange.quote_price = lambda pair: Decimal(7000.00)
 
     broker = Broker()
@@ -173,7 +173,7 @@ def test_on_fill_with_complex_order(mock_trade_class,
     exchange = mock_exchange_class.return_value
     exchange.options.max_trade_size = 1e6
     exchange.id = "fake_exchange_id"
-    exchange.name = "coinbase"
+    exchange.name = "bitfinex"
     exchange.quote_price = lambda pair: Decimal(7000.00)
 
     broker = Broker()

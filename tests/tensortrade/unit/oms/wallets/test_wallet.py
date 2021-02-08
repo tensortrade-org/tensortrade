@@ -184,7 +184,7 @@ def test_transfer():
     exchange = mock.Mock()
     price = Decimal(9750.19).quantize(Decimal(10)**-2)
     exchange.quote_price = lambda pair: price
-    exchange.name = "coinbase"
+    exchange.name = "bitfinex"
 
     order = mock.Mock()
     order.path_id = "fake_id"
