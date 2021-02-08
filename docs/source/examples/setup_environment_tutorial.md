@@ -60,8 +60,8 @@ Here we will define the feed to use whatever data you would like. From financial
 
 ```python
 # Add all features for bitstamp BTC & ETH
-bitfinex_btc = bitfinex_data.loc[:, [name.startswith("BTC") for name in coinbase_data.columns]]
-bitfinex_eth = bitfinex_data.loc[:, [name.startswith("ETH") for name in coinbase_data.columns]]
+bitfinex_btc = bitfinex_data.loc[:, [name.startswith("BTC") for name in bitfinex_data.columns]]
+bitfinex_eth = bitfinex_data.loc[:, [name.startswith("ETH") for name in bitfinex_data.columns]]
 
 ta.add_all_ta_features(
     bitfinex_btc,
