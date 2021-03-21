@@ -50,3 +50,41 @@ class ReplayMemory(object):
 
     def __len__(self):
         return len(self.memory)
+
+
+class PER(object):
+    """
+        Prioritized Experience with binary heap
+    """
+
+    def __init__(self, capacity=2000):
+        self.capacity = capacity
+        self.memory = []
+
+    def clean(self):
+        self.memory.clear()
+
+    def sample(self, batch_size):
+        batch = heapq.nsmallest(batch_size, self.memory)
+        batch = [e for (_, _, e) in batch]
+        self.memory = self.memory[batch_size:]
+        return batch
+
+    def head(self, batch_size):
+        return self.memory[:batch_size]
+
+    def tail(self, batch_size):
+        return self.memory[-batch_size:]
+
+    def get_size(self):
+        return len(self.memory)
+
+    def is_full(self):
+        return True if self.get_size() >= self.capacity else False
+
+    def store(self, token, TDerror):
+        heapq.heappush(self.memory, (-TDerror, next(tiebreaker), token))
+        if self.get_size() > self.capacity:
+            self.memory = self.memory[:-1]
+        heapq.heapify(self.memory)
+
