@@ -17,6 +17,8 @@ import random
 
 from collections import namedtuple
 from typing import List
+from itertools import count
+
 
 
 Transition = namedtuple('Transition', ['state', 'action', 'reward', 'done'])
@@ -51,6 +53,7 @@ class ReplayMemory(object):
     def __len__(self):
         return len(self.memory)
 
+tiebreaker = count()
 
 class PER(object):
     """
