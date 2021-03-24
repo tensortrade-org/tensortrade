@@ -85,11 +85,6 @@ You can ask questions and join the development discussion:
 
 You can also post **bug reports and feature requests** in [GitHub issues](https://github.com/notadamking/tensortrade/issues). Make sure to read [our guidelines](https://github.com/notadamking/tensortrade/blob/master/CONTRIBUTING.md) first.
 
-## Sponsorship
-
-If you would like to support this project financially, there are a few ways you can contribute. Your contributions are greatly appreciated and help to keep TensorTrade maintained and always improving.
-
-Github Sponsors: https://github.com/sponsors/notadamking
 
 ## Contributors
 
