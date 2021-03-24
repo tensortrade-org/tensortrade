@@ -134,7 +134,7 @@ class Stream(Generic[T], Named, Observable):
 
     def __new__(cls, *args, **kwargs):
         dtype = kwargs.get("dtype")
-        instance = super().__new__(cls, *args, **kwargs)
+        instance = super().__new__(cls)
         if dtype in Stream._mixins.keys():
             mixin = Stream._mixins[dtype]
             instance = Stream.extend_instance(instance, mixin)
