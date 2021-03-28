@@ -209,10 +209,15 @@ class Stream(Generic[T], Named, Observable):
         return Stream.extend_instance(self, mixin)
 
     def reset(self) -> None:
-        """Resets all the listeners of the stream."""
+        """Resets all inputs to and listeners of the stream and sets stream value to None."""
         for listener in self.listeners:
             if hasattr(listener, "reset"):
                 listener.reset()
+        
+        for stream in self.inputs:
+            stream.reset()
+
+        self.value = None
 
     def gather(self) -> "List[Tuple[Stream, Stream]]":
         """Gathers all the edges of the DAG connected in ancestry with this
@@ -329,6 +334,7 @@ class Stream(Generic[T], Named, Observable):
         """
         return Constant(value, dtype=dtype)
 
+    @staticmethod
     def placeholder(dtype: str = None) -> "Stream[T]":
         """Creates a placholder stream for data to provided to at a later date.
 
@@ -515,7 +521,7 @@ class IterableStream(Stream[T]):
             self.generator = iter(source)
 
         self.stop = False
-
+        
         try:
             self.current = next(self.generator)
         except StopIteration:
@@ -543,6 +549,7 @@ class IterableStream(Stream[T]):
             self.current = next(self.generator)
         except StopIteration:
             self.stop = True
+        super().reset()
 
 
 class Group(Stream[T]):
