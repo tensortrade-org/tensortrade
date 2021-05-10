@@ -2,9 +2,6 @@
 
 Attributes
 ----------
-objects : Dict[str, Identifiable]
-    A dictionary responsible for mapping all identifiable objects created in
-    the project.
 global_clock : `Clock`
     A clock that provides a global reference for all objects that share a
     timeline.
@@ -17,7 +14,6 @@ from abc import ABCMeta
 from tensortrade.core.clock import Clock
 
 
-objects = {}
 global_clock = Clock()
 
 
@@ -36,7 +32,6 @@ class Identifiable(object, metaclass=ABCMeta):
         """
         if not hasattr(self, '_id'):
             self._id = str(uuid.uuid4())
-            objects[self._id] = self
         return self._id
 
     @id.setter
@@ -48,7 +43,6 @@ class Identifiable(object, metaclass=ABCMeta):
         identifier : str
             The identifier to set for the object.
         """
-        objects[identifier] = self
         self._id = identifier
 
 
