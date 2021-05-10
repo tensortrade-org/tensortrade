@@ -128,9 +128,9 @@ class Exchange(Component, TimedIdentifiable):
 
         price = price.quantize(Decimal(10) ** -trading_pair.base.precision)
         if price == 0:
-            raise ValueError("Price in base currency ({}) precision is 0. "
+            raise ValueError("Price quantized in base currency precision ({}) would amount to 0 {}. "
                              "Please consider defining a custom instrument with a higher precision."
-                             .format(trading_pair.base))
+                             .format(trading_pair.base.precision, trading_pair.base))
 
         return price
 
