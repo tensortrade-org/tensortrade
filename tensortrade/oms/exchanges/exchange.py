@@ -122,7 +122,16 @@ class Exchange(Component, TimedIdentifiable):
             The quote price of the specified trading pair, denoted in the core instrument.
         """
         price = Decimal(self._price_streams[str(trading_pair)].value)
-        price = price.quantize(Decimal(10)**-trading_pair.base.precision)
+        if price == 0:
+            raise ValueError("Price of trading pair {} is 0. Please check your input data to make sure there always is "
+                             "a valid (nonzero) price.".format(trading_pair))
+
+        price = price.quantize(Decimal(10) ** -trading_pair.base.precision)
+        if price == 0:
+            raise ValueError("Price in base currency ({}) precision is 0. "
+                             "Please consider defining a custom instrument with a higher precision."
+                             .format(trading_pair.base))
+
         return price
 
     def is_pair_tradable(self, trading_pair: 'TradingPair') -> bool:
