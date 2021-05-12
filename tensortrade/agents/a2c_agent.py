@@ -26,7 +26,7 @@ import tensorflow as tf
 from collections import namedtuple
 
 from tensortrade.agents import Agent, ReplayMemory
-from datetime import  datetime
+from datetime import datetime
 
 A2CTransition = namedtuple('A2CTransition', ['state', 'action', 'reward', 'done', 'value'])
 

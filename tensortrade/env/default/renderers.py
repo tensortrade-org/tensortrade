@@ -282,7 +282,6 @@ class FileLogger(BaseRenderer):
         self._logger.info(f"{log_entry} - Performance:\n{performance}")
 
 
-
 class PlotlyTradingChart(BaseRenderer):
     """Trading visualization for TensorTrade using Plotly.
 
@@ -527,7 +526,6 @@ class PlotlyTradingChart(BaseRenderer):
         if self._show_chart:
             self.fig.show()
 
-
     def save(self) -> None:
         """Saves the current chart to a file.
 
@@ -549,7 +547,6 @@ class PlotlyTradingChart(BaseRenderer):
             self.fig.write_html(file=filename, include_plotlyjs='cdn', auto_open=self._auto_open_html)
         else:
             self.fig.write_image(filename)
-
 
     def reset(self) -> None:
         self._last_trade_step = 0
@@ -702,13 +699,13 @@ class MatplotlibTradingChart(BaseRenderer):
         if self._show_chart:
             plt.show(block=False)
 
-        current_step = step -1
+        current_step = step - 1
 
         self._df = price_history
         if max_steps:
-            window_size=max_steps
+            window_size = max_steps
         else:
-            window_size=20
+            window_size = 20
 
         current_net_worth = round(net_worth[len(net_worth)-1], 1)
         initial_net_worth = round(net_worth[0], 1)
@@ -721,7 +718,6 @@ class MatplotlibTradingChart(BaseRenderer):
         step_range = slice(window_start, current_step)
 
         times = self._df.index.values[step_range]
-
 
         if len(times) > 0:
             # self._render_net_worth(step_range, times, current_step, net_worths, benchmarks)
@@ -757,6 +753,7 @@ class MatplotlibTradingChart(BaseRenderer):
         self._volume_ax = None
         self.net_worth_ax = None
         self._df = None
+
 
 _registry = {
     "screen-log": ScreenLogger,

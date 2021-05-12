@@ -49,7 +49,6 @@ class TensorTradeActionScheme(ActionScheme):
         self.portfolio: 'Portfolio' = None
         self.broker: 'Broker' = Broker()
 
-
     @property
     def clock(self) -> 'Clock':
         """The reference clock from the environment. (`Clock`)

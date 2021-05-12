@@ -115,7 +115,7 @@ class ObservationHistory(object):
             The new observation to store.
         """
         self.rows[self.index] = row
-        self.index +=1
+        self.index += 1
         if len(self.rows.keys()) > self.window_size:
             del self.rows[list(self.rows.keys())[0]]
 
@@ -381,11 +381,11 @@ class IntradayObserver(Observer):
         self.renderer_history = []
 
         if self.randomize:
-          self.num_episodes = 0
-          while (self.feed.has_next()):
-            ts = self.feed.next()["external"]["timestamp"]
-            if ts.time() == self.stop_time:
-              self.num_episodes += 1
+            self.num_episodes = 0
+            while self.feed.has_next():
+                ts = self.feed.next()["external"]["timestamp"]
+                if ts.time() == self.stop_time:
+                    self.num_episodes += 1
 
         self.feed.reset()
         self.warmup()
@@ -424,14 +424,14 @@ class IntradayObserver(Observer):
         # Push new observation to observation history
         obs_row = data["external"]
         try:
-          obs_ts = obs_row.pop('timestamp')
+            obs_ts = obs_row.pop('timestamp')
         except KeyError:
-          raise KeyError("Include Stream of Timestamps named 'timestamp' in feed")
+            raise KeyError("Include Stream of Timestamps named 'timestamp' in feed")
         self.history.push(obs_row)
 
         # Check if episode should be stopped
         if obs_ts.time() == self.stop_time:
-          self.stop = True
+            self.stop = True
 
         obs = self.history.observe()
         obs = obs.astype(self._observation_dtype)
@@ -452,13 +452,13 @@ class IntradayObserver(Observer):
         self.history.reset()
 
         if self.randomize or not self.feed.has_next():
-          self.feed.reset()
-          if self.randomize:
-            episode_num = 0
-            while (episode_num < randrange(self.num_episodes)):
-              ts = self.feed.next()["external"]["timestamp"]
-              if ts.time() == self.stop_time:
-                episode_num += 1
+            self.feed.reset()
+            if self.randomize:
+                episode_num = 0
+                while episode_num < randrange(self.num_episodes):
+                    ts = self.feed.next()["external"]["timestamp"]
+                    if ts.time() == self.stop_time:
+                        episode_num += 1
 
         self.warmup()
 

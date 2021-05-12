@@ -65,6 +65,10 @@ def slice(s: "Stream[str]", start: int, end: int) -> "Stream[str]":
     ----------
     s : `Stream[str]`
         A string stream.
+    start : int
+        The start of the slice.
+    end : int
+        The end of the slice.
 
     Returns
     -------

@@ -403,6 +403,7 @@ class EWM(Stream[List[float]]):
         self.weights = []
         super().reset()
 
+
 @Float.register(["ewm"])
 def ewm(s: "Stream[float]",
         com: float = None,

@@ -150,8 +150,8 @@ class Rolling(Stream[List[float]]):
         `Stream[float]`
             A rolling variance stream.
         """
-        func1 = lambda x: np.nanvar(x, ddof=1)
-        func2 = lambda x: np.var(x, ddof=1)
+        def func1(x): return np.nanvar(x, ddof=1)
+        def func2(x): return np.var(x, ddof=1)
         func = func1 if self.min_periods < self.window else func2
         return self.agg(func).astype("float")
 

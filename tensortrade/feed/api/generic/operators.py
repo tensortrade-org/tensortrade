@@ -14,9 +14,6 @@ from tensortrade.feed.core.operators import (
     TypeVar
 )
 
-
-
-
 K = TypeVar("K")
 
 

@@ -161,7 +161,7 @@ class DQNAgent(Agent):
                 state = next_state
                 total_reward += reward
                 steps_done += 1
-                total_steps_done +=1
+                total_steps_done += 1
 
                 if len(memory) < batch_size:
                     continue
