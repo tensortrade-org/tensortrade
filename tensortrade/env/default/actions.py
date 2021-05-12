@@ -400,6 +400,7 @@ class ManagedRiskOrders(TensorTradeActionScheme):
 
 
 _registry = {
+    'bsh': BSH,
     'simple': SimpleOrders,
     'managed-risk': ManagedRiskOrders,
 }
