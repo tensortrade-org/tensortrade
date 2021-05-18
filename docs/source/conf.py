@@ -49,12 +49,12 @@ extensions = [
     'sphinx.ext.mathjax',
     'sphinx.ext.ifconfig',
     'sphinx.ext.viewcode',
-    'sphinx.ext.napoleon', # reading numpydoc strings
+    'sphinx.ext.napoleon',  # reading numpydoc strings
     'sphinxcontrib.apidoc',  # automatically generate API docs
     'nbsphinx',
     'nbsphinx_link',  # for linking notebooks from outside sphinx source root
     'recommonmark',   # for including markdown
-    'sphinx_markdown_tables' # Support rendering tables in markdown
+    'sphinx_markdown_tables'  # Support rendering tables in markdown
 ]
 
 # nbsphinx settings

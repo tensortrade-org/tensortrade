@@ -131,6 +131,8 @@ class PBR(TensorTradeRewardScheme):
 Finally, we would like to make sure we can see if the agent is selling at the peaks and buying at the troughs. We will make a quick `Renderer` that can show this information using `Matplotlib`.
 
 ```python
+import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 
 from tensortrade.env.generic import Renderer
@@ -172,7 +174,8 @@ class PositionChangeChart(Renderer):
         axs[0].scatter(sell.index, sell.values, marker="^", color="red")
         axs[0].set_title("Trading Chart")
 
-        env.action_scheme.portfolio.performance.plot(ax=axs[1])
+        performance_df = pd.DataFrame().from_dict(env.action_scheme.portfolio.performance, orient='index')
+        performance_df.plot(ax=axs[1])
         axs[1].set_title("Net Worth")
 
         plt.show()
