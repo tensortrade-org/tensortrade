@@ -224,7 +224,6 @@ class A2CAgent(Agent):
 
                 if n_steps and steps_done >= n_steps:
                     done = True
-                    stop_training = True
 
             is_checkpoint = save_every and episode % save_every == 0
 
