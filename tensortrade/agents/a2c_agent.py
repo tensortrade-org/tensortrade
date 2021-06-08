@@ -195,6 +195,7 @@ class A2CAgent(Agent):
         while episode < n_episodes and not stop_training:
             state = self.env.reset()
             done = False
+            steps_done = 0
 
             print('====      EPISODE ID ({}/{}): {}      ===='.format(episode + 1,
                                                                       n_episodes,
