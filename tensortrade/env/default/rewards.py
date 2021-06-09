@@ -110,7 +110,10 @@ class SimpleProfitMinusBenchmark(TensorTradeRewardScheme):
         benchmark_returns = [(b - a) / a for a, b in zip(benchmark[::1], benchmark[1::1])]
         returns = np.array([x + 1 for x in returns[-self._window_size:]]).cumprod() - 1
         benchmark_returns = np.array([x + 1 for x in benchmark_returns[-self._window_size:]]).cumprod() - 1
-        diff = returns[-1] - benchmark_returns[-1]
+        if returns[-1] < 0:
+            diff = returns[-1] - benchmark_returns[-1]
+        else:
+            diff = returns[-1]
         reward = np.sign(diff) * (diff)**2
         return 0 if len(returns) < 1 else reward
     
