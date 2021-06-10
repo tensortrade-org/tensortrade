@@ -305,7 +305,8 @@ _registry = {
     'simple': SimpleProfit,
     'risk-adjusted': RiskAdjustedReturns,
     'compared-to-BuyandHold': SimpleProfitMinusBuyandHold,
-    'compared-to-BuyandHold-only-negative': SimpleProfitMinusBuyandHoldWhenNegativeProfit
+    'compared-to-BuyandHold-only-negative': SimpleProfitMinusBuyandHoldWhenNegativeProfit,
+    'pbr': PBR
 }
 
 
