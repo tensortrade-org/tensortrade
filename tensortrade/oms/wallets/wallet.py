@@ -302,8 +302,14 @@ class Wallet(Identifiable):
             Raised if an equation that describes the conservation of funds
             is broken.
         """
+        
+        print("commission")
+        print(commission)
+        
         quantity = quantity.quantize()
         commission = commission.quantize()
+        
+        print(commission)
 
         pair = source.instrument / target.instrument
         poid = quantity.path_id
