@@ -273,6 +273,10 @@ class SimpleOrders(TensorTradeActionScheme):
         if size < 10 ** -instrument.precision \
                 or size < self.min_order_pct * portfolio.net_worth \
                 or size < self.min_order_abs:
+            print(10 ** -instrument.precision)
+            print(self.min_order_pct * portfolio.net_worth)
+            print(self.min_order_pct)
+            print(self.min_order_abs)
             print("no Order")
             return []
 
