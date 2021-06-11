@@ -204,7 +204,7 @@ class SimpleOrders(TensorTradeActionScheme):
                  durations: 'Union[List[int], int]' = None,
                  trade_type: 'TradeType' = TradeType.MARKET,
                  order_listener: 'OrderListener' = None,
-                 min_order_pct: float = 0.02,
+                 min_order_pct: float = 0.00,
                  min_order_abs: float = 0.00) -> None:
         super().__init__()
         self.min_order_pct = min_order_pct
@@ -250,17 +250,17 @@ class SimpleOrders(TensorTradeActionScheme):
         if action == 0:
             return []
         
-        print(action)
+#         print(action)
 
         (ep, (criteria, proportion, duration, side)) = self.actions[action]
         
-        print(criteria, proportion, duration, side)
+#         print(criteria, proportion, duration, side)
 
         instrument = side.instrument(ep.pair)
         wallet = portfolio.get_wallet(ep.exchange.id, instrument=instrument)
         
-        print(instrument)
-        print(wallet)
+#         print(instrument)
+#         print(wallet)
 
         balance = wallet.balance.as_float()
         size = (balance * proportion)
@@ -268,17 +268,18 @@ class SimpleOrders(TensorTradeActionScheme):
 
         quantity = (size * instrument).quantize()
         
-        print(balance, size, quantity)
+#         print(balance, size, quantity)
 
         if size < 10 ** -instrument.precision \
                 or size < self.min_order_pct * portfolio.net_worth \
                 or size < self.min_order_abs:
-            print(10 ** -instrument.precision)
-            print(self.min_order_pct * portfolio.net_worth)
-            print(self.min_order_pct)
-            print(self.min_order_abs)
-            print("no Order")
             return []
+#             print(10 ** -instrument.precision)
+#             print(self.min_order_pct * portfolio.net_worth)
+#             print(self.min_order_pct)
+#             print(self.min_order_abs)
+#             print("no Order")
+            
 
         order = Order(
             step=self.clock.step,
@@ -331,7 +332,7 @@ class ManagedRiskOrders(TensorTradeActionScheme):
                  durations: 'Union[List[int], int]' = None,
                  trade_type: 'TradeType' = TradeType.MARKET,
                  order_listener: 'OrderListener' = None,
-                 min_order_pct: float = 0.02,
+                 min_order_pct: float = 0.00,
                  min_order_abs: float = 0.00) -> None:
         super().__init__()
         self.min_order_pct = min_order_pct
