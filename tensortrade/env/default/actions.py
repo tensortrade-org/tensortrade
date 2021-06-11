@@ -249,21 +249,31 @@ class SimpleOrders(TensorTradeActionScheme):
 
         if action == 0:
             return []
+        
+        print(action)
 
         (ep, (criteria, proportion, duration, side)) = self.actions[action]
+        
+        print(criteria, proportion, duration, side)
 
         instrument = side.instrument(ep.pair)
         wallet = portfolio.get_wallet(ep.exchange.id, instrument=instrument)
+        
+        print(instrument)
+        print(wallet)
 
         balance = wallet.balance.as_float()
         size = (balance * proportion)
         size = min(balance, size)
 
         quantity = (size * instrument).quantize()
+        
+        print(balance, size, quantity)
 
         if size < 10 ** -instrument.precision \
                 or size < self.min_order_pct * portfolio.net_worth \
                 or size < self.min_order_abs:
+            print("no Order")
             return []
 
         order = Order(
