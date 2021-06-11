@@ -91,6 +91,7 @@ class TensorTradeActionScheme(ActionScheme):
         for order in orders:
             if order:
                 logging.info('Step {}: {} {}'.format(order.step, order.side, order.quantity))
+                print('Step {}: {} {}'.format(order.step, order.side, order.quantity))
                 self.broker.submit(order)
 
         self.broker.update()
