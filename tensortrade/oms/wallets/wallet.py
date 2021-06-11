@@ -303,13 +303,13 @@ class Wallet(Identifiable):
             is broken.
         """
         
-        print("commission")
-        print(commission)
+#         print("commission")
+#         print(commission)
         
         quantity = quantity.quantize()
         commission = commission.quantize()
         
-        print(commission)
+#         print(commission)
 
         pair = source.instrument / target.instrument
         poid = quantity.path_id
