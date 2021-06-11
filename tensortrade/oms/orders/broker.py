@@ -82,7 +82,7 @@ class Broker(OrderListener, TimeIndexed):
         """
         for order in self.unexecuted:
             if order.is_executable:
-                print('Broker: Step {}: {} {}'.format(order.step, order.side, order.quantity))
+#                 print('Broker: Step {}: {} {}'.format(order.step, order.side, order.quantity))
                 self.unexecuted.remove(order)
                 self.executed[order.id] = order
 
