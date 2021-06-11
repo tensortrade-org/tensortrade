@@ -204,7 +204,7 @@ class A2CAgent(Agent):
             while not done:
                 threshold = eps_end + (eps_start - eps_end) * np.exp(-steps_done / eps_decay_steps)
                 action = self.get_action(state, threshold=threshold)
-                print(threshold, action)
+#                 print(threshold, action)
                 next_state, reward, done, _ = self.env.step(action)
 
                 value = self.critic_network(state[None, :], training=False)
