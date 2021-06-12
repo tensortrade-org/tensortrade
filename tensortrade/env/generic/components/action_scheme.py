@@ -37,7 +37,7 @@ class ActionScheme(Component, TimeIndexed, metaclass=ABCMeta):
         raise NotImplementedError()
 
     @abstractmethod
-    def perform(self, env: 'TradingEnv', action: Any) -> None:
+    def perform(self, env: 'TradingEnv', action: Any) -> int:
         """Performs an action on the environment.
 
         Parameters
