@@ -252,6 +252,66 @@ class TradeBased(TensorTradeRewardScheme):
                         break
         return 0 if len(trade_steps) < 1 else trade_profit
     
+    
+class TradeBasedWithImmediateBuyPenaltyAndHoldReward(TensorTradeRewardScheme):
+    """A simple reward scheme that rewards the agent for incremental increases
+    in net worth.
+
+    Parameters
+    ----------
+    window_size : int
+        The size of the look back window for computing the reward.
+
+    Attributes
+    ----------
+    window_size : int
+        The size of the look back window for computing the reward.
+    """
+
+    def __init__(self, window_size: int = 1):
+        self._window_size = self.default('window_size', window_size)
+
+    def get_reward(self, portfolio: 'Portfolio') -> float:
+        """Rewards the agent for incremental increases in net worth over a
+        sliding window.
+
+        Parameters
+        ----------
+        portfolio : `Portfolio`
+            The portfolio being used by the environment.
+
+        Returns
+        -------
+        float
+            The cumulative percentage change in net worth over the previous
+            `window_size` time steps.
+        """
+        net_worths = [nw['net_worth'] for nw in portfolio.performance.values()]
+        current_step = [step for step in portfolio.performance.keys()][-1]
+        cash_total = [nw['binance:/USDT:/total'] for nw in portfolio.performance.values()]
+        trade_steps = [i for i, (x, y) in enumerate(zip(cash_total[:-1],cash_total[1:])) if x!=y]
+        trade_sides = [x>y for i, (x, y) in enumerate(zip(cash_total[:-1],cash_total[1:])) if x!=y]
+        prices = [nw['binance:/USDT-ETH'] for nw in portfolio.performance.values()]
+        trade_prices = [prices[i] for i in trade_steps]
+        trade_profit = 0
+        if len(trade_steps)>0:
+            if trade_sides[-1] == False and trade_steps[-1] == current_step-1:
+                for i in range(len(trade_sides)-1, 0, -1):
+                    if trade_sides[i] == True:
+                        trade_profit = (trade_prices[-1]/trade_prices[i])-1-0.002
+                        break
+            elif trade_sides[-1] == True and trade_steps[-1] == current_step-1:
+                for i in range(len(trade_sides)-1, 0, -1):
+                    if trade_sides[i] == False:
+                        trade_profit = -(1/(trade_steps[-1]-trade_steps[i]))
+                        break
+            if ((net_worths[-1]-cash_total[-1]) > 0):
+                returns = [(b - a) / a for a, b in zip(net_worths[::1], net_worths[1::1])]
+                window = min(current_step - trade_steps[-1], self._window_size)
+                returns = np.array([x + 1 for x in returns[-window:]]).cumprod() - 1
+                trade_profit += returns[-1]
+        return 0 if len(trade_steps) < 1 else trade_profit
+    
 
 class RiskAdjustedReturns(TensorTradeRewardScheme):
     """A reward scheme that rewards the agent for increasing its net worth,
@@ -399,7 +459,8 @@ _registry = {
     'compared-to-BuyandHold': SimpleProfitMinusBuyandHold,
     'compared-to-BuyandHold-only-negative': SimpleProfitMinusBuyandHoldWhenNegativeProfit,
     'simple-cash-penalty': SimpleProfitWithCashPenalty,
-    'trade': TradeBased
+    'trade': TradeBased,
+    'trade-immediate-buy-penalty-hold-reward': TradeBasedWithImmediateBuyPenaltyAndHoldReward
 }
 
 
