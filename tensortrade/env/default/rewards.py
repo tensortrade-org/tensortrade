@@ -248,7 +248,7 @@ class TradeBased(TensorTradeRewardScheme):
             if trade_sides[-1] == False and trade_steps[-1] == current_step-1:
                 for i in range(len(trade_sides)-1, 0, -1):
                     if trade_sides[i] == True:
-                        trade_profit = trade_prices[-1]/trade_prices[i]
+                        trade_profit = (trade_prices[-1]/trade_prices[i])-1-0.002
                         break
         return 0 if len(trade_steps) < 1 else trade_profit
     
