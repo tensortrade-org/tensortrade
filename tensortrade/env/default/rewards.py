@@ -245,7 +245,7 @@ class TradeBased(TensorTradeRewardScheme):
         trade_steps = [i for i, (x, y) in enumerate(zip(cash_total[:-1],cash_total[1:])) if x!=y]
         trade_sides = [x>y for i, (x, y) in enumerate(zip(cash_total[:-1],cash_total[1:])) if x!=y]
         prices = [nw['binance:/USDT-ETH'] for nw in portfolio.performance.values()]
-        trade_prices = [prices[i] for i in trade_index]
+        trade_prices = [prices[i] for i in trade_steps]
         trade_profit = 0
         if trade_sides[-1] == False and trade_steps[-1] == current_step-1:
             for i in range(len(trade_sides)-1, 0, -1):
