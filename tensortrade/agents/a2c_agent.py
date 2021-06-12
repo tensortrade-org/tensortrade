@@ -205,12 +205,13 @@ class A2CAgent(Agent):
                 threshold = eps_end + (eps_start - eps_end) * np.exp(-steps_done / eps_decay_steps)
                 action = self.get_action(state, threshold=threshold)
 #                 print(threshold, action)
-                next_state, reward, done, _ = self.env.step(action)
+                next_state, reward, done, info = self.env.step(action)
 
                 value = self.critic_network(state[None, :], training=False)
                 value = tf.squeeze(value, axis=-1)
-
-                memory.push(state, action, reward, done, value)
+                
+                if(info['action_possible'] == 1):
+                    memory.push(state, action, reward, done, value)
 
                 state = next_state
                 total_reward += reward
