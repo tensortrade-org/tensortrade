@@ -160,6 +160,49 @@ class SimpleProfitMinusBuyandHold(TensorTradeRewardScheme):
         reward = np.sign(diff) * (diff)**2
         return 0 if len(returns) < 1 else reward
     
+    
+class SimpleProfitWithCashPenalty(TensorTradeRewardScheme):
+    """A simple reward scheme that rewards the agent for incremental increases
+    in net worth.
+
+    Parameters
+    ----------
+    window_size : int
+        The size of the look back window for computing the reward.
+
+    Attributes
+    ----------
+    window_size : int
+        The size of the look back window for computing the reward.
+    """
+
+    def __init__(self, window_size: int = 1):
+        self._window_size = self.default('window_size', window_size)
+
+    def get_reward(self, portfolio: 'Portfolio') -> float:
+        """Rewards the agent for incremental increases in net worth over a
+        sliding window.
+
+        Parameters
+        ----------
+        portfolio : `Portfolio`
+            The portfolio being used by the environment.
+
+        Returns
+        -------
+        float
+            The cumulative percentage change in net worth over the previous
+            `window_size` time steps.
+        """
+        net_worths = [nw['net_worth'] for nw in portfolio.performance.values()]
+        returns = [(b - a) / a for a, b in zip(net_worths[::1], net_worths[1::1])]
+        returns = np.array([x + 1 for x in returns[-self._window_size:]]).cumprod() - 1
+        cash = [nw['binance:/USDT:/total'] for nw in portfolio.performance.values()]
+        cash_penalty = net_worths[-1] * 0.3 - cash[-1]
+        if cash_penalty > 0:
+            cash_penalty = self._window_size*0.2
+        return 0 if len(returns) < 1 else returns[-1] - cash_penalty
+    
 
 class RiskAdjustedReturns(TensorTradeRewardScheme):
     """A reward scheme that rewards the agent for increasing its net worth,
