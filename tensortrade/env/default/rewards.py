@@ -203,6 +203,57 @@ class SimpleProfitWithCashPenalty(TensorTradeRewardScheme):
             cash_penalty = self._window_size*0.2
         return 0 if len(returns) < 1 else returns[-1] - cash_penalty
     
+    
+class TradeBased(TensorTradeRewardScheme):
+    """A simple reward scheme that rewards the agent for incremental increases
+    in net worth.
+
+    Parameters
+    ----------
+    window_size : int
+        The size of the look back window for computing the reward.
+
+    Attributes
+    ----------
+    window_size : int
+        The size of the look back window for computing the reward.
+    """
+
+    def __init__(self, window_size: int = 1):
+        self._window_size = self.default('window_size', window_size)
+
+    def get_reward(self, portfolio: 'Portfolio') -> float:
+        """Rewards the agent for incremental increases in net worth over a
+        sliding window.
+
+        Parameters
+        ----------
+        portfolio : `Portfolio`
+            The portfolio being used by the environment.
+
+        Returns
+        -------
+        float
+            The cumulative percentage change in net worth over the previous
+            `window_size` time steps.
+        """
+        net_worths = [nw['net_worth'] for nw in portfolio.performance.values()]
+        returns = [(b - a) / a for a, b in zip(net_worths[::1], net_worths[1::1])]
+        returns = np.array([x + 1 for x in returns[-self._window_size:]]).cumprod() - 1
+        current_step = [step for step in portfolio.performance.keys()][-1]
+        cash_total = [nw['binance:/USDT:/total'] for nw in portfolio.performance.values()]
+        trade_steps = [i for i, (x, y) in enumerate(zip(cash_total[:-1],cash_total[1:])) if x!=y]
+        trade_sides = [x>y for i, (x, y) in enumerate(zip(cash_total[:-1],cash_total[1:])) if x!=y]
+        prices = [nw['binance:/USDT-ETH'] for nw in portfolio.performance.values()]
+        trade_prices = [prices[i] for i in trade_index]
+        trade_profit = 0
+        if trade_sides[-1] == False and trade_steps[-1] == current_step-1:
+            for i in range(len(trade_sides)-1, 0, -1):
+                if trade_sides[i] == True:
+                    trade_profit = trade_prices[-1]/trade_prices[i]
+                    break
+        return 0 if len(returns) < 1 else trade_profit
+    
 
 class RiskAdjustedReturns(TensorTradeRewardScheme):
     """A reward scheme that rewards the agent for increasing its net worth,
@@ -349,7 +400,8 @@ _registry = {
     'risk-adjusted': RiskAdjustedReturns,
     'compared-to-BuyandHold': SimpleProfitMinusBuyandHold,
     'compared-to-BuyandHold-only-negative': SimpleProfitMinusBuyandHoldWhenNegativeProfit,
-    'pbr': PBR
+    'simple-cash-penalty': SimpleProfitWithCashPenalty,
+    'trade': TradeBased
 }
 
 
