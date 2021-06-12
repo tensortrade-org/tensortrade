@@ -237,9 +237,6 @@ class TradeBased(TensorTradeRewardScheme):
             The cumulative percentage change in net worth over the previous
             `window_size` time steps.
         """
-        net_worths = [nw['net_worth'] for nw in portfolio.performance.values()]
-        returns = [(b - a) / a for a, b in zip(net_worths[::1], net_worths[1::1])]
-        returns = np.array([x + 1 for x in returns[-self._window_size:]]).cumprod() - 1
         current_step = [step for step in portfolio.performance.keys()][-1]
         cash_total = [nw['binance:/USDT:/total'] for nw in portfolio.performance.values()]
         trade_steps = [i for i, (x, y) in enumerate(zip(cash_total[:-1],cash_total[1:])) if x!=y]
@@ -247,12 +244,13 @@ class TradeBased(TensorTradeRewardScheme):
         prices = [nw['binance:/USDT-ETH'] for nw in portfolio.performance.values()]
         trade_prices = [prices[i] for i in trade_steps]
         trade_profit = 0
-        if trade_sides[-1] == False and trade_steps[-1] == current_step-1:
-            for i in range(len(trade_sides)-1, 0, -1):
-                if trade_sides[i] == True:
-                    trade_profit = trade_prices[-1]/trade_prices[i]
-                    break
-        return 0 if len(returns) < 1 else trade_profit
+        if len(trade_steps)>0:
+            if trade_sides[-1] == False and trade_steps[-1] == current_step-1:
+                for i in range(len(trade_sides)-1, 0, -1):
+                    if trade_sides[i] == True:
+                        trade_profit = trade_prices[-1]/trade_prices[i]
+                        break
+        return 0 if len(trade_steps) < 1 else trade_profit
     
 
 class RiskAdjustedReturns(TensorTradeRewardScheme):
