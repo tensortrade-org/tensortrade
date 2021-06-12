@@ -210,7 +210,7 @@ class A2CAgent(Agent):
                 value = self.critic_network(state[None, :], training=False)
                 value = tf.squeeze(value, axis=-1)
                 
-                if(info['action_possible'] == 1):
+                if((info['action_possible'] == 1) or (action == 0)):
                     memory.push(state, action, reward, done, value)
 
                 state = next_state
