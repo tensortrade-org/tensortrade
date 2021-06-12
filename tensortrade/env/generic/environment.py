@@ -128,6 +128,8 @@ class TradingEnv(gym.Env, TimeIndexed):
         info['action_possible'] = action_possible
 
         self.clock.increment()
+        
+        print(action_possible, action, reward, self.clock.step)
 
         return obs, reward, done, info
 
