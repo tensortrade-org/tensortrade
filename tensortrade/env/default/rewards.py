@@ -298,24 +298,24 @@ class TradeBasedWithImmediateBuyPenaltyAndHoldReward(TensorTradeRewardScheme):
             if trade_sides[-1] == False and trade_steps[-1] == current_step-1:
                 for i in range(len(trade_sides)-1, 0, -1):
                     if trade_sides[i] == True:
-                        trade_profit = (trade_prices[-1]/trade_prices[i])-1-0.002
-                        print("sell")
-                        print(trade_profit)
+                        trade_profit = 1000*(trade_prices[-1]/trade_prices[i])-1-0.002
+#                         print("sell")
+#                         print(trade_profit)
                         break
             elif trade_sides[-1] == True and trade_steps[-1] == current_step-1:
                 for i in range(len(trade_sides)-1, 0, -1):
                     if trade_sides[i] == False:
-                        trade_profit = -(1/(trade_steps[-1]-trade_steps[i]))
-                        print("buy")
-                        print(trade_profit)
+                        trade_profit = -10*(1/(trade_steps[-1]-trade_steps[i]))
+#                         print("buy")
+#                         print(trade_profit)
                         break
             if ((net_worths[-1]-cash_total[-1]) > 0):
                 returns = [(b - a) / a for a, b in zip(net_worths[::1], net_worths[1::1])]
                 window = min(current_step - trade_steps[-1], self._window_size)
                 returns = np.array([x + 1 for x in returns[-window:]]).cumprod() - 1
-                trade_profit += returns[-1]
-                print("hold")
-                print(returns[-1])
+                trade_profit += 1000*returns[-1]
+#                 print("hold")
+#                 print(returns[-1])
         return 0 if len(trade_steps) < 1 else trade_profit
     
 
