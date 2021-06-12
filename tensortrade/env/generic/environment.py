@@ -129,7 +129,7 @@ class TradingEnv(gym.Env, TimeIndexed):
 
         self.clock.increment()
         
-        print(action_possible, action, reward, self.clock.step)
+#         print(action_possible, action, reward, self.clock.step)
 
         return obs, reward, done, info
 
