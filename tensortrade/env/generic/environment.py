@@ -118,12 +118,14 @@ class TradingEnv(gym.Env, TimeIndexed):
         dict
             The information gathered after completing the step.
         """
-        self.action_scheme.perform(self, action)
+        action_possible = self.action_scheme.perform(self, action)
 
         obs = self.observer.observe(self)
         reward = self.reward_scheme.reward(self)
         done = self.stopper.stop(self)
         info = self.informer.info(self)
+        
+        info['action_possible'] = action_possible
 
         self.clock.increment()
 
