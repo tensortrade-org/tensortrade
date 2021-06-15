@@ -153,10 +153,11 @@ class SimpleProfitMinusBuyandHold(TensorTradeRewardScheme):
         net_worths = [nw['net_worth'] for nw in portfolio.performance.values()]
         benchmark = [nw['binance:/USDT-ETH'] for nw in portfolio.performance.values()]
         returns = [(b - a) / a for a, b in zip(net_worths[::1], net_worths[1::1])]
-        benchmark_returns = [(b - a) / a for a, b in zip(benchmark[::1], benchmark[1::1])]
+#         benchmark_returns = [(b - a) / a for a, b in zip(benchmark[::1], benchmark[1::1])]
         returns = np.array([x + 1 for x in returns[-self._window_size:]]).cumprod() - 1
-        benchmark_returns = np.array([x + 1 for x in benchmark_returns[-self._window_size:]]).cumprod() - 1
-        diff = returns[-1] - benchmark_returns[-1]
+#         benchmark_returns = np.array([x + 1 for x in benchmark_returns[-self._window_size:]]).cumprod() - 1
+        benchmark_returns = benchmark[-1]/benchmark[-self._window_size] - 1
+        diff = returns[-1] - benchmark_returns
         reward = np.sign(diff) * (diff)**2
         return 0 if len(returns) < 1 else reward
     
