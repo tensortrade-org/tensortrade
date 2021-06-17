@@ -544,7 +544,9 @@ class PlotlyTradingChart(BaseRenderer):
         filename = _create_auto_file_name(self._filename_prefix, self._save_format)
         filename = os.path.join(self._path, filename)
         if self._save_format == 'html':
-            self.fig.write_html(file=filename, include_plotlyjs='cdn', auto_open=self._auto_open_html)
+            print("Save HTML")
+            a = self.fig.write_html(file=filename, include_plotlyjs='cdn', auto_open=self._auto_open_html)
+            print(a)
         else:
             self.fig.write_image(filename)
 
