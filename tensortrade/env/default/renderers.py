@@ -359,7 +359,8 @@ class PlotlyTradingChart(BaseRenderer):
         self._net_worth_chart = None
         self._base_annotations = None
         self._last_trade_step = 0
-        self._show_chart = display
+#         self._show_chart = display
+        self._show_chart = None
 
     def _create_figure(self, performance_keys: dict) -> None:
         fig = make_subplots(
