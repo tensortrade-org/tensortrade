@@ -335,7 +335,7 @@ class PlotlyTradingChart(BaseRenderer):
                  display: bool = True,
                  height: int = None,
                  timestamp_format: str = '%Y-%m-%d %H:%M:%S',
-                 save_format: str = None,
+                 save_format: str = 'html',
                  path: str = 'charts',
                  filename_prefix: str = 'chart_',
                  auto_open_html: bool = False,
