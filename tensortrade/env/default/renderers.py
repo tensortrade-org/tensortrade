@@ -336,7 +336,7 @@ class PlotlyTradingChart(BaseRenderer):
                  height: int = None,
                  timestamp_format: str = '%Y-%m-%d %H:%M:%S',
                  save_format: str = 'html',
-                 path: str = 'charts',
+                 path: str = 'drive/MyDrive/charts',
                  filename_prefix: str = 'chart_',
                  auto_open_html: bool = False,
                  include_plotlyjs: Union[bool, str] = 'cdn') -> None:
