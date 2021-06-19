@@ -52,7 +52,10 @@ class Quantity:
 
     def __init__(self, instrument: 'Instrument', size: Union[Decimal, Number], path_id: str = None):
         if size < 0:
-            raise InvalidNegativeQuantity(size)
+            if abs(size) > Decimal(10)**(-instrument.precision):
+                raise InvalidNegativeQuantity(size)
+            else:
+                size = 0
 
         self.instrument = instrument
         self.size = size if isinstance(size, Decimal) else Decimal(size)

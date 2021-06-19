@@ -303,10 +303,10 @@ def proportion_order(portfolio: 'Portfolio',
 
     pair = portfolio.base_instrument / target.instrument
 
-    order += OrderSpec(
+    order.add_order_spec(OrderSpec(
         side=TradeSide.BUY,
         trade_type=TradeType.MARKET,
         exchange_pair=ExchangePair(exchange, pair),
         criteria=None
-    )
+    ))
     return order
