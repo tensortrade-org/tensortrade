@@ -69,8 +69,10 @@ class CryptoDataDownload:
         df = df.rename({base_vc: new_base_vc, quote_vc: new_quote_vc, "Date": "date"}, axis=1)
 
         df["unix"] = df["unix"].astype(int)
-        df["unix"] = df["unix"].apply(lambda x: x * 1000 if len(str(x)) == 10 else x)
-        df["date"] = pd.to_datetime(df["unix"])
+        df["unix"] = df["unix"].apply(
+            lambda x: int(x / 1000) if len(str(x)) == 13 else x
+        )
+        df["date"] = pd.to_datetime(df["unix"], unit="s")
 
         df = df.set_index("date")
         df.columns = [name.lower() for name in df.columns]
