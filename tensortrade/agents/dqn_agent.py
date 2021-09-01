@@ -198,6 +198,6 @@ class DQNAgent(Agent):
 
             episode += 1
 
-        mean_reward = total_reward / steps_done
+        mean_reward = total_reward / total_steps_done
 
         return mean_reward
