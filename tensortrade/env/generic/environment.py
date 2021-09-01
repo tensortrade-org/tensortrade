@@ -16,6 +16,7 @@ import uuid
 import logging
 
 from typing import Dict, Any, Tuple
+from random import randint
 
 import gym
 import numpy as np
@@ -88,6 +89,8 @@ class TradingEnv(gym.Env, TimeIndexed):
             self.logger = logging.getLogger(kwargs.get('logger_name', __name__))
             self.logger.setLevel(kwargs.get('log_level', logging.DEBUG))
 
+        self._random_start = kwargs.get('random_start', False)
+
     @property
     def components(self) -> 'Dict[str, Component]':
         """The components of the environment. (`Dict[str,Component]`, read-only)"""
@@ -139,12 +142,24 @@ class TradingEnv(gym.Env, TimeIndexed):
         obs : `np.array`
             The first observation of the environment.
         """
+        if self._random_start:
+            size = len(self.observer.feed.process[-1].inputs[0].iterable)
+            random_start = randint(0, int(size*0.9))
+        else:
+            random_start = 0
+
         self.episode_id = str(uuid.uuid4())
         self.clock.reset()
 
+        # print("HELOO")
+        # print(len(self.observer.feed.process[-1].inputs[0].iterable))
+
         for c in self.components.values():
             if hasattr(c, "reset"):
-                c.reset()
+                if isinstance(c, Observer):
+                    c.reset(random_start)
+                else:
+                    c.reset()
 
         obs = self.observer.observe(self)
 
