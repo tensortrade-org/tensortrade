@@ -66,7 +66,14 @@ class SimpleProfit(TensorTradeRewardScheme):
             The cumulative percentage change in net worth over the previous
             `window_size` time steps.
         """
-        net_worths = [nw['net_worth'] for nw in portfolio.performance.values()]
+        net_worths = []
+        counter = 0
+        for nw in reversed(portfolio.performance.values()):
+            net_worths.insert(0, nw['net_worth'])
+            if counter > self._window_size:
+                break
+            counter += 1
+        # net_worths = [nw['net_worth'] for nw in portfolio.performance.values()]
         returns = [(b - a) / a for a, b in zip(net_worths[::1], net_worths[1::1])]
         returns = np.array([x + 1 for x in returns[-self._window_size:]]).cumprod() - 1
         return 0 if len(returns) < 1 else returns[-1]
@@ -104,8 +111,17 @@ class SimpleProfitMinusBuyandHoldWhenNegativeProfit(TensorTradeRewardScheme):
             The cumulative percentage change in net worth over the previous
             `window_size` time steps.
         """
-        net_worths = [nw['net_worth'] for nw in portfolio.performance.values()]
-        benchmark = [nw['binance:/USDT-ETH'] for nw in portfolio.performance.values()]
+        net_worths = []
+        benchmark = []
+        counter = 0
+        for nw in reversed(portfolio.performance.values()):
+            net_worths.insert(0, nw['net_worth'])
+            benchmark.insert(0, nw['binance:/USDT-ETH'])
+            if counter > self._window_size:
+                break
+            counter += 1
+        # net_worths = [nw['net_worth'] for nw in portfolio.performance.values()]
+        # benchmark = [nw['binance:/USDT-ETH'] for nw in portfolio.performance.values()]
         returns = [(b - a) / a for a, b in zip(net_worths[::1], net_worths[1::1])]
         benchmark_returns = [(b - a) / a for a, b in zip(benchmark[::1], benchmark[1::1])]
         returns = np.array([x + 1 for x in returns[-self._window_size:]]).cumprod() - 1
@@ -150,16 +166,94 @@ class SimpleProfitMinusBuyandHold(TensorTradeRewardScheme):
             The cumulative percentage change in net worth over the previous
             `window_size` time steps.
         """
-        net_worths = [nw['net_worth'] for nw in portfolio.performance.values()]
-        benchmark = [nw['binance:/USDT-ETH'] for nw in portfolio.performance.values()]
+        net_worths = []
+        benchmark = []
+        counter = 0
+        for nw in reversed(portfolio.performance.values()):
+            net_worths.insert(0, nw['net_worth'])
+            benchmark.insert(0, nw['binance:/USDT-ETH'])
+            if counter > self._window_size:
+                break
+            counter += 1
+        # net_worths = [nw['net_worth'] for nw in portfolio.performance.values()]
+        # benchmark = [nw['binance:/USDT-ETH'] for nw in portfolio.performance.values()]
         returns = [(b - a) / a for a, b in zip(net_worths[::1], net_worths[1::1])]
-#         benchmark_returns = [(b - a) / a for a, b in zip(benchmark[::1], benchmark[1::1])]
         returns = np.array([x + 1 for x in returns[-self._window_size:]]).cumprod() - 1
-#         benchmark_returns = np.array([x + 1 for x in benchmark_returns[-self._window_size:]]).cumprod() - 1
-        benchmark_returns = benchmark[-1]/benchmark[-self._window_size] - 1
-        diff = returns[-1] - benchmark_returns
-        reward = np.sign(diff) * (diff)**2
+        if len(benchmark) < self._window_size:
+            benchmark_returns = benchmark[-1]/benchmark[0] - 1
+        else:
+            benchmark_returns = benchmark[-1]/benchmark[-self._window_size] - 1
+        if len(returns) > 0:
+            diff = returns[-1] - benchmark_returns
+            reward = np.sign(diff) * (diff)**2
         return 0 if len(returns) < 1 else reward
+
+
+class SimpleProfitMinusBuyandHoldWithCashPenalty(TensorTradeRewardScheme):
+    """A simple reward scheme that rewards the agent for profit minus benchmark.
+
+    Parameters
+    ----------
+    window_size : int
+        The size of the look back window for computing the reward.
+
+    Attributes
+    ----------
+    window_size : int
+        The size of the look back window for computing the reward.
+    """
+
+    def __init__(self, window_size: int = 1):
+        self._window_size = self.default('window_size', window_size)
+
+    def get_reward(self, portfolio: 'Portfolio') -> float:
+        """Rewards the agent for incremental increases in net worth over a
+        sliding window.
+
+        Parameters
+        ----------
+        portfolio : `Portfolio`
+            The portfolio being used by the environment.
+
+        Returns
+        -------
+        float
+            The cumulative percentage change in net worth over the previous
+            `window_size` time steps.
+        """
+        net_worths = []
+        benchmark = []
+        cash = []
+        counter = 0
+        initial_cash = 0
+        cash_penalty = 0
+        for nw in portfolio.performance.values():
+            initial_cash = nw['binance:/USDT:/total']
+            break
+        for nw in reversed(portfolio.performance.values()):
+            net_worths.insert(0, nw['net_worth'])
+            benchmark.insert(0, nw['binance:/USDT-ETH'])
+            cash.insert(0, nw['binance:/USDT:/total'])
+            if counter > self._window_size:
+                break
+            counter += 1
+        # net_worths = [nw['net_worth'] for nw in portfolio.performance.values()]
+        # benchmark = [nw['binance:/USDT-ETH'] for nw in portfolio.performance.values()]
+        returns = [(b - a) / a for a, b in zip(net_worths[::1], net_worths[1::1])]
+        returns = np.array([x + 1 for x in returns[-self._window_size:]]).cumprod() - 1
+        if len(benchmark) < self._window_size:
+            benchmark_returns = benchmark[-1]/benchmark[0] - 1
+        else:
+            benchmark_returns = benchmark[-1]/benchmark[-self._window_size] - 1
+        if len(returns) > 0:
+            diff = returns[-1] - benchmark_returns
+            reward = np.sign(diff) * (diff)**2
+        if len(cash) > self._window_size:
+            if all(x == initial_cash for x in cash):
+                cash_penalty = 0.5
+            else:
+                cash_penalty = 0
+        return 0 if len(returns) < 1 else reward-cash_penalty
     
     
 class SimpleProfitWithCashPenalty(TensorTradeRewardScheme):
@@ -195,13 +289,24 @@ class SimpleProfitWithCashPenalty(TensorTradeRewardScheme):
             The cumulative percentage change in net worth over the previous
             `window_size` time steps.
         """
-        net_worths = [nw['net_worth'] for nw in portfolio.performance.values()]
+        net_worths = []
+        cash = []
+        counter = 0
+        for nw in reversed(portfolio.performance.values()):
+            net_worths.insert(0, nw['net_worth'])
+            cash.insert(0, nw['binance:/USDT:/total'])
+            if counter > self._window_size:
+                break
+            counter += 1
+        # net_worths = [nw['net_worth'] for nw in portfolio.performance.values()]
+        # cash = [nw['binance:/USDT:/total'] for nw in portfolio.performance.values()]
         returns = [(b - a) / a for a, b in zip(net_worths[::1], net_worths[1::1])]
         returns = np.array([x + 1 for x in returns[-self._window_size:]]).cumprod() - 1
-        cash = [nw['binance:/USDT:/total'] for nw in portfolio.performance.values()]
-        cash_penalty = net_worths[-1] * 0.3 - cash[-1]
+        cash_penalty = cash[-1] - net_worths[-1] * 0.3
         if cash_penalty > 0:
             cash_penalty = self._window_size*0.2
+        else:
+            cash_penalty = 0
         return 0 if len(returns) < 1 else returns[-1] - cash_penalty
     
     
@@ -238,11 +343,25 @@ class TradeBased(TensorTradeRewardScheme):
             The cumulative percentage change in net worth over the previous
             `window_size` time steps.
         """
+        '''
+        cash_total and prices shouldn't be limited to _window_size because the trade might be in progress for longer than that
+        but because if the trade is not found it simply will have no impact on reward
+        we can ignore this mistake in favour of speed that is provided instead
+        '''
+        prices = []
+        cash_total = []
+        counter = 0
+        for nw in reversed(portfolio.performance.values()):
+            prices.insert(0, nw['binance:/USDT-ETH'])
+            cash_total.insert(0, nw['binance:/USDT:/total'])
+            if counter > self._window_size:
+                break
+            counter += 1
         current_step = [step for step in portfolio.performance.keys()][-1]
-        cash_total = [nw['binance:/USDT:/total'] for nw in portfolio.performance.values()]
+        # cash_total = [nw['binance:/USDT:/total'] for nw in portfolio.performance.values()]
         trade_steps = [i for i, (x, y) in enumerate(zip(cash_total[:-1],cash_total[1:])) if x!=y]
         trade_sides = [x>y for i, (x, y) in enumerate(zip(cash_total[:-1],cash_total[1:])) if x!=y]
-        prices = [nw['binance:/USDT-ETH'] for nw in portfolio.performance.values()]
+        # prices = [nw['binance:/USDT-ETH'] for nw in portfolio.performance.values()]
         trade_prices = [prices[i] for i in trade_steps]
         trade_profit = 0
         if len(trade_steps)>0:
@@ -287,12 +406,28 @@ class TradeBasedWithImmediateBuyPenaltyAndHoldReward(TensorTradeRewardScheme):
             The cumulative percentage change in net worth over the previous
             `window_size` time steps.
         """
-        net_worths = [nw['net_worth'] for nw in portfolio.performance.values()]
+        '''
+        cash_total and prices shouldn't be limited to _window_size because the trade might be in progress for longer than that
+        but because if the trade is not found it simply will have no impact on reward
+        we can ignore this mistake in favour of speed that is provided instead
+        '''
+        net_worths = []
+        cash_total = []
+        prices = []
+        counter = 0
+        for nw in reversed(portfolio.performance.values()):
+            net_worths.insert(0, nw['net_worth'])
+            cash_total.insert(0, nw['binance:/USDT:/total'])
+            prices.insert(0, nw['binance:/USDT-ETH'])
+            if counter > self._window_size:
+                break
+            counter += 1
+        # net_worths = [nw['net_worth'] for nw in portfolio.performance.values()]
         current_step = [step for step in portfolio.performance.keys()][-1]
-        cash_total = [nw['binance:/USDT:/total'] for nw in portfolio.performance.values()]
+        # cash_total = [nw['binance:/USDT:/total'] for nw in portfolio.performance.values()]
         trade_steps = [i for i, (x, y) in enumerate(zip(cash_total[:-1],cash_total[1:])) if x!=y]
         trade_sides = [x>y for i, (x, y) in enumerate(zip(cash_total[:-1],cash_total[1:])) if x!=y]
-        prices = [nw['binance:/USDT-ETH'] for nw in portfolio.performance.values()]
+        # prices = [nw['binance:/USDT-ETH'] for nw in portfolio.performance.values()]
         trade_prices = [prices[i] for i in trade_steps]
         trade_profit = 0
         if len(trade_steps)>0:
@@ -412,7 +547,14 @@ class RiskAdjustedReturns(TensorTradeRewardScheme):
         float
             The reward corresponding to the selected risk-adjusted return metric.
         """
-        net_worths = [nw['net_worth'] for nw in portfolio.performance.values()][-(self._window_size + 1):]
+        net_worths = []
+        counter = 0
+        for nw in reversed(portfolio.performance.values()):
+            net_worths.insert(0, nw['net_worth'])
+            if counter > self._window_size+1:
+                break
+            counter += 1
+        # net_worths = [nw['net_worth'] for nw in portfolio.performance.values()][-(self._window_size + 1):]
         returns = pd.Series(net_worths).pct_change().dropna()
         risk_adjusted_return = self._return_algorithm(returns)
         return risk_adjusted_return
@@ -465,6 +607,7 @@ _registry = {
     'risk-adjusted': RiskAdjustedReturns,
     'compared-to-BuyandHold': SimpleProfitMinusBuyandHold,
     'compared-to-BuyandHold-only-negative': SimpleProfitMinusBuyandHoldWhenNegativeProfit,
+    'compared-to-BuyandHold-with-cash-penalty': SimpleProfitMinusBuyandHoldWithCashPenalty,
     'simple-cash-penalty': SimpleProfitWithCashPenalty,
     'trade': TradeBased,
     'trade-immediate-buy-penalty-hold-reward': TradeBasedWithImmediateBuyPenaltyAndHoldReward
