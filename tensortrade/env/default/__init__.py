@@ -86,5 +86,6 @@ def create(portfolio: 'Portfolio',
         informer=kwargs.get("informer", informers.TensorTradeInformer()),
         renderer=renderer,
         min_periods=min_periods,
+        random_start=kwargs.get('random_start', False)
     )
     return env
