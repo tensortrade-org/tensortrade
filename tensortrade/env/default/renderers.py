@@ -13,6 +13,7 @@
 # limitations under the License
 
 import os
+from re import I
 import sys
 import logging
 import importlib
@@ -360,7 +361,7 @@ class PlotlyTradingChart(BaseRenderer):
         self._net_worth_chart = None
         self._base_annotations = None
         self._last_trade_step = 0
-#         self._show_chart = display
+        # self._show_chart = display
         self._show_chart = None
 
     def _create_figure(self, performance_keys: dict) -> None:
@@ -603,7 +604,7 @@ class MatplotlibTradingChart(BaseRenderer):
         self.net_worth_ax = plt.subplot2grid((6, 1), (0, 0), rowspan=2, colspan=1)
         self.price_ax = plt.subplot2grid((6, 1), (2, 0), rowspan=8,
                                          colspan=1, sharex=self.net_worth_ax)
-        self.volume_ax = self.price_ax.twinx()
+        # self.volume_ax = self.price_ax.twinx()
         plt.subplots_adjust(left=0.11, bottom=0.24, right=0.90, top=0.90, wspace=0.2, hspace=0)
 
     def _render_trades(self, step_range, trades) -> None:
@@ -642,6 +643,9 @@ class MatplotlibTradingChart(BaseRenderer):
         last_time = self._df.index.values[current_step]
         last_close = self._df['close'].values[current_step]
         last_high = self._df['high'].values[current_step]
+        first_time = self._df.index.values[0]
+        first_close = self._df['close'].values[0]
+        first_high = self._df['high'].values[0]
 
         self.price_ax.annotate('{0:.2f}'.format(last_close), (last_time, last_close),
                                xytext=(last_time, last_high),
@@ -649,9 +653,15 @@ class MatplotlibTradingChart(BaseRenderer):
                                          fc='w', ec='k', lw=1),
                                color="black",
                                fontsize="small")
+        self.price_ax.annotate('{0:.2f}'.format(first_close), (first_time, first_close),
+                               xytext=(first_time, first_high),
+                               bbox=dict(boxstyle='round',
+                                         fc='w', ec='k', lw=1),
+                               color="black",
+                               fontsize="small")
 
         ylim = self.price_ax.get_ylim()
-        self.price_ax.set_ylim(ylim[0] - (ylim[1] - ylim[0]) * self._volume_chart_height, ylim[1])
+        # self.price_ax.set_ylim(ylim[0] - (ylim[1] - ylim[0]) * self._volume_chart_height, ylim[1])
 
     # def _render_net_worth(self, step_range, times, current_step, net_worths, benchmarks):
     def _render_net_worth(self, step_range, times, current_step, net_worths) -> None:
@@ -663,7 +673,7 @@ class MatplotlibTradingChart(BaseRenderer):
         legend.get_frame().set_alpha(0.4)
 
         last_time = times[-1]
-        last_net_worth = list(net_worths[step_range])[-1]
+        last_net_worth = net_worths[len(net_worths)-1]
 
         self.net_worth_ax.annotate('{0:.2f}'.format(last_net_worth), (last_time, last_net_worth),
                                    xytext=(last_time, last_net_worth),
@@ -717,6 +727,7 @@ class MatplotlibTradingChart(BaseRenderer):
                           ' | Profit: ' + str(profit_percent) + '%')
 
         window_start = max(current_step - window_size, 0)
+        window_start = 0
         step_range = slice(window_start, current_step)
 
         times = self._df.index.values[step_range]
@@ -725,13 +736,32 @@ class MatplotlibTradingChart(BaseRenderer):
             # self._render_net_worth(step_range, times, current_step, net_worths, benchmarks)
             self._render_net_worth(step_range, times, current_step, net_worth)
             self._render_price(step_range, times, current_step)
-            self._render_volume(step_range, times)
-            self._render_trades(step_range, trades)
+            # self._render_volume(step_range, times)
+            if len(trades) < 150:
+                self._render_trades(step_range, trades)
 
-        self.price_ax.set_xticklabels(times, rotation=45, horizontalalignment='right')
+        base = 1000
+        for i in range(10):
+            base = 10**i
+            temp = len(times)/base
+            if temp < 10:
+                temp2 = len(times)/(10**(i-1))
+                if abs(10-temp) < abs(10-temp2):
+                    base = 10**i
+                else:
+                    base = 10**(i-1)
+                break
+        time_jump = int(int(len(times)/10)/base)*base
+        if time_jump == 0:
+            time_jump = base
+        new_times = times[::time_jump]
+        self.price_ax.set_xticks(new_times)
+        self.price_ax.set_xticklabels(new_times, rotation=45, horizontalalignment='right')
 
         plt.setp(self.net_worth_ax.get_xticklabels(), visible=False)
-        plt.pause(0.001)
+
+        if self._show_chart:
+            plt.pause(0.001)
 
     def save(self) -> None:
         """Saves the rendering of the `TradingEnv`.
