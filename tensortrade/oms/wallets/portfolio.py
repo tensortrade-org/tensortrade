@@ -66,6 +66,7 @@ class Portfolio(Component, TimedIdentifiable):
         self._initial_balance = self.base_balance
         self._initial_net_worth = None
         self._net_worth = None
+        self._max_net_worth = None
         self._performance = None
         self._keys = None
 
@@ -118,9 +119,19 @@ class Portfolio(Component, TimedIdentifiable):
         return self._net_worth
 
     @property
+    def max_net_worth(self) -> float:
+        """The maximum net worth of the portfolio. (float, read-only)"""
+        return self._max_net_worth
+
+    @property
     def profit_loss(self) -> float:
         """The percent loss in net worth since the last reset. (float, read-only)"""
         return 1.0 - self.net_worth / self.initial_net_worth
+
+    @property
+    def profit_loss_max(self) -> float:
+        """The percent loss in net worth since the max net worth. (float, read-only)"""
+        return 1.0 - self.net_worth / self.max_net_worth
 
     @property
     def performance(self) -> 'OrderedDict':
@@ -311,9 +322,11 @@ class Portfolio(Component, TimedIdentifiable):
             self._performance = performance_step
             self._initial_net_worth = net_worth
             self._net_worth = net_worth
+            self._max_net_worth = net_worth
         else:
             self._performance.update(performance_step)
             self._net_worth = net_worth
+            self._max_net_worth = max(net_worth, self._max_net_worth)
 
         if self.performance_listener:
             self.performance_listener(performance_step)
