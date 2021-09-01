@@ -1,5 +1,6 @@
 
 from typing import Union
+import logging
 
 from . import actions
 from . import rewards
@@ -53,6 +54,8 @@ def create(portfolio: 'Portfolio',
 
     action_scheme.portfolio = portfolio
 
+    reward_scheme._window_size = window_size
+
     observer = observers.TensorTradeObserver(
         portfolio=portfolio,
         feed=feed,
@@ -84,6 +87,10 @@ def create(portfolio: 'Portfolio',
         observer=observer,
         stopper=kwargs.get("stopper", stopper),
         informer=kwargs.get("informer", informers.TensorTradeInformer()),
-        renderer=renderer
+        renderer=renderer,
+        enable_logger=kwargs.get('enable_logger', False),
+        logger_name=kwargs.get('logger_name', __name__),
+        log_level=kwargs.get('log_level', logging.DEBUG),
+        random_start=kwargs.get('random_start', False)
     )
     return env
