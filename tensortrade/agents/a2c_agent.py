@@ -183,6 +183,7 @@ class A2CAgent(Agent):
 
         memory = ReplayMemory(memory_capacity, transition_type=A2CTransition)
         episode = 0
+        total_steps_done = 0
         steps_done = 0
         total_reward = 0
         stop_training = False
@@ -202,7 +203,7 @@ class A2CAgent(Agent):
                                                                       self.env.episode_id))
 
             while not done:
-                threshold = eps_end + (eps_start - eps_end) * np.exp(-steps_done / eps_decay_steps)
+                threshold = eps_end + (eps_start - eps_end) * np.exp(-total_steps_done / eps_decay_steps)
                 action = self.get_action(state, threshold=threshold)
 #                 print(threshold, action)
                 next_state, reward, done, info = self.env.step(action)
@@ -210,12 +211,13 @@ class A2CAgent(Agent):
                 value = self.critic_network(state[None, :], training=False)
                 value = tf.squeeze(value, axis=-1)
                 
-                if((info['action_possible'] == 1) or (action == 0)):
-                    memory.push(state, action, reward, done, value)
+#                if((info['action_possible'] == 1) or (action == 0)):
+                memory.push(state, action, reward, done, value)
 
                 state = next_state
                 total_reward += reward
                 steps_done += 1
+                total_steps_done += 1
 
                 if len(memory) < batch_size:
                     continue
@@ -248,8 +250,10 @@ class A2CAgent(Agent):
                     max_steps=n_steps
                 )  # renderers final state at episode end if not rendered earlier
 
+            self.env.save()
+
             episode += 1
 
-        mean_reward = total_reward / steps_done
+        mean_reward = total_reward / total_steps_done
 
         return mean_reward
