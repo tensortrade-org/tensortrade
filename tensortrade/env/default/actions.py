@@ -3,7 +3,7 @@ from abc import abstractmethod
 from itertools import product
 from typing import Union, List, Any
 
-from gym.spaces import Space, Discrete
+from gym.spaces import Space, Discrete, Box
 
 from tensortrade.core import Clock
 from tensortrade.env.generic import ActionScheme, TradingEnv
@@ -397,6 +397,9 @@ class SimpleOrdersThreeType(TensorTradeActionScheme):
         size = (balance * proportion)
         size = min(balance, size)
 
+        if ((size == balance) and (size != 0.0)):
+            size -= 10 ** -instrument.precision
+
         quantity = (size * instrument).quantize()
         
 #         print(balance, size, quantity)
@@ -411,6 +414,128 @@ class SimpleOrdersThreeType(TensorTradeActionScheme):
 #             print(self.min_order_abs)
 #             print("no Order")
             
+
+        order = Order(
+            step=self.clock.step,
+            side=side,
+            trade_type=self._trade_type,
+            exchange_pair=ep,
+            price=ep.price,
+            quantity=quantity,
+            criteria=criteria,
+            end=self.clock.step + duration if duration else None,
+            portfolio=portfolio
+        )
+
+        if self._order_listener is not None:
+            order.attach(self._order_listener)
+
+        return [order]
+
+
+class SimpleOrdersContinuous(TensorTradeActionScheme):
+    """A continuous action scheme that determines actions but it can only be used with one exchange pair.
+
+    Parameters
+    ----------
+    criteria : List[OrderCriteria]
+        A list of order criteria to select from when submitting an order.
+        (e.g. MarketOrder, LimitOrder w/ price, StopLoss, etc.)
+    trade_sizes : List[float]
+        A list of trade sizes to select from when submitting an order.
+        (e.g. '[1, 1/3]' = 100% or 33% of balance is tradable.
+        '4' = 25%, 50%, 75%, or 100% of balance is tradable.)
+    durations : List[int]
+        A list of durations to select from when submitting an order.
+    trade_type : TradeType
+        A type of trade to make.
+    order_listener : OrderListener
+        A callback class to use for listening to steps of the order process.
+    min_order_pct : float
+        The minimum value when placing an order, calculated in percent over net_worth.
+    min_order_abs : float
+        The minimum value when placing an order, calculated in absolute order value.
+    """
+
+    def __init__(self,
+                 criteria: 'Union[List[OrderCriteria], OrderCriteria]' = None,
+                 trade_sizes: 'Union[List[float], int]' = 10,
+                 durations: 'Union[List[int], int]' = None,
+                 trade_type: 'TradeType' = TradeType.MARKET,
+                 order_listener: 'OrderListener' = None,
+                 min_order_pct: float = 0.00,
+                 min_order_abs: float = 0.00) -> None:
+        super().__init__()
+        self.min_order_pct = min_order_pct
+        self.min_order_abs = min_order_abs
+        criteria = self.default('criteria', criteria)
+        self.criteria = criteria if isinstance(criteria, list) else [criteria]
+
+        trade_sizes = self.default('trade_sizes', trade_sizes)
+        if isinstance(trade_sizes, list):
+            self.trade_sizes = trade_sizes
+        else:
+            self.trade_sizes = [(x + 1) / trade_sizes for x in range(trade_sizes)]
+
+        durations = self.default('durations', durations)
+        self.durations = durations if isinstance(durations, list) else [durations]
+
+        self._trade_type = self.default('trade_type', trade_type)
+        self._order_listener = self.default('order_listener', order_listener)
+
+        # self._action_space = Box(low=-1, high=1)
+        self._action_space = None
+        self.actions = None
+
+    @property
+    def action_space(self) -> Space:
+        if not self._action_space:
+            self.actions = product(
+                self.criteria,
+                self.trade_sizes,
+                self.durations,
+                [TradeSide.BUY, TradeSide.SELL]
+            )
+            self.actions = list(self.actions)
+            self.actions = list(product(self.portfolio.exchange_pairs, self.actions))
+            self.actions = [None] + self.actions
+
+            # self._action_space = Discrete(len(self.actions))
+            self._action_space = Box(low=-1, high=1,
+                                        shape=(1,), dtype=float,)
+        return self._action_space
+
+    def get_orders(self,
+                   action: float,
+                   portfolio: 'Portfolio') -> 'List[Order]':
+        
+        if (action[0] < 0.05) and (action[0] > -0.05):
+            return []
+        
+        # (ep, (criteria, proportion, duration, side)) = self.actions[1]
+
+        proportion = round(abs(action[0]), 2)
+        if action[0] > 0:
+            side = TradeSide.BUY
+        else:
+            side = TradeSide.SELL
+        criteria = self.criteria[0]
+        duration = self.durations[0]
+        ep = self.portfolio.exchange_pairs[0]
+        
+        instrument = side.instrument(ep.pair)
+        wallet = portfolio.get_wallet(ep.exchange.id, instrument=instrument)
+        
+        balance = wallet.balance.as_float()
+        size = (balance * proportion)
+        size = min(balance, size)
+
+        quantity = (size * instrument).quantize()
+        
+        if size < 10 ** -instrument.precision \
+                or size < self.min_order_pct * portfolio.net_worth \
+                or size < self.min_order_abs:
+            return []            
 
         order = Order(
             step=self.clock.step,
@@ -549,7 +674,8 @@ _registry = {
     'bsh': BSH,
     'simple': SimpleOrders,
     'managed-risk': ManagedRiskOrders,
-    'simple-three-type': SimpleOrdersThreeType
+    'simple-three-type': SimpleOrdersThreeType,
+    'simple-continuous': SimpleOrdersContinuous
 }
 
 
