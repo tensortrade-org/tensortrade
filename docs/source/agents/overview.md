@@ -166,6 +166,8 @@ agent.restore(checkpoint_path)
 
 # [Stable Baselines](https://stable-baselines.readthedocs.io/en/master/)
 
+In order to use this library you have to use the tensorflow-no-dependency branch to not have any conflict between tensorflow 1 and 2.
+
 ```python
 from stable_baselines.common.policies import MlpLnLstmPolicy
 from stable_baselines import PPO2
@@ -175,6 +177,25 @@ policy = MlpLnLstmPolicy
 params = { "learning_rate": 1e-5 }
 
 agent = model(policy, environment, model_kwargs=params)
+```
+
+
+# [Stable Baselines3](https://stable-baselines3.readthedocs.io/en/master/)
+
+This library is recommended to use with TensorTrade.
+
+```python
+from stable_baselines3.common.policies import ActorCriticPolicy
+from stable_baselines3 import PPO
+from stable_baselines3.common.callbacks import CheckpointCallback
+
+model = PPO
+policy = ActorCriticPolicy
+
+checkpoint_callback = CheckpointCallback(save_freq=10000, save_path='./logs/', name_prefix='rl_model')
+
+agent = model(ActorCriticPolicy, environment, verbose=1, tensorboard_log="./tensorboard/", learning_rate=0.01)
+agent.learn(total_timesteps=100000, tb_log_name="first_run", callback=checkpoint_callback)
 ```
 
 
