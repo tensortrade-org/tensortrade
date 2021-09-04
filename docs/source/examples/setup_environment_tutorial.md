@@ -281,7 +281,7 @@ env = default.create(
     feed=feed,
     window_size=15,
     enable_logger=False,
-    random_start=True #Determines whether to start the episode every time from the beginning or randomly
+    random_start=False #Determines whether to start the episode every time from the beginning or randomly
 )
 ```
 
