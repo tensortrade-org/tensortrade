@@ -280,7 +280,8 @@ env = default.create(
     reward_scheme="simple",
     feed=feed,
     window_size=15,
-    enable_logger=False
+    enable_logger=False,
+    random_start=True #Determines whether to start the episode every time from the beginning or randomly
 )
 ```
 
