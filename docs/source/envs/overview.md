@@ -16,6 +16,8 @@ That's all there is to it, now it's just a matter of composing each of these com
 
 When the reset method of a `TradingEnv` is called, all of the child components will also be reset. The internal state of each action scheme, reward scheme, observer, stopper, and informer will be set back to their default values, ready for the next episode.
 
+By default every time the environment is reset it starts from the beginning of data. but if you need it to start from a random point in data every time, pass the variable random_start with value True to the default.create when creating the environment.
+
 
 # What if I can't make a particular environment?
 
