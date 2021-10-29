@@ -179,6 +179,7 @@ class A2CAgent(Agent):
         eps_decay_steps: int = kwargs.get('eps_decay_steps', 200)
         entropy_c: int = kwargs.get('entropy_c', 0.0001)
         memory_capacity: int = kwargs.get('memory_capacity', 1000)
+        render_interval: int = kwargs.get('render_interval', 50)  # in steps, None for episode end renderers only
 
         memory = ReplayMemory(memory_capacity, transition_type=A2CTransition)
         episode = 0
@@ -226,10 +227,26 @@ class A2CAgent(Agent):
                     done = True
                     stop_training = True
 
+                if render_interval is not None and steps_done % render_interval == 0:
+                    self.env.render(
+                        episode=episode,
+                        max_episodes=n_episodes,
+                        max_steps=n_steps
+                    )
+                    
             is_checkpoint = save_every and episode % save_every == 0
 
             if save_path and (is_checkpoint or episode == n_episodes):
                 self.save(save_path, episode=episode)
+
+            if not render_interval or steps_done < n_steps:
+                self.env.render(
+                    episode=episode,
+                    max_episodes=n_episodes,
+                    max_steps=n_steps
+                )  # renderers final state at episode end if not rendered earlier
+                
+            self.env.save()
 
             episode += 1
 
