@@ -151,6 +151,10 @@ class DQNAgent(Agent):
             done = False
             steps_done = 0
 
+            print('====      EPISODE ID ({}/{}): {}      ===='.format(episode + 1,
+                                                                      n_episodes,
+                                                                      self.env.episode_id))
+            
             while not done:
                 threshold = eps_end + (eps_start - eps_end) * np.exp(-total_steps_done / eps_decay_steps)
                 action = self.get_action(state, threshold=threshold)
