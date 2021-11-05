@@ -82,7 +82,7 @@ class ParallelDQNTrainer(Process):
                 steps_done += 1
 
                 if self.n_steps and steps_done >= self.n_steps:
-                    stop_training = True
+                    #stop_training = True
                     done = True
 
                 if steps_done % self.update_target_every == 0:
