@@ -214,7 +214,8 @@ class PBR(TensorTradeRewardScheme):
 
 _registry = {
     'simple': SimpleProfit,
-    'risk-adjusted': RiskAdjustedReturns
+    'risk-adjusted': RiskAdjustedReturns,
+    'pbr': PBR,
 }
 
 

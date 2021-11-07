@@ -80,7 +80,10 @@ We should now have the two preprocessed files ready (`training.csv` and `evaluat
 
 
 
-## Training\evaluation code
+## Training and Evaluation
+
+
+
 ### Create the environment build function
 Here we are using the `config` dictionary to store the CSV filename that we need to read. During the training phase, we will pass `training.csv` as the value, while during the evaluation phase we will pass `evaluation.csv`
 ```python
@@ -93,7 +96,7 @@ from tensortrade.oms.wallets import Wallet, Portfolio
 import tensortrade.env.default as default
 
 def create_env(config):
-    dataset = pd.read_csv(filepath_or_buffer=config["csv_filename"], parse_dates=['datetime']).fillna(method='backfill').fillna(method='ffill')
+    dataset = pd.read_csv(filepath_or_buffer=config["csv_filename"], parse_dates=['Datetime']).fillna(method='backfill').fillna(method='ffill')
     ttse_commission = 0.0035  # TODO: adjust according to your commission percentage, if present
     price = Stream.source(list(dataset["close"]), dtype="float").rename("USD-TTRD")
     ttse_options = ExchangeOptions(commission=ttse_commission)
@@ -102,8 +105,8 @@ def create_env(config):
  # Instruments, Wallets and Portfolio
     USD = Instrument("USD", 2, "US Dollar")
     TTRD = Instrument("TTRD", 2, "TensorTrade Corp")
-    cash = Wallet(ttse_exchange, config["start_balance"] * USD)
-    asset = Wallet(ttse_exchange, 0 * TTRD)
+    cash = Wallet(ttse_exchange, 1000 * USD)  # This is the starting cash we are going to use
+    asset = Wallet(ttse_exchange, 0 * TTRD)  # And we will start owning 0 stocks of TTRD
     portfolio = Portfolio(USD, [cash, asset])
 
     # Renderer feed
@@ -134,8 +137,103 @@ def create_env(config):
             renderer_feed=renderer_feed,
             renderer=[],
             window_size=config["window_size"],
-            max_allowed_loss=config["max_allowed_loss"]
+            max_allowed_loss=0.10  # 10% max allowed loss
         )
     
     return env
 ```
+
+
+### Initialize and run Ray
+Now it's time to actually initialize and run Ray, passing all the parameters necessary, including the name of the environment creator function (`create_env` defined above)
+```python
+import ray
+from ray import tune
+from ray.tune.registry import register_env
+
+# Let's define some tuning parameters
+FC_SIZE = tune.grid_search([[256, 256], [1024], [128, 64, 32]])  # Those are the alternatives that ray.tune will try...
+LEARNING_RATE = tune.grid_search([0.001, 0.0005, 0.00001])  # ... and they will be combined with these ones ...
+MINIBATCH_SIZE = tune.grid_search([5, 10, 20])  # ... and these ones, in a cartesian product.
+
+# Initialize Ray
+ray.init()  # There are *LOTS* of initialization parameters, like specifying the maximum number of CPUs\GPUs to allocate. For now just leave it alone.
+
+# Register our environment, specifying which is the environment creation function
+register_env("MyTrainingEnv", create_env)
+
+# Specific configuration keys that will be used during training
+env_config_training = {
+    "window_size": 14,  # We want to look at the last 14 samples (hours)
+    "reward_window_size": 7,  # And calculate reward based on the actions taken in the next 7 hours
+    "max_allowed_loss": 0.10,  # If it goes past 10% loss during the iteration, we don't want to waste time on a "loser".
+    "csv_filename": "training.csv"  # The variable that will be used to differentiate training and validation datasets
+}
+# Specific configuration keys that will be used during evaluation (only the overridden ones)
+env_config_evaluation = {
+    "max_allowed_loss": 1.00,  # During validation runs we want to see how bad it would go. Even up to 100% loss.
+    "csv_filename": "training.csv",  # The variable that will be used to differentiate training and validation datasets
+}
+
+analysis = tune.run(
+    run_or_experiment="PPO",  # We'll be using the builtin PPO agent in RLLib
+    name="MyExperiment1",
+    metric='episode_reward_mean',
+    mode='max',
+    stop={
+        "training_iteration": 1000  # Let's do 1k steps for each hyperparameter combination
+    },
+    config={
+        "env": "MyTrainingEnv",
+        "env_config": env_config_training,  # The dictionary we built before
+        "log_level": "WARNING",
+        "framework": "torch",
+        "ignore_worker_failures": True,
+        "num_workers": 1,  # One worker per agent. You can increase this but it will run fewer parallel trainings.
+        "num_envs_per_worker": 1,
+        "num_gpus": 0,  # I yet have to understand if using a GPU is worth it, for our purposes, but I think it's not. This way you can train on a non-gpu enabled system.
+        "clip_rewards": True,
+        "lr": LEARNING_RATE,  # Hyperparameter grid search defined above
+        "gamma": 0,
+        "observation_filter": "MeanStdFilter",
+        "model": {
+            "fcnet_hiddens": FC_SIZE,  # Hyperparameter grid search defined above
+        },
+        "sgd_minibatch_size": MINIBATCH_SIZE,  # Hyperparameter grid search defined above
+        "evaluation_interval": 1,  # Run evaluation on every iteration
+        "evaluation_config": {
+            "env_config": env_config_evaluation,  # The dictionary we built before (only the overriding keys to use in evaluation)
+            "explore": False,  # We don't want to explore during evaluation. All actions have to be repeatable.
+        },
+    },
+    num_samples=1,  # Have one sample for each hyperparameter combination. You can have more to average out randomness.
+    keep_checkpoints_num=10,  # Keep the last 2 checkpoints
+    checkpoint_freq=1,  # Do a checkpoint on each iteration (slower but you can pick more finely the checkpoint to use later)
+)
+```
+Once you launch this, it will block (meaning it will stay running until the stop condition happens for all samples). You will receive a console output that will show the training progress and all the hyperparameters that are being used in each trial.
+
+
+## Monitoring
+You can basically monitor two things: how Ray is behaving on your cluster (local or distributed, in this example it will be a local cluster), and how is the training proceeding within the TensorTrade environment.
+
+### Ray Dashboard
+The Ray Dashboard can be accessed by default at [http://127.0.0.1:8265](http://127.0.0.1:8265). If you want to access it remotely, you just need to specify `dashboard_host="0.0.0.0"` as a ray.init() parameter. This will allow external\remote connections to the Dashboard, provided the newtork routing\accessibility and eventual firewall is correctly configured.
+
+The Dashboard will show resource usage statistics on the nodes working on the cluster, most importantly CPU and RAM usage. Please refer to the [official dashboard documentation](https://docs.ray.io/en/latest/ray-dashboard.html) for further info on that.
+
+### TensorBoard
+In order to browse the TensorBoard you first need to launch it, running this console command:
+```console
+tensorboard --logdir path\to\Ray\results\folder
+```
+You can then access it by default at [http://127.0.0.1:6006](http://127.0.0.1:6006). As with the Ray Dashboard, if you want to access it remotely, you need to specify `--host 0.0.0.0` in the commandline parameter, like:
+```console
+tensorboard --logdir path\to\Ray\results\folder --host 0.0.0.0
+```
+
+The most important values you need to watch out for during a training are `tune/episode_reward_min`, `tune/episode_reward_mean` and `tune/episode_reward_max` that represent the minimum, average and maximum reward obtained by the agent during training on that specific iteration, using the training dataset.
+
+Alongside with those three, there are the evaluation counterparts, so `tune/evaluation/episode_reward_min`, `tune/evaluation/episode_reward_mean` and `tune/evaluation/episode_reward_max` which represent the same metric, calculated on the evaluation dataset.
+
+The best model will be the one that will score the highest evaluation values, given that the training values will be always higher\better than the evaluation ones.
