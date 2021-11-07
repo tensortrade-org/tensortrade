@@ -68,8 +68,7 @@ class SimpleProfit(TensorTradeRewardScheme):
         """
         net_worths = [nw['net_worth'] for nw in portfolio.performance.values()]
         returns = [(b - a) / a for a, b in zip(net_worths[::1], net_worths[1::1])]
-        returns =np.array(returns)[-self._window_size:].sum()
-
+        returns = np.array([x + 1 for x in returns[-self._window_size:]]).cumprod() - 1
         return 0 if len(returns) < 1 else returns[-1]
 
 
