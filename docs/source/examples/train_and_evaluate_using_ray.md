@@ -126,7 +126,7 @@ def create_env(config):
     feed = DataFeed(features)
     feed.compile()
 
-    reward_scheme = default.rewards.SimpleProfit(window_size=7)  # Arbitrarily set as 7
+    reward_scheme = default.rewards.SimpleProfit(window_size=config["reward_window_size"])
     action_scheme = default.actions.BSH(cash=cash, asset=asset)
     
     env = default.create(
@@ -137,7 +137,7 @@ def create_env(config):
             renderer_feed=renderer_feed,
             renderer=[],
             window_size=config["window_size"],
-            max_allowed_loss=0.10  # 10% max allowed loss
+            max_allowed_loss=config["max_allowed_loss"]
         )
     
     return env
