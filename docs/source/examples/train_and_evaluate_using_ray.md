@@ -52,12 +52,14 @@ In the end, to avoid continuous Yahoo! Finance API requests, we simply save thos
 import yfinance
 import pandas_ta  #noqa
 TICKER = 'TTRD'  # TODO: replace this with your own ticker
-START_DATE = '2021-02-09'  # TODO: replace this with your own start date
-END_DATE = '2021-09-22'  # TODO: replace this with your own end date
+TRAIN_START_DATE = '2021-02-09'  # TODO: replace this with your own start date
+TRAIN_END_DATE = '2021-09-30'  # TODO: replace this with your own end date
+EVAL_START_DATE = '2021-10-01'  # TODO: replace this with your own end date
+EVAL_END_DATE = '2021-11-12'  # TODO: replace this with your own end date
 
 yf_ticker = yfinance.Ticker(ticker=TICKER)
 
-df_training = yf_ticker.history(start=START_DATE, end=END_DATE, interval='60m')
+df_training = yf_ticker.history(start=TRAIN_START_DATE, end=TRAIN_END_DATE, interval='60m')
 df_training.drop(['Dividends', 'Stock Splits'], axis=1, inplace=True)
 df_training["volume"] = df_training["volume"].astype(int)
 df_training.ta.log_return(append=True, length=16)
@@ -65,7 +67,7 @@ df_training.ta.rsi(append=True, length=14)
 df_training.ta.macd(append=True, fast=12, slow=26)
 df_training.to_csv('training.csv', index=False)
 
-df_evaluation = yf_ticker.history(start=START_DATE, end=END_DATE, interval='60m')
+df_evaluation = yf_ticker.history(start=EVAL_START_DATE, end=EVAL_END_DATE, interval='60m')
 df_evaluation.drop(['Dividends', 'Stock Splits'], axis=1, inplace=True)
 df_evaluation["volume"] = df_evaluation["volume"].astype(int)
 df_evaluation.ta.log_return(append=True, length=16)
