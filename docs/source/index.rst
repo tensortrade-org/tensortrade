@@ -80,7 +80,7 @@ TensorTrade suitable for advanced research and production use.
 
     examples/overview.md
     examples/setup_environment_tutorial.md
-    examples/train_and_evaluate.md
+    examples/train_and_evaluate_using_ray.md
     examples/renderers_and_plotly_chart.md
     examples/use_stochastic_data.md
     examples/ledger_example.md
