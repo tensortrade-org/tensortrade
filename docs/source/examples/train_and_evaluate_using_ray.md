@@ -147,7 +147,9 @@ def create_env(config):
 
 
 ### Initialize and run Ray
-Now it's time to actually initialize and run Ray, passing all the parameters necessary, including the name of the environment creator function (`create_env` defined above)
+Now it's time to actually initialize and run Ray, passing all the parameters necessary, including the name of the environment creator function (`create_env` defined above).
+
+**Please note that many of these parameters need to be tuned for your specific use case** (ie: `"training_iteration": 5` is ***way*** too few to get anything remotely useful, but it allows the example to quickly reach the end)
 ```python
 import ray
 from ray import tune
@@ -183,7 +185,7 @@ analysis = tune.run(
     metric='episode_reward_mean',
     mode='max',
     stop={
-        "training_iteration": 1000  # Let's do 1k steps for each hyperparameter combination
+        "training_iteration": 5  # Let's do 5 steps for each hyperparameter combination
     },
     config={
         "env": "MyTrainingEnv",
