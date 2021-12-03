@@ -198,7 +198,7 @@ analysis = tune.run(
         "num_gpus": 0,  # I yet have to understand if using a GPU is worth it, for our purposes, but I think it's not. This way you can train on a non-gpu enabled system.
         "clip_rewards": True,
         "lr": LEARNING_RATE,  # Hyperparameter grid search defined above
-        "gamma": 0.99,
+        "gamma": 0.50,
         "observation_filter": "MeanStdFilter",
         "model": {
             "fcnet_hiddens": FC_SIZE,  # Hyperparameter grid search defined above
