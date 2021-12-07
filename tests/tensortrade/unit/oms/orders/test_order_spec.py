@@ -16,7 +16,7 @@ def test_init(mock_exchange_class):
     exchange = mock_exchange_class.return_value
     exchange.options = ExchangeOptions()
     exchange.id = "fake_exchange_id"
-    exchange.name = "coinbase"
+    exchange.name = "bitfinex"
     exchange.clock = mock.Mock()
     exchange.clock.step = 0
 
@@ -58,7 +58,7 @@ def test_create_from_buy_order(mock_order_class,
     exchange = mock_exchange_class.return_value
     exchange.options = ExchangeOptions()
     exchange.id = "fake_exchange_id"
-    exchange.name = "coinbase"
+    exchange.name = "bitfinex"
     exchange.clock = mock.Mock()
     exchange.clock.step = 0
     exchange.quote_price = mock.Mock(return_value=Decimal(7000.00))
@@ -106,7 +106,7 @@ def test_create_from_sell_order(mock_order_class,
     exchange = mock_exchange_class.return_value
     exchange.options = ExchangeOptions()
     exchange.id = "fake_exchange_id"
-    exchange.name = "coinbase"
+    exchange.name = "bitfinex"
     exchange.clock = mock.Mock()
     exchange.clock.step = 0
     exchange.quote_price = mock.Mock(return_value=Decimal(7000.00))
@@ -153,7 +153,7 @@ def test_to_dict(mock_exchange_class):
     exchange = mock_exchange_class.return_value
     exchange.options = ExchangeOptions()
     exchange.id = "fake_exchange_id"
-    exchange.name = "coinbase"
+    exchange.name = "bitfinex"
     exchange.clock = mock.Mock()
     exchange.clock.step = 0
     exchange.quote_price = mock.Mock(return_value=Decimal(7000.00))
@@ -194,7 +194,7 @@ def test_str(mock_exchange_class):
     exchange = mock_exchange_class.return_value
     exchange.options = ExchangeOptions()
     exchange.id = "fake_exchange_id"
-    exchange.name = "coinbase"
+    exchange.name = "bitfinex"
     exchange.clock = mock.Mock()
     exchange.clock.step = 0
     exchange.quote_price = mock.Mock(return_value=Decimal(7000.00))

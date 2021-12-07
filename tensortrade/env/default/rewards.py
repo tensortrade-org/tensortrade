@@ -8,6 +8,7 @@ from tensortrade.env.generic import RewardScheme, TradingEnv
 from tensortrade.feed.core import Stream, DataFeed
 import math
 
+
 class TensorTradeRewardScheme(RewardScheme):
     """An abstract base class for reward schemes for the default environment.
     """
@@ -67,7 +68,7 @@ class SimpleProfit(TensorTradeRewardScheme):
         """
         net_worths = [nw['net_worth'] for nw in portfolio.performance.values()]
         returns = [(b - a) / a for a, b in zip(net_worths[::1], net_worths[1::1])]
-        returns = np.array([x + 1 for x in returns[-self._window_size:]]).cumprod() -1
+        returns = np.array([x + 1 for x in returns[-self._window_size:]]).cumprod() - 1
         return 0 if len(returns) < 1 else returns[-1]
 
 
@@ -168,6 +169,7 @@ class RiskAdjustedReturns(TensorTradeRewardScheme):
         risk_adjusted_return = self._return_algorithm(returns)
         return risk_adjusted_return
 
+
 class PBR(TensorTradeRewardScheme):
     """A reward scheme for position-based returns.
 
@@ -212,7 +214,8 @@ class PBR(TensorTradeRewardScheme):
 
 _registry = {
     'simple': SimpleProfit,
-    'risk-adjusted': RiskAdjustedReturns
+    'risk-adjusted': RiskAdjustedReturns,
+    'pbr': PBR,
 }
 
 

@@ -15,7 +15,7 @@
 import numpy as np
 import pandas as pd
 
-from stochastic.noise import GaussianNoise
+from stochastic.processes.noise import GaussianNoise
 
 from tensortrade.stochastic.processes.brownian_motion import brownian_motion_log_returns
 from tensortrade.stochastic.utils.helpers import get_delta, scale_times_to_generate, convert_to_prices

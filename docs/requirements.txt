@@ -8,3 +8,4 @@ nbsphinx_link
 recommonmark
 sphinx_markdown_tables
 ipykernel
+docutils<0.18

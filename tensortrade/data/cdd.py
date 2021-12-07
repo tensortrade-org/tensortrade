@@ -65,13 +65,14 @@ class CryptoDataDownload:
 
         df = pd.read_csv(self.url + filename, skiprows=1)
         df = df[::-1]
-        df = df.drop(["Symbol"], axis=1)
+        df = df.drop(["symbol"], axis=1)
         df = df.rename({base_vc: new_base_vc, quote_vc: new_quote_vc, "Date": "date"}, axis=1)
 
-        if "d" in timeframe:
-            df["date"] = pd.to_datetime(df["date"])
-        elif "h" in timeframe:
-            df["date"] = pd.to_datetime(df["date"], format="%Y-%m-%d %I-%p")
+        df["unix"] = df["unix"].astype(int)
+        df["unix"] = df["unix"].apply(
+            lambda x: int(x / 1000) if len(str(x)) == 13 else x
+        )
+        df["date"] = pd.to_datetime(df["unix"], unit="s")
 
         df = df.set_index("date")
         df.columns = [name.lower() for name in df.columns]

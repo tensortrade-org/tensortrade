@@ -29,8 +29,8 @@ using the `CryptoDataDownload` class.
 
 ```python
 cdd = CryptoDataDownload()
-coinbase_btc = cdd.fetch("Coinbase", "USD", "BTC", "1h")
-coinbase_eth = cdd.fetch("Coinbase", "USD", "ETH", "1h")
+bitfinex_btc = cdd.fetch("Bitfinex", "USD", "BTC", "1h")
+bitfinex_eth = cdd.fetch("Bitfinex", "USD", "ETH", "1h")
 
 bitstamp_btc = cdd.fetch("Bitstamp", "USD", "BTC", "1h")
 bitstamp_eth = cdd.fetch("Bitstamp", "USD", "ETH", "1h")
@@ -41,9 +41,9 @@ bitstamp_ltc = cdd.fetch("Bitstamp", "USD", "LTC", "1h")
 
 
 ```python
-coinbase = Exchange("coinbase", service=execute_order)(
-    Stream.source(list(coinbase_btc['close'][-100:]), dtype="float").rename("USD-BTC"),
-    Stream.source(list(coinbase_eth['close'][-100:]), dtype="float").rename("USD-ETH")
+bitfinex = Exchange("bitfinex", service=execute_order)(
+    Stream.source(list(bitfinex_btc['close'][-100:]), dtype="float").rename("USD-BTC"),
+    Stream.source(list(bitfinex_eth['close'][-100:]), dtype="float").rename("USD-ETH")
 )
 
 bitstamp = Exchange("bitstamp", service=execute_order)(
@@ -53,9 +53,9 @@ bitstamp = Exchange("bitstamp", service=execute_order)(
 )
 
 portfolio = Portfolio(USD, [
-    Wallet(coinbase, 10000 * USD),
-    Wallet(coinbase, 10 * BTC),
-    Wallet(coinbase, 5 * ETH),
+    Wallet(bitfinex, 10000 * USD),
+    Wallet(bitfinex, 10 * BTC),
+    Wallet(bitfinex, 5 * ETH),
     Wallet(bitstamp, 1000 * USD),
     Wallet(bitstamp, 5 * BTC),
     Wallet(bitstamp, 20 * ETH),
@@ -89,9 +89,9 @@ portfolio.ledger.as_frame().head(7)
 
 ```python
 portfolio = Portfolio(USD, [
-    Wallet(coinbase, 10000 * USD),
-    Wallet(coinbase, 0 * BTC),
-    Wallet(coinbase, 0 * ETH),
+    Wallet(bitfinex, 10000 * USD),
+    Wallet(bitfinex, 0 * BTC),
+    Wallet(bitfinex, 0 * ETH),
 ])
 
 env = default.create(

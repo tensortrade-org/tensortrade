@@ -107,7 +107,10 @@ class Wallet(Identifiable):
             raise DoubleLockedQuantity(quantity)
 
         if quantity > self.balance:
-            raise InsufficientFunds(self.balance, quantity)
+            if (quantity-self.balance)>Decimal(10)**(-self.instrument.precision+2):
+                raise InsufficientFunds(self.balance, quantity)
+            else:
+                quantity = self.balance
 
         self.balance -= quantity
 
@@ -230,12 +233,18 @@ class Wallet(Identifiable):
         if quantity.is_locked and self._locked.get(quantity.path_id, False):
             locked_quantity = self._locked[quantity.path_id]
             if quantity > locked_quantity:
-                raise InsufficientFunds(self._locked[quantity.path_id], quantity)
+                if (quantity-locked_quantity)>Decimal(10)**(-self.instrument.precision+2):
+                    raise InsufficientFunds(locked_quantity, quantity)
+                else:
+                    quantity = locked_quantity
             self._locked[quantity.path_id] -= quantity
 
         elif not quantity.is_locked:
             if quantity > self.balance:
-                raise InsufficientFunds(self.balance, quantity)
+                if (quantity-self.balance)>Decimal(10)**(-self.instrument.precision+2):
+                    raise InsufficientFunds(self.balance, quantity)
+                else:
+                    quantity = self.balance
             self.balance -= quantity
 
         self.balance = self.balance.quantize()

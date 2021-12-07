@@ -7,4 +7,4 @@ exchanges:
   credentials:
     api_key: '487r63835t4323'
     api_secret_key: 'do8u43hgiurwfnlveio'
-  name: 'coinbase'
+  name: 'bitfinex'

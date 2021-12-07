@@ -50,7 +50,7 @@ def load_csv(filename):
 
 
 ```python
-df = load_csv('Coinbase_BTCUSD_1h.csv')
+df = load_csv('Bitfinex_BTCUSD_1h.csv')
 df.head()
 ```
 
@@ -77,16 +77,16 @@ dataset.drop(columns=['date', 'open', 'high', 'low', 'close', 'volume'], inplace
 
 
 ```python
-coinbase = Exchange("coinbase", service=execute_order)(
+bitfinex = Exchange("bitfinex", service=execute_order)(
     Stream.source(price_history['close'].tolist(), dtype="float").rename("USD-BTC")
 )
 
 portfolio = Portfolio(USD, [
-    Wallet(coinbase, 10000 * USD),
-    Wallet(coinbase, 10 * BTC),
+    Wallet(bitfinex, 10000 * USD),
+    Wallet(bitfinex, 10 * BTC),
 ])
 
-with NameSpace("coinbase"):
+with NameSpace("bitfinex"):
     streams = [Stream.source(dataset[c].tolist(), dtype="float").rename(c) for c in dataset.columns]
 
 feed = DataFeed(streams)
@@ -96,65 +96,65 @@ feed.next()
 
 
 
-    {'coinbase:/volume_adi': 503274.35945218964,
-     'coinbase:/volume_obv': 0.0,
-     'coinbase:/volume_cmf': 0.5388828039430464,
-     'coinbase:/volume_fi': 0.0,
-     'coinbase:/volume_em': 0.0,
-     'coinbase:/volume_vpt': -187039.68188942864,
-     'coinbase:/volume_nvi': 1000.0,
-     'coinbase:/volatility_atr': 88.87448632521046,
-     'coinbase:/volatility_bbh': 2509.17,
-     'coinbase:/volatility_bbl': 2509.17,
-     'coinbase:/volatility_bbm': 2509.17,
-     'coinbase:/volatility_bbhi': 0.0,
-     'coinbase:/volatility_bbli': 0.0,
-     'coinbase:/volatility_kcc': 2505.89,
-     'coinbase:/volatility_kch': 2524.15,
-     'coinbase:/volatility_kcl': 2487.6299999999997,
-     'coinbase:/volatility_kchi': 0.0,
-     'coinbase:/volatility_kcli': 0.0,
-     'coinbase:/volatility_dch': 2509.17,
-     'coinbase:/volatility_dcl': 2509.17,
-     'coinbase:/volatility_dchi': 0.0,
-     'coinbase:/volatility_dcli': 0.0,
-     'coinbase:/trend_macd': 0.0,
-     'coinbase:/trend_macd_signal': 0.0,
-     'coinbase:/trend_macd_diff': 0.0,
-     'coinbase:/trend_ema_fast': 2509.17,
-     'coinbase:/trend_ema_slow': 2509.17,
-     'coinbase:/trend_adx': 0.0,
-     'coinbase:/trend_adx_pos': 0.0,
-     'coinbase:/trend_adx_neg': 0.0,
-     'coinbase:/trend_vortex_ind_pos': 1.0,
-     'coinbase:/trend_vortex_ind_neg': 1.0,
-     'coinbase:/trend_vortex_diff': 0.0,
-     'coinbase:/trend_trix': -65.01942947444225,
-     'coinbase:/trend_mass_index': 1.0,
-     'coinbase:/trend_cci': 0.0,
-     'coinbase:/trend_dpo': 4669.658895132072,
-     'coinbase:/trend_kst': -650.476416605854,
-     'coinbase:/trend_kst_sig': -650.476416605854,
-     'coinbase:/trend_kst_diff': 0.0,
-     'coinbase:/trend_ichimoku_a': 2504.25,
-     'coinbase:/trend_ichimoku_b': 2504.25,
-     'coinbase:/trend_visual_ichimoku_a': 7164.427851548871,
-     'coinbase:/trend_visual_ichimoku_b': 7151.343258415852,
-     'coinbase:/trend_aroon_up': 4.0,
-     'coinbase:/trend_aroon_down': 4.0,
-     'coinbase:/trend_aroon_ind': 0.0,
-     'coinbase:/momentum_rsi': 50.0,
-     'coinbase:/momentum_mfi': 50.0,
-     'coinbase:/momentum_tsi': -100.0,
-     'coinbase:/momentum_uo': 0.29997594458961346,
-     'coinbase:/momentum_stoch': 76.94414019715232,
-     'coinbase:/momentum_stoch_signal': 76.94414019715232,
-     'coinbase:/momentum_wr': -23.055859802847678,
-     'coinbase:/momentum_ao': 0.0,
-     'coinbase:/momentum_kama': 2509.17,
-     'coinbase:/others_dr': -65.0476416605854,
-     'coinbase:/others_dlr': 0.0,
-     'coinbase:/others_cr': 0.0}
+    {'bitfinex:/volume_adi': 503274.35945218964,
+     'bitfinex:/volume_obv': 0.0,
+     'bitfinex:/volume_cmf': 0.5388828039430464,
+     'bitfinex:/volume_fi': 0.0,
+     'bitfinex:/volume_em': 0.0,
+     'bitfinex:/volume_vpt': -187039.68188942864,
+     'bitfinex:/volume_nvi': 1000.0,
+     'bitfinex:/volatility_atr': 88.87448632521046,
+     'bitfinex:/volatility_bbh': 2509.17,
+     'bitfinex:/volatility_bbl': 2509.17,
+     'bitfinex:/volatility_bbm': 2509.17,
+     'bitfinex:/volatility_bbhi': 0.0,
+     'bitfinex:/volatility_bbli': 0.0,
+     'bitfinex:/volatility_kcc': 2505.89,
+     'bitfinex:/volatility_kch': 2524.15,
+     'bitfinex:/volatility_kcl': 2487.6299999999997,
+     'bitfinex:/volatility_kchi': 0.0,
+     'bitfinex:/volatility_kcli': 0.0,
+     'bitfinex:/volatility_dch': 2509.17,
+     'bitfinex:/volatility_dcl': 2509.17,
+     'bitfinex:/volatility_dchi': 0.0,
+     'bitfinex:/volatility_dcli': 0.0,
+     'bitfinex:/trend_macd': 0.0,
+     'bitfinex:/trend_macd_signal': 0.0,
+     'bitfinex:/trend_macd_diff': 0.0,
+     'bitfinex:/trend_ema_fast': 2509.17,
+     'bitfinex:/trend_ema_slow': 2509.17,
+     'bitfinex:/trend_adx': 0.0,
+     'bitfinex:/trend_adx_pos': 0.0,
+     'bitfinex:/trend_adx_neg': 0.0,
+     'bitfinex:/trend_vortex_ind_pos': 1.0,
+     'bitfinex:/trend_vortex_ind_neg': 1.0,
+     'bitfinex:/trend_vortex_diff': 0.0,
+     'bitfinex:/trend_trix': -65.01942947444225,
+     'bitfinex:/trend_mass_index': 1.0,
+     'bitfinex:/trend_cci': 0.0,
+     'bitfinex:/trend_dpo': 4669.658895132072,
+     'bitfinex:/trend_kst': -650.476416605854,
+     'bitfinex:/trend_kst_sig': -650.476416605854,
+     'bitfinex:/trend_kst_diff': 0.0,
+     'bitfinex:/trend_ichimoku_a': 2504.25,
+     'bitfinex:/trend_ichimoku_b': 2504.25,
+     'bitfinex:/trend_visual_ichimoku_a': 7164.427851548871,
+     'bitfinex:/trend_visual_ichimoku_b': 7151.343258415852,
+     'bitfinex:/trend_aroon_up': 4.0,
+     'bitfinex:/trend_aroon_down': 4.0,
+     'bitfinex:/trend_aroon_ind': 0.0,
+     'bitfinex:/momentum_rsi': 50.0,
+     'bitfinex:/momentum_mfi': 50.0,
+     'bitfinex:/momentum_tsi': -100.0,
+     'bitfinex:/momentum_uo': 0.29997594458961346,
+     'bitfinex:/momentum_stoch': 76.94414019715232,
+     'bitfinex:/momentum_stoch_signal': 76.94414019715232,
+     'bitfinex:/momentum_wr': -23.055859802847678,
+     'bitfinex:/momentum_ao': 0.0,
+     'bitfinex:/momentum_kama': 2509.17,
+     'bitfinex:/others_dr': -65.0476416605854,
+     'bitfinex:/others_dlr': 0.0,
+     'bitfinex:/others_cr': 0.0}
 
 
 

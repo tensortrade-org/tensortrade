@@ -1,4 +1,4 @@
-
+import logging
 from decimal import Decimal
 
 from tensortrade.core import Clock
@@ -47,7 +47,9 @@ def execute_buy_order(order: 'Order',
     commission = options.commission * filled
     quantity = filled - commission
 
-    if commission.size < Decimal(10)**-quantity.instrument.precision:
+    if commission.size < Decimal(10) ** -quantity.instrument.precision:
+        logging.warning("Commission is less than instrument precision. Canceling order. "
+                        "Consider defining a custom instrument with a higher precision.")
         order.cancel("COMMISSION IS LESS THAN PRECISION.")
         return None
 
@@ -110,7 +112,9 @@ def execute_sell_order(order: 'Order',
     commission = options.commission * filled
     quantity = filled - commission
 
-    if commission.size < Decimal(10)**-quantity.instrument.precision:
+    if commission.size < Decimal(10) ** -quantity.instrument.precision:
+        logging.warning("Commission is less than instrument precision. Canceling order. "
+                        "Consider defining a custom instrument with a higher precision.")
         order.cancel("COMMISSION IS LESS THAN PRECISION.")
         return None
 

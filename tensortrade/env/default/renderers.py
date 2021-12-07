@@ -282,7 +282,6 @@ class FileLogger(BaseRenderer):
         self._logger.info(f"{log_entry} - Performance:\n{performance}")
 
 
-
 class PlotlyTradingChart(BaseRenderer):
     """Trading visualization for TensorTrade using Plotly.
 
@@ -360,7 +359,7 @@ class PlotlyTradingChart(BaseRenderer):
         self._net_worth_chart = None
         self._base_annotations = None
         self._last_trade_step = 0
-        self._show_chart = True
+        self._show_chart = display
 
     def _create_figure(self, performance_keys: dict) -> None:
         fig = make_subplots(
@@ -507,7 +506,6 @@ class PlotlyTradingChart(BaseRenderer):
 
         if self._show_chart:  # ensure chart visibility through notebook cell reruns
             display(self.fig)
-            self._show_chart = False
 
         self.fig.layout.title = self._create_log_entry(episode, max_episodes, step, max_steps)
         self._price_chart.update(dict(
@@ -525,6 +523,8 @@ class PlotlyTradingChart(BaseRenderer):
 
         self._net_worth_chart.update({'y': net_worth})
 
+        if self._show_chart:
+            self.fig.show()
 
     def save(self) -> None:
         """Saves the current chart to a file.
@@ -548,7 +548,6 @@ class PlotlyTradingChart(BaseRenderer):
         else:
             self.fig.write_image(filename)
 
-
     def reset(self) -> None:
         self._last_trade_step = 0
         if self.fig is None:
@@ -556,7 +555,6 @@ class PlotlyTradingChart(BaseRenderer):
 
         self.fig.layout.annotations = self._base_annotations
         clear_output(wait=True)
-        self._show_chart = True
 
 
 class MatplotlibTradingChart(BaseRenderer):
@@ -592,7 +590,7 @@ class MatplotlibTradingChart(BaseRenderer):
 
         self._save_format = save_format
         self._path = path
-        self.filename_prefix = filename_prefix
+        self._filename_prefix = filename_prefix
 
         if self._save_format and self._path and not os.path.exists(path):
             os.mkdir(path)
@@ -701,13 +699,13 @@ class MatplotlibTradingChart(BaseRenderer):
         if self._show_chart:
             plt.show(block=False)
 
-        current_step = step -1
+        current_step = step - 1
 
         self._df = price_history
         if max_steps:
-            window_size=max_steps
+            window_size = max_steps
         else:
-            window_size=20
+            window_size = 20
 
         current_net_worth = round(net_worth[len(net_worth)-1], 1)
         initial_net_worth = round(net_worth[0], 1)
@@ -720,7 +718,6 @@ class MatplotlibTradingChart(BaseRenderer):
         step_range = slice(window_start, current_step)
 
         times = self._df.index.values[step_range]
-
 
         if len(times) > 0:
             # self._render_net_worth(step_range, times, current_step, net_worths, benchmarks)
@@ -746,7 +743,7 @@ class MatplotlibTradingChart(BaseRenderer):
         _check_path(self._path)
         filename = _create_auto_file_name(self._filename_prefix, self._save_format)
         filename = os.path.join(self._path, filename)
-        self.plt.savefig(filename, format=self._save_format)
+        self.fig.savefig(filename, format=self._save_format)
 
     def reset(self) -> None:
         """Resets the renderer.
@@ -756,6 +753,7 @@ class MatplotlibTradingChart(BaseRenderer):
         self._volume_ax = None
         self.net_worth_ax = None
         self._df = None
+
 
 _registry = {
     "screen-log": ScreenLogger,

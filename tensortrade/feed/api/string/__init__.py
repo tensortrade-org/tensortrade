@@ -40,4 +40,5 @@ class String:
             return func
         return wrapper
 
+
 from .operations import *
