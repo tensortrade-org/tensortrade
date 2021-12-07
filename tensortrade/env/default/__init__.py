@@ -84,6 +84,7 @@ def create(portfolio: 'Portfolio',
         observer=observer,
         stopper=kwargs.get("stopper", stopper),
         informer=kwargs.get("informer", informers.TensorTradeInformer()),
-        renderer=renderer
+        renderer=renderer,
+        min_periods=min_periods,
     )
     return env
