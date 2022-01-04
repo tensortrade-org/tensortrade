@@ -101,7 +101,7 @@ class TradingEnv(gym.Env, TimeIndexed):
         }
 
     def step(self, action: Any) -> 'Tuple[np.array, float, bool, dict]':
-        """Makes on step through the environment.
+        """Makes one step through the environment.
 
         Parameters
         ----------
