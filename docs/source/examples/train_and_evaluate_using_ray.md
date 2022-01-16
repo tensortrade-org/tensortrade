@@ -61,7 +61,7 @@ yf_ticker = yfinance.Ticker(ticker=TICKER)
 
 df_training = yf_ticker.history(start=TRAIN_START_DATE, end=TRAIN_END_DATE, interval='60m')
 df_training.drop(['Dividends', 'Stock Splits'], axis=1, inplace=True)
-df_training["volume"] = df_training["volume"].astype(int)
+df_training["Volume"] = df_training["Volume"].astype(int)
 df_training.ta.log_return(append=True, length=16)
 df_training.ta.rsi(append=True, length=14)
 df_training.ta.macd(append=True, fast=12, slow=26)
@@ -69,7 +69,7 @@ df_training.to_csv('training.csv', index=False)
 
 df_evaluation = yf_ticker.history(start=EVAL_START_DATE, end=EVAL_END_DATE, interval='60m')
 df_evaluation.drop(['Dividends', 'Stock Splits'], axis=1, inplace=True)
-df_evaluation["volume"] = df_evaluation["volume"].astype(int)
+df_evaluation["Volume"] = df_evaluation["Volume"].astype(int)
 df_evaluation.ta.log_return(append=True, length=16)
 df_evaluation.ta.rsi(append=True, length=14)
 df_evaluation.ta.macd(append=True, fast=12, slow=26)
@@ -100,7 +100,7 @@ import tensortrade.env.default as default
 def create_env(config):
     dataset = pd.read_csv(filepath_or_buffer=config["csv_filename"], parse_dates=['Datetime']).fillna(method='backfill').fillna(method='ffill')
     ttse_commission = 0.0035  # TODO: adjust according to your commission percentage, if present
-    price = Stream.source(list(dataset["close"]), dtype="float").rename("USD-TTRD")
+    price = Stream.source(list(dataset["Close"]), dtype="float").rename("USD-TTRD")
     ttse_options = ExchangeOptions(commission=ttse_commission)
     ttse_exchange = Exchange("TTSE", service=execute_order, options=ttse_options)(price)
 
