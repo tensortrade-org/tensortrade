@@ -152,6 +152,7 @@ Now it's time to actually initialize and run Ray, passing all the parameters nec
 **Please note that many of these parameters need to be tuned for your specific use case** (ie: `"training_iteration": 5` is ***way*** too few to get anything remotely useful, but it allows the example to quickly reach the end)
 ```python
 import ray
+import os
 from ray import tune
 from ray.tune.registry import register_env
 
@@ -159,6 +160,9 @@ from ray.tune.registry import register_env
 FC_SIZE = tune.grid_search([[256, 256], [1024], [128, 64, 32]])  # Those are the alternatives that ray.tune will try...
 LEARNING_RATE = tune.grid_search([0.001, 0.0005, 0.00001])  # ... and they will be combined with these ones ...
 MINIBATCH_SIZE = tune.grid_search([5, 10, 20])  # ... and these ones, in a cartesian product.
+
+# Get the current working directory
+cwd = os.getcwd()
 
 # Initialize Ray
 ray.init()  # There are *LOTS* of initialization parameters, like specifying the maximum number of CPUs\GPUs to allocate. For now just leave it alone.
@@ -171,12 +175,12 @@ env_config_training = {
     "window_size": 14,  # We want to look at the last 14 samples (hours)
     "reward_window_size": 7,  # And calculate reward based on the actions taken in the next 7 hours
     "max_allowed_loss": 0.10,  # If it goes past 10% loss during the iteration, we don't want to waste time on a "loser".
-    "csv_filename": "training.csv"  # The variable that will be used to differentiate training and validation datasets
+    "csv_filename": os.path.join(cwd, 'training.csv'),  # The variable that will be used to differentiate training and validation datasets
 }
 # Specific configuration keys that will be used during evaluation (only the overridden ones)
 env_config_evaluation = {
     "max_allowed_loss": 1.00,  # During validation runs we want to see how bad it would go. Even up to 100% loss.
-    "csv_filename": "evaluation.csv",  # The variable that will be used to differentiate training and validation datasets
+    "csv_filename": os.path.join(cwd, 'evaluation.csv'),  # The variable that will be used to differentiate training and validation datasets
 }
 
 analysis = tune.run(
