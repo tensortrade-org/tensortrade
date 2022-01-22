@@ -175,12 +175,12 @@ env_config_training = {
     "window_size": 14,  # We want to look at the last 14 samples (hours)
     "reward_window_size": 7,  # And calculate reward based on the actions taken in the next 7 hours
     "max_allowed_loss": 0.10,  # If it goes past 10% loss during the iteration, we don't want to waste time on a "loser".
-    "csv_filename": cwd + "/training.csv"  # The variable that will be used to differentiate training and validation datasets
+    "csv_filename": os.path.join(cwd, 'training.csv'),  # The variable that will be used to differentiate training and validation datasets
 }
 # Specific configuration keys that will be used during evaluation (only the overridden ones)
 env_config_evaluation = {
     "max_allowed_loss": 1.00,  # During validation runs we want to see how bad it would go. Even up to 100% loss.
-    "csv_filename": os.path.join(cwd, 'training.csv'),  # The variable that will be used to differentiate training and validation datasets
+    "csv_filename": os.path.join(cwd, 'evaluation.csv'),  # The variable that will be used to differentiate training and validation datasets
 }
 
 analysis = tune.run(
