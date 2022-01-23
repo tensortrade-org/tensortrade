@@ -302,7 +302,8 @@ import ray.rllib.agents.ppo as ppo
 # Get checkpoint
 checkpoints = analysis.get_trial_checkpoints_paths(
     trial=analysis.get_best_trial("episode_reward_mean"),
-    metric="episode_reward_mean"
+    metric="episode_reward_mean",
+    mode='max'
 )
 checkpoint_path = checkpoints[0][0]
 
