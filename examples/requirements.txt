@@ -7,4 +7,5 @@ jupyterlab>=1.1.4
 scikit-learn
 talib-binary
 quantstats
+git+https://github.com/twopirllc/pandas-ta@development
 

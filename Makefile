@@ -1,5 +1,6 @@
 GPU_IMAGE?="tensortrade:latest-gpu"
 CPU_IMAGE?="tensortrade:latest"
+SHM_SIZE?="2.11gb" # TODO: Automate me!
 
 clean:
 	find . | grep -E '(__pycache__|\.pyc|\.pyo$$)' | xargs rm -rf
@@ -38,26 +39,26 @@ build-gpu-if-not-built:
 	if [ ! $$(docker images -q ${GPU_IMAGE}) ]; then $(MAKE) build-gpu; fi;
 
 run-notebook: build-cpu-if-not-built
-	docker run -it --rm -p=8888:8888 -v ${PWD}/examples:/examples ${CPU_IMAGE} jupyter notebook --ip='*' --port=8888 --no-browser --allow-root ./examples/
+	docker run -it --rm -p=8888:8888 -v ${PWD}/examples:/examples --shm-size=${SHM_SIZE} ${CPU_IMAGE} jupyter notebook --ip='*' --port=8888 --no-browser --allow-root ./examples/
 
 run-docs: build-cpu-if-not-built
 	if [ $$(docker ps -aq --filter name=tensortrade_docs) ]; then docker rm $$(docker ps -aq --filter name=tensortrade_docs); fi;
-	docker run -t --name tensortrade_docs ${CPU_IMAGE} make docs-build && make docs-serve
+	docker run -t --name tensortrade_docs --shm-size=${SHM_SIZE} ${CPU_IMAGE} make docs-build && make docs-serve
 	python3 -m webbrowser http://localhost:8000/docs/build/html/index.html
 
 run-tests: build-cpu-if-not-built
-	docker run -it --rm ${CPU_IMAGE} make test
+	docker run -it --rm --shm-size=${SHM_SIZE} ${CPU_IMAGE} make test
 
 run-notebook-gpu: build-gpu-if-not-built
-	docker run -it --rm -p=8888:8888 -v ${PWD}/examples:/examples ${GPU_IMAGE} jupyter notebook --ip='*' --port=8888 --no-browser --allow-root /examples/
+	docker run -it --rm -p=8888:8888 -v ${PWD}/examples:/examples --shm-size=${SHM_SIZE} ${GPU_IMAGE} jupyter notebook --ip='*' --port=8888 --no-browser --allow-root /examples/
 
 run-docs-gpu: build-gpu-if-not-built
 	if [ $$(docker ps -aq --filter name=tensortrade_docs) ]; then docker rm $$(docker ps -aq --filter name=tensortrade_docs); fi;
-	docker run -t --name tensortrade_docs ${GPU_IMAGE} make docs-build && make docs-serve
+	docker run -t --name tensortrade_docs --shm-size=${SHM_SIZE} ${GPU_IMAGE} make docs-build && make docs-serve
 	python3 -m webbrowser http://localhost:8000/docs/build/html/index.html
 
 run-tests-gpu: build-gpu-if-not-built
-	docker run -it --rm ${GPU_IMAGE} make test
+	docker run -it --rm --shm-size=${SHM_SIZE} ${GPU_IMAGE} make test
 
 package:
 	rm -rf dist
