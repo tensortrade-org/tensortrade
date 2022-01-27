@@ -9,7 +9,8 @@ python:
   - '3.6'
 
 install:
-  - pip install -e .[tests]
+  - pip install -r examples/requirements.txt
+  - pip install -e ".[tests]"
 
 script:
   - pytest
