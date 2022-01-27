@@ -16,8 +16,6 @@ COPY . ./
 SHELL ["/bin/bash", "-c"]
 
 RUN apt-get update && \
-    apt-get install -yq --assume-yes --no-install-recommends apt-utils \
-                                                             bash-completion && \
     apt-get install -yq --assume-yes --no-install-recommends git \
                                                              libgl1-mesa-glx \
                                                              python3-pip \
