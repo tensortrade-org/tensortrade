@@ -1,6 +1,6 @@
 GPU_IMAGE?="tensortrade:latest-gpu"
 CPU_IMAGE?="tensortrade:latest"
-SHM_SIZE?="2.11gb" # TODO: Automate me!
+SHM_SIZE?="3.0gb" # TODO: Automate me!
 
 clean:
 	find . | grep -E '(__pycache__|\.pyc|\.pyo$$)' | xargs rm -rf
