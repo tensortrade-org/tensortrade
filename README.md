@@ -43,8 +43,17 @@ You can get started testing on Google Colab or your local machine, by viewing ou
 ## Installation
 
 TensorTrade requires Python >= 3.6 for all functionality to work as expected.
-
+You can install TensorTrade both as a pre-packaged solution by running the default setup command.
 ```bash
+pip install tensortrade
+```
+You can then alternatively install TensorTrade directly from the master code repository, pulling directly from the latest commits. This will give you the latest features\fixes, but it is highly untested code, so proceed at your own risk.
+```bash
+pip install git+https://github.com/tensortrade-org/tensortrade.git
+```
+Alternatively you can clone\download the repository in your local environment an manually install the requirements, either the "base" ones, or the ones that also include requirements to run the examples in the documentation.
+```bash
+pip install -r requirements.txt
 pip install -r examples/requirements.txt
 ```
 
