@@ -5,7 +5,7 @@ stochastic>=0.4.0
 ccxt==1.18.1
 jupyterlab>=1.1.4
 scikit-learn
-talib-binary
 quantstats
 git+https://github.com/twopirllc/pandas-ta@development
+git+https://github.com/Yvictor/ta-lib
 

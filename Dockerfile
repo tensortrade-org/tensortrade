@@ -1,4 +1,4 @@
-FROM tensorflow/tensorflow:2.4.2-gpu
+FROM tensorflow/tensorflow:2.7.0-gpu
 
 ENV NVIDIA_VISIBLE_DEVICES \
     ${NVIDIA_VISIBLE_DEVICES:-all}
@@ -24,10 +24,16 @@ RUN apt-get update && \
                                                              rsync \
                                                              wget \
                                                              zip && \
+    wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz && \
+    tar -xzf ta-lib-0.4.0-src.tar.gz && \
+    cd ta-lib/ && \
+    ./configure --prefix=/usr && \
+    make && \
+    make install && \
+    cd .. && \
+    pip3 install --no-cache-dir --upgrade pip && \
+    pip3 install --no-cache-dir -e ".[docs,tests]" && \
+    pip3 install --no-cache-dir -r "./examples/requirements.txt" && \
     apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
-
-RUN pip3 install --no-cache-dir --upgrade pip
-RUN pip3 install --no-cache-dir -e ".[docs,tests]"
-RUN pip3 install --no-cache-dir -r "./examples/requirements.txt"
+    rm -rf /var/lib/apt/lists/* ta-lib-0.4.0-src.tar.gz
 
