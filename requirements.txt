@@ -10,7 +10,4 @@ matplotlib>=3.1.1
 plotly>=4.5.0
 ipywidgets>=7.0.0  # Required for rendering
 torch>=1.10.2
-aiohttp==3.7
-aioredis<2.0
-optuna
 
