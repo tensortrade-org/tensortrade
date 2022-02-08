@@ -37,13 +37,14 @@ setup(
     long_description='TensorTrade: A reinforcement learning library for training, evaluating, and deploying robust trading agents.',
     long_description_content_type='text/markdown',
     author='Adam King <adamjking3@gmail.com>, Matthew Brulhardt <mwbrulhardt@gmail.com>',
+    maintainer='Carlo Grisetti <carlo.grisetti@gmail.com>',
     url='https://github.com/tensortrade-org/tensortrade',
     packages=[
         package for package in find_packages(exclude=('tests', 'docs'))
         if package.startswith('tensortrade')
     ],
     license='Apache 2.0',
-    python_requires='>=3.8',
+    python_requires='>=3.6',
     install_requires=[
         'numpy>=1.17.0',
         'pandas>=0.25.0',
@@ -72,7 +73,7 @@ setup(
         ],
     },
     classifiers=[
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
         'Natural Language :: English',
         'Intended Audience :: Developers',
         'Intended Audience :: Education',
@@ -81,8 +82,10 @@ setup(
         'Intended Audience :: Information Technology',
         'License :: OSI Approved :: Apache Software License',
         'Operating System :: OS Independent',
-        'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
         'Topic :: Office/Business :: Financial :: Investment',
         'Topic :: Office/Business :: Financial',
         'Topic :: Scientific/Engineering :: Information Analysis',
