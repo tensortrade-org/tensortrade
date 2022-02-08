@@ -6,10 +6,20 @@ services:
 language: python
 
 python:
-  - '3.7'
+  - '3.8'
 
 install:
-  - pip install -e .[tests]
+  - sudo apt-get update
+  - sudo apt-get install -yq --assume-yes --no-install-recommends gcc wget
+  - wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz
+  - tar -xzf ta-lib-0.4.0-src.tar.gz
+  - cd ta-lib/
+  - ./configure --prefix=/usr
+  - make
+  - sudo make install
+  - cd ..
+  - pip install -r examples/requirements.txt
+  - pip install -e ".[tests]"
 
 script:
   - pytest
