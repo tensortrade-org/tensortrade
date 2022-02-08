@@ -16,7 +16,7 @@ install:
   - cd ta-lib/
   - ./configure --prefix=/usr
   - make
-  - make install
+  - sudo make install
   - cd ..
   - pip install -r examples/requirements.txt
   - pip install -e ".[tests]"
