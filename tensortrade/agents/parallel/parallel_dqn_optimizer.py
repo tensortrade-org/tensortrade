@@ -13,6 +13,7 @@
 # limitations under the License
 
 
+from deprecated import deprecated
 import tensorflow as tf
 
 from multiprocessing import Process, Queue
@@ -20,6 +21,7 @@ from multiprocessing import Process, Queue
 from tensortrade.agents import ReplayMemory, DQNTransition
 
 
+@deprecated(reason="Builtin agents are being deprecated in favor of external implementations (ie: Ray)")
 class ParallelDQNOptimizer(Process):
     def __init__(self,
                  model: 'ParallelDQNModel',

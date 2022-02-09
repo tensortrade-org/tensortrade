@@ -18,7 +18,7 @@ References:
     - http://inoryy.com/post/tensorflow2-deep-reinforcement-learning/#agent-interface
 """
 
-
+from deprecated import deprecated
 import random
 import numpy as np
 import tensorflow as tf
@@ -31,6 +31,7 @@ from datetime import datetime
 A2CTransition = namedtuple('A2CTransition', ['state', 'action', 'reward', 'done', 'value'])
 
 
+@deprecated(reason="Builtin agents are being deprecated in favor of external implementations (ie: Ray)")
 class A2CAgent(Agent):
 
     def __init__(self,

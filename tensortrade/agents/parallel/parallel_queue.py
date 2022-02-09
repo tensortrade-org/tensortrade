@@ -13,11 +13,13 @@
 # limitations under the License
 
 
+from deprecated import deprecated
 import multiprocessing as mp
 
 from multiprocessing.queues import Queue
 
 
+@deprecated(reason="Builtin agents are being deprecated in favor of external implementations (ie: Ray)")
 class SharedCounter(object):
     """ A synchronized shared counter.
 
@@ -58,6 +60,7 @@ class SharedCounter(object):
         return self.count.value
 
 
+@deprecated(reason="Builtin agents are being deprecated in favor of external implementations (ie: Ray)")
 class ParallelQueue(Queue):
     """A portable implementation of multiprocessing.Queue.
 

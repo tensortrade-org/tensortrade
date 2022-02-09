@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from deprecated import deprecated
 import random
 import numpy as np
 import tensorflow as tf
@@ -24,6 +25,7 @@ from datetime import datetime
 DQNTransition = namedtuple('DQNTransition', ['state', 'action', 'reward', 'next_state', 'done'])
 
 
+@deprecated(reason="Builtin agents are being deprecated in favor of external implementations (ie: Ray)")
 class DQNAgent(Agent):
     """
 
