@@ -8,7 +8,7 @@ from tensortrade.core.base import Identifiable
 
 
 class InitContextMeta(ABCMeta):
-    """Metaclass that executes `__init__` of instance in it's core.
+    """Metaclass that executes `__init__` of instance in its core.
 
     This class works with the `TradingContext` class to ensure the correct
     data is being given to the instance created by a concrete class that has

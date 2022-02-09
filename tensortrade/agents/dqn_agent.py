@@ -31,6 +31,7 @@ class DQNAgent(Agent):
     ===========
         - https://towardsdatascience.com/deep-reinforcement-learning-build-a-deep-q-network-dqn-to-play-cartpole-with-tensorflow-2-and-gym-8e105744b998
         - https://pytorch.org/tutorials/intermediate/reinforcement_q_learning.html#dqn-algorithm
+        - https://arxiv.org/abs/1802.00308
     """
 
     def __init__(self,
@@ -48,6 +49,7 @@ class DQNAgent(Agent):
         self.env.agent_id = self.id
 
     def _build_policy_network(self):
+        '''
         network = tf.keras.Sequential([
             tf.keras.layers.InputLayer(input_shape=self.observation_shape),
             tf.keras.layers.Conv1D(filters=64, kernel_size=6, padding="same", activation="tanh"),
@@ -58,6 +60,165 @@ class DQNAgent(Agent):
             tf.keras.layers.Dense(self.n_actions, activation="sigmoid"),
             tf.keras.layers.Dense(self.n_actions, activation="softmax")
         ])
+        '''
+
+        dropout = 0.9
+        stride = 1
+
+        inputs = tf.keras.layers.Input(shape=self.observation_shape, 
+                                       dtype='float32')
+
+        pad_1 = tf.keras.layers.ZeroPadding1D(padding=stride)(inputs)
+
+        conv_1 = tf.keras.layers.Conv1D(filters=16, 
+                                        kernel_size=4, 
+                                        strides=2, 
+                                        padding='causal', 
+                                        activation=tf.keras.layers.PReLU(), 
+                                        kernel_initializer='he_uniform', 
+                                        use_bias=True)(pad_1)
+
+        norm_1 = tf.keras.layers.BatchNormalization()(conv_1)
+
+        conv_2 = tf.keras.layers.Conv1D(filters=32, 
+                                        kernel_size=4, 
+                                        strides=2, 
+                                        padding='causal', 
+                                        activation=tf.keras.layers.PReLU(), 
+                                        kernel_initializer='he_uniform', 
+                                        use_bias=True)(pad_1)
+
+        norm_2 = tf.keras.layers.BatchNormalization()(conv_2)
+
+        conv_3 = tf.keras.layers.Conv1D(filters=64, 
+                                        kernel_size=4, 
+                                        strides=2, 
+                                        padding='causal', 
+                                        activation=tf.keras.layers.PReLU(), 
+                                        kernel_initializer='he_uniform', 
+                                        use_bias=True)(pad_1)
+
+        norm_3 = tf.keras.layers.BatchNormalization()(conv_3)
+
+        concat_conv_1 = tf.keras.layers.Concatenate()([norm_1, norm_2, norm_3])
+
+        dropout_1 = tf.keras.layers.Dropout(rate=dropout)(concat_conv_1)
+
+        conv_4 = tf.keras.layers.Conv1D(filters=16, 
+                                        kernel_size=4, 
+                                        strides=2, 
+                                        padding='causal', 
+                                        activation=tf.keras.layers.PReLU(), 
+                                        kernel_initializer='he_uniform', 
+                                        use_bias=True)(dropout_1)
+
+        norm_4 = tf.keras.layers.BatchNormalization()(conv_4)
+
+        conv_5 = tf.keras.layers.Conv1D(filters=32, 
+                                        kernel_size=4, 
+                                        strides=2, 
+                                        padding='causal', 
+                                        activation=tf.keras.layers.PReLU(), 
+                                        kernel_initializer='he_uniform', 
+                                        use_bias=True)(dropout_1)
+
+        norm_5 = tf.keras.layers.BatchNormalization()(conv_5)
+
+        conv_6 = tf.keras.layers.Conv1D(filters=64, 
+                                        kernel_size=4, 
+                                        strides=2, 
+                                        padding='causal', 
+                                        activation=tf.keras.layers.PReLU(), 
+                                        kernel_initializer='he_uniform', 
+                                        use_bias=True)(dropout_1)
+
+        norm_6 = tf.keras.layers.BatchNormalization()(conv_6)
+
+        concat_conv_2 = tf.keras.layers.Concatenate()([norm_4, norm_5, norm_6])
+
+        dropout_2 = tf.keras.layers.Dropout(rate=dropout)(concat_conv_2)
+
+        conv_7 = tf.keras.layers.Conv1D(filters=16, 
+                                        kernel_size=4, 
+                                        strides=2, 
+                                        padding='causal', 
+                                        activation=tf.keras.layers.PReLU(), 
+                                        kernel_initializer='he_uniform', 
+                                        use_bias=True)(dropout_2)
+
+        norm_7 = tf.keras.layers.BatchNormalization()(conv_7)
+
+        conv_8 = tf.keras.layers.Conv1D(filters=32, 
+                                         kernel_size=4, 
+                                         strides=2, 
+                                         padding='causal', 
+                                         activation=tf.keras.layers.PReLU(), 
+                                         kernel_initializer='he_uniform', 
+                                         use_bias=True)(dropout_2)
+
+        norm_8 = tf.keras.layers.BatchNormalization()(conv_8)
+
+        conv_9 = tf.keras.layers.Conv1D(filters=64, 
+                                         kernel_size=4, 
+                                         strides=2, 
+                                         padding='causal', 
+                                         activation=tf.keras.layers.PReLU(), 
+                                         kernel_initializer='he_uniform', 
+                                         use_bias=True)(dropout_2)
+
+        norm_9 = tf.keras.layers.BatchNormalization()(conv_9)
+
+        concat_conv_3 = tf.keras.layers.Concatenate()([norm_7, 
+                                                       norm_8, 
+                                                       norm_9])
+
+        dropout_3 = tf.keras.layers.Dropout(rate=dropout)(concat_conv_3)
+
+        pool_1 = tf.keras.layers.AveragePooling1D(pool_size=3, strides=2)(dropout_3)
+
+        gru_1 = tf.keras.layers.GRU(units=64, 
+                                    activation='tanh', 
+                                    return_sequences=True)(pool_1)
+
+        dropout_4 = tf.keras.layers.Dropout(rate=dropout)(gru_1)
+
+        gru_2 = tf.keras.layers.GRU(units=64, 
+                                    activation='tanh', 
+                                    return_sequences=True)(dropout_4)
+
+        dropout_5 = tf.keras.layers.Dropout(rate=dropout)(gru_2)
+
+        concat_rnn_1 = tf.keras.layers.Concatenate()([dropout_4, dropout_5])
+
+        gru_3 = tf.keras.layers.GRU(units=64, 
+                                    activation='tanh', 
+                                    return_sequences=True)(concat_rnn_1)
+
+        dropout_6 = tf.keras.layers.Dropout(rate=dropout)(gru_3)
+
+        concat_rnn_2 = tf.keras.layers.Concatenate()([dropout_4, dropout_5, dropout_6])
+
+        gru_4 = tf.keras.layers.GRU(units=64, activation='tanh')(concat_rnn_2)
+
+        flat_2 = tf.keras.layers.Flatten()(gru_4)
+
+        dropout_7 = tf.keras.layers.Dropout(rate=dropout)(flat_2)
+
+        dense_1 = tf.keras.layers.Dense(units=32, activation='softmax')(dropout_7)
+
+        dense_2 = tf.keras.layers.Dense(units=16, activation='softmax')(dense_1)
+
+        dense_3 = tf.keras.layers.Dense(units=16, 
+                                        activation=tf.keras.layers.PReLU(), 
+                                        kernel_initializer='he_uniform')(dense_2)
+
+        dropout_8 = tf.keras.layers.Dropout(rate=dropout)(dense_3)
+
+        #outputs = tf.keras.layers.Dense(units=self.n_actions, activation='linear')(dropout_8)
+        pre_outputs = tf.keras.layers.Dense(units=self.n_actions, activation='sigmoid')(dropout_8)
+        outputs = tf.keras.layers.Dense(units=self.n_actions, activation='softmax')(pre_outputs)
+
+        network = tf.keras.models.Model(inputs=inputs, outputs=outputs)
 
         return network
 
@@ -87,7 +248,10 @@ class DQNAgent(Agent):
             return np.argmax(self.policy_network(np.expand_dims(state, 0)))
 
     def _apply_gradient_descent(self, memory: ReplayMemory, batch_size: int, learning_rate: float, discount_factor: float):
-        optimizer = tf.keras.optimizers.Adam(lr=learning_rate)
+
+        # Optimization strategy.
+        optimizer = tf.keras.optimizers.Nadam(learning_rate=learning_rate)
+
         loss = tf.keras.losses.Huber()
 
         transitions = memory.sample(batch_size)
@@ -119,21 +283,21 @@ class DQNAgent(Agent):
         optimizer.apply_gradients(zip(gradients, variables))
 
     def train(self,
-              n_steps: int = None,
-              n_episodes: int = None,
+              n_steps: int = 1000,
+              n_episodes: int = 10,
               save_every: int = None,
-              save_path: str = None,
+              save_path: str = 'agent/',
               callback: callable = None,
               **kwargs) -> float:
-        batch_size: int = kwargs.get('batch_size', 128)
-        discount_factor: float = kwargs.get('discount_factor', 0.9999)
-        learning_rate: float = kwargs.get('learning_rate', 0.0001)
+        batch_size: int = kwargs.get('batch_size', 256)
+        memory_capacity: int = kwargs.get('memory_capacity', n_steps * 10)
+        discount_factor: float = kwargs.get('discount_factor', 0.95)
+        learning_rate: float = kwargs.get('learning_rate', 0.01)
         eps_start: float = kwargs.get('eps_start', 0.9)
         eps_end: float = kwargs.get('eps_end', 0.05)
-        eps_decay_steps: int = kwargs.get('eps_decay_steps', 200)
+        eps_decay_steps: int = kwargs.get('eps_decay_steps', n_steps // 2)
         update_target_every: int = kwargs.get('update_target_every', 1000)
-        memory_capacity: int = kwargs.get('memory_capacity', 1000)
-        render_interval: int = kwargs.get('render_interval', 50)  # in steps, None for episode end renderers only
+        render_interval: int = kwargs.get('render_interval', n_steps // 10)  # in steps, None for episode end renderers only
 
         memory = ReplayMemory(memory_capacity, transition_type=DQNTransition)
         episode = 0
