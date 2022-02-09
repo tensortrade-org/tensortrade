@@ -13,12 +13,14 @@
 # limitations under the License
 
 
+from deprecated import deprecated
 import numpy as np
 
 from typing import Callable
 from multiprocessing import Process, Queue
 
 
+@deprecated(version='1.0.4', reason="Builtin agents are being deprecated in favor of external implementations (ie: Ray)")
 class ParallelDQNTrainer(Process):
 
     def __init__(self,
