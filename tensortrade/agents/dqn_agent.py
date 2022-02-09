@@ -25,7 +25,7 @@ from datetime import datetime
 DQNTransition = namedtuple('DQNTransition', ['state', 'action', 'reward', 'next_state', 'done'])
 
 
-@deprecated(reason="Builtin agents are being deprecated in favor of external implementations (ie: Ray)")
+@deprecated(version='1.0.4', reason="Builtin agents are being deprecated in favor of external implementations (ie: Ray)")
 class DQNAgent(Agent):
     """
 

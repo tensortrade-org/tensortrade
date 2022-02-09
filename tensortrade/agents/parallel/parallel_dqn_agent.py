@@ -27,7 +27,7 @@ from tensortrade.agents.parallel.parallel_dqn_trainer import ParallelDQNTrainer
 from tensortrade.agents.parallel.parallel_queue import ParallelQueue
 
 
-@deprecated(reason="Builtin agents are being deprecated in favor of external implementations (ie: Ray)")
+@deprecated(version='1.0.4', reason="Builtin agents are being deprecated in favor of external implementations (ie: Ray)")
 class ParallelDQNAgent(Agent):
 
     def __init__(self,

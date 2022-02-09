@@ -31,7 +31,7 @@ from datetime import datetime
 A2CTransition = namedtuple('A2CTransition', ['state', 'action', 'reward', 'done', 'value'])
 
 
-@deprecated(reason="Builtin agents are being deprecated in favor of external implementations (ie: Ray)")
+@deprecated(version='1.0.4', reason="Builtin agents are being deprecated in favor of external implementations (ie: Ray)")
 class A2CAgent(Agent):
 
     def __init__(self,

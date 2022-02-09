@@ -21,7 +21,7 @@ from multiprocessing import Process, Queue
 from tensortrade.agents import ReplayMemory, DQNTransition
 
 
-@deprecated(reason="Builtin agents are being deprecated in favor of external implementations (ie: Ray)")
+@deprecated(version='1.0.4', reason="Builtin agents are being deprecated in favor of external implementations (ie: Ray)")
 class ParallelDQNOptimizer(Process):
     def __init__(self,
                  model: 'ParallelDQNModel',

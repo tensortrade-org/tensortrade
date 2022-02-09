@@ -21,7 +21,7 @@ import tensorflow as tf
 from typing import Callable
 
 
-@deprecated(reason="Builtin agents are being deprecated in favor of external implementations (ie: Ray)")
+@deprecated(version='1.0.4', reason="Builtin agents are being deprecated in favor of external implementations (ie: Ray)")
 class ParallelDQNModel:
 
     def __init__(self,
