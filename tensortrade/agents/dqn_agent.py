@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from deprecated import deprecated
 import random
 import numpy as np
 import tensorflow as tf
@@ -24,6 +25,7 @@ from datetime import datetime
 DQNTransition = namedtuple('DQNTransition', ['state', 'action', 'reward', 'next_state', 'done'])
 
 
+@deprecated(version='1.0.4', reason="Builtin agents are being deprecated in favor of external implementations (ie: Ray)")
 class DQNAgent(Agent):
     """
 
@@ -295,7 +297,7 @@ class DQNAgent(Agent):
         learning_rate: float = kwargs.get('learning_rate', 0.01)
         eps_start: float = kwargs.get('eps_start', 0.9)
         eps_end: float = kwargs.get('eps_end', 0.05)
-        eps_decay_steps: int = kwargs.get('eps_decay_steps', n_steps // 2)
+        eps_decay_steps: int = kwargs.get('eps_decay_steps', n_steps)
         update_target_every: int = kwargs.get('update_target_every', 1000)
         render_interval: int = kwargs.get('render_interval', n_steps // 10)  # in steps, None for episode end renderers only
 

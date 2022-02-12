@@ -13,6 +13,8 @@
 # limitations under the License
 
 
+from deprecated import deprecated
+
 import numpy as np
 
 from abc import ABCMeta, abstractmethod
@@ -20,6 +22,7 @@ from abc import ABCMeta, abstractmethod
 from tensortrade.core import Identifiable
 
 
+@deprecated(version='1.0.4', reason="Builtin agents are being deprecated in favor of external implementations (ie: Ray)")
 class Agent(Identifiable, metaclass=ABCMeta):
 
     @abstractmethod

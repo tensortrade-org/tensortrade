@@ -84,7 +84,7 @@ class BaseRenderer(Renderer):
                           max_episodes: int = None,
                           step: int = None,
                           max_steps: int = None,
-                          date_format: str = "%Y-%m-%d %H:%M:%S %p") -> str:
+                          date_format: str = "%Y-%m-%d %H:%M:%S") -> str:
         """
         Creates a log entry to be used by a renderer.
 
@@ -202,7 +202,7 @@ class ScreenLogger(BaseRenderer):
 
     DEFAULT_FORMAT: str = "[%(asctime)-15s] %(message)s"
 
-    def __init__(self, date_format: str = "%Y-%m-%d %-I:%M:%S %p"):
+    def __init__(self, date_format: str = "%Y-%m-%d %H:%M:%S"):
         super().__init__()
         self._date_format = date_format
 
