@@ -151,13 +151,10 @@ class TradingEnv(gym.Env, TimeIndexed):
         self.episode_id = str(uuid.uuid4())
         self.clock.reset()
 
-        # print("HELOO")
-        # print(len(self.observer.feed.process[-1].inputs[0].iterable))
-
         for c in self.components.values():
             if hasattr(c, "reset"):
                 if isinstance(c, Observer):
-                    c.reset(random_start)
+                    c.reset(random_start=random_start)
                 else:
                     c.reset()
 

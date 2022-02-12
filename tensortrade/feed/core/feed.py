@@ -54,7 +54,7 @@ class DataFeed(Stream[dict]):
     def has_next(self) -> bool:
         return all(s.has_next() for s in self.process)
 
-    def reset(self, random_start = 0) -> None:
+    def reset(self, random_start=0) -> None:
         for s in self.process:
             if isinstance(s, IterableStream):
                 s.reset(random_start)
