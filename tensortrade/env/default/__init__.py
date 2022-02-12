@@ -20,6 +20,7 @@ def create(portfolio: 'Portfolio',
            feed: 'DataFeed',
            window_size: int = 1,
            min_periods: int = None,
+           random_start: bool = False,
            **kwargs) -> TradingEnv:
     """Creates the default `TradingEnv` of the project to be used in training
     RL agents.
@@ -39,6 +40,8 @@ def create(portfolio: 'Portfolio',
         The size of the look back window to use for the observation space.
     min_periods : int, optional
         The minimum number of steps to warm up the `feed`.
+    random_start : bool, optional
+        Whether to randomize the starting point within the environment at each observer reset
     **kwargs : keyword arguments
         Extra keyword arguments needed to build the environment.
 
@@ -86,6 +89,6 @@ def create(portfolio: 'Portfolio',
         informer=kwargs.get("informer", informers.TensorTradeInformer()),
         renderer=renderer,
         min_periods=min_periods,
-        random_start=kwargs.get('random_start', False)
+        random_start=random_start,
     )
     return env
