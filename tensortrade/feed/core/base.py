@@ -234,7 +234,6 @@ class Stream(Generic[T], Named, Observable):
         """
         return self._gather(self, [], [])
 
-    # @staticmethod
     @classmethod
     def source(cls, iterable: "Iterable[T]", dtype: str = None) -> "Stream[T]":
         """Creates a stream from an iterable.
