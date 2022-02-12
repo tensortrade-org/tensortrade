@@ -66,6 +66,7 @@ class TradingEnv(gym.Env, TimeIndexed):
                  informer: Informer,
                  renderer: Renderer,
                  min_periods: int = None,
+                 random_start_pct: float = 0.00,
                  **kwargs) -> None:
         super().__init__()
         self.clock = Clock()
@@ -77,6 +78,7 @@ class TradingEnv(gym.Env, TimeIndexed):
         self.informer = informer
         self.renderer = renderer
         self.min_periods = min_periods
+        self.random_start_pct = random_start_pct
 
         for c in self.components.values():
             c.clock = self.clock
@@ -88,8 +90,6 @@ class TradingEnv(gym.Env, TimeIndexed):
         if self._enable_logger:
             self.logger = logging.getLogger(kwargs.get('logger_name', __name__))
             self.logger.setLevel(kwargs.get('log_level', logging.DEBUG))
-
-        self._random_start = kwargs.get('random_start', False)
 
     @property
     def components(self) -> 'Dict[str, Component]':
@@ -142,9 +142,9 @@ class TradingEnv(gym.Env, TimeIndexed):
         obs : `np.array`
             The first observation of the environment.
         """
-        if self._random_start:
+        if self.random_start_pct > 0.00:
             size = len(self.observer.feed.process[-1].inputs[0].iterable)
-            random_start = randint(0, int(size*0.9))
+            random_start = randint(0, int(size * self.random_start_pct))
         else:
             random_start = 0
 

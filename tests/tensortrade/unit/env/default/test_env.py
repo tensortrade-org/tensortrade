@@ -138,7 +138,7 @@ def test_runs_with_random_start(portfolio):
         feed=feed,
         window_size=50,
         enable_logger=False,
-        random_start=True,
+        random_start_pct=0.10,  # Randomly start within the first 10% of the sample
     )
 
     done = False
