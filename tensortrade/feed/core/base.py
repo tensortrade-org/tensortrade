@@ -12,13 +12,10 @@ from typing import (
     List,
     Tuple
 )
-from random import randint
-from tensorflow.python.autograph.pyct.anno import Static
 
 from tensortrade.core import Observable
 from tensortrade.feed.core.accessors import CachedAccessor
 from tensortrade.feed.core.mixins import DataTypeMixin
-# from tensortrade.env.generic import TradingEnv
 
 
 T = TypeVar("T")
@@ -234,8 +231,8 @@ class Stream(Generic[T], Named, Observable):
         """
         return self._gather(self, [], [])
 
-    @classmethod
-    def source(cls, iterable: "Iterable[T]", dtype: str = None) -> "Stream[T]":
+    @staticmethod
+    def source(iterable: "Iterable[T]", dtype: str = None) -> "Stream[T]":
         """Creates a stream from an iterable.
 
         Parameters
@@ -544,8 +541,8 @@ class IterableStream(Stream[T]):
     def has_next(self):
         return not self.stop
 
-    def reset(self, random_start = 0):
-        if(random_start != 0):
+    def reset(self, random_start=0):
+        if random_start != 0:
             self._random_start = random_start
 
         if self.is_gen:
