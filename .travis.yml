@@ -6,7 +6,8 @@ services:
 language: python
 
 python:
-  - '3.8'  # Minimum supported version
+  - '3.7'  # Minimum supported version
+  - '3.8'
   - '3.9'
 
 install:
