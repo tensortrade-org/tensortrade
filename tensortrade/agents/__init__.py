@@ -10,11 +10,6 @@ from .trpo.agent import TRPO
 from .utils.cli import play_args, train_args, tune_args
 from .utils.common import register_models
 
-__author__ = 'alternativebug'
-__email__ = 'alternativebug@outlook.com'
-__license__ = 'MIT'
-__version__ = '1.0.1'
-
 agents = {
     'a2c': {'module': a2c, 'agent': A2C},
     'acer': {'module': acer, 'agent': ACER},

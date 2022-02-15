@@ -1,4 +1,4 @@
-FROM tensorflow/tensorflow:2.8.0-gpu
+FROM tensorflow/tensorflow:2.7.0-gpu
 
 ENV NVIDIA_VISIBLE_DEVICES \
     ${NVIDIA_VISIBLE_DEVICES:-all}
@@ -16,10 +16,8 @@ COPY . ./
 SHELL ["/bin/bash", "-c"]
 
 RUN apt-get update && \
-    apt-get install -yq --assume-yes --no-install-recommends cmake \
-                                                             git \
+    apt-get install -yq --assume-yes --no-install-recommends git \
                                                              libgl1-mesa-glx \
-                                                             libz-dev \
                                                              python3-pip \
                                                              python3-dev \
                                                              python3-setuptools \

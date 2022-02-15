@@ -1,1 +1,1 @@
-from tensortrade.agents.trpo.cli import cli_args
+from .cli import cli_args
