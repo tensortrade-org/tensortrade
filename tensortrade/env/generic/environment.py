@@ -16,6 +16,7 @@ import uuid
 import logging
 
 from typing import Dict, Any, Tuple
+from random import randint
 
 import gym
 import numpy as np
@@ -65,6 +66,7 @@ class TradingEnv(gym.Env, TimeIndexed):
                  informer: Informer,
                  renderer: Renderer,
                  min_periods: int = None,
+                 random_start_pct: float = 0.00,
                  **kwargs) -> None:
         super().__init__()
         self.clock = Clock()
@@ -76,6 +78,7 @@ class TradingEnv(gym.Env, TimeIndexed):
         self.informer = informer
         self.renderer = renderer
         self.min_periods = min_periods
+        self.random_start_pct = random_start_pct
 
         for c in self.components.values():
             c.clock = self.clock
@@ -139,12 +142,21 @@ class TradingEnv(gym.Env, TimeIndexed):
         obs : `np.array`
             The first observation of the environment.
         """
+        if self.random_start_pct > 0.00:
+            size = len(self.observer.feed.process[-1].inputs[0].iterable)
+            random_start = randint(0, int(size * self.random_start_pct))
+        else:
+            random_start = 0
+
         self.episode_id = str(uuid.uuid4())
         self.clock.reset()
 
         for c in self.components.values():
             if hasattr(c, "reset"):
-                c.reset()
+                if isinstance(c, Observer):
+                    c.reset(random_start=random_start)
+                else:
+                    c.reset()
 
         obs = self.observer.observe(self)
 
