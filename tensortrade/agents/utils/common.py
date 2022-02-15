@@ -317,9 +317,7 @@ def register_models(agents):
         None
     """
     for agent_data in agents.values():
-        #models_folder = Path(agent_data['module'].__file__).parent / 'models'
-        # Hack.
-        models_folder = Path('models/')
+        models_folder = Path(agent_data['module'].__file__).parent / 'models'
         available_cfgs = [model_cfg.as_posix() for model_cfg in models_folder.iterdir()]
         actor_cfgs = {'cnn': [], 'ann': []}
         critic_cfgs = {'cnn': [], 'ann': []}
