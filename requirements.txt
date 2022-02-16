@@ -18,4 +18,5 @@ wandb==0.12.10
 tabulate==0.8.9
 termcolor==1.1.0
 tensorflow_probability==0.15.0
+opencv-python
 deprecated>=1.2.13
