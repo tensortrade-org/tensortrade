@@ -10,3 +10,8 @@ plotly>=4.5.0
 ipywidgets>=7.0.0  # Required for rendering
 torch>=1.10.2
 deprecated>=1.2.13
+pyarrow
+wandb
+feature_engine
+tensorflow-probability==0.15.0
+opencv-python
