@@ -4,7 +4,7 @@ import re
 from collections import deque
 from pathlib import Path
 
-import cv2
+#import cv2
 import gym
 import numpy as np
 import pandas as pd

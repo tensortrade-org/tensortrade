@@ -17,4 +17,5 @@ fastparquet==0.8.0
 wandb==0.12.10
 tabulate==0.8.9
 termcolor==1.1.0
+tensorflow_probability==0.15.0
 deprecated>=1.2.13
