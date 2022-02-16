@@ -72,11 +72,6 @@ setup(
             'ipykernel'
         ],
     },
-    entry_points={
-        'console_scripts': [
-            'xagents=xagents.cli:execute',
-        ],
-    },
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Natural Language :: English',

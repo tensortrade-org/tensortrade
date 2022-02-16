@@ -2,7 +2,7 @@
 
 from typing import List
 
-from tensortrade.feed.core.base import Stream, T, Placeholder, IterableStream
+from tensortrade.feed.core.base import Stream, T, Placeholder
 
 
 class DataFeed(Stream[dict]):
@@ -54,12 +54,9 @@ class DataFeed(Stream[dict]):
     def has_next(self) -> bool:
         return all(s.has_next() for s in self.process)
 
-    def reset(self, random_start=0) -> None:
+    def reset(self) -> None:
         for s in self.process:
-            if isinstance(s, IterableStream):
-                s.reset(random_start)
-            else:
-                s.reset()
+            s.reset()
 
 
 class PushFeed(DataFeed):
