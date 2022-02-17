@@ -20,6 +20,132 @@ from tensorflow.keras.optimizers import Adam
 from tensortrade.agents.utils.buffers import ReplayBuffer1, ReplayBuffer2
 
 
+
+
+
+
+
+
+
+
+
+
+
+import tensortrade.env.default as default
+
+from tensortrade.feed.core import DataFeed, Stream
+from tensortrade.feed.core.base import NameSpace
+from tensortrade.env.default.actions import BSH
+from tensortrade.env.default.rewards import RiskAdjustedReturns, SimpleProfit
+from tensortrade.oms.exchanges import Exchange, ExchangeOptions
+from tensortrade.oms.services.execution.simulated import execute_order
+from tensortrade.oms.instruments import USD, BTC, ETH
+from tensortrade.oms.wallets import Wallet, Portfolio
+from tensortrade.oms.orders import TradeType
+
+# TODO: adjust according to your commission percentage, if present
+commission = 0.001
+price = Stream.source(list(X_train["close"]), 
+                      dtype="float").rename("USD-BTC")
+#bitstamp_options = ExchangeOptions(commission=commission)
+#bitstamp = Exchange("bitstamp", 
+#                    service=execute_order, 
+#                    options=bitstamp_options)(price)
+bitstamp = Exchange("bitstamp", 
+                    service=execute_order)(price)
+
+cash = Wallet(bitstamp, 50000 * USD)
+asset = Wallet(bitstamp, 0 * BTC)
+
+portfolio = Portfolio(USD, [cash, asset])
+
+with NameSpace("bitstamp"):
+    features = [
+        Stream.source(list(X_train_scaled[c]), 
+                      dtype="float").rename(c) for c in X_train_scaled.columns[1:]
+        #Stream.source(list(X_train_scaled['lr_close']), dtype="float").rename('lr_close')
+    ]
+
+feed = DataFeed(features)
+feed.compile()
+
+renderer_feed = DataFeed([
+    Stream.source(list(X_train["date"])).rename("date"),
+    Stream.source(list(X_train["open"]), dtype="float").rename("open"),
+    Stream.source(list(X_train["high"]), dtype="float").rename("high"),
+    Stream.source(list(X_train["low"]), dtype="float").rename("low"),
+    Stream.source(list(X_train["close"]), dtype="float").rename("close"), 
+    Stream.source(list(X_train["volume"]), dtype="float").rename("volume") 
+])
+
+action_scheme = BSH(
+    cash=cash,
+    asset=asset
+)
+
+#reward_scheme = RiskAdjustedReturns(return_algorithm='sortino',
+#                                    window_size=30)
+
+#reward_scheme = SimpleProfit(window_size=30)
+
+reward_scheme = AnomalousProfit(threshold=threshold)
+
+#reward_scheme = PenalizedProfit(cash_penalty_proportion=0.1)
+
+max_allowed_loss = 0.90
+min_periods = window_size  # Minimum of window_size
+
+observer = default.observers.TensorTradeObserver(
+    portfolio=portfolio,
+    feed=feed,
+    renderer_feed=renderer_feed,
+    window_size=window_size,
+    min_periods=min_periods
+)
+
+stopper = default.stoppers.MaxLossStopper(
+    max_allowed_loss=max_allowed_loss
+)
+
+informer = default.informers.TensorTradeInformer()
+
+renderer = default.renderers.PlotlyTradingChart()
+
+import gym
+env = gym.envs.register(
+    id='TradingEnv-v0',
+    entry_point='tensortrade.env.generic.environment:TradingEnv',
+    kwargs={
+        'portfolio': portfolio,
+        'action_scheme': action_scheme,
+        'reward_scheme': reward_scheme,
+        'observer': observer,
+        'stopper': stopper,
+        'informer': informer,
+        'feed': feed,
+        'renderer_feed': renderer_feed,
+        'renderer': renderer,
+        'min_periods': min_periods,
+        'window_size': window_size,
+    },
+)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class LazyFrames:
     """
     Efficient atari frame wrapper.
@@ -579,12 +705,13 @@ def create_agent(agent_id, agent_kwargs, non_agent_kwargs, trial=None):
         agent.
     """
     agent_kwargs['trial'] = trial
-    envs = create_envs(
-        non_agent_kwargs['env'],
-        non_agent_kwargs['n_envs'],
-        non_agent_kwargs['preprocess'],
-        max_frame=non_agent_kwargs['max_frame'],
-    )
+    #envs = create_envs(
+    #    non_agent_kwargs['env'],
+    #    non_agent_kwargs['n_envs'],
+    #    non_agent_kwargs['preprocess'],
+    #    max_frame=non_agent_kwargs['max_frame'],
+    #)
+    envs = [gym.make('TradingEnv-v0') for _ in range(n)]
     agent_kwargs['envs'] = envs
     optimizer_kwargs = {
         'learning_rate': non_agent_kwargs['lr'],
