@@ -503,7 +503,7 @@ class BaseAgent(ABC):
             that is expected from the given model(s).
         """
         if self.img_inputs:
-            inputs = tf.cast(inputs, tf.float32) / 255.0
+            inputs = tf.cast(inputs, tf.float32) # / 255.0
         if isinstance(models, tf.keras.models.Model):
             return models(inputs, training=training)
         elif len(models) == 1:

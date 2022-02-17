@@ -39,6 +39,8 @@ build-gpu-if-not-built:
 	if [ ! $$(docker images -q ${GPU_IMAGE}) ]; then $(MAKE) build-gpu; fi;
 
 run-notebook: build-cpu-if-not-built
+	#python3 -m pip install --upgrade wandb
+	#wandb docker run -it --rm -p=8888:8888 -v ${PWD}/examples:/examples --shm-size=${SHM_SIZE} ${CPU_IMAGE} jupyter notebook --ip='*' --port=8888 --no-browser --allow-root ./examples/
 	docker run -it --rm -p=8888:8888 -v ${PWD}/examples:/examples --shm-size=${SHM_SIZE} ${CPU_IMAGE} jupyter notebook --ip='*' --port=8888 --no-browser --allow-root ./examples/
 
 run-docs: build-cpu-if-not-built
@@ -50,6 +52,8 @@ run-tests: build-cpu-if-not-built
 	docker run -it --rm --shm-size=${SHM_SIZE} ${CPU_IMAGE} make test
 
 run-notebook-gpu: build-gpu-if-not-built
+	#python3 -m pip install --upgrade wandb
+	#wandb docker run -it --rm -p=8888:8888 -v ${PWD}/examples:/examples --shm-size=${SHM_SIZE} ${GPU_IMAGE} jupyter notebook --ip='*' --port=8888 --no-browser --allow-root /examples/
 	docker run -it --rm -p=8888:8888 -v ${PWD}/examples:/examples --shm-size=${SHM_SIZE} ${GPU_IMAGE} jupyter notebook --ip='*' --port=8888 --no-browser --allow-root /examples/
 
 run-docs-gpu: build-gpu-if-not-built
