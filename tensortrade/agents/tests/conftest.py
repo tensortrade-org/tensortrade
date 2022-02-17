@@ -50,32 +50,86 @@ def section(request):
     yield request.param
 
 
-@pytest.fixture(scope='class')
-def envs(request):
-    """
-    Fixture of PongNoFrameskip-v4 environments used to test agents that support
-    environments with Discrete action space.
-    Args:
-        request: _pytest.fixtures.SubRequest
+#@pytest.fixture(scope='class')
+#def envs(request):
+#    """
+#    Fixture of PongNoFrameskip-v4 environments used to test agents that support
+#    environments with Discrete action space.
+#    Args:
+#        request: _pytest.fixtures.SubRequest
+#
+#    Returns:
+#        A list of 4 pong environments.
+#    """
+#    request.cls.envs = [gym.make('PongNoFrameskip-v4') for _ in range(4)]
 
-    Returns:
-        A list of 4 pong environments.
-    """
-    request.cls.envs = [gym.make('PongNoFrameskip-v4') for _ in range(4)]
+
+#@pytest.fixture(scope='class')
+#def envs2(request):
+#    """
+#    Fixture of BipedalWalker-v3 environments used to test agents that support
+#    environments with continuous action space.
+#    Args:
+#        request: _pytest.fixtures.SubRequest
+#
+#    Returns:
+#        A list of 4 bipedal walker environments.
+#    """
+#    request.cls.envs2 = [gym.make('BipedalWalker-v3') for _ in range(4)]
 
 
-@pytest.fixture(scope='class')
-def envs2(request):
-    """
-    Fixture of BipedalWalker-v3 environments used to test agents that support
-    environments with continuous action space.
-    Args:
-        request: _pytest.fixtures.SubRequest
-
-    Returns:
-        A list of 4 bipedal walker environments.
-    """
-    request.cls.envs2 = [gym.make('BipedalWalker-v3') for _ in range(4)]
+#@pytest.fixture(scope='class')
+#def envs2(request):
+#    """
+#    Fixture of TradingEnv-v0 environments used to test agents that support
+#    environments with continuous action space.
+#    Args:
+#        request: _pytest.fixtures.SubRequest
+#
+#    Returns:
+#        A list of 4 bipedal walker environments.
+#    """
+#
+#    # ...
+#
+#    max_allowed_loss = 0.90
+#    min_periods = window_size  # Minimum of window_size
+#
+#    observer = default.observers.TensorTradeObserver(
+#        portfolio=portfolio,
+#        feed=feed,
+#        renderer_feed=renderer_feed,
+#        window_size=window_size,
+#        min_periods=min_periods
+#    )
+#
+#    stopper = default.stoppers.MaxLossStopper(
+#        max_allowed_loss=max_allowed_loss
+#    )
+#
+#    informer = default.informers.TensorTradeInformer()
+#
+#    renderer = default.renderers.PlotlyTradingChart()
+#
+#    env = gym.envs.register(
+#        id='TradingEnv-v0',
+#        entry_point='tensortrade.env.generic.environment:TradingEnv',
+#        kwargs={
+#            'portfolio': portfolio,
+#            'action_scheme': action_scheme,
+#            'reward_scheme': reward_scheme,
+#            'observer': observer,
+#            'stopper': stopper,
+#            'informer': informer,
+#            'feed': feed,
+#                'renderer_feed': renderer_feed,
+#                'renderer': renderer,
+#                'min_periods': min_periods,
+#                'window_size': window_size,
+#        },
+#    )
+#
+#    request.cls.envs2 = [gym.make('TradingEnv-v0') for _ in range(4)]
 
 
 @pytest.fixture(scope='class')
@@ -91,7 +145,7 @@ def model(request):
     Returns:
         None
     """
-    x0 = Input((210, 160, 3))
+    x0 = Input((30, 2))
     x = Dense(1, 'relu')(x0)
     x = Dense(1, 'relu')(x)
     x = Dense(1, 'relu')(x)
@@ -230,11 +284,11 @@ def observations(request):
     Returns:
         None
     """
-    states = np.random.randint(0, 255, (10, 84, 84, 1))
+    states = np.random.randint(0, 255, (10, 84, 1))
     actions = np.random.randint(0, 6, 10)
     rewards = np.random.randint(0, 10, 10)
     dones = np.random.randint(0, 1000000, 10)
-    new_states = np.random.randint(0, 255, (10, 84, 84, 1))
+    new_states = np.random.randint(0, 255, (30, 2, 1))
     request.cls.observations = [
         [*items] for items in zip(states, actions, rewards, dones, new_states)
     ]
