@@ -247,15 +247,14 @@ class ModelReader:
         """
         units = self.parser[section].get('units')
         if not units:
-            #assert (
-            #    len(self.output_units) > self.output_count
-            #), 'Output units given are less than dense layers required'
+            assert (
+                len(self.output_units) > self.output_count
+            ), 'Output units given are less than dense layers required'
             units = self.output_units[self.output_count]
             self.output_count += 1
         activation = self.parser[section].get('activation')
         return Dense(
-            #units, activation, kernel_initializer=self.get_initializer(section)
-            units=2, activation, kernel_initializer=self.get_initializer(section)
+            units, activation, kernel_initializer=self.get_initializer(section)
         )
 
     def build_model(self):
