@@ -25,7 +25,7 @@ class Renderer(Component, metaclass=ABCMeta):
     registered_name = "renderer"
 
     @abstractmethod
-    def render(self, env: 'TradingEnv', **kwargs):
+    def render(self, env: 'TradingEnv', mode="human", **kwargs):
         """Renders a view of the environment at the current step of an episode.
 
         Parameters
@@ -69,9 +69,9 @@ class AggregateRenderer(Renderer):
         super().__init__()
         self.renderers = renderers
 
-    def render(self, env: 'TradingEnv', **kwargs) -> None:
+    def render(self, env: 'TradingEnv', mode="human", **kwargs) -> None:
         for r in self.renderers:
-            r.render(env, **kwargs)
+            r.render(env, mode="human", **kwargs)
 
     def save(self) -> None:
         for r in self.renderers:

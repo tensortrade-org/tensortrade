@@ -152,9 +152,9 @@ class TradingEnv(gym.Env, TimeIndexed):
 
         return obs
 
-    def render(self, **kwargs) -> None:
+    def render(self, mode="human", **kwargs) -> None:
         """Renders the environment."""
-        self.renderer.render(self, **kwargs)
+        self.renderer.render(self, mode="human", **kwargs)
 
     def save(self) -> None:
         """Saves the rendered view of the environment."""

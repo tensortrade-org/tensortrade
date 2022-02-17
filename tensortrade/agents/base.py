@@ -6,7 +6,7 @@ from datetime import timedelta
 from pathlib import Path
 from time import perf_counter, sleep
 
-import cv2
+#import cv2
 import gym
 import numpy as np
 import optuna
@@ -635,10 +635,11 @@ class BaseAgent(ABC):
                 env_in_use.render()
                 sleep(frame_delay)
             if frame_dir and steps % frame_frequency == 0:
-                frame = cv2.cvtColor(
-                    env_in_use.render(mode='rgb_array'), cv2.COLOR_BGR2RGB
-                )
-                cv2.imwrite(os.path.join(frame_dir, f'{steps:05d}.jpg'), frame)
+                #frame = cv2.cvtColor(
+                #    env_in_use.render(mode='rgb_array'), cv2.COLOR_BGR2RGB
+                #)
+                #cv2.imwrite(os.path.join(frame_dir, f'{steps:05d}.jpg'), frame)
+                env_in_use.render() #, cv2.COLOR_BGR2RGB
             if hasattr(self, 'actor') and agent_id in ['td3', 'ddpg']:
                 action = self.actor(self.get_states())[env_idx]
             else:

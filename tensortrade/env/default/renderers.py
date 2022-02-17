@@ -116,7 +116,7 @@ class BaseRenderer(Renderer):
 
         return log_entry
 
-    def render(self, env: 'TradingEnv', **kwargs):
+    def render(self, env: 'TradingEnv', mode: str = "human", **kwargs):
 
         price_history = None
         if len(env.observer.renderer_history) > 0:
@@ -187,7 +187,7 @@ class EmptyRenderer(Renderer):
     renderer.
     """
 
-    def render(self, env, **kwargs):
+    def render(self, env, mode="human", **kwargs):
         pass
 
 
