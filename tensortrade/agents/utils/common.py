@@ -250,7 +250,8 @@ class ModelReader:
             #assert (
             #    len(self.output_units) > self.output_count
             #), 'Output units given are less than dense layers required'
-            units = self.output_units[self.output_count]
+            #units = self.output_units[self.output_count]
+            units = self.output_units
             self.output_count += 1
         activation = self.parser[section].get('activation')
         return Dense(
