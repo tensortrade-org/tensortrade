@@ -37,36 +37,19 @@ install_requires = [
     'jupyterlab>=1.1.4',
     'ipywidgets>=7.0.0',
     'pyyaml>=5.1.2',
-    'ccxt>=1.73.32',
+    'ccxt==1.72.37',
     'deprecated>=1.2.13'
 ]
 
-ray_requires = [
+examples_requires = [
     'pandas>=0.25.0',
     'stochastic>=0.6.0',
     'matplotlib>=3.1.1',
     'ipython>=7.12.0',
     'gym>=0.15.7',
     'ray[default,tune,rllib,serve]==1.10.0',
+    'stable-baselines3[extra]',
     'tensorflow>=2.8.0',
-    'torch>=1.10.2',
-    'feature_engine',
-    'scikit-learn',
-    'optuna',
-    'quantstats',
-    'ta>=0.4.7',
-    'TA-Lib',
-    'pandas-ta'
-]
-
-stable_baselines_requires = [
-    'pandas',
-    'stochastic>=0.4.0',
-    'matplotlib',
-    'ipython',
-    'gym',
-    'ray[default,dashboard,tune,rllib,serve]==0.8.7',
-    'tensorflow==1.15.0',
     'torch>=1.10.2',
     'feature_engine',
     'scikit-learn',
@@ -107,10 +90,10 @@ setup(
         if package.startswith('tensortrade')
     ],
     license='Apache 2.0',
-    python_requires='>=3.5',
+    python_requires='>=3.7',
     install_requires=install_requires,
     extras_require={
-        'ray': ray_requires,
+        'examples': examples_requires,
         'tests': tests_requires,
         'docs': docs_requires,
     },

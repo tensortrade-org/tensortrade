@@ -1,1 +1,1 @@
-..[ray]
+..[examples]
