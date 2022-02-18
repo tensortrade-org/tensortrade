@@ -27,10 +27,10 @@ docs-serve:
 	python3 -m http.server 8000
 
 build-cpu:
-	docker build -t ${CPU_IMAGE} .
+	docker build -t ${CPU_IMAGE} -f Dockerfile.ray .
 
 build-gpu:
-	docker build -t ${GPU_IMAGE} . --build-arg gpu_tag="-gpu"
+	docker build -t ${GPU_IMAGE} -f Dockerfile.ray . --build-arg gpu_tag="-gpu"
 
 build-cpu-if-not-built:
 	if [ ! $$(docker images -q ${CPU_IMAGE}) ]; then $(MAKE) build-cpu; fi;
