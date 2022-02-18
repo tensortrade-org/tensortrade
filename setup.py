@@ -30,6 +30,53 @@ with open(os.path.join(tensortrade_directory, 'tensortrade', 'version.py'), 'r')
         if line.startswith('__version__'):
             version = line[15:-2]
 
+install_requires = [
+    'numpy>=1.17.0',
+    'pandas>=0.25.0',
+    'gym>=0.15.7',
+    'pyyaml>=5.1.2',
+    'stochastic>=0.6.0',
+    'tensorflow>=2.8.0',
+    'ipython>=7.12.0',
+    'matplotlib>=3.1.1',
+    'plotly>=4.5.0'
+    'ipywidgets>=7.0.0',
+    'torch>=1.10.2',
+    'deprecated>=1.2.13'
+]
+
+examples_requires = [
+    'ray[default,tune,rllib,serve]==1.10.0',
+    'sympy>=1.4',
+    'stochastic>=0.4.0',
+    'ccxt>=1.72.37',
+    'jupyterlab>=1.1.4',
+    'feature_engine',
+    'scikit-learn',
+    'optuna',
+    'quantstats',
+    'ta>=0.4.7',
+    'TA-Lib',
+    'pandas-ta',
+    'ipywidgets>=7.0.0'
+]
+
+tests_requires = [
+    'pytest>=5.1.1',
+    'ta>=0.4.7'
+]
+
+docs_requires = [
+    'sphinx',
+    'sphinx_rtd_theme',
+    'sphinxcontrib.apidoc',
+    'nbsphinx',
+    'nbsphinx_link',
+    'recommonmark',
+    'sphinx_markdown_tables',
+    'ipykernel'
+]
+
 setup(
     name='tensortrade',
     version=version,
@@ -45,32 +92,11 @@ setup(
     ],
     license='Apache 2.0',
     python_requires='>=3.7',
-    install_requires=[
-        'numpy>=1.17.0',
-        'pandas>=0.25.0',
-        'gym>=0.15.7',
-        'pyyaml>=5.1.2',
-        'stochastic>=0.6.0',
-        'tensorflow>=2.7.0',
-        'ipython>=7.12.0',
-        'matplotlib>=3.1.1',
-        'plotly>=4.5.0'
-    ],
+    install_requires=install_requires,
     extras_require={
-        'tests': [
-            'pytest>=5.1.1',
-            'ta>=0.4.7'
-        ],
-        'docs': [
-            'sphinx',
-            'sphinx_rtd_theme',
-            'sphinxcontrib.apidoc',
-            'nbsphinx',
-            'nbsphinx_link',
-            'recommonmark',
-            'sphinx_markdown_tables',
-            'ipykernel'
-        ],
+        'examples': examples_requires,
+        'tests': tests_requires,
+        'docs': docs_requires,
     },
     classifiers=[
         'Development Status :: 5 - Production/Stable',
