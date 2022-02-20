@@ -44,9 +44,9 @@ def execute_buy_order(order: 'Order',
         scale = order.price / max(current_price, order.price)
         filled = scale * filled
 
-    precision_to_have = Decimal(10) ** -quantity.instrument.precision
-
     commission = options.commission * filled
+
+    precision_to_have = Decimal(10) ** -filled.instrument.precision
 
     if commission.size > 0.0:
         if commission.size < precision_to_have:
@@ -112,9 +112,9 @@ def execute_sell_order(order: 'Order',
 
     filled = order.remaining.contain(order.exchange_pair)
 
-    precision_to_have = Decimal(10) ** -quantity.instrument.precision
-
     commission = options.commission * filled
+
+    precision_to_have = Decimal(10) ** -filled.instrument.precision
 
     if commission.size > 0.0:
         if commission.size < precision_to_have:
