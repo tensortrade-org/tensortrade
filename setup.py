@@ -49,6 +49,7 @@ examples_requires = [
     'gym>=0.15.7',
     'ray[default,tune,rllib,serve]==1.10.0',
     'stable-baselines3[extra]',
+    'sb3-contrib',
     'tensorflow>=2.8.0',
     'torch>=1.10.2',
     'feature_engine',
@@ -57,7 +58,10 @@ examples_requires = [
     'quantstats',
     'ta>=0.4.7',
     'TA-Lib',
-    'pandas-ta'
+    'pandas-ta',
+    'yellowbrick',
+    'tuneta',
+    'finta'
 ]
 
 tests_requires = [
