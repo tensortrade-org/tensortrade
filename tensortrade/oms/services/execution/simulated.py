@@ -45,13 +45,13 @@ def execute_buy_order(order: 'Order',
         filled = scale * filled
 
     commission = options.commission * filled
+    quantity = filled - commission
 
-    precision_to_have = Decimal(10) ** -filled.instrument.precision
+    precision_to_have = Decimal(10) ** -quantity.instrument.precision
 
     if commission.size > 0.0:
         if commission.size < precision_to_have:
             commission = precision_to_have
-        else:
             quantity = filled - commission
     else:
         quantity = filled
@@ -113,13 +113,13 @@ def execute_sell_order(order: 'Order',
     filled = order.remaining.contain(order.exchange_pair)
 
     commission = options.commission * filled
+    quantity = filled - commission
 
-    precision_to_have = Decimal(10) ** -filled.instrument.precision
+    precision_to_have = Decimal(10) ** -quantity.instrument.precision
 
     if commission.size > 0.0:
         if commission.size < precision_to_have:
             commission = precision_to_have
-        else:
             quantity = filled - commission
     else:
         quantity = filled
