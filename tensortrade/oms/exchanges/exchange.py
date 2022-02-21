@@ -25,7 +25,7 @@ class ExchangeOptions:
 
     Parameters
     ----------
-    commission : float, default 0.003
+    commission : float, default 0.001
         The percentage of the order size taken by the exchange.
     min_trade_size : float, default 1e-6
         The minimum trade size an order can have.
@@ -40,7 +40,7 @@ class ExchangeOptions:
     """
 
     def __init__(self,
-                 commission: float = 0.003,
+                 commission: float = 0.001,
                  min_trade_size: float = 1e-6,
                  max_trade_size: float = 1e6,
                  min_trade_price: float = 1e-8,
