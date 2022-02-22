@@ -47,11 +47,14 @@ def execute_buy_order(order: 'Order',
     commission = options.commission * filled
     quantity = filled - commission
 
-    if commission.size < Decimal(10) ** -quantity.instrument.precision:
-        logging.warning("Commission is less than instrument precision. Canceling order. "
-                        "Consider defining a custom instrument with a higher precision.")
-        order.cancel("COMMISSION IS LESS THAN PRECISION.")
-        return None
+    precision_to_have = Decimal(10) ** -quantity.instrument.precision
+
+    if commission.size > 0.0:
+        if commission.size < precision_to_have:
+            commission = precision_to_have
+            quantity = filled - commission
+    else:
+        quantity = filled
 
     transfer = Wallet.transfer(
         source=base_wallet,
@@ -112,11 +115,14 @@ def execute_sell_order(order: 'Order',
     commission = options.commission * filled
     quantity = filled - commission
 
-    if commission.size < Decimal(10) ** -quantity.instrument.precision:
-        logging.warning("Commission is less than instrument precision. Canceling order. "
-                        "Consider defining a custom instrument with a higher precision.")
-        order.cancel("COMMISSION IS LESS THAN PRECISION.")
-        return None
+    precision_to_have = Decimal(10) ** -quantity.instrument.precision
+
+    if commission.size > 0.0:
+        if commission.size < precision_to_have:
+            commission = precision_to_have
+            quantity = filled - commission
+    else:
+        quantity = filled
 
     # Transfer Funds from Quote Wallet to Base Wallet
     transfer = Wallet.transfer(
