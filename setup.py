@@ -58,10 +58,7 @@ examples_requires = [
     'quantstats',
     'ta>=0.4.7',
     'TA-Lib',
-    'pandas-ta',
-    'yellowbrick',
-    'tuneta',
-    'finta'
+    'pandas-ta'
 ]
 
 tests_requires = [
