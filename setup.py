@@ -54,7 +54,8 @@ setup(
         'tensorflow>=2.7.0',
         'ipython>=7.12.0',
         'matplotlib>=3.1.1',
-        'plotly>=4.5.0'
+        'plotly>=4.5.0',
+        'deprecated>=1.2.13'
     ],
     extras_require={
         'tests': [
