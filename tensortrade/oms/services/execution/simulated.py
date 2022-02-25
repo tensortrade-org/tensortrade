@@ -6,13 +6,15 @@ from tensortrade.oms.wallets import Wallet
 from tensortrade.oms.exchanges import ExchangeOptions
 from tensortrade.oms.orders import Order, Trade, TradeType, TradeSide
 
+from typing import Union
+
 
 def execute_buy_order(order: 'Order',
                       base_wallet: 'Wallet',
                       quote_wallet: 'Wallet',
                       current_price: float,
                       options: 'ExchangeOptions',
-                      clock: 'Clock') -> 'Trade':
+                      clock: 'Clock') -> Union[None, 'Trade']:
     """Executes a buy order on the exchange.
 
     Parameters
@@ -47,11 +49,14 @@ def execute_buy_order(order: 'Order',
     commission = options.commission * filled
     quantity = filled - commission
 
-    if commission.size < Decimal(10) ** -quantity.instrument.precision:
-        logging.warning("Commission is less than instrument precision. Canceling order. "
+    # If the user has specified a non-zero commission percentage, it has to be higher
+    # than the instrument precision, otherwise the minimum precision value is used.
+    minimum_commission = Decimal(10) ** -quantity.instrument.precision
+    if options.commission > 0 and commission < minimum_commission:
+        logging.warning("Commission is > 0 but less than instrument precision. "
+                        "Setting commission to the minimum allowed amount. "
                         "Consider defining a custom instrument with a higher precision.")
-        order.cancel("COMMISSION IS LESS THAN PRECISION.")
-        return None
+        commission = minimum_commission
 
     transfer = Wallet.transfer(
         source=base_wallet,
@@ -81,7 +86,7 @@ def execute_sell_order(order: 'Order',
                        quote_wallet: 'Wallet',
                        current_price: float,
                        options: 'ExchangeOptions',
-                       clock: 'Clock') -> 'Trade':
+                       clock: 'Clock') -> Union[None, 'Trade']:
     """Executes a sell order on the exchange.
 
     Parameters
@@ -112,11 +117,14 @@ def execute_sell_order(order: 'Order',
     commission = options.commission * filled
     quantity = filled - commission
 
-    if commission.size < Decimal(10) ** -quantity.instrument.precision:
-        logging.warning("Commission is less than instrument precision. Canceling order. "
+    # If the user has specified a non-zero commission percentage, it has to be higher
+    # than the instrument precision, otherwise the minimum precision value is used.
+    minimum_commission = Decimal(10) ** -quantity.instrument.precision
+    if options.commission > 0 and commission < minimum_commission:
+        logging.warning("Commission is > 0 but less than instrument precision. "
+                        "Setting commission to the minimum allowed amount. "
                         "Consider defining a custom instrument with a higher precision.")
-        order.cancel("COMMISSION IS LESS THAN PRECISION.")
-        return None
+        commission = minimum_commission
 
     # Transfer Funds from Quote Wallet to Base Wallet
     transfer = Wallet.transfer(
