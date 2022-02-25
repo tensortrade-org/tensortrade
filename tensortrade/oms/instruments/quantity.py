@@ -38,7 +38,7 @@ class Quantity:
     ----------
     instrument : `Instrument`
         The unit of the quantity.
-    size : `Union[float, Decimal]`
+    size : `Decimal`
         The number of units of the instrument.
     path_id : str, optional
         The path order_id that this quantity is allocated for and associated
@@ -50,10 +50,10 @@ class Quantity:
         Raised if the `size` of the quantity being created is negative.
     """
 
-    def __init__(self, instrument: 'Instrument', size: Union[Decimal, Number], path_id: str = None):
+    def __init__(self, instrument: 'Instrument', size: Decimal, path_id: str = None):
         if size < 0:
             if abs(size) > Decimal(10)**(-instrument.precision):
-                raise InvalidNegativeQuantity(size)
+                raise InvalidNegativeQuantity(float(size))
             else:
                 size = 0
 

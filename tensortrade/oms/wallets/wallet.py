@@ -320,7 +320,7 @@ class Wallet(Identifiable):
         lsb1 = source.locked.get(poid).size
         ltb1 = target.locked.get(poid, 0 * pair.quote).size
 
-        if commission > 0.0:
+        if commission.as_float() > 0.0:
             commission = source.withdraw(commission, "COMMISSION")
 
         quantity = source.withdraw(quantity, "FILL ORDER")
