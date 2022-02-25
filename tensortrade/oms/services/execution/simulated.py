@@ -47,16 +47,17 @@ def execute_buy_order(order: 'Order',
         filled = scale * filled
 
     commission = options.commission * filled
-    quantity = filled - commission
 
     # If the user has specified a non-zero commission percentage, it has to be higher
     # than the instrument precision, otherwise the minimum precision value is used.
-    minimum_commission = Decimal(10) ** -quantity.instrument.precision
+    minimum_commission = Decimal(10) ** -filled.instrument.precision
     if options.commission > 0 and commission < minimum_commission:
         logging.warning("Commission is > 0 but less than instrument precision. "
                         "Setting commission to the minimum allowed amount. "
                         "Consider defining a custom instrument with a higher precision.")
-        commission = minimum_commission
+        commission.size = minimum_commission
+
+    quantity = filled - commission
 
     transfer = Wallet.transfer(
         source=base_wallet,
@@ -115,16 +116,17 @@ def execute_sell_order(order: 'Order',
     filled = order.remaining.contain(order.exchange_pair)
 
     commission = options.commission * filled
-    quantity = filled - commission
 
     # If the user has specified a non-zero commission percentage, it has to be higher
     # than the instrument precision, otherwise the minimum precision value is used.
-    minimum_commission = Decimal(10) ** -quantity.instrument.precision
+    minimum_commission = Decimal(10) ** -filled.instrument.precision
     if options.commission > 0 and commission < minimum_commission:
         logging.warning("Commission is > 0 but less than instrument precision. "
                         "Setting commission to the minimum allowed amount. "
                         "Consider defining a custom instrument with a higher precision.")
-        commission = minimum_commission
+        commission.size = minimum_commission
+
+    quantity = filled - commission
 
     # Transfer Funds from Quote Wallet to Base Wallet
     transfer = Wallet.transfer(
