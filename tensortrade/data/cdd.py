@@ -77,6 +77,13 @@ class CryptoDataDownload:
         df = df.set_index("date")
         df.columns = [name.lower() for name in df.columns]
         df = df.reset_index()
+
+        df["volume"] = df["volume"].astype(int)
+        df["date"] = pd.to_datetime(df["date"])
+        df.sort_values(by="date", ascending=True, inplace=True)
+        df.reset_index(drop=True, inplace=True)
+        df["date"] = df["date"].dt.strftime("%Y-%m-%d %I:%M %p")
+
         if not include_all_volumes:
             df = df.drop([new_quote_vc], axis=1)
             df = df.rename({new_base_vc: "volume"}, axis=1)
