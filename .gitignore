@@ -7,6 +7,19 @@
 dist
 build
 tags
+build
+*dist*
+*egg*
+__pycache__
+checkpoint*
+*.tf*
+*.mp4
+openaigym*
+*scratch*
+*.npy
+*.parquet
+*.db
+wandb
 
 # test-related
 .coverage
@@ -26,3 +39,9 @@ examples/training_logs
 
 # virtual environment
 venv
+
+# Credentials
+keys.txt*
+EODData_credentials.txt*
+github_credentials.txt*
+
