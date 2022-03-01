@@ -55,6 +55,7 @@ setup(
         'ipython>=7.12.0',
         'matplotlib>=3.1.1',
         'plotly>=4.5.0',
+        'ccxt>=1.72.37',
         'deprecated>=1.2.13'
     ],
     extras_require={
