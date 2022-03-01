@@ -72,7 +72,7 @@ indicators_requires = [
     'pandas-ta @ git+https://github.com/twopirllc/pandas-ta.git@development'
 ]
 
-xagents_requires = [
+agents_requires = [
     'pyarrow',
     'wandb',
     'tensorflow-probability>=0.15.0',
@@ -110,7 +110,7 @@ optional_requires = \
     tensorflow_requires + \
     pytorch_requires + \
     indicators_requires + \
-    xagents_requires + \
+    agents_requires + \
     binance_requires + \
     examples_requires + \
     tests_requires + \
@@ -160,13 +160,18 @@ setup(
         'stable_baseline': stable_baseline_requires,
         'tensorflow': tensorflow_requires,
         'pytorch': pytorch_requires,
-        'xagents': xagents_requires,
+        'agents': agents_requires,
         'binance': binance_requires,
         'indicators': indicators_requires,
         'examples': examples_requires,
         'tests': tests_requires,
         'docs': docs_requires,
         'optional': optional_requires
+    },
+    entry_points={
+        'console_scripts': [
+            'tensortrade=tensortrade.agents.cli:execute',
+        ],
     },
     classifiers=classifiers,
     zip_safe=False

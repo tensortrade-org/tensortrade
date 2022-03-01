@@ -1,3 +1,4 @@
+recursive-include tensortrade/agents/ *.cfg
 include LICENSE
 include README.md
 include CONTRIBUTING.md
