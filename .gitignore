@@ -4,13 +4,10 @@
 *.swp
 *__pycache__
 *.egg-info
-dist
 build
 tags
-build
 *dist*
 *egg*
-__pycache__
 checkpoint*
 *.tf*
 *.mp4

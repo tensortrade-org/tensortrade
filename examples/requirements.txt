@@ -1,4 +1,1 @@
--r ../requirements.txt
-
 ..[optional]
-
