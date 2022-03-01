@@ -52,7 +52,9 @@ setup(
         'pyyaml>=5.1.2',
         'stochastic>=0.6.0',
         'tensorflow>=2.7.0',
+        'jupyterlab>=1.1.4',
         'ipython>=7.12.0',
+        'ipywidgets>=7.0.0',
         'matplotlib>=3.1.1',
         'plotly>=4.5.0',
         'deprecated>=1.2.13'
@@ -69,8 +71,7 @@ setup(
             'nbsphinx',
             'nbsphinx_link',
             'recommonmark',
-            'sphinx_markdown_tables',
-            'ipykernel'
+            'sphinx_markdown_tables'
         ],
     },
     classifiers=[
