@@ -97,7 +97,8 @@ examples_requires = [
 ]
 
 tests_requires = [
-    'pytest>=5.1.1'
+    'pytest>=5.1.1',
+    ta_requires[0]
 ]
 
 docs_requires = [
