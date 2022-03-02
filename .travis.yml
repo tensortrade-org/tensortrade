@@ -21,7 +21,7 @@ install:
   - sudo make install
   - cd ..
   - pip install -r examples/requirements.txt
-  - pip install -e ".[tests]"
+  - pip install -e ".[optional]"
 
 script:
   - pytest
