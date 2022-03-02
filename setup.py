@@ -58,11 +58,15 @@ pytorch_requires = [
     'torch>=1.10.2'
 ]
 
+ta_requires = [
+    'ta>=0.4.7'
+]
+
 indicators_requires = [
     'quantstats',
-    'ta>=0.4.7',
     'TA-Lib',
-    'pandas-ta @ git+https://github.com/twopirllc/pandas-ta.git@development'
+    'pandas-ta @ git+https://github.com/twopirllc/pandas-ta.git@development',
+    ta_requires[0]
 ]
 
 agents_requires = [
@@ -93,8 +97,7 @@ examples_requires = [
 ]
 
 tests_requires = [
-    'pytest>=5.1.1',
-    'ipykernel'
+    'pytest>=5.1.1'
 ]
 
 docs_requires = [
@@ -104,7 +107,8 @@ docs_requires = [
     'nbsphinx',
     'nbsphinx_link',
     'recommonmark',
-    'sphinx_markdown_tables'
+    'sphinx_markdown_tables',
+    'ipykernel'
 ]
 
 optional_requires = \
@@ -164,7 +168,9 @@ setup(
         'pytorch': pytorch_requires,
         'agents': agents_requires,
         'binance': binance_requires,
+        'ta': ta_requires,
         'indicators': indicators_requires,
+        'notebook': notebook_requires,
         'examples': examples_requires,
         'tests': tests_requires,
         'docs': docs_requires,
