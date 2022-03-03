@@ -343,13 +343,14 @@ class Wallet(Identifiable):
 
         q = quantity.size
         c = commission.size
+        qc = (q + c) if c > 0.0 else q
         cv = converted.size
         p = exchange_pair.inverse_price if pair == exchange_pair.pair else exchange_pair.price
 
         source_quantization = Decimal(10) ** -source.instrument.precision
         target_quantization = Decimal(10) ** -target.instrument.precision
 
-        lhs = Decimal((lsb1 - lsb2) - (q + c)).quantize(source_quantization)
+        lhs = Decimal(lsb1 - lsb2 - qc).quantize(source_quantization)
         rhs = Decimal(ltb2 - ltb1 - cv).quantize(target_quantization)
 
         lhs_eq_zero = np.isclose(float(lhs), 0, atol=float(source_quantization))

@@ -12,5 +12,6 @@ from tensortrade.oms import (
 from . import env
 from . import stochastic
 from . import agents
+from . import binance
 
 from .version import __version__
