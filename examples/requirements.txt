@@ -1,13 +1,10 @@
 -r ../requirements.txt
 
-ray[default,tune,rllib,serve]==1.9.2
-ccxt>=1.72.37
-jupyterlab>=1.1.4
+stochastic>=0.6.0
+ccxt==1.72.37
 feature_engine
 scikit-learn
 optuna
-quantstats
-ta>=0.4.7
-TA-Lib
-git+https://github.com/twopirllc/pandas-ta@development
-
+jupyterlab>=1.1.4
+ipython>=7.12.0
+ipywidgets>=7.0.0

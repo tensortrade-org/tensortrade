@@ -19,6 +19,17 @@ import os
 from setuptools import find_packages, setup
 
 
+def split(sequence, sep):
+    chunk = []
+    for val in sequence:
+        if val == sep:
+            yield chunk
+            chunk = []
+        else:
+            chunk.append(val)
+    yield chunk
+
+
 if sys.version_info.major != 3:
     raise NotImplementedError("TensorTrade is only compatible with Python 3.")
 
@@ -29,6 +40,54 @@ with open(os.path.join(tensortrade_directory, 'tensortrade', 'version.py'), 'r')
     for line in filehandle:
         if line.startswith('__version__'):
             version = line[15:-2]
+
+
+with open(os.path.join(tensortrade_directory, 'requirements.txt'), encoding='utf-8') as f:
+    install_requires = f.read().splitlines()
+
+extras_require = {}
+
+with open(os.path.join(tensortrade_directory, 'examples', 'requirements.txt'), encoding='utf-8') as f:
+    extras_require['examples'] = f.read().splitlines()[2:]
+
+with open(os.path.join(tensortrade_directory, 'requirements_extras.txt'), encoding='utf-8') as f:
+    for extra in list(split(f.read().splitlines(), ''))[1:]:
+        extras_require[extra[0][1:]] = extra[1:]
+
+extras_require['full'] = \
+    extras_require['ray'] + \
+    extras_require['stable_baselines'] + \
+    extras_require['tensorflow'] + \
+    extras_require['pytorch'] + \
+    extras_require['indicators'] + \
+    extras_require['agents'] + \
+    extras_require['binance'] + \
+    extras_require['examples'] + \
+    extras_require['tests'] + \
+    extras_require['docs']
+
+
+classifiers = [
+    'Development Status :: 5 - Production/Stable',
+    'Natural Language :: English',
+    'Intended Audience :: Developers',
+    'Intended Audience :: Education',
+    'Intended Audience :: Science/Research',
+    'Intended Audience :: Financial and Insurance Industry',
+    'Intended Audience :: Information Technology',
+    'License :: OSI Approved :: Apache Software License',
+    'Operating System :: OS Independent',
+    'Programming Language :: Python :: 3.7',
+    'Programming Language :: Python :: 3.8',
+    'Programming Language :: Python :: 3.9',
+    'Topic :: Office/Business :: Financial :: Investment',
+    'Topic :: Office/Business :: Financial',
+    'Topic :: Scientific/Engineering :: Information Analysis',
+    'Topic :: System :: Distributed Computing',
+    'Topic :: Scientific/Engineering :: Artificial Intelligence',
+    'Topic :: Software Development :: Libraries',
+    'Topic :: Software Development :: Libraries :: Python Modules',
+]
 
 setup(
     name='tensortrade',
@@ -45,54 +104,9 @@ setup(
     ],
     license='Apache 2.0',
     python_requires='>=3.7',
-    install_requires=[
-        'numpy>=1.17.0',
-        'pandas>=0.25.0',
-        'gym>=0.15.7',
-        'pyyaml>=5.1.2',
-        'stochastic>=0.6.0',
-        'tensorflow>=2.7.0',
-        'ipython>=7.12.0',
-        'matplotlib>=3.1.1',
-        'plotly>=4.5.0',
-        'deprecated>=1.2.13'
-    ],
-    extras_require={
-        'tests': [
-            'pytest>=5.1.1',
-            'ta>=0.4.7'
-        ],
-        'docs': [
-            'sphinx',
-            'sphinx_rtd_theme',
-            'sphinxcontrib.apidoc',
-            'nbsphinx',
-            'nbsphinx_link',
-            'recommonmark',
-            'sphinx_markdown_tables',
-            'ipykernel'
-        ],
-    },
-    classifiers=[
-        'Development Status :: 5 - Production/Stable',
-        'Natural Language :: English',
-        'Intended Audience :: Developers',
-        'Intended Audience :: Education',
-        'Intended Audience :: Science/Research',
-        'Intended Audience :: Financial and Insurance Industry',
-        'Intended Audience :: Information Technology',
-        'License :: OSI Approved :: Apache Software License',
-        'Operating System :: OS Independent',
-        'Programming Language :: Python :: 3.7',
-        'Programming Language :: Python :: 3.8',
-        'Programming Language :: Python :: 3.9',
-        'Topic :: Office/Business :: Financial :: Investment',
-        'Topic :: Office/Business :: Financial',
-        'Topic :: Scientific/Engineering :: Information Analysis',
-        'Topic :: System :: Distributed Computing',
-        'Topic :: Scientific/Engineering :: Artificial Intelligence',
-        'Topic :: Software Development :: Libraries',
-        'Topic :: Software Development :: Libraries :: Python Modules',
-    ],
+    install_requires=install_requires,
+    extras_require=extras_require,
+    classifiers=classifiers,
     zip_safe=False
 )
+
