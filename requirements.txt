@@ -9,3 +9,4 @@ matplotlib>=3.1.1
 plotly>=4.5.0
 ipywidgets>=7.0.0  # Required for rendering
 deprecated>=1.2.13
+statsmodels>=0.13.2
