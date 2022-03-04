@@ -77,6 +77,7 @@ class CryptoDataDownload:
         df = df.set_index("date")
         df.columns = [name.lower() for name in df.columns]
         df = df.reset_index()
+
         if not include_all_volumes:
             df = df.drop([new_quote_vc], axis=1)
             df = df.rename({new_base_vc: "volume"}, axis=1)

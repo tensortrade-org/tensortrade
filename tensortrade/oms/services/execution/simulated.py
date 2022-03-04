@@ -195,3 +195,4 @@ def execute_order(order: 'Order',
         trade = None
 
     return trade
+
