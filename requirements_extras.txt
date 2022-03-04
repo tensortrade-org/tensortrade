@@ -1,45 +1,46 @@
 -r ./requirements.txt
 
-#ray
+# [ray]
 ray[default,tune,rllib,serve]==1.10.0
 
-#stable_baselines
+# [stable_baselines]
 stable-baselines3[extra]
 sb3-contrib
 
-#tensorflow
+# [tensorflow]
 tensorflow>=2.8.0
 
-#pytorch
+# [pytorch]
 torch>=1.10.2
 
-#indicators
+# [indicators]
 quantstats
 TA-Lib
 pandas-ta @ git+https://github.com/twopirllc/pandas-ta.git@development
 ta>=0.4.7
 
-#agents
+# [agents]
 pyarrow
 wandb
 tensorflow-probability>=0.15.0
 opencv-python
 
-#binance
+# [binance]
 python-binance
 binance-futures @ git+https://github.com/Binance-docs/Binance_Futures_python.git#egg=binance-futures
 
-#notebook
+# [notebook]
 jupyterlab>=1.1.4
 ipython>=7.12.0
 ipywidgets>=7.0.0
 
-#tests
+# [tests]
 pytest>=5.1.1
 tensorflow>=2.8.0
 ta>=0.4.7
+ipython>=7.12.0
 
-#docs
+# [docs]
 sphinx
 sphinx_rtd_theme
 sphinxcontrib.apidoc

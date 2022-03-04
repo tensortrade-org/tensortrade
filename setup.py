@@ -36,23 +36,25 @@ if sys.version_info.major != 3:
 
 tensortrade_directory = os.path.abspath(os.path.dirname(__file__))
 
-with open(os.path.join(tensortrade_directory, 'tensortrade', 'version.py'), 'r') as filehandle:
+with open(os.path.join(tensortrade_directory, 'tensortrade', 'version.py'), mode='r', encoding='utf-8') as filehandle:
     for line in filehandle:
         if line.startswith('__version__'):
             version = line[15:-2]
 
 
-with open(os.path.join(tensortrade_directory, 'requirements.txt'), encoding='utf-8') as f:
+with open(os.path.join(tensortrade_directory, 'requirements.txt'), mode='r', encoding='utf-8') as f:
     install_requires = f.read().splitlines()
 
 extras_require = {}
 
-with open(os.path.join(tensortrade_directory, 'examples', 'requirements.txt'), encoding='utf-8') as f:
-    extras_require['examples'] = f.read().splitlines()[2:]
+with open(os.path.join(tensortrade_directory, 'examples', 'requirements.txt'), mode='r', encoding='utf-8') as f:
+    extras_require['examples'] = f.read().splitlines()[4:]
 
-with open(os.path.join(tensortrade_directory, 'requirements_extras.txt'), encoding='utf-8') as f:
+with open(os.path.join(tensortrade_directory, 'requirements_extras.txt'), mode='r', encoding='utf-8') as f:
     for extra in list(split(f.read().splitlines(), ''))[1:]:
-        extras_require[extra[0][1:]] = extra[1:]
+        extras_require[extra[0][3:-1]] = extra[1:]
+
+extras_require['examples'] += extras_require['notebook']
 
 extras_require['full'] = \
     extras_require['ray'] + \
@@ -95,7 +97,7 @@ setup(
     description='TensorTrade: A reinforcement learning library for training, evaluating, and deploying robust trading agents.',
     long_description='TensorTrade: A reinforcement learning library for training, evaluating, and deploying robust trading agents.',
     long_description_content_type='text/markdown',
-    author='Adam King <adamjking3@gmail.com>, Matthew Brulhardt <mwbrulhardt@gmail.com>, Samuel Duclos <nomfullcreatif@gmail.com>',
+    author='Adam King <adamjking3@gmail.com>, Matthew Brulhardt <mwbrulhardt@gmail.com>',
     maintainer='Carlo Grisetti <carlo.grisetti@gmail.com>',
     url='https://github.com/tensortrade-org/tensortrade',
     packages=[

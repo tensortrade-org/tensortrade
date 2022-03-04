@@ -34,6 +34,7 @@ RUN apt-get update && \
     make install && \
     cd .. && \
     pip3 install --no-cache-dir --upgrade pip && \
+    pip3 install --no-cache-dir -e . && \
     pip3 install --no-cache-dir -e ".[full]" && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* ta-lib-0.4.0-src.tar.gz

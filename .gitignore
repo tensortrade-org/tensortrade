@@ -4,15 +4,11 @@
 *.swp
 *__pycache__
 *.egg-info
+*dist*
 build
 tags
-*dist*
-*egg*
-checkpoint*
-*.tf*
-*.mp4
-openaigym*
-*scratch*
+
+# Agents
 *.npy
 *.parquet
 *.db
@@ -39,6 +35,4 @@ venv
 
 # Credentials
 keys.txt*
-EODData_credentials.txt*
-github_credentials.txt*
 
