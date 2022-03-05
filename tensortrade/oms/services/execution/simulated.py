@@ -14,7 +14,8 @@ def execute_buy_order(order: 'Order',
                       quote_wallet: 'Wallet',
                       current_price: float,
                       options: 'ExchangeOptions',
-                      clock: 'Clock') -> Union[None, 'Trade']:
+                      clock: 'Clock',
+                      binance_pair: 'Binance_pair' = None) -> Union[None, 'Trade']:
     """Executes a buy order on the exchange.
 
     Parameters
@@ -59,6 +60,9 @@ def execute_buy_order(order: 'Order',
 
     quantity = filled - commission
 
+    if binance_pair is not None:
+        binance_pair.trade_pair(percentage_to_trade=quantity)
+
     transfer = Wallet.transfer(
         source=base_wallet,
         target=quote_wallet,
@@ -87,7 +91,8 @@ def execute_sell_order(order: 'Order',
                        quote_wallet: 'Wallet',
                        current_price: float,
                        options: 'ExchangeOptions',
-                       clock: 'Clock') -> Union[None, 'Trade']:
+                       clock: 'Clock',
+                       binance_pair: 'Binance_pair' = None) -> Union[None, 'Trade']:
     """Executes a sell order on the exchange.
 
     Parameters
@@ -128,6 +133,9 @@ def execute_sell_order(order: 'Order',
 
     quantity = filled - commission
 
+    if binance_pair is not None:
+        binance_pair.trade_pair(percentage_to_trade=quantity)
+
     # Transfer Funds from Quote Wallet to Base Wallet
     transfer = Wallet.transfer(
         source=quote_wallet,
@@ -157,7 +165,8 @@ def execute_order(order: 'Order',
                   quote_wallet: 'Wallet',
                   current_price: float,
                   options: 'Options',
-                  clock: 'Clock') -> 'Trade':
+                  clock: 'Clock',
+                  binance: 'Binance' = None) -> 'Trade':
     """Executes an order on the exchange.
 
     Parameters
@@ -188,9 +197,9 @@ def execute_order(order: 'Order',
               "clock": clock}
 
     if order.is_buy:
-        trade = execute_buy_order(**kwargs)
+        trade = execute_buy_order(binance=binance, **kwargs)
     elif order.is_sell:
-        trade = execute_sell_order(**kwargs)
+        trade = execute_sell_order(binance=binance, **kwargs)
     else:
         trade = None
 
