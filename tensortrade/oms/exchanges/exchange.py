@@ -45,13 +45,15 @@ class ExchangeOptions:
                  max_trade_size: float = 1e6,
                  min_trade_price: float = 1e-8,
                  max_trade_price: float = 1e8,
-                 is_live: bool = False):
+                 is_live: bool = False,
+                 binance_pair: 'Binance_pair' = None):
         self.commission = commission
         self.min_trade_size = min_trade_size
         self.max_trade_size = max_trade_size
         self.min_trade_price = min_trade_price
         self.max_trade_price = max_trade_price
         self.is_live = is_live
+        self.binance_pair = binance_pair
 
 
 class Exchange(Component, TimedIdentifiable):
@@ -150,7 +152,10 @@ class Exchange(Component, TimedIdentifiable):
         """
         return str(trading_pair) in self._price_streams.keys()
 
-    def execute_order(self, order: 'Order', portfolio: 'Portfolio') -> None:
+    def execute_order(self,
+                      order: 'Order',
+                      portfolio: 'Portfolio',
+                      binance_pair: 'Binance_pair' = None) -> None:
         """Execute an order on the exchange.
 
         Parameters
@@ -166,8 +171,10 @@ class Exchange(Component, TimedIdentifiable):
             quote_wallet=portfolio.get_wallet(self.id, order.pair.quote),
             current_price=self.quote_price(order.pair),
             options=self.options,
-            clock=self.clock
+            clock=self.clock,
+            binance_pair=self.options.binance_pair
         )
 
         if trade:
             order.fill(trade)
+

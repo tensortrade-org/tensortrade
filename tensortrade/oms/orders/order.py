@@ -91,7 +91,8 @@ class Order(TimedIdentifiable, Observable):
                  criteria: 'Callable[[Order, Exchange], bool]' = None,
                  path_id: str = None,
                  start: int = None,
-                 end: int = None):
+                 end: int = None,
+                 binance_pair: 'Binance_pair' = None):
         super().__init__()
         Observable.__init__(self)
 
@@ -114,6 +115,8 @@ class Order(TimedIdentifiable, Observable):
 
         self._specs = []
         self.trades = []
+
+        self.binance_pair = binance_pair
 
         wallet = portfolio.get_wallet(
             self.exchange_pair.exchange.id,
@@ -231,7 +234,7 @@ class Order(TimedIdentifiable, Observable):
         for listener in self.listeners or []:
             listener.on_execute(self)
 
-        self.exchange_pair.exchange.execute_order(self, self.portfolio)
+        self.exchange_pair.exchange.execute_order(self, self.portfolio, self.binance_pair)
 
     def fill(self, trade: 'Trade') -> None:
         """Fills the order.

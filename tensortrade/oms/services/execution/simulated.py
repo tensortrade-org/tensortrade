@@ -166,7 +166,7 @@ def execute_order(order: 'Order',
                   current_price: float,
                   options: 'Options',
                   clock: 'Clock',
-                  binance: 'Binance' = None) -> 'Trade':
+                  binance_pair: 'Binance_pair' = None) -> 'Trade':
     """Executes an order on the exchange.
 
     Parameters
@@ -194,12 +194,13 @@ def execute_order(order: 'Order',
               "quote_wallet": quote_wallet,
               "current_price": current_price,
               "options": options,
-              "clock": clock}
+              "clock": clock,
+              "binance_pair": binance_pair}
 
     if order.is_buy:
-        trade = execute_buy_order(binance=binance, **kwargs)
+        trade = execute_buy_order(**kwargs)
     elif order.is_sell:
-        trade = execute_sell_order(binance=binance, **kwargs)
+        trade = execute_sell_order(**kwargs)
     else:
         trade = None
 

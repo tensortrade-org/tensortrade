@@ -38,9 +38,9 @@ class TensorTradeActionScheme(ActionScheme):
 
     Methods
     -------
-    perform(env,portfolio)
+    perform(env, portfolio)
         Performs the action on the given environment.
-    get_orders(action,portfolio)
+    get_orders(action, portfolio)
         Gets the list of orders to be submitted for the given action.
     """
 
@@ -133,10 +133,11 @@ class BSH(TensorTradeActionScheme):
 
     registered_name = "bsh"
 
-    def __init__(self, cash: 'Wallet', asset: 'Wallet'):
+    def __init__(self, cash: 'Wallet', asset: 'Wallet', binance_pair: 'Binance_pair' = None):
         super().__init__()
         self.cash = cash
         self.asset = asset
+        self.binance_pair = binance_pair
 
         self.listeners = []
         self.action = 0
@@ -149,7 +150,7 @@ class BSH(TensorTradeActionScheme):
         self.listeners += [listener]
         return self
 
-    def get_orders(self, action: int, portfolio: 'Portfolio') -> 'Order':
+    def get_orders(self, action: int, portfolio: 'Portfolio', binance_pair: 'Binance_pair' = None) -> 'Order':
         order = None
 
         if abs(action - self.action) > 0:
@@ -159,7 +160,7 @@ class BSH(TensorTradeActionScheme):
             if src.balance == 0:  # We need to check, regardless of the proposed order, if we have balance in 'src'
                 return []  # Otherwise just return an empty order list
 
-            order = proportion_order(portfolio, src, tgt, 1.0)
+            order = proportion_order(portfolio, src, tgt, 1.0, binance_pair=binance_pair)
             self.action = action
 
         for listener in self.listeners:
@@ -357,7 +358,6 @@ class ManagedRiskOrders(TensorTradeActionScheme):
         return self._action_space
 
     def get_orders(self, action: int, portfolio: 'Portfolio') -> 'List[Order]':
-
         if action == 0:
             return []
 

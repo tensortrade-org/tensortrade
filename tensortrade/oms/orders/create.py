@@ -22,7 +22,8 @@ def market_order(side: "TradeSide",
                  exchange_pair: "ExchangePair",
                  price: float,
                  size: float,
-                 portfolio: "Portfolio") -> "Order":
+                 portfolio: "Portfolio",
+                 binance_pair: 'Binance_pair' = None) -> "Order":
     """Creates a market order.
 
     Parameters
@@ -52,7 +53,8 @@ def market_order(side: "TradeSide",
         exchange_pair=exchange_pair,
         price=price,
         quantity=(size * instrument),
-        portfolio=portfolio
+        portfolio=portfolio,
+        binance_pair=binance_pair
     )
 
     return order
@@ -64,7 +66,8 @@ def limit_order(side: "TradeSide",
                 size: float,
                 portfolio: 'Portfolio',
                 start: int = None,
-                end: int = None):
+                end: int = None,
+                binance_pair: 'Binance_pair' = None):
     """Creates a limit order.
 
     Parameters
@@ -101,7 +104,8 @@ def limit_order(side: "TradeSide",
         quantity=(size * instrument),
         start=start,
         end=end,
-        portfolio=portfolio
+        portfolio=portfolio,
+        binance_pair=binance_pair
     )
 
     return order
@@ -231,7 +235,8 @@ def risk_managed_order(side: "TradeSide",
 def proportion_order(portfolio: 'Portfolio',
                      source: 'Wallet',
                      target: 'Wallet',
-                     proportion: float) -> 'Order':
+                     proportion: float,
+                     binance_pair: 'Binance_pair' = None) -> 'Order':
     """Creates an order that sends a proportion of funds from one wallet to
     another.
 
@@ -296,7 +301,8 @@ def proportion_order(portfolio: 'Portfolio',
         'side': TradeSide.SELL,
         'exchange_pair': exchange_pair,
         'price': exchange_pair.price,
-        'quantity': quantity
+        'quantity': quantity,
+        'binance_pair': binance_pair
     }
 
     order = Order(**params)
