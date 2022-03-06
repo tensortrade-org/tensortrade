@@ -1,2 +1,3 @@
 *.csv
-
+*.zip
+logs/
