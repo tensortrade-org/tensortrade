@@ -15,7 +15,11 @@ COPY . ./
 
 SHELL ["/bin/bash", "-c"]
 
-RUN apt-get update && \
+RUN rm /etc/apt/sources.list.d/cuda.list && \
+    rm /etc/apt/sources.list.d/nvidia-ml.list && \
+    wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-keyring_1.0-1_all.deb && \
+    dpkg -i cuda-keyring_1.0-1_all.deb && \
+    apt-get update && \
     apt-get install -yq --assume-yes --no-install-recommends git \
                                                              libgl1-mesa-glx \
                                                              python3-pip \
