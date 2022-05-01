@@ -15,7 +15,8 @@ COPY . ./
 
 SHELL ["/bin/bash", "-c"]
 
-RUN rm /etc/apt/sources.list.d/cuda.list && \
+RUN apt-get install -y wget && \
+    rm /etc/apt/sources.list.d/cuda.list && \
     rm /etc/apt/sources.list.d/nvidia-ml.list && \
     wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-keyring_1.0-1_all.deb && \
     dpkg -i cuda-keyring_1.0-1_all.deb && \
@@ -26,7 +27,6 @@ RUN rm /etc/apt/sources.list.d/cuda.list && \
                                                              python3-dev \
                                                              python3-setuptools \
                                                              rsync \
-                                                             wget \
                                                              zip && \
     wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz && \
     tar -xzf ta-lib-0.4.0-src.tar.gz && \
