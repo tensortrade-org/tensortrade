@@ -1,5 +1,6 @@
 -r ../requirements.txt
 
+setuptools==62.1.0
 ray[default,tune,rllib,serve]==1.9.2
 ccxt>=1.72.37
 jupyterlab>=1.1.4
