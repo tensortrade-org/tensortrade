@@ -1,0 +1,3 @@
+-r ../requirements.txt
+
+ta>=0.4.7
