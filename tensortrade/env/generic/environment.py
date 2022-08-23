@@ -86,7 +86,7 @@ class TradingEnv(gym.Env, TimeIndexed):
             id='TensorTrade-v0',
             max_episode_steps=max_episode_steps,
         )
-        self.spec = gym.spec(id='TensorTrade-v0')
+        self.spec = gym.spec(env_id='TensorTrade-v0')
 
         for c in self.components.values():
             c.clock = self.clock

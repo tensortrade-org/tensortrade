@@ -1,6 +1,6 @@
 numpy>=1.17.0
 pandas>=0.25.0
-gym>=0.15.7
+gym>=0.25.2
 pyyaml>=5.1.2
 stochastic>=0.6.0
 tensorflow>=2.7.0

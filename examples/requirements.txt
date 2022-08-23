@@ -7,6 +7,6 @@ feature_engine
 scikit-learn
 optuna
 quantstats
-ta>=0.4.7
-TA-Lib
+# ta>=0.4.7  # Broken metadata?
+# TA-Lib  # Broken metadata?
 pandas_ta
