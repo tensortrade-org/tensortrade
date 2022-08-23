@@ -66,6 +66,7 @@ class TradingEnv(gym.Env, TimeIndexed):
                  informer: Informer,
                  renderer: Renderer,
                  min_periods: int = None,
+                 max_episode_steps: int = None,
                  random_start_pct: float = 0.00,
                  **kwargs) -> None:
         super().__init__()
@@ -79,6 +80,13 @@ class TradingEnv(gym.Env, TimeIndexed):
         self.renderer = renderer
         self.min_periods = min_periods
         self.random_start_pct = random_start_pct
+
+        # Register the environment in Gym and fetch spec
+        gym.envs.register(
+            id='TensorTrade-v0',
+            max_episode_steps=max_episode_steps,
+        )
+        self.spec = gym.spec(id='TensorTrade-v0')
 
         for c in self.components.values():
             c.clock = self.clock
