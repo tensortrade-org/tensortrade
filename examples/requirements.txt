@@ -9,5 +9,4 @@ optuna
 quantstats
 ta>=0.4.7
 TA-Lib
-git+https://github.com/twopirllc/pandas-ta@development
-
+pandas_ta
