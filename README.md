@@ -4,7 +4,7 @@
 [![Documentation Status](https://readthedocs.org/projects/tensortrade/badge/?version=latest)](https://tensortrade.org)
 [![Apache License](https://img.shields.io/github/license/tensortrade-org/tensortrade.svg?color=brightgreen)](http://www.apache.org/licenses/LICENSE-2.0)
 [![Discord](https://img.shields.io/discord/592446624882491402.svg?color=brightgreen)](https://discord.gg/ZZ7BGWh)
-[![Python 3.6](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/downloads/release/python-360/)
+[![Python 3.7](https://img.shields.io/badge/python-3.7-blue.svg)](https://www.python.org/downloads/release/python-360/)
 
 ---
 
@@ -43,9 +43,18 @@ You can get started testing on Google Colab or your local machine, by viewing ou
 ## Installation
 
 TensorTrade requires Python >= 3.7 for all functionality to work as expected.
-
+You can install TensorTrade both as a pre-packaged solution by running the default setup command.
+```bash
+pip install tensortrade
+```
+You can then alternatively install TensorTrade directly from the master code repository, pulling directly from the latest commits. This will give you the latest features\fixes, but it is highly untested code, so proceed at your own risk.
+```bash
+pip install git+https://github.com/tensortrade-org/tensortrade.git
+```
+Alternatively you can clone\download the repository in your local environment an manually install the requirements, either the "base" ones, or the ones that also include requirements to run the examples in the documentation.
 ```bash
 pip install -r requirements.txt
+pip install -r examples/requirements.txt
 ```
 
 ## Docker

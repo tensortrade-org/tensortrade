@@ -13,6 +13,7 @@
 # limitations under the License
 
 
+from deprecated import deprecated
 import tensorflow as tf
 
 from multiprocessing import Process, Queue
@@ -20,6 +21,7 @@ from multiprocessing import Process, Queue
 from tensortrade.agents import ReplayMemory, DQNTransition
 
 
+@deprecated(version='1.0.4', reason="Builtin agents are being deprecated in favor of external implementations (ie: Ray)")
 class ParallelDQNOptimizer(Process):
     def __init__(self,
                  model: 'ParallelDQNModel',
@@ -29,7 +31,8 @@ class ParallelDQNOptimizer(Process):
                  done_queue: Queue,
                  discount_factor: float = 0.9999,
                  batch_size: int = 128,
-                 learning_rate: float = 0.0001,
+                 #learning_rate: float = 0.0001,
+                 learning_rate: float = 0.001,
                  memory_capacity: int = 10000):
         super().__init__()
 
@@ -46,7 +49,10 @@ class ParallelDQNOptimizer(Process):
     def run(self):
         memory = ReplayMemory(self.memory_capacity, transition_type=DQNTransition)
 
-        optimizer = tf.keras.optimizers.Adam(lr=self.learning_rate)
+        # Optimization strategy.
+        #optimizer = tf.keras.optimizers.Adam(learning_rate=self.learning_rate)
+        optimizer = tf.keras.optimizers.Nadam(learning_rate=self.learning_rate)
+
         loss_fn = tf.keras.losses.Huber()
 
         while self.done_queue.qsize() < self.n_envs:

@@ -297,6 +297,7 @@ agent.train(n_episodes=2, n_steps=200, render_interval=10)
 
     ====      AGENT ID: fec5e2c5-eb35-4ff6-8416-b876f0e8be66      ====
 
+![image](https://user-images.githubusercontent.com/4431953/149672722-6305a8d8-7a95-477a-b83a-d81ad4cdad17.png)
 
 
 
@@ -306,13 +307,19 @@ agent.train(n_episodes=2, n_steps=200, render_interval=10)
 
 
 <br>**Direct Performance and Net Worth Plotting**<br>
-Alternatively, the final performance and net worth can be displayed using pandas via Matplotlib.
+Alternatively, the final performance and net worth can be displayed using `Pandas` via `Matplotlib`.
 
 
 ```python
 %matplotlib inline
+import pandas as pd
+df = pd.DataFrame(portfolio.performance)
+```
 
-portfolio.performance.plot()
+Transpose the dataframe using `T` and call `.plot()`
+
+```
+df.T.plot()
 ```
 
 
@@ -321,7 +328,7 @@ portfolio.performance.plot()
 
 
 ```python
-portfolio.performance.net_worth.plot()
+df.loc["net_worth"].plot()
 ```
 
 ![png](renderers_and_plotly_chart_files/renderers_and_plotly_chart_22_1.png)

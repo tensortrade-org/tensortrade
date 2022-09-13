@@ -25,7 +25,7 @@ TTC = Instrument("TTC", 8, "TensorTrade Coin")
 
 Now let us look at the curve we will be using to define our price.
 
-![png](charts/sine_curve.png)
+![](charts/sine_curve.png)
 
 Ideally, what we will be expecting from our agent is that it will be able to sell at the peaks and buy at the troughs. We will move on to defining our action scheme. The `ActionScheme` we are going to build is going to be extremely simple. There are only 3 states that our agent can be in which are `buy`, `sell`, and `hold`. We will make use of a new function in the library, `proportion_order`. This function enables the user to make an order that can take a percentage of funds at a particular wallet and send it to another. Therefore, we want to structure a way to only have two actions in our scheme and use them as indicators to move our funds to the opposite wallet.
 
@@ -302,7 +302,8 @@ import ray.rllib.agents.ppo as ppo
 # Get checkpoint
 checkpoints = analysis.get_trial_checkpoints_paths(
     trial=analysis.get_best_trial("episode_reward_mean"),
-    metric="episode_reward_mean"
+    metric="episode_reward_mean",
+    mode='max'
 )
 checkpoint_path = checkpoints[0][0]
 
@@ -361,7 +362,7 @@ while not done:
 env.render()
 ```
 
-![png](charts/train_performance.png)
+![](charts/train_performance.png)
 
 From the rendering, you can see that the agent is making near optimal decisions on the environment. Now we want to put the agent in an environment it is not used to and see what kind of decisions it makes. We will use for our price, an `order` 5 Fourier series fitted to a randomly generated Geometric Brownian Motion (GBM). We will use the `symfit` library to do this.
 
@@ -512,10 +513,10 @@ while not done:
 
 The following are a few examples of the rendering that came from the evaluation environment.
 
-![png](charts/eval_01.png)
-![png](charts/eval_02.png)
-![png](charts/eval_03.png)
-![png](charts/eval_04.png)
+![](charts/eval_01.png)
+![](charts/eval_02.png)
+![](charts/eval_03.png)
+![](charts/eval_04.png)
 
 As you can see, the agent has been able to make correct decisions on some of the price curves, but not all of them. The last curve shows some of the shortcomings of the agent. The agent seemed to have stop making decisions to move its wealth to capitalize on the changes in price. In the first three, however, it was able to make those decisions. The reason for this is most likely the change in the frequency of the curve. The last chart has a price curve that is volatile, containing many local maxima and minima as opposed to the first three charts.
 
