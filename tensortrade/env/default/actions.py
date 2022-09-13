@@ -369,6 +369,12 @@ class ManagedRiskOrders(TensorTradeActionScheme):
         wallet = portfolio.get_wallet(ep.exchange.id, instrument=instrument)
 
         balance = wallet.balance.as_float()
+
+        if balance < 0 and side == TradeSide.SELL:
+            # ignore sells of short positions aa it doesn't make sense
+            # short positions are to be bought back, not sold again.
+            return []
+
         size = (balance * proportion)
         size = min(balance, size)
         quantity = (size * instrument).quantize()
