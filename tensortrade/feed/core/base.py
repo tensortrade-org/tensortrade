@@ -528,6 +528,8 @@ class IterableStream(Stream[T]):
         except StopIteration:
             self.stop = True
 
+        self._random_start = 0
+
     def forward(self) -> T:
         v = self.current
         try:
@@ -539,11 +541,14 @@ class IterableStream(Stream[T]):
     def has_next(self):
         return not self.stop
 
-    def reset(self):
+    def reset(self, random_start=0):
+        if random_start != 0:
+            self._random_start = random_start
+
         if self.is_gen:
             self.generator = self.gen_fn()
         else:
-            self.generator = iter(self.iterable)
+            self.generator = iter(self.iterable[self._random_start:])
         self.stop = False
 
         try:

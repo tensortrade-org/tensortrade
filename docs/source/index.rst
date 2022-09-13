@@ -29,6 +29,8 @@ maintaining production-quality data pipelines.*
 
 Feel free to also walk through the `Medium tutorial`_.
 
+The most up to date example is `Train and Evaluate using Ray`_. We suggest you to start there!
+
 Guiding principles
 ------------------
 
@@ -53,9 +55,10 @@ functions), and existing modules provide ample examples. To be able to
 easily create new modules allows for total expressiveness, making
 TensorTrade suitable for advanced research and production use.
 
-.. _TensorTrade: https://github.com/notadamking/tensortrade
+.. _TensorTrade: https://github.com/tensortrade-org/tensortrade
 .. _Medium tutorial: https://medium.com/@notadamking/trade-smarter-w-reinforcement-learning-a5e91163f315
 .. _Keras' guiding principles: https://github.com/keras-team/keras
+.. _Train and Evaluate using Ray: examples/train_and_evaluate_using_ray.html
 
 .. |Logo| image:: _static/logo.jpg
 
@@ -80,7 +83,7 @@ TensorTrade suitable for advanced research and production use.
 
     examples/overview.md
     examples/setup_environment_tutorial.md
-    examples/train_and_evaluate.md
+    examples/train_and_evaluate_using_ray.md
     examples/renderers_and_plotly_chart.md
     examples/use_stochastic_data.md
     examples/ledger_example.md
