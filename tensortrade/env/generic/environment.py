@@ -85,6 +85,7 @@ class TradingEnv(gym.Env, TimeIndexed):
         gym.envs.register(
             id='TensorTrade-v0',
             max_episode_steps=max_episode_steps,
+            entry_point="gym.envs"
         )
         self.spec = gym.spec(env_id='TensorTrade-v0')
 
