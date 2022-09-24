@@ -8,7 +8,7 @@ from tensortrade.oms.instruments import *
 from tensortrade.oms.orders import Order, OrderStatus, OrderSpec, TradeSide, TradeType
 from tensortrade.oms.orders.criteria import Stop
 from tensortrade.oms.exchanges import ExchangeOptions
-from tensortrade.oms.wallets import Wallet, Portfolio
+from tensortrade.oms.wallets import Wallet, MarginWallet, Portfolio
 
 
 @mock.patch('tensortrade.exchanges.Exchange')
@@ -686,3 +686,83 @@ def test_str(mock_exchange_class):
     assert string
 
     assert string == pattern.fullmatch(string).string
+
+
+@mock.patch("tensortrade.exchanges.Exchange")
+@mock.patch("tensortrade.orders.Trade")
+@mock.patch("tensortrade.orders.OrderListener")
+def test_complete_shorting_order(mock_order_listener_class,
+                              mock_trade_class,
+                              mock_exchange_class):
+
+    exchange = mock_exchange_class.return_value
+    exchange.options = ExchangeOptions()
+    exchange.id = "fake_exchange_id"
+    exchange.name = "bitfinex"
+    exchange.clock = mock.Mock()
+    exchange.clock.step = 0
+
+    wallets = [Wallet(exchange, 10000 * USD), MarginWallet(exchange, 0 * BTC)]
+    portfolio = Portfolio(USD, wallets)
+
+    exchange.quote_price = mock.Mock(return_value=Decimal(7000.00))
+    order = Order(step=0,
+                  exchange_pair=ExchangePair(exchange, USD / BTC),
+                  side=TradeSide.SELL,
+                  trade_type=TradeType.MARKET,
+                  quantity=0.5 * BTC,
+                  portfolio=portfolio,
+                  price=Decimal(7000.00))
+    assert order.quantity.as_float() == 0.5
+    assert order.remaining.as_float() == 0.5
+
+    listener = mock_order_listener_class.return_value
+    listener.on_complete = mock.Mock(return_value=None)
+    order.attach(listener)
+
+    order.execute()
+
+    # # Execute fake trade
+    price = order.price
+    scale = order.price / price
+    commission = 0.005 * BTC
+
+    trade = mock_trade_class.return_value
+    trade.size = Decimal(scale * order.size - commission.size)
+    trade.quantity = trade.size * BTC
+    trade.price = price
+    trade.commission = commission
+
+    base_wallet = portfolio.get_wallet(exchange.id, USD)
+    quote_wallet = portfolio.get_wallet(exchange.id, BTC)
+
+    base_size = trade.size + commission.size
+    quote_size = (order.price / trade.price) * (trade.size * trade.price)
+
+    quote_wallet.withdraw(
+        quantity=Quantity(BTC, size=float(trade.size)+trade.commission.as_float(), path_id=order.path_id),
+        reason="test"
+    )
+    base_wallet.deposit(
+        quantity=Quantity(USD, size=quote_size, path_id=order.path_id),
+        reason="test"
+    )
+
+    order.fill(trade)
+
+    # trade = mock_trade_class.return_value
+    # trade.size = Decimal(-0.5)
+    # trade.quantity = NegativeQuantity(BTC, -0.5)
+    # trade.commission = NegativeQuantity(BTC, -0.005)
+
+    # order.fill(trade)
+
+    assert order.status == OrderStatus.PARTIALLY_FILLED
+    next_order = order.complete()
+    assert order.status == OrderStatus.FILLED
+
+    assert base_wallet.total_balance.as_float() == 13465
+    assert quote_wallet.total_balance.as_float() == -0.5
+
+    listener.on_complete.assert_called_once_with(order)
+    assert not next_order

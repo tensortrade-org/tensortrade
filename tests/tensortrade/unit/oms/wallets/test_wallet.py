@@ -6,7 +6,8 @@ from decimal import Decimal
 
 from tensortrade.core.exceptions import InsufficientFunds, IncompatibleInstrumentOperation
 from tensortrade.oms.exchanges import Exchange
-from tensortrade.oms.wallets import Wallet
+from tensortrade.oms.instruments.quantity import NegativeQuantity
+from tensortrade.oms.wallets import Wallet, MarginWallet
 from tensortrade.oms.instruments import USD, BTC, Quantity, ExchangePair
 
 
@@ -221,3 +222,103 @@ def test_transfer():
                     exchange_pair,
                     "transfer")
 
+# MarginWallet tests
+def test_negative_balance():
+    # Add to balance with locked path_id
+    wallet = MarginWallet(exchange, 0 * BTC)
+    
+    wallet.withdraw(
+        #quantity=Quantity(BTC, 1, path_id=path_id),
+        quantity= 1 * BTC, # unlocked
+        reason="test"
+    )
+    qty = NegativeQuantity(BTC, -1)
+    assert wallet.total_balance == qty
+
+    wallet.deposit(
+        #quantity=Quantity(BTC, 1, path_id=path_id),
+        quantity= 0.5 * BTC, # unlocked
+        reason="test"
+    )
+
+    assert wallet.total_balance == NegativeQuantity(BTC, -0.5)
+
+    wallet.deposit(
+        #quantity=Quantity(BTC, 1, path_id=path_id),
+        quantity= 0.5 * BTC, # unlocked
+        reason="test"
+    )
+    assert wallet.total_balance == 0 * BTC
+    
+
+def test_negative_transfer():
+
+    exchange = mock.Mock()
+    price = Decimal(9750.19).quantize(Decimal(10)**-2)
+    exchange.quote_price = lambda pair: price
+    exchange.name = "bitfinex"
+
+    order = mock.Mock()
+    order.path_id = "fake_id"
+
+    exchange_pair = ExchangePair(exchange, USD / BTC)
+
+    source = MarginWallet(exchange, NegativeQuantity(BTC, 0))
+    source.lock( 0.5 * BTC, order, "test")
+
+    target = Wallet(exchange, 0 * USD)
+
+    quantity = ( 0.49 * BTC).lock_for("fake_id")
+    commission = (0.01 * BTC).lock_for("fake_id")
+
+    t = MarginWallet.transfer(source,
+                    target,
+                    quantity,
+                    commission,
+                    exchange_pair,
+                    "transfer")
+    
+    tqty: Quantity = Quantity(USD, 4777.59, "fake_id")
+    sqty: NegativeQuantity = NegativeQuantity(BTC, -0.5)
+    assert target.total_balance.as_float() ==  tqty.as_float()
+    assert source.total_balance.as_float() ==  sqty.as_float()
+
+    # short again
+    source.lock(0.5 * BTC, order, "test")
+
+    t = MarginWallet.transfer(source,
+                    target,
+                    quantity,
+                    commission,
+                    exchange_pair,
+                    "transfer")
+    
+    tqty: Quantity = Quantity(USD, 4777.59 * 2, "fake_id")
+    sqty: NegativeQuantity = NegativeQuantity(BTC, -1.0)
+    assert target.total_balance.as_float() ==  tqty.as_float()
+    assert source.total_balance.as_float() ==  sqty.as_float()
+
+    # transfer the other way
+    price = Decimal(9000).quantize(Decimal(10)**-2)
+    exchange.quote_price = lambda pair: price
+
+    source_2_bal = tqty.as_float()
+    source_2 = Wallet(exchange, source_2_bal * USD)
+    source_2.lock( abs(sqty.as_float()) * float(price) * USD, order, "test")
+
+    target_2 = source
+    t_val = abs(sqty.as_float()) * float(price)
+
+    quantity = NegativeQuantity(USD, t_val - t_val * 0.01).lock_for("fake_id")
+    commission = NegativeQuantity(USD, t_val * 0.01).lock_for("fake_id")
+
+    t = Wallet.transfer(source_2,
+                    target_2,
+                    quantity,
+                    commission,
+                    exchange_pair,
+                    "transfer")
+
+    assert source_2.total_balance.as_float() ==  Quantity(USD, 555.18).as_float()
+    assert target_2.total_balance.as_float() ==  NegativeQuantity(BTC, -0.01, "fake_id").as_float()
+    

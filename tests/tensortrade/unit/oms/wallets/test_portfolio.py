@@ -3,7 +3,8 @@ import pytest
 import unittest.mock as mock
 
 from tensortrade.core.base import Clock
-from tensortrade.oms.wallets import Wallet, Portfolio
+from tensortrade.oms.instruments.quantity import NegativeQuantity
+from tensortrade.oms.wallets import Wallet, MarginWallet, Portfolio
 from tensortrade.oms.instruments import USD, BTC, ETH, XRP, BCH
 
 
@@ -207,3 +208,14 @@ def test_remove_pair(portfolio, exchange):
     portfolio.remove_pair(exchange, BTC)
 
     assert wallet_btc not in portfolio.wallets
+
+def test_init_with_short_positions(exchange):
+    
+    portfolio = Portfolio(USD, wallets=[
+        Wallet(exchange, 1000 * USD),
+        MarginWallet(exchange, NegativeQuantity(BTC, -1))
+    ])
+    assert portfolio.base_instrument == USD
+    assert portfolio.base_balance == 1000 * USD
+    assert portfolio.initial_balance == 1000 * USD
+    assert len(portfolio.wallets) == 2

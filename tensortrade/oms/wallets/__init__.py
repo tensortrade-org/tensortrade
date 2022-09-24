@@ -1,4 +1,4 @@
-from .wallet import Wallet
+from .wallet import Wallet, MarginWallet
 from .portfolio import Portfolio
 
 

@@ -187,6 +187,19 @@ class InsufficientFunds(Exception):
             *args
         )
 
+# class ShortAgainstTheBoxException(Exception):
+#     """
+#     Raised when shorting against the box.
+#     More details: https://www.investopedia.com/terms/s/sellagainstthebox.asp
+
+#     Parameters
+#     ----------
+#     """
+#     def __init__(self, balance: 'Quantity', size: 'Quantity', *args) -> None:
+#         super().__init__(
+#             "Must sell the remaining {} balance first before shorting {}.".format(balance, size),
+#             *args
+#         )
 
 # =============================================================================
 # Trading Pair Exceptions
