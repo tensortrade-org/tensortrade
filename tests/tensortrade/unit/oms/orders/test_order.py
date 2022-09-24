@@ -713,6 +713,8 @@ def test_complete_shorting_order(mock_order_listener_class,
                   quantity=0.5 * BTC,
                   portfolio=portfolio,
                   price=Decimal(7000.00))
+    assert order.quantity.as_float() == 0.5
+    assert order.remaining.as_float() == 0.5
 
     listener = mock_order_listener_class.return_value
     listener.on_complete = mock.Mock(return_value=None)

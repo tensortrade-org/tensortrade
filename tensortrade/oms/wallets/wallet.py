@@ -112,7 +112,7 @@ class Wallet(Identifiable):
             raise DoubleLockedQuantity(quantity)
 
         if quantity > self.balance:
-            if (quantity-self.balance)>Decimal(10)**(-self.instrument.precision+2):
+            if (quantity-self.balance)>Decimal(10)**(-(self.instrument.precision+2)):
                 raise InsufficientFunds(self.balance, quantity)
             else:
                 quantity = self.balance
