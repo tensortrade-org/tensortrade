@@ -3,7 +3,7 @@ from abc import abstractmethod
 from itertools import product
 from typing import Union, List, Any
 
-from gym.spaces import Space, Discrete
+from gymnasium.spaces import Space, Discrete
 
 from tensortrade.core import Clock
 from tensortrade.env.generic import ActionScheme, TradingEnv

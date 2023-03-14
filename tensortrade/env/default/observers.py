@@ -6,7 +6,7 @@ import datetime as dt
 import numpy as np
 import pandas as pd
 
-from gym.spaces import Box, Space
+from gymnasium.spaces import Box, Space
 from random import randrange
 
 

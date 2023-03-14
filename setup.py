@@ -48,7 +48,7 @@ setup(
     install_requires=[
         'numpy>=1.17.0',
         'pandas>=0.25.0',
-        'gym>=0.15.7',
+        'gymnasium>=0.26',
         'pyyaml>=5.1.2',
         'stochastic>=0.6.0',
         'tensorflow>=2.7.0',
