@@ -81,14 +81,6 @@ class TradingEnv(gymnasium.Env, TimeIndexed):
         self.min_periods = min_periods
         self.random_start_pct = random_start_pct
 
-        # Register the environment in Gym and fetch spec
-        gymnasium.envs.register(
-            id='TensorTrade-v0',
-            entry_point='tensortrade.env.generic.environment:TradingEnv',
-            max_episode_steps=max_episode_steps,
-        )
-        self.spec = gymnasium.spec(env_id='TensorTrade-v0')
-
         for c in self.components.values():
             c.clock = self.clock
 
@@ -136,14 +128,15 @@ class TradingEnv(gymnasium.Env, TimeIndexed):
 
         obs = self.observer.observe(self)
         reward = self.reward_scheme.reward(self)
-        done = self.stopper.stop(self)
+        terminated = self.stopper.stop(self)
+        truncated = False
         info = self.informer.info(self)
 
         self.clock.increment()
 
-        return obs, reward, done, info
+        return obs, reward, terminated, truncated, info
 
-    def reset(self) -> 'np.array':
+    def reset(self,seed = None, options = None) -> tuple["np.array", dict[str, Any]]:
         """Resets the environment.
 
         Returns
@@ -168,10 +161,11 @@ class TradingEnv(gymnasium.Env, TimeIndexed):
                     c.reset()
 
         obs = self.observer.observe(self)
+        info = self.informer.info(self)
 
         self.clock.increment()
 
-        return obs
+        return obs, info
 
     def render(self, **kwargs) -> None:
         """Renders the environment."""
