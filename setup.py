@@ -44,7 +44,7 @@ setup(
         if package.startswith('tensortrade')
     ],
     license='Apache 2.0',
-    python_requires='>=3.7',
+    python_requires='>=3.11.9',
     install_requires=[
         'numpy>=1.17.0',
         'pandas>=0.25.0',
@@ -83,9 +83,7 @@ setup(
         'Intended Audience :: Information Technology',
         'License :: OSI Approved :: Apache Software License',
         'Operating System :: OS Independent',
-        'Programming Language :: Python :: 3.7',
-        'Programming Language :: Python :: 3.8',
-        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.11',
         'Topic :: Office/Business :: Financial :: Investment',
         'Topic :: Office/Business :: Financial',
         'Topic :: Scientific/Engineering :: Information Analysis',
