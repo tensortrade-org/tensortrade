@@ -18,7 +18,7 @@ import logging
 from typing import Dict, Any, Tuple
 from random import randint
 
-import gym
+import gymnasium
 import numpy as np
 
 from tensortrade.core import TimeIndexed, Clock, Component
@@ -32,7 +32,7 @@ from tensortrade.env.generic import (
 )
 
 
-class TradingEnv(gym.Env, TimeIndexed):
+class TradingEnv(gymnasium.Env, TimeIndexed):
     """A trading environment made for use with Gym-compatible reinforcement
     learning algorithms.
 
@@ -82,12 +82,12 @@ class TradingEnv(gym.Env, TimeIndexed):
         self.random_start_pct = random_start_pct
 
         # Register the environment in Gym and fetch spec
-        gym.envs.register(
+        gymnasium.envs.register(
             id='TensorTrade-v0',
             entry_point='tensortrade.env.generic.environment:TradingEnv',
             max_episode_steps=max_episode_steps,
         )
-        self.spec = gym.spec(env_id='TensorTrade-v0')
+        self.spec = gymnasium.spec(env_id='TensorTrade-v0')
 
         for c in self.components.values():
             c.clock = self.clock
