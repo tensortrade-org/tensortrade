@@ -47,4 +47,11 @@ Given the choice of `return_algorithm` the reward is computed using the `risk_fr
 
 ## Position-based returns (PBR)
 
-Documentation is missing. Please [submit a pull request](https://github.com/tensortrade-org/tensortrade/pulls) and help us expand it!
+#### Computing Reward
+
+* Let <code>P<sub>t</sub></code> denote the price at time t, and <code>P<sub>t-1</sub></code> denote the price at time t-1
+* Let <code>X<sub>t</sub></code> denote the position at time t.
+* Let <code>R<sub>t</sub></code> denote the reward at time t.
+
+Then the reward is defined as <code>P<sub>t</sub> = (P<sub>t</sub> - P<sub>t-1</sub>) &middot; X<sub>t</sub></code>
+
