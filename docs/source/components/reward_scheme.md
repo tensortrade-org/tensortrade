@@ -53,5 +53,5 @@ Given the choice of `return_algorithm` the reward is computed using the `risk_fr
 * Let <code>X<sub>t</sub></code> denote the position at time t.
 * Let <code>R<sub>t</sub></code> denote the reward at time t.
 
-Then the reward is defined as <code>P<sub>t</sub> = (P<sub>t</sub> - P<sub>t-1</sub>) &middot; X<sub>t</sub></code>
+Then the reward is defined as <code>R<sub>t</sub> = (P<sub>t</sub> - P<sub>t-1</sub>) &middot; X<sub>t</sub></code>
 
