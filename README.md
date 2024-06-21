@@ -51,7 +51,7 @@ You can then alternatively install TensorTrade directly from the master code rep
 ```bash
 pip install git+https://github.com/tensortrade-org/tensortrade.git
 ```
-Alternatively you can clone\download the repository in your local environment an manually install the requirements, either the "base" ones, or the ones that also include requirements to run the examples in the documentation.
+Alternatively you can clone\download the repository in your local environment and manually install the requirements, either the "base" ones, or the ones that also include requirements to run the examples in the documentation.
 ```bash
 pip install -r requirements.txt
 pip install -r examples/requirements.txt
