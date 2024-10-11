@@ -65,8 +65,9 @@ class CryptoDataDownload:
 
         df = pd.read_csv(self.url + filename, skiprows=1)
         df = df[::-1]
-        df = df.drop(["symbol"], axis=1)
         df = df.rename({base_vc: new_base_vc, quote_vc: new_quote_vc, "Date": "date"}, axis=1)
+        df.columns = df.columns.str.lower()
+        df = df.drop(["symbol"], axis=1)
 
         df["unix"] = df["unix"].astype(int)
         df["unix"] = df["unix"].apply(
