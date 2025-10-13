@@ -44,7 +44,11 @@ def _create_wallet_source(wallet: 'Wallet', include_worth: bool = True) -> 'List
         streams += [free_balance, locked_balance, total_balance]
 
         if include_worth:
-            price = Stream.select(wallet.exchange.streams(), lambda node: node.name.endswith(symbol))
+            # Fix stream selector to handle both naming conventions
+            price = Stream.select(wallet.exchange.streams(), 
+                                lambda node: (node.name.endswith(f":{symbol}") or 
+                                            node.name.endswith(f"-{symbol}") or
+                                            node.name.endswith(symbol)))
             worth = price.mul(total_balance).rename('worth')
             streams += [worth]
 

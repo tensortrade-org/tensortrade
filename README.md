@@ -43,11 +43,36 @@ You can get started testing on Google Colab or your local machine, by viewing ou
 ## Installation
 
 TensorTrade requires Python >= 3.11.9 for all functionality to work as expected.
-You can install TensorTrade both as a pre-packaged solution by running the default setup command.
+
+### Quick Install
+
 ```bash
+# Create virtual environment
+python -m venv tensortrade-env
+source tensortrade-env/bin/activate  # On Windows: tensortrade-env\Scripts\activate
+
+# Install TensorTrade
 pip install tensortrade
 ```
-You can then alternatively install TensorTrade directly from the master code repository, pulling directly from the latest commits. This will give you the latest features\fixes, but it is highly untested code, so proceed at your own risk.
+
+### Development Install
+
+```bash
+# Clone repository
+git clone https://github.com/tensortrade-org/tensortrade.git
+cd tensortrade
+
+# Install dependencies
+pip install -r requirements.txt
+pip install -r examples/requirements.txt
+pip install -e .
+```
+
+For detailed installation instructions, troubleshooting, and platform-specific notes, see the [Environment Setup Guide](docs/ENVIRONMENT_SETUP.md).
+
+### Compatibility
+
+See the [Compatibility Matrix](COMPATIBILITY.md) for tested version combinations.
 ```bash
 pip install git+https://github.com/tensortrade-org/tensortrade.git
 ```
@@ -82,8 +107,36 @@ make run-docs
 To run the test suite, execute the following command.
 
 ```bash
+# Using make
 make run-tests
+
+# Or using pytest directly
+pytest tests/ -v
+
+# Run unit tests only
+pytest tests/tensortrade/unit -v
+
+# Run integration tests only
+pytest tests/tensortrade/integration -v
 ```
+
+## Troubleshooting
+
+### Common Issues
+
+**Issue: "No stream satisfies selector condition"**
+- **Solution**: This has been fixed in v1.0.4-dev1. Update to the latest version.
+
+**Issue: Ray installation fails**
+- **Solution**: Upgrade pip first: `pip install --upgrade pip`, then install Ray: `pip install ray[default,tune,rllib,serve]==2.37.0`
+
+**Issue: TensorFlow CUDA not working**
+- **Solution**: Install TensorFlow with CUDA support: `pip install tensorflow[and-cuda]==2.15.1`
+
+**Issue: NumPy version conflict**
+- **Solution**: Ensure NumPy < 2.0: `pip install "numpy>=1.26.4,<2.0" --force-reinstall`
+
+For more troubleshooting help, see the [Environment Setup Guide](docs/ENVIRONMENT_SETUP.md#troubleshooting).
 
 ## Support
 

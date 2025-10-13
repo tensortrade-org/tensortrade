@@ -1,6 +1,6 @@
 -r ../requirements.txt
 
-ray[default,tune,rllib,serve]==1.9.2
+ray[default,tune,rllib,serve]==2.37.0
 ccxt>=1.72.37
 jupyterlab>=1.1.4
 feature_engine
