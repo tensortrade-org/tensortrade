@@ -91,10 +91,11 @@ def test_runs_with_external_feed_only(portfolio):
     )
 
     done = False
-    obs = env.reset()
+    obs, info = env.reset()
     while not done:
         action = env.action_space.sample()
-        obs, reward, done, info = env.step(action)
+        obs, reward, terminated, truncated, info = env.step(action)
+        done = terminated or truncated
 
     assert obs.shape[0] == 50
 
@@ -142,9 +143,10 @@ def test_runs_with_random_start(portfolio):
     )
 
     done = False
-    obs = env.reset()
+    obs, info = env.reset()
     while not done:
         action = env.action_space.sample()
-        obs, reward, done, info = env.step(action)
+        obs, reward, terminated, truncated, info = env.step(action)
+        done = terminated or truncated
 
     assert obs.shape[0] == 50

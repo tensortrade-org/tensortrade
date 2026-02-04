@@ -5,52 +5,56 @@ This document provides tested version combinations for TensorTrade and its depen
 ## Tested Version Combinations
 
 ### Recommended Configuration (Latest)
-- **Python**: 3.11.9+
+- **Python**: 3.11 or 3.12 (NOT 3.14 - TensorFlow incompatible)
 - **TensorTrade**: 1.0.4-dev1
 - **Ray**: 2.37.0
-- **TensorFlow**: 2.15.1
-- **NumPy**: 1.26.4
-- **Pandas**: 2.2.3
-- **Gymnasium**: 0.28.1
-- **PyYAML**: 6.0.2
+- **TensorFlow**: 2.15.1+
+- **NumPy**: >=1.26.4, <2.0
+- **Pandas**: >=2.2.3, <3.0
+- **Gymnasium**: >=0.28.1, <1.0
+- **ta**: >=0.4.7
+- **PyYAML**: 6.0.2+
 
 ### Alternative Configurations
 
 #### For CUDA Support
-- **Python**: 3.11.9+
+- **Python**: 3.11 or 3.12
 - **TensorTrade**: 1.0.4-dev1
 - **Ray**: 2.37.0
-- **TensorFlow**: 2.15.1 (with CUDA 12.0+)
-- **NumPy**: 1.26.4
-- **Pandas**: 2.2.3
-- **Gymnasium**: 0.28.1
+- **TensorFlow**: 2.15.1+ (with CUDA 12.0+)
+- **NumPy**: >=1.26.4, <2.0
+- **Pandas**: >=2.2.3, <3.0
+- **Gymnasium**: >=0.28.1, <1.0
 
 #### For Google Colab
-- **Python**: 3.11.9+ (Colab default)
+- **Python**: 3.11+ (Colab default)
 - **TensorTrade**: 1.0.4-dev1
 - **Ray**: 2.37.0
-- **TensorFlow**: 2.15.1
-- **NumPy**: 1.26.4
-- **Pandas**: 2.2.3
-- **Gymnasium**: 0.28.1
+- **TensorFlow**: 2.15.1+
+- **NumPy**: >=1.26.4, <2.0
+- **Pandas**: >=2.2.3, <3.0
+- **Gymnasium**: >=0.28.1, <1.0
 
 ## Platform Support
 
 ### Windows 10/11
-- ✅ **Supported**: Python 3.11.9+, all dependencies
+- ✅ **Supported**: Python 3.11 or 3.12, all dependencies
 - ⚠️ **Note**: May require Visual Studio Build Tools for some packages
 
 ### Linux (Ubuntu 20.04+)
-- ✅ **Supported**: Python 3.11.9+, all dependencies
+- ✅ **Supported**: Python 3.11 or 3.12, all dependencies
 - ✅ **Recommended**: For production deployments
 
 ### macOS (12.0+)
-- ✅ **Supported**: Python 3.11.9+, all dependencies
+- ✅ **Supported**: Python 3.11 or 3.12, all dependencies
 - ⚠️ **Note**: May require Xcode Command Line Tools
 
 ### Google Colab
 - ✅ **Supported**: With specific setup instructions
 - ⚠️ **Note**: Some features may be limited due to Colab restrictions
+
+### NOT Supported
+- ❌ **Python 3.14**: TensorFlow does not yet support Python 3.14
 
 ## Breaking Changes
 
@@ -86,25 +90,41 @@ pip install tensorflow[and-cuda]==2.15.1
 pip install "numpy>=1.26.4,<2.0"
 ```
 
-#### 4. Importlib-metadata Issues
+#### 4. Pandas Compatibility
+```bash
+# Ensure Pandas < 3.0 for API compatibility:
+pip install "pandas>=2.2.3,<3.0"
+```
+
+#### 5. Importlib-metadata Issues
 ```bash
 # If you encounter EntryPoints errors:
 pip install "importlib-metadata>=4.13.0,<6.0"
 ```
 
+#### 6. Python 3.14 Not Supported
+```bash
+# TensorFlow doesn't support Python 3.14 yet
+# Use Python 3.11 or 3.12 instead:
+python3.12 -m venv tensortrade-env
+```
+
 ### Environment Setup
 
-#### Quick Setup
+#### Quick Setup (Recommended)
 ```bash
-# Create virtual environment
-python -m venv tensortrade-env
+# Use Python 3.11 or 3.12 (NOT 3.14)
+python3.12 -m venv tensortrade-env
 source tensortrade-env/bin/activate  # On Windows: tensortrade-env\Scripts\activate
 
 # Install TensorTrade
 pip install --upgrade pip
 pip install -r requirements.txt
-pip install -r examples/requirements.txt
 pip install -e .
+
+# Verify installation (232 tests should pass)
+pip install pytest
+pytest tests/tensortrade/unit -v
 ```
 
 #### Google Colab Setup
@@ -137,7 +157,7 @@ pip install -e .
 If you encounter compatibility issues:
 
 1. Check this compatibility matrix first
-2. Verify your Python version (3.11.9+ required)
+2. Verify your Python version (3.11 or 3.12 required, NOT 3.14)
 3. Try the recommended configuration
 4. Check the troubleshooting section
 5. Open an issue on GitHub with your environment details

@@ -450,13 +450,19 @@ class IntradayObserver(Observer):
         """
         return self.feed.has_next() and not self.stop
 
-    def reset(self) -> None:
-        """Resets the observer"""
+    def reset(self, random_start: int = 0) -> None:
+        """Resets the observer
+
+        Parameters
+        ----------
+        random_start : int
+            The index to start from (for compatibility with TensorTradeObserver).
+        """
         self.renderer_history = []
         self.history.reset()
 
         if self.randomize or not self.feed.has_next():
-            self.feed.reset()
+            self.feed.reset(random_start)
             if self.randomize:
                 episode_num = 0
                 while episode_num < randrange(self.num_episodes):

@@ -30,15 +30,15 @@ class TestStreamSelector:
         """Test stream selector works with exchange:symbol naming convention"""
         # Create exchange with stream using colon naming
         exchange = Exchange("simulated", service=execute_order)
-        price_stream = Stream.source([100, 101, 102], dtype="float").rename("USD-BTC")
+        price_stream = Stream.source([100, 101, 102], dtype="float").rename("USD:BTC")
         exchange(price_stream)
-        
-        # Create wallet
-        wallet = Wallet(exchange, 1000 * USD)
-        
+
+        # Create wallet with BTC (the quote currency in the stream)
+        wallet = Wallet(exchange, 10 * BTC)
+
         # Test that stream selector can find the price stream
         streams = _create_wallet_source(wallet, include_worth=True)
-        
+
         # Should not raise "No stream satisfies selector condition" error
         assert len(streams) > 0
         

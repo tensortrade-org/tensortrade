@@ -80,6 +80,7 @@ class TradingEnv(gymnasium.Env, TimeIndexed):
         self.informer = informer
         self.renderer = renderer
         self.min_periods = min_periods
+        self.max_episode_steps = max_episode_steps
         self.random_start_pct = random_start_pct
         self.device = device
 
@@ -155,7 +156,9 @@ class TradingEnv(gymnasium.Env, TimeIndexed):
         obs = self._ensure_numpy(obs)
         reward = self.reward_scheme.reward(self)
         terminated = self.stopper.stop(self)
-        truncated = False
+        # Check if episode should be truncated due to max steps
+        truncated = (self.max_episode_steps is not None and
+                     self.clock.step >= self.max_episode_steps)
         info = self.informer.info(self)
 
         self.clock.increment()

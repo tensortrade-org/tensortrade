@@ -4,17 +4,34 @@ This guide provides step-by-step instructions for setting up a working TensorTra
 
 ## Prerequisites
 
-- **Python 3.11.9 or higher** (required)
+- **Python 3.11 or 3.12** (required - Python 3.14 is NOT supported due to TensorFlow compatibility)
 - **pip** (latest version recommended)
 - **Virtual environment tool** (venv, conda, or virtualenv)
 
-## Quick Start
+## Quick Start (Recommended)
 
-### Option 1: Using venv (Recommended)
+```bash
+# Use Python 3.11 or 3.12 (NOT 3.14)
+python3.12 -m venv tensortrade-env
+source tensortrade-env/bin/activate  # Windows: tensortrade-env\Scripts\activate
+
+# Install
+pip install --upgrade pip
+pip install -r requirements.txt
+pip install -e .
+
+# Verify (232 tests should pass)
+pip install pytest
+pytest tests/tensortrade/unit -v
+```
+
+## Alternative Installation Methods
+
+### Option 1: Using venv
 
 ```bash
 # Create virtual environment
-python -m venv tensortrade-env
+python3.12 -m venv tensortrade-env
 
 # Activate virtual environment
 # On Windows:
@@ -36,8 +53,8 @@ pip install -r examples/requirements.txt
 ### Option 2: Using Conda
 
 ```bash
-# Create conda environment
-conda create -n tensortrade python=3.11
+# Create conda environment (use 3.11 or 3.12)
+conda create -n tensortrade python=3.12
 
 # Activate environment
 conda activate tensortrade
@@ -68,10 +85,11 @@ pip install -r examples/requirements.txt
 
 ```bash
 python --version
-# Should output: Python 3.11.9 or higher
+# Should output: Python 3.11.x or 3.12.x
+# Note: Python 3.14 is NOT supported (TensorFlow incompatibility)
 ```
 
-If you have an older version, download Python 3.11+ from [python.org](https://www.python.org/downloads/).
+If you have an older version, download Python 3.11 or 3.12 from [python.org](https://www.python.org/downloads/).
 
 ### Step 2: Create Virtual Environment
 
@@ -81,11 +99,11 @@ If you have an older version, download Python 3.11+ from [python.org](https://ww
 - Makes it easy to reproduce the environment
 
 ```bash
-# Using venv
-python -m venv tensortrade-env
+# Using venv (use python3.11 or python3.12)
+python3.12 -m venv tensortrade-env
 
 # Using conda
-conda create -n tensortrade python=3.11
+conda create -n tensortrade python=3.12
 ```
 
 ### Step 3: Activate Virtual Environment
@@ -113,9 +131,10 @@ pip install -r requirements.txt
 
 **Core dependencies installed:**
 - numpy>=1.26.4,<2.0
-- pandas>=2.2.3
-- gymnasium>=0.28.1
+- pandas>=2.2.3,<3.0
+- gymnasium>=0.28.1,<1.0
 - tensorflow>=2.15.1
+- ta>=0.4.7
 - And more...
 
 ### Step 5: Install TensorTrade
@@ -138,9 +157,9 @@ pip install -r examples/requirements.txt
 - ray[default,tune,rllib,serve]==2.37.0
 - ccxt>=1.72.37
 - jupyterlab>=1.1.4
-- pandas_ta
-- quantstats
-- And more...
+- scikit-learn
+- optuna
+- feature_engine
 
 ### Step 7: Verify Installation
 
@@ -199,6 +218,20 @@ xcode-select --install
 
 ## Troubleshooting
 
+### Issue: TensorFlow Not Found (Python 3.14)
+
+**Problem:** `No matching distribution found for tensorflow>=2.15.1`
+
+**Solution:** TensorFlow does not yet support Python 3.14. Use Python 3.11 or 3.12 instead:
+```bash
+# Check your Python version
+python --version
+
+# If using 3.14, switch to 3.12
+python3.12 -m venv tensortrade-env
+source tensortrade-env/bin/activate
+```
+
 ### Issue: Ray Installation Fails
 
 **Solution:**
@@ -235,6 +268,15 @@ python -c "import tensorflow as tf; print(tf.config.list_physical_devices('GPU')
 ```bash
 # Ensure NumPy < 2.0 for TensorFlow compatibility
 pip install "numpy>=1.26.4,<2.0" --force-reinstall
+```
+
+### Issue: Pandas API Errors (pct_change, ewm)
+
+**Problem:** Tests fail with pandas deprecation warnings or API errors.
+
+**Solution:** TensorTrade requires pandas < 3.0:
+```bash
+pip install "pandas>=2.2.3,<3.0" --force-reinstall
 ```
 
 ### Issue: importlib-metadata Error

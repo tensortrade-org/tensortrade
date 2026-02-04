@@ -8,6 +8,12 @@ dist
 build
 tags
 
+tensortrade-env/
+ray_results/
+train.csv
+test.csv
+valid.csv
+
 # test-related
 .coverage
 .cache

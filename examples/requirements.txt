@@ -5,8 +5,7 @@ ccxt>=1.72.37
 jupyterlab>=1.1.4
 feature_engine
 scikit-learn
+torch>=2.0.0
 optuna
-quantstats
-# ta>=0.4.7  # Broken metadata?
-# TA-Lib  # Broken metadata?
-pandas_ta
+# quantstats - has build issues on Python 3.12+
+# pandas_ta - requires numpy>=2.0, incompatible with tensortrade

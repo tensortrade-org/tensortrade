@@ -42,30 +42,34 @@ You can get started testing on Google Colab or your local machine, by viewing ou
 
 ## Installation
 
-TensorTrade requires Python >= 3.11.9 for all functionality to work as expected.
+TensorTrade requires **Python 3.11 or 3.12** (Python 3.14 is not supported due to TensorFlow compatibility).
 
-### Quick Install
+### Quick Start (Recommended)
 
 ```bash
-# Create virtual environment
-python -m venv tensortrade-env
-source tensortrade-env/bin/activate  # On Windows: tensortrade-env\Scripts\activate
+# Use Python 3.11 or 3.12
+python3.12 -m venv tensortrade-env
+source tensortrade-env/bin/activate  # Windows: tensortrade-env\Scripts\activate
 
-# Install TensorTrade
-pip install tensortrade
+pip install --upgrade pip
+pip install -r requirements.txt
+pip install -e .
+
+# Verify installation (232 tests should pass)
+pip install pytest
+pytest tests/tensortrade/unit -v
 ```
 
-### Development Install
+### Install from GitHub
 
 ```bash
-# Clone repository
-git clone https://github.com/tensortrade-org/tensortrade.git
-cd tensortrade
+pip install git+https://github.com/tensortrade-org/tensortrade.git
+```
 
-# Install dependencies
-pip install -r requirements.txt
+### Install Example Dependencies (Optional)
+
+```bash
 pip install -r examples/requirements.txt
-pip install -e .
 ```
 
 For detailed installation instructions, troubleshooting, and platform-specific notes, see the [Environment Setup Guide](docs/ENVIRONMENT_SETUP.md).
@@ -73,14 +77,6 @@ For detailed installation instructions, troubleshooting, and platform-specific n
 ### Compatibility
 
 See the [Compatibility Matrix](COMPATIBILITY.md) for tested version combinations.
-```bash
-pip install git+https://github.com/tensortrade-org/tensortrade.git
-```
-Alternatively you can clone\download the repository in your local environment an manually install the requirements, either the "base" ones, or the ones that also include requirements to run the examples in the documentation.
-```bash
-pip install -r requirements.txt
-pip install -r examples/requirements.txt
-```
 
 ## Docker
 

@@ -145,10 +145,14 @@ class RiskAdjustedReturns(TensorTradeRewardScheme):
         .. [1] https://en.wikipedia.org/wiki/Sortino_ratio
         """
         downside_returns = returns.copy()
-        downside_returns[returns < self._target_returns] = returns ** 2
+        # Only square the returns that are below target (downside)
+        mask = returns < self._target_returns
+        downside_returns[mask] = returns[mask] ** 2
+        # Set non-downside returns to 0 for proper downside deviation calculation
+        downside_returns[~mask] = 0
 
         expected_return = np.mean(returns)
-        downside_std = np.sqrt(np.std(downside_returns))
+        downside_std = np.sqrt(np.mean(downside_returns))
 
         return (expected_return - self._risk_free_rate + 1e-9) / (downside_std + 1e-9)
 
