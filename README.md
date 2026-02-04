@@ -10,18 +10,21 @@
 [![Documentation Status](https://readthedocs.org/projects/tensortrade/badge/?version=latest)](https://tensortrade.org)
 [![Apache License](https://img.shields.io/github/license/tensortrade-org/tensortrade.svg?color=brightgreen)](http://www.apache.org/licenses/LICENSE-2.0)
 [![Discord](https://img.shields.io/discord/592446624882491402.svg?color=brightgreen)](https://discord.gg/ZZ7BGWh)
-[![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/downloads/release/python-3110/)
+[![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/release/python-3120/)
 
 TensorTrade is an open-source Python framework for building, training, and evaluating reinforcement learning agents for algorithmic trading. The framework provides composable components for environments, action schemes, reward functions, and data feeds that can be combined to create custom trading systems.
 
 ## Quick Start
 
 ```bash
-# Install
+# Requires Python 3.12+
 python3.12 -m venv tensortrade-env && source tensortrade-env/bin/activate
-pip install -r requirements.txt && pip install -e .
+pip install -e .
 
-# Run
+# For training with Ray/RLlib (recommended)
+pip install -r examples/requirements.txt
+
+# Run training
 python examples/training/train_simple.py
 ```
 

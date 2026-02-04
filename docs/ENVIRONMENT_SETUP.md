@@ -15,11 +15,23 @@ This guide provides step-by-step instructions for setting up a working TensorTra
 python3.12 -m venv tensortrade-env
 source tensortrade-env/bin/activate  # Windows: tensortrade-env\Scripts\activate
 
-# Install
+# Install core library
 pip install --upgrade pip
 pip install -e .
 
-# Verify (251 tests should pass, 2 skipped)
+# Verify (232 unit tests should pass, 2 skipped)
+pytest tests/tensortrade/unit -v
+```
+
+## Training with Ray/RLlib
+
+For reinforcement learning training, install additional dependencies:
+
+```bash
+# Install Ray with RLlib and other training dependencies
+pip install -r examples/requirements.txt
+
+# Verify full test suite including RLlib integration (251 passed, 2 skipped)
 pytest tests/ -v
 ```
 
