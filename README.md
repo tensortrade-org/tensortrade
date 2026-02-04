@@ -32,7 +32,7 @@ Read [the documentation](https://www.tensortrade.org/en/latest/).
 
 ```bash
 # Run a simple training demo showing wallet balances and trades
-python train_simple.py
+python examples/training/train_simple.py
 ```
 
 ### Distributed Training with Ray RLlib
@@ -42,7 +42,7 @@ python train_simple.py
 pip install -r examples/requirements.txt
 
 # Run distributed PPO training with wallet tracking
-python train_ray_long.py
+python examples/training/train_ray_long.py
 ```
 
 **Sample output:**
@@ -63,6 +63,14 @@ The framework supports:
 - **BSH** (Buy/Sell/Hold) action scheme
 - Parallel training across multiple CPUs/GPUs
 - Custom callbacks for wallet/portfolio tracking
+
+## Training Experiments
+
+We've conducted extensive RL training experiments documented in [docs/EXPERIMENTS.md](docs/EXPERIMENTS.md).
+
+**Key Finding:** The agent CAN predict market direction profitably (+$239 profit with zero commission, beating Buy-and-Hold by $594). The challenge is overtrading - commission costs currently wipe out the direction prediction profits.
+
+See [examples/training/](examples/training/) for all training scripts and the recommended workflow.
 
 ## Guiding principles
 

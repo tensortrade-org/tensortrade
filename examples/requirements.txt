@@ -1,11 +1,11 @@
 -r ../requirements.txt
 
-ray[default,tune,rllib,serve]==2.37.0
+ray[default,tune,rllib,serve]>=2.10.0,<3.0
 ccxt>=1.72.37
-jupyterlab>=1.1.4
-feature_engine
-scikit-learn
+jupyterlab>=3.0.0
+feature_engine>=1.6.0
+scikit-learn>=1.3.0
 torch>=2.0.0
-optuna
+optuna>=3.0.0
 # quantstats - has build issues on Python 3.12+
 # pandas_ta - requires numpy>=2.0, incompatible with tensortrade

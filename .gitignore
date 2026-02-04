@@ -1,35 +1,56 @@
-*.ipynb_checkpoints
-*.DS_Store
+# Python
 *.pyc
+*.pyo
+*.pyd
+__pycache__/
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Editor/IDE
 *.swp
-*__pycache__
-*.egg-info
-dist
-build
+*.swo
+.idea/
+.vscode/
+*.sublime-*
 tags
 
-tensortrade-env/
-ray_results/
-train.csv
-test.csv
-valid.csv
-eval_*.csv
+# OS
+.DS_Store
+Thumbs.db
 
-# test-related
+# Jupyter
+.ipynb_checkpoints/
+
+# Testing
 .coverage
-.cache
-.pytest_cache
-.mypy_cache
+.cache/
+.pytest_cache/
+.mypy_cache/
+htmlcov/
 *.html
 
-# developer environments
-.idea
-.vscode
+# Virtual environments
+venv/
+tensortrade-env/
+.env/
+env/
+
+# Training artifacts
+ray_results/
+
+# Temporary data files (root level only)
+/*.csv
+!examples/**/*.csv
+
+# IDE memory/context
+memory-bank/
+
+# Agent storage
+examples/agents/
+examples/training_logs/
+
+# Pipenv
 Pipfile
-
-# agent storage
-examples/agents
-examples/training_logs
-
-# virtual environment
-venv
+Pipfile.lock

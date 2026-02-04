@@ -292,22 +292,22 @@ Net result: -$1,800
 ### Quick Start
 ```bash
 # Simple local training
-python train_simple.py
+python examples/training/train_simple.py
 
 # Ray RLlib with wallet tracking
-python train_ray_long.py
+python examples/training/train_ray_long.py
 
 # Optuna hyperparameter optimization
-python train_optuna.py
+python examples/training/train_optuna.py
 
 # AdvancedPBR reward scheme (trade penalty + hold bonus)
-python train_advanced.py
+python examples/training/train_advanced.py
 
 # Best configuration (commission tuning analysis)
-python train_best.py
+python examples/training/train_best.py
 
 # Profit-focused (Sharpe ratio + bear market training)
-python train_profit.py
+python examples/training/train_profit.py
 ```
 
 ### Recommended Workflow
