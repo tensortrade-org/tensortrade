@@ -360,8 +360,7 @@ pytest tests/ -v
 
 If you encounter issues not covered in this guide:
 
-1. Check the [Compatibility Matrix](../COMPATIBILITY.md)
-2. Search [GitHub Issues](https://github.com/tensortrade-org/tensortrade/issues)
+1. Search [GitHub Issues](https://github.com/tensortrade-org/tensortrade/issues)
 3. Ask on [Discord](https://discord.gg/ZZ7BGWh)
 4. Open a new issue with:
    - Your Python version

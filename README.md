@@ -1,4 +1,10 @@
-﻿# [TensorTrade: Trade Efficiently with Reinforcement Learning](https://towardsdatascience.com/trade-smarter-w-reinforcement-learning-a5e91163f315?source=friends_link&sk=ea3afd0a305141eb9147be4718826dfb)
+<p align="center">
+  <img src="docs/source/_static/logo.jpg" width="200" alt="TensorTrade Logo">
+</p>
+
+# TensorTrade
+
+**Train RL agents to trade. Can they beat Buy-and-Hold?**
 
 [![Build Status](https://travis-ci.com/tensortrade-org/tensortrade.svg?branch=master)](https://travis-ci.org/tensortrade-org/tensortrade)
 [![Documentation Status](https://readthedocs.org/projects/tensortrade/badge/?version=latest)](https://tensortrade.org)
@@ -6,194 +12,190 @@
 [![Discord](https://img.shields.io/discord/592446624882491402.svg?color=brightgreen)](https://discord.gg/ZZ7BGWh)
 [![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/downloads/release/python-3110/)
 
----
+TensorTrade is an open-source Python framework for building, training, and evaluating reinforcement learning agents for algorithmic trading. The framework provides composable components for environments, action schemes, reward functions, and data feeds that can be combined to create custom trading systems.
 
-<div align="center">
-  <img src="https://github.com/notadamking/tensortrade/blob/master/docs/source/_static/logo.jpg">
-</div>
-
----
-
-**TensorTrade is still in Beta, meaning it should be used very cautiously if used in production, as it may contain bugs.**
-
-TensorTrade is an open source Python framework for building, training, evaluating, and deploying robust trading algorithms using reinforcement learning. The framework focuses on being highly composable and extensible, to allow the system to scale from simple trading strategies on a single CPU, to complex investment strategies run on a distribution of HPC machines.
-
-Under the hood, the framework uses many of the APIs from existing machine learning libraries to maintain high quality data pipelines and learning models. One of the main goals of TensorTrade is to enable fast experimentation with algorithmic trading strategies, by leveraging the existing tools and pipelines provided by `numpy`, `pandas`, `gym`, `keras`, and `tensorflow`.
-
-Every piece of the framework is split up into re-usable components, allowing you to take advantage of the general use components built by the community, while keeping your proprietary features private. The aim is to simplify the process of testing and deploying robust trading agents using deep reinforcement learning, to allow you and I to focus on creating profitable strategies.
-
-_The goal of this framework is to enable fast experimentation, while maintaining production-quality data pipelines._
-
-Read [the documentation](https://www.tensortrade.org/en/latest/).
-
-## Quick Start: Training an RL Agent
-
-### Simple Local Training
+## Quick Start
 
 ```bash
-# Run a simple training demo showing wallet balances and trades
+# Install
+python3.12 -m venv tensortrade-env && source tensortrade-env/bin/activate
+pip install -r requirements.txt && pip install -e .
+
+# Run
 python examples/training/train_simple.py
 ```
 
-### Distributed Training with Ray RLlib
+## Documentation & Tutorials
 
-```bash
-# Install Ray dependencies
-pip install -r examples/requirements.txt
+📚 **[Tutorial Index](docs/tutorials/index.md)** — Start here for the complete learning curriculum.
 
-# Run distributed PPO training with wallet tracking
-python examples/training/train_ray_long.py
+### Foundations
+- [The Three Pillars](docs/tutorials/01-foundations/01-three-pillars.md) — RL + Trading + Data concepts
+- [Architecture](docs/tutorials/01-foundations/02-architecture.md) — How components work together
+- [Your First Run](docs/tutorials/01-foundations/03-your-first-run.md) — Run and understand output
+
+### Domain Knowledge
+- [Trading for RL Practitioners](docs/tutorials/02-domains/track-a-trading-for-rl/01-trading-basics.md)
+- [RL for Traders](docs/tutorials/02-domains/track-b-rl-for-traders/01-rl-fundamentals.md)
+- [Common Failures](docs/tutorials/02-domains/track-b-rl-for-traders/02-common-failures.md) — Critical pitfalls to avoid
+- [Full Introduction](docs/tutorials/02-domains/track-c-full-intro/README.md) — New to both domains
+
+### Core Components
+- [Action Schemes](docs/tutorials/03-components/01-action-schemes.md) — BSH and order execution
+- [Reward Schemes](docs/tutorials/03-components/02-reward-schemes.md) — Why PBR works
+- [Observers & Feeds](docs/tutorials/03-components/03-observers-feeds.md) — Feature engineering
+
+### Training
+- [First Training](docs/tutorials/04-training/01-first-training.md) — Train with Ray RLlib
+- [Ray RLlib Deep Dive](docs/tutorials/04-training/02-ray-rllib.md) — Configuration options
+- [Optuna Optimization](docs/tutorials/04-training/03-optuna.md) — Hyperparameter tuning
+
+### Advanced Topics
+- [Overfitting](docs/tutorials/05-advanced/01-overfitting.md) — Detection and prevention
+- [Commission Analysis](docs/tutorials/05-advanced/02-commission.md) — Key research findings
+- [Walk-Forward Validation](docs/tutorials/05-advanced/03-walk-forward.md) — Proper evaluation
+
+### Additional Resources
+- [Experiments Log](docs/EXPERIMENTS.md) — Full research documentation
+- [Environment Setup](docs/ENVIRONMENT_SETUP.md) — Detailed installation guide
+- [API Reference](https://www.tensortrade.org/en/latest/)
+
+---
+
+## Research Findings
+
+We conducted extensive experiments training PPO agents on BTC/USD. Key results:
+
+| Configuration | Test P&L | vs Buy-and-Hold |
+|---------------|----------|-----------------|
+| Agent (0% commission) | +$239 | +$594 |
+| Agent (0.1% commission) | -$650 | -$295 |
+| Buy-and-Hold | -$355 | — |
+
+The agent demonstrates directional prediction capability at zero commission. The primary challenge is trading frequency—commission costs currently exceed prediction profits. See [EXPERIMENTS.md](docs/EXPERIMENTS.md) for methodology and detailed analysis.
+
+---
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        TradingEnv                               │
+│                                                                 │
+│   Observer ──────> Agent ──────> ActionScheme ──────> Portfolio │
+│   (features)      (policy)      (BSH/Orders)        (wallets)  │
+│       ^                                                  │      │
+│       └──────────── RewardScheme <───────────────────────┘      │
+│                        (PBR)                                    │
+│                                                                 │
+│   DataFeed ──────> Exchange ──────> Broker ──────> Trades       │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
-**Sample output:**
-```
-Iter | Episodes |   Avg Reward |  Avg Net Worth |      Avg P&L | Progress
-   1 |       16 |          -16 |         $7,810 |      $-2,190 | #########
-  25 |       16 |     +100,661 |        $11,936 |      $+1,936 | ######################### *BEST*
- 100 |       16 |     +125,584 |        $13,221 |      $+3,221 | ######################### *BEST*
+| Component | Purpose | Default |
+|-----------|---------|---------|
+| ActionScheme | Converts agent output to orders | BSH (Buy/Sell/Hold) |
+| RewardScheme | Computes learning signal | PBR (Position-Based Returns) |
+| Observer | Generates observations | Windowed features |
+| Portfolio | Manages wallets and positions | USD + BTC |
+| Exchange | Simulates execution | Configurable commission |
 
-Training Duration: 3.1 minutes
-Reward Improvement: +68.8%
-Avg P&L: $+2,174 (21.7% return)
-```
+---
 
-The framework supports:
-- **PPO, DQN, A2C** and other algorithms via Ray RLlib
-- **PBR** (Position-Based Returns) reward scheme
-- **BSH** (Buy/Sell/Hold) action scheme
-- Parallel training across multiple CPUs/GPUs
-- Custom callbacks for wallet/portfolio tracking
+## Training Scripts
 
-## Training Experiments
+| Script | Description |
+|--------|-------------|
+| `examples/training/train_simple.py` | Basic demo with wallet tracking |
+| `examples/training/train_ray_long.py` | Distributed training with Ray RLlib |
+| `examples/training/train_optuna.py` | Hyperparameter optimization |
+| `examples/training/train_best.py` | Best configuration from experiments |
 
-We've conducted extensive RL training experiments documented in [docs/EXPERIMENTS.md](docs/EXPERIMENTS.md).
-
-**Key Finding:** The agent CAN predict market direction profitably (+$239 profit with zero commission, beating Buy-and-Hold by $594). The challenge is overtrading - commission costs currently wipe out the direction prediction profits.
-
-See [examples/training/](examples/training/) for all training scripts and the recommended workflow.
-
-## Guiding principles
-
-_Inspired by [Keras' guiding principles](https://github.com/keras-team/keras)._
-
-- **User friendliness.** TensorTrade is an API designed for human beings, not machines. It puts user experience front and center. TensorTrade follows best practices for reducing cognitive load: it offers consistent & simple APIs, it minimizes the number of user actions required for common use cases, and it provides clear and actionable feedback upon user error.
-
-- **Modularity.** A trading environment is a conglomeration of fully configurable modules that can be plugged together with as few restrictions as possible. In particular, exchanges, feature pipelines, action schemes, reward schemes, trading agents, and performance reports are all standalone modules that you can combine to create new trading environments.
-
-- **Easy extensibility.** New modules are simple to add (as new classes and functions), and existing modules provide ample examples. To be able to easily create new modules allows for total expressiveness, making TensorTrade suitable for advanced research and production use.
-
-## Getting Started
-
-You can get started testing on Google Colab or your local machine, by viewing our [many examples](https://github.com/tensortrade-org/tensortrade/tree/master/examples)
+---
 
 ## Installation
 
-TensorTrade requires **Python 3.11 or 3.12** (Python 3.14 is not supported due to TensorFlow compatibility).
-
-### Quick Start (Recommended)
+**Requirements:** Python 3.11 or 3.12
 
 ```bash
-# Use Python 3.11 or 3.12
+# Create environment
 python3.12 -m venv tensortrade-env
 source tensortrade-env/bin/activate  # Windows: tensortrade-env\Scripts\activate
 
+# Install
 pip install --upgrade pip
 pip install -r requirements.txt
 pip install -e .
 
-# Verify installation (232 tests should pass)
-pip install pytest
+# Verify
 pytest tests/tensortrade/unit -v
-```
 
-### Install from GitHub
-
-```bash
-pip install git+https://github.com/tensortrade-org/tensortrade.git
-```
-
-### Install Example Dependencies (Optional)
-
-```bash
+# Training dependencies (optional)
 pip install -r examples/requirements.txt
 ```
 
-For detailed installation instructions, troubleshooting, and platform-specific notes, see the [Environment Setup Guide](docs/ENVIRONMENT_SETUP.md).
+See [ENVIRONMENT_SETUP.md](docs/ENVIRONMENT_SETUP.md) for platform-specific instructions and troubleshooting.
 
-### Compatibility
-
-See the [Compatibility Matrix](COMPATIBILITY.md) for tested version combinations.
-
-## Docker
-
-To run the commands below, ensure Docker is installed. Visit https://docs.docker.com/install/ for more information.
-
-### Run Jupyter Notebooks
-
-To run a jupyter notebook in your browser, execute the following command and visit the `http://127.0.0.1:8888/?token=...` link printed to the command line.
+### Docker
 
 ```bash
-make run-notebook
+make run-notebook  # Jupyter
+make run-docs      # Documentation
+make run-tests     # Test suite
 ```
 
-### Build Documentation
+---
 
-To build the HTML documentation, execute the following command.
+## Project Structure
 
-```bash
-make run-docs
+```
+tensortrade/
+├── tensortrade/           # Core library
+│   ├── env/              # Trading environments
+│   ├── feed/             # Data pipeline
+│   ├── oms/              # Order management
+│   └── data/             # Data fetching
+├── examples/
+│   ├── training/         # Training scripts
+│   └── notebooks/        # Jupyter tutorials
+├── docs/
+│   ├── tutorials/        # Learning curriculum
+│   └── EXPERIMENTS.md    # Research log
+└── tests/
 ```
 
-### Run Test Suite
-
-To run the test suite, execute the following command.
-
-```bash
-# Using make
-make run-tests
-
-# Or using pytest directly
-pytest tests/ -v
-
-# Run unit tests only
-pytest tests/tensortrade/unit -v
-
-# Run integration tests only
-pytest tests/tensortrade/integration -v
-```
+---
 
 ## Troubleshooting
 
-### Common Issues
+| Issue | Solution |
+|-------|----------|
+| "No stream satisfies selector" | Update to v1.0.4-dev1+ |
+| Ray installation fails | Run `pip install --upgrade pip` first |
+| TensorFlow CUDA issues | `pip install tensorflow[and-cuda]==2.15.1` |
+| NumPy version conflict | `pip install "numpy>=1.26.4,<2.0"` |
 
-**Issue: "No stream satisfies selector condition"**
-- **Solution**: This has been fixed in v1.0.4-dev1. Update to the latest version.
+---
 
-**Issue: Ray installation fails**
-- **Solution**: Upgrade pip first: `pip install --upgrade pip`, then install Ray: `pip install ray[default,tune,rllib,serve]==2.37.0`
+## Contributing
 
-**Issue: TensorFlow CUDA not working**
-- **Solution**: Install TensorFlow with CUDA support: `pip install tensorflow[and-cuda]==2.15.1`
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
-**Issue: NumPy version conflict**
-- **Solution**: Ensure NumPy < 2.0: `pip install "numpy>=1.26.4,<2.0" --force-reinstall`
+Priority areas:
+1. Trading frequency reduction (position sizing, holding periods)
+2. Commission-aware reward schemes
+3. Alternative action spaces
 
-For more troubleshooting help, see the [Environment Setup Guide](docs/ENVIRONMENT_SETUP.md#troubleshooting).
+---
 
-## Support
+## Community
 
-You can ask questions and join the development discussion:
+- [Discord](https://discord.gg/ZZ7BGWh)
+- [GitHub Issues](https://github.com/notadamking/tensortrade/issues)
+- [Documentation](https://www.tensortrade.org/)
 
-- On the [TensorTrade Discord server](https://discord.gg/ZZ7BGWh).
-- On the [TensorTrade Gitter](https://gitter.im/tensortrade-framework/community).
+---
 
-You can also post **bug reports and feature requests** in [GitHub issues](https://github.com/notadamking/tensortrade/issues). Make sure to read [our guidelines](https://github.com/notadamking/tensortrade/blob/master/CONTRIBUTING.md) first.
+## License
 
-
-## Contributors
-
-Contributions are encouraged and welcomed. This project is meant to grow as the community around it grows. Let me know on Discord in the #suggestions channel if there is anything that you would like to see in the future, or if there is anything you feel is missing.
-
-**Working on your first Pull Request?** You can learn how from this _free_ series [How to Contribute to an Open Source Project on GitHub](https://egghead.io/series/how-to-contribute-to-an-open-source-project-on-github)
-
-![https://github.com/notadamking/tensortrade/graphs/contributors](https://contributors-img.firebaseapp.com/image?repo=notadamking/tensortrade)
+[Apache 2.0](LICENSE)

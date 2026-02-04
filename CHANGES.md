@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.4-dev1] - 2025-01-XX
+## [1.0.4] - 2025-02-04
 
 ### Breaking Changes
 
@@ -123,7 +123,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Migration Notes
 
-### From 1.0.3 to 1.0.4-dev1
+### From 1.0.3 to 1.0.4
 
 1. **Update Python**: Upgrade to Python 3.11.9 or higher
 2. **Update Dependencies**: Run `pip install -r requirements.txt --upgrade`

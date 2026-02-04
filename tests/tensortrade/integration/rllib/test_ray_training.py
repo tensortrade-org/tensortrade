@@ -93,8 +93,8 @@ class TestPPOTraining:
                 gamma=0.99,
                 lambda_=0.95,
                 train_batch_size=200,
-                sgd_minibatch_size=32,
-                num_sgd_iter=1,
+                minibatch_size=32,
+                num_epochs=1,
             )
             .resources(num_gpus=0)
         )
@@ -124,8 +124,8 @@ class TestPPOTraining:
                 gamma=0.99,
                 lambda_=0.95,
                 train_batch_size=200,
-                sgd_minibatch_size=32,
-                num_sgd_iter=1,
+                minibatch_size=32,
+                num_epochs=1,
                 model={
                     "use_lstm": True,
                     "lstm_cell_size": 64,
@@ -157,8 +157,8 @@ class TestPPOTraining:
                 gamma=0.99,
                 lambda_=0.95,
                 train_batch_size=200,
-                sgd_minibatch_size=32,
-                num_sgd_iter=1,
+                minibatch_size=32,
+                num_epochs=1,
                 model={
                     "use_attention": True,
                     "max_seq_len": 5,

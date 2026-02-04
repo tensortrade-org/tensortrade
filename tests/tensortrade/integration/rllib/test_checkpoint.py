@@ -96,8 +96,8 @@ class TestCheckpoint:
             .training(
                 lr=3e-4,
                 train_batch_size=200,
-                sgd_minibatch_size=32,
-                num_sgd_iter=1,
+                minibatch_size=32,
+                num_epochs=1,
             )
             .resources(num_gpus=0)
         )
@@ -107,12 +107,12 @@ class TestCheckpoint:
 
         # Save checkpoint
         checkpoint_dir = str(tmp_path / "checkpoint")
-        checkpoint_path = algo.save(checkpoint_dir)
+        checkpoint_result = algo.save(checkpoint_dir)
         algo.stop()
 
         # Verify checkpoint was created
-        assert checkpoint_path is not None
-        assert os.path.exists(checkpoint_path.path)
+        assert checkpoint_result is not None
+        assert checkpoint_result.checkpoint is not None
 
     def test_checkpoint_restore_loads_algorithm(
         self, minimal_env_config: dict, ray_session, tmp_path: Path
@@ -131,8 +131,8 @@ class TestCheckpoint:
             .training(
                 lr=3e-4,
                 train_batch_size=200,
-                sgd_minibatch_size=32,
-                num_sgd_iter=1,
+                minibatch_size=32,
+                num_epochs=1,
             )
             .resources(num_gpus=0)
         )
@@ -145,7 +145,7 @@ class TestCheckpoint:
         algo.stop()
 
         # Restore from checkpoint
-        restored_algo = PPO.from_checkpoint(checkpoint_result.path)
+        restored_algo = PPO.from_checkpoint(checkpoint_result.checkpoint)
 
         # Verify restored algorithm works
         assert restored_algo is not None
@@ -170,8 +170,8 @@ class TestCheckpoint:
             .training(
                 lr=3e-4,
                 train_batch_size=200,
-                sgd_minibatch_size=32,
-                num_sgd_iter=1,
+                minibatch_size=32,
+                num_epochs=1,
             )
             .resources(num_gpus=0)
         )
@@ -184,7 +184,7 @@ class TestCheckpoint:
         algo.stop()
 
         # Restore
-        restored_algo = PPO.from_checkpoint(checkpoint_result.path)
+        restored_algo = PPO.from_checkpoint(checkpoint_result.checkpoint)
 
         # Create environment and test action computation
         env = create_env(minimal_env_config)
@@ -222,8 +222,8 @@ class TestLSTMCheckpoint:
             .training(
                 lr=3e-4,
                 train_batch_size=200,
-                sgd_minibatch_size=32,
-                num_sgd_iter=1,
+                minibatch_size=32,
+                num_epochs=1,
                 model={
                     "use_lstm": True,
                     "lstm_cell_size": 64,
@@ -240,7 +240,7 @@ class TestLSTMCheckpoint:
         algo.stop()
 
         # Restore
-        restored_algo = PPO.from_checkpoint(checkpoint_result.path)
+        restored_algo = PPO.from_checkpoint(checkpoint_result.checkpoint)
 
         # Test with LSTM state
         env = create_env(minimal_env_config)
