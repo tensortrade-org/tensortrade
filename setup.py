@@ -55,12 +55,13 @@ setup(
         'ipython>=7.12.0',
         'matplotlib>=3.1.1',
         'plotly>=4.5.0',
-        'deprecated>=1.2.13'
+        'deprecated>=1.2.13',
+        'ta>=0.4.7',
+        'pytest>=7.0.0'
     ],
     extras_require={
         'tests': [
-            'pytest>=5.1.1',
-            'ta>=0.4.7'
+            'pytest>=7.0.0',
         ],
         'docs': [
             'sphinx',

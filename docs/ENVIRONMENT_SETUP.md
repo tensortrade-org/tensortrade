@@ -17,12 +17,10 @@ source tensortrade-env/bin/activate  # Windows: tensortrade-env\Scripts\activate
 
 # Install
 pip install --upgrade pip
-pip install -r requirements.txt
 pip install -e .
 
-# Verify (232 tests should pass)
-pip install pytest
-pytest tests/tensortrade/unit -v
+# Verify (251 tests should pass, 2 skipped)
+pytest tests/ -v
 ```
 
 ## Alternative Installation Methods

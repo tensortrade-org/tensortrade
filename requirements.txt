@@ -10,3 +10,4 @@ plotly>=4.5.0
 ipywidgets>=7.0.0
 deprecated>=1.2.13
 ta>=0.4.7
+pytest>=7.0.0
