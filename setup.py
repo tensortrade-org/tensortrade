@@ -44,7 +44,7 @@ setup(
         if package.startswith('tensortrade')
     ],
     license='Apache 2.0',
-    python_requires='>=3.11.9',
+    python_requires='>=3.12',
     install_requires=[
         'numpy>=1.26.4,<2.0',  # numpy 2.0 breaks tensorflow
         'pandas>=2.2.3,<3.0',

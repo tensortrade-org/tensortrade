@@ -4,14 +4,14 @@ This guide provides step-by-step instructions for setting up a working TensorTra
 
 ## Prerequisites
 
-- **Python 3.11 or 3.12** (required - Python 3.14 is NOT supported due to TensorFlow compatibility)
+- **Python 3.12+** (required - Python 3.11 and below are NOT supported)
 - **pip** (latest version recommended)
 - **Virtual environment tool** (venv, conda, or virtualenv)
 
 ## Quick Start (Recommended)
 
 ```bash
-# Use Python 3.11 or 3.12 (NOT 3.14)
+# Requires Python 3.12+
 python3.12 -m venv tensortrade-env
 source tensortrade-env/bin/activate  # Windows: tensortrade-env\Scripts\activate
 
