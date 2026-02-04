@@ -13,6 +13,7 @@ ray_results/
 train.csv
 test.csv
 valid.csv
+eval_*.csv
 
 # test-related
 .coverage
