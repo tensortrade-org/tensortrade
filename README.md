@@ -26,6 +26,44 @@ _The goal of this framework is to enable fast experimentation, while maintaining
 
 Read [the documentation](https://www.tensortrade.org/en/latest/).
 
+## Quick Start: Training an RL Agent
+
+### Simple Local Training
+
+```bash
+# Run a simple training demo showing wallet balances and trades
+python train_simple.py
+```
+
+### Distributed Training with Ray RLlib
+
+```bash
+# Install Ray dependencies
+pip install -r examples/requirements.txt
+
+# Run distributed PPO training with wallet tracking
+python train_ray_long.py
+```
+
+**Sample output:**
+```
+Iter | Episodes |   Avg Reward |  Avg Net Worth |      Avg P&L | Progress
+   1 |       16 |          -16 |         $7,810 |      $-2,190 | #########
+  25 |       16 |     +100,661 |        $11,936 |      $+1,936 | ######################### *BEST*
+ 100 |       16 |     +125,584 |        $13,221 |      $+3,221 | ######################### *BEST*
+
+Training Duration: 3.1 minutes
+Reward Improvement: +68.8%
+Avg P&L: $+2,174 (21.7% return)
+```
+
+The framework supports:
+- **PPO, DQN, A2C** and other algorithms via Ray RLlib
+- **PBR** (Position-Based Returns) reward scheme
+- **BSH** (Buy/Sell/Hold) action scheme
+- Parallel training across multiple CPUs/GPUs
+- Custom callbacks for wallet/portfolio tracking
+
 ## Guiding principles
 
 _Inspired by [Keras' guiding principles](https://github.com/keras-team/keras)._
