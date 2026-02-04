@@ -217,10 +217,122 @@ class PBR(TensorTradeRewardScheme):
         self.feed.reset()
 
 
+class AdvancedPBR(TensorTradeRewardScheme):
+    """An advanced reward scheme combining PBR with trading penalties and hold bonuses.
+
+    This scheme aims to generate actual profits by:
+    1. Rewarding position-based returns (like PBR)
+    2. Penalizing excessive trading to reduce commission costs
+    3. Rewarding holding during uncertain/sideways markets
+
+    The reward formula is:
+    R_t = pbr_weight * PBR + trade_penalty * |action_change| + hold_bonus * is_holding
+
+    Parameters
+    ----------
+    price : `Stream`
+        The price stream to use for computing rewards.
+    pbr_weight : float
+        Weight for the PBR component. Default 1.0.
+    trade_penalty : float
+        Penalty for changing position (should be negative). Default -0.001.
+    hold_bonus : float
+        Bonus for holding when conditions are uncertain. Default 0.0001.
+    volatility_threshold : float
+        Price change threshold below which market is considered "flat". Default 0.001.
+    """
+
+    registered_name = "advanced-pbr"
+
+    def __init__(
+        self,
+        price: 'Stream',
+        pbr_weight: float = 1.0,
+        trade_penalty: float = -0.001,
+        hold_bonus: float = 0.0001,
+        volatility_threshold: float = 0.001
+    ) -> None:
+        super().__init__()
+        self.position = -1
+        self.prev_action = 0
+        self.prev_price = None
+        self.pbr_weight = pbr_weight
+        self.trade_penalty = trade_penalty
+        self.hold_bonus = hold_bonus
+        self.volatility_threshold = volatility_threshold
+
+        # PBR component
+        r = Stream.sensor(price, lambda p: p.value, dtype="float").diff()
+        position = Stream.sensor(self, lambda rs: rs.position, dtype="float")
+        pbr_reward = (position * r).fillna(0).rename("pbr_reward")
+
+        # Price stream for volatility calculation
+        self.price_stream = Stream.sensor(price, lambda p: p.value, dtype="float")
+
+        self.feed = DataFeed([pbr_reward, self.price_stream])
+        self.feed.compile()
+
+        self.trade_count = 0
+        self.hold_count = 0
+
+    def on_action(self, action: int) -> None:
+        # Track if action changed
+        self.action_changed = (action != self.prev_action)
+        if self.action_changed:
+            self.trade_count += 1
+
+        self.prev_action = action
+        self.position = -1 if action == 0 else 1
+
+    def get_reward(self, portfolio: 'Portfolio') -> float:
+        data = self.feed.next()
+        pbr_reward = data["pbr_reward"]
+        current_price = data.get(self.price_stream.name, 0)
+
+        # 1. PBR component (scaled)
+        reward = self.pbr_weight * pbr_reward
+
+        # 2. Trading penalty - penalize changing positions
+        if self.action_changed:
+            reward += self.trade_penalty
+
+        # 3. Hold bonus - reward for holding in flat/uncertain markets
+        if self.prev_price is not None and current_price > 0:
+            price_change = abs(current_price - self.prev_price) / self.prev_price
+            is_flat_market = price_change < self.volatility_threshold
+
+            # Only give hold bonus if we're holding (not trading) in a flat market
+            if is_flat_market and not self.action_changed:
+                reward += self.hold_bonus
+                self.hold_count += 1
+
+        self.prev_price = current_price
+
+        return reward
+
+    def reset(self) -> None:
+        """Resets the reward scheme state."""
+        self.position = -1
+        self.prev_action = 0
+        self.prev_price = None
+        self.action_changed = False
+        self.trade_count = 0
+        self.hold_count = 0
+        self.feed.reset()
+
+    def get_stats(self) -> dict:
+        """Returns trading statistics for analysis."""
+        return {
+            "trade_count": self.trade_count,
+            "hold_count": self.hold_count
+        }
+
+
 _registry = {
     'simple': SimpleProfit,
     'risk-adjusted': RiskAdjustedReturns,
     'pbr': PBR,
+    'advanced-pbr': AdvancedPBR,
 }
 
 

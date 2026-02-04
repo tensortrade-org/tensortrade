@@ -276,7 +276,7 @@ def main():
     print("Starting Optuna Optimization")
     print(f"{'='*70}")
 
-    n_trials = 20  # Number of different hyperparameter combinations to try
+    n_trials = 100  # Number of different hyperparameter combinations to try
 
     study = optuna.create_study(
         direction="maximize",  # Maximize validation P&L
