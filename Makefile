@@ -26,10 +26,18 @@ docs-serve:
 	python3 -m webbrowser http://localhost:8000/docs/build/html/index.html
 	python3 -m http.server 8000
 
-build-cpu:
+check-docker-auth:
+	@docker pull --quiet python:3.12-slim > /dev/null 2>&1 || \
+		(echo ""; \
+		 echo "ERROR: Docker Hub authentication required."; \
+		 echo "  Run 'docker login' first (free account: https://hub.docker.com/signup)"; \
+		 echo ""; \
+		 exit 1)
+
+build-cpu: check-docker-auth
 	docker build -t ${CPU_IMAGE} .
 
-build-gpu:
+build-gpu: check-docker-auth
 	docker build -t ${GPU_IMAGE} . --build-arg gpu_tag="-gpu"
 
 build-cpu-if-not-built:
@@ -47,7 +55,7 @@ run-docs: build-cpu-if-not-built
 	python3 -m webbrowser http://localhost:8000/docs/build/html/index.html
 
 run-tests: build-cpu-if-not-built
-	docker run -it --rm --shm-size=${SHM_SIZE} ${CPU_IMAGE} make test
+	docker run --rm --shm-size=${SHM_SIZE} ${CPU_IMAGE} pytest tests/ -m "not rllib"
 
 run-notebook-gpu: build-gpu-if-not-built
 	docker run -it --rm -p=8888:8888 -p=6006:6006 -v ${PWD}/examples:/app/examples -v ${PWD}/docs:/app/docs --shm-size=${SHM_SIZE} ${GPU_IMAGE} jupyter lab --ip='*' --port=8888 --no-browser --allow-root /app/
@@ -58,7 +66,7 @@ run-docs-gpu: build-gpu-if-not-built
 	python3 -m webbrowser http://localhost:8000/docs/build/html/index.html
 
 run-tests-gpu: build-gpu-if-not-built
-	docker run -it --rm --shm-size=${SHM_SIZE} ${GPU_IMAGE} make test
+	docker run --rm --shm-size=${SHM_SIZE} ${GPU_IMAGE} pytest tests/ -m "not rllib"
 
 package:
 	rm -rf dist
