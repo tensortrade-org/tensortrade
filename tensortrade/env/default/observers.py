@@ -44,7 +44,11 @@ def _create_wallet_source(wallet: 'Wallet', include_worth: bool = True) -> 'List
         streams += [free_balance, locked_balance, total_balance]
 
         if include_worth:
-            price = Stream.select(wallet.exchange.streams(), lambda node: node.name.endswith(symbol))
+            # Fix stream selector to handle both naming conventions
+            price = Stream.select(wallet.exchange.streams(), 
+                                lambda node: (node.name.endswith(f":{symbol}") or 
+                                            node.name.endswith(f"-{symbol}") or
+                                            node.name.endswith(symbol)))
             worth = price.mul(total_balance).rename('worth')
             streams += [worth]
 
@@ -446,13 +450,19 @@ class IntradayObserver(Observer):
         """
         return self.feed.has_next() and not self.stop
 
-    def reset(self) -> None:
-        """Resets the observer"""
+    def reset(self, random_start: int = 0) -> None:
+        """Resets the observer
+
+        Parameters
+        ----------
+        random_start : int
+            The index to start from (for compatibility with TensorTradeObserver).
+        """
         self.renderer_history = []
         self.history.reset()
 
         if self.randomize or not self.feed.has_next():
-            self.feed.reset()
+            self.feed.reset(random_start)
             if self.randomize:
                 episode_num = 0
                 while episode_num < randrange(self.num_episodes):

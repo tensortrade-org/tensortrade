@@ -93,8 +93,11 @@ class Exchange(Component, TimedIdentifiable):
             The exchange the price streams were passed in for.
         """
         for s in streams:
+            # Standardize stream naming convention
             pair = "".join([c if c.isalnum() else "/" for c in s.name])
-            self._price_streams[pair] = s.rename(self.name + ":/" + s.name)
+            # Use consistent naming: exchange_name:/base-quote
+            stream_name = f"{self.name}:/{s.name}"
+            self._price_streams[pair] = s.rename(stream_name)
         return self
 
     def streams(self) -> "List[Stream[float]]":

@@ -73,7 +73,12 @@ def test_pct_change():
 
         s = Stream.source(array, dtype="float")
         w = s.pct_change(**config).rename("w")
-        expected = list(pd.Series(array).pct_change(**config))
+
+        # Get expected from pandas with same config
+        import warnings
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", FutureWarning)
+            expected = list(pd.Series(array).pct_change(**config))
 
         print(config)
         assert_op([w], expected)

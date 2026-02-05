@@ -91,5 +91,6 @@ def create(portfolio: 'Portfolio',
         renderer=renderer,
         min_periods=min_periods,
         random_start_pct=random_start_pct,
+        device=kwargs.get("device", None),
     )
     return env

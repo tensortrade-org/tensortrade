@@ -44,23 +44,24 @@ setup(
         if package.startswith('tensortrade')
     ],
     license='Apache 2.0',
-    python_requires='>=3.11.9',
+    python_requires='>=3.12',
     install_requires=[
-        'numpy>=1.17.0',
-        'pandas>=0.25.0',
+        'numpy>=1.26.4',
+        'pandas>=2.2.3,<3.0',  # pandas 3.0 has breaking ewm API changes
         'gymnasium>=0.28.1',
         'pyyaml>=5.1.2',
         'stochastic>=0.6.0',
-        'tensorflow>=2.7.0',
+        'tensorflow>=2.15.1',
         'ipython>=7.12.0',
         'matplotlib>=3.1.1',
         'plotly>=4.5.0',
-        'deprecated>=1.2.13'
+        'deprecated>=1.2.13',
+        'ta>=0.4.7',
+        'pytest>=7.0.0'
     ],
     extras_require={
         'tests': [
-            'pytest>=5.1.1',
-            'ta>=0.4.7'
+            'pytest>=7.0.0',
         ],
         'docs': [
             'sphinx',
@@ -84,6 +85,7 @@ setup(
         'License :: OSI Approved :: Apache Software License',
         'Operating System :: OS Independent',
         'Programming Language :: Python :: 3.11',
+        'Programming Language :: Python :: 3.12',
         'Topic :: Office/Business :: Financial :: Investment',
         'Topic :: Office/Business :: Financial',
         'Topic :: Scientific/Engineering :: Information Analysis',

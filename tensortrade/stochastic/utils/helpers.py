@@ -76,13 +76,14 @@ def get_delta(time_frame: str) -> float:
     float
         The time delta for the given time frame.
     """
-    if 'MIN' in time_frame.upper():
-        return 1 / (252 * 24 * (60 / int(time_frame.split('MIN')[0])))
-    elif 'H' in time_frame.upper():
-        return 1 / (252 * (24 / int(time_frame.split('H')[0])))
-    elif 'D' in time_frame.upper():
+    tf_upper = time_frame.upper()
+    if 'MIN' in tf_upper:
+        return 1 / (252 * 24 * (60 / int(tf_upper.split('MIN')[0])))
+    elif 'H' in tf_upper:
+        return 1 / (252 * (24 / int(tf_upper.split('H')[0])))
+    elif 'D' in tf_upper:
         return 1 / 252
-    elif 'M' in time_frame.upper():
+    elif 'M' in tf_upper:
         return 1 / 12
 
 

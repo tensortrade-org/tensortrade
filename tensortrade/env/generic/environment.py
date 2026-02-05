@@ -15,7 +15,7 @@
 import uuid
 import logging
 
-from typing import Dict, Any, Tuple
+from typing import Dict, Any, Tuple, Optional
 from random import randint
 
 import gymnasium
@@ -68,6 +68,7 @@ class TradingEnv(gymnasium.Env, TimeIndexed):
                  min_periods: int = None,
                  max_episode_steps: int = None,
                  random_start_pct: float = 0.00,
+                 device: Optional[str] = None,
                  **kwargs) -> None:
         super().__init__()
         self.clock = Clock()
@@ -79,7 +80,9 @@ class TradingEnv(gymnasium.Env, TimeIndexed):
         self.informer = informer
         self.renderer = renderer
         self.min_periods = min_periods
+        self.max_episode_steps = max_episode_steps
         self.random_start_pct = random_start_pct
+        self.device = device
 
         for c in self.components.values():
             c.clock = self.clock
@@ -91,6 +94,28 @@ class TradingEnv(gymnasium.Env, TimeIndexed):
         if self._enable_logger:
             self.logger = logging.getLogger(kwargs.get('logger_name', __name__))
             self.logger.setLevel(kwargs.get('log_level', logging.DEBUG))
+
+    def _ensure_numpy(self, obs: Any) -> np.ndarray:
+        """Ensure observation is returned as numpy array for GPU compatibility.
+        
+        Parameters
+        ----------
+        obs : Any
+            The observation to convert
+            
+        Returns
+        -------
+        np.ndarray
+            The observation as a numpy array
+        """
+        if hasattr(obs, 'cpu'):  # PyTorch tensor
+            return obs.cpu().numpy()
+        elif hasattr(obs, 'numpy'):  # TensorFlow tensor
+            return obs.numpy()
+        elif isinstance(obs, np.ndarray):
+            return obs
+        else:
+            return np.array(obs)
 
     @property
     def components(self) -> 'Dict[str, Component]':
@@ -127,9 +152,13 @@ class TradingEnv(gymnasium.Env, TimeIndexed):
         self.action_scheme.perform(self, action)
 
         obs = self.observer.observe(self)
+        # Ensure observation is numpy array for GPU compatibility
+        obs = self._ensure_numpy(obs)
         reward = self.reward_scheme.reward(self)
         terminated = self.stopper.stop(self)
-        truncated = False
+        # Check if episode should be truncated due to max steps
+        truncated = (self.max_episode_steps is not None and
+                     self.clock.step >= self.max_episode_steps)
         info = self.informer.info(self)
 
         self.clock.increment()
@@ -161,6 +190,8 @@ class TradingEnv(gymnasium.Env, TimeIndexed):
                     c.reset()
 
         obs = self.observer.observe(self)
+        # Ensure observation is numpy array for GPU compatibility
+        obs = self._ensure_numpy(obs)
         info = self.informer.info(self)
 
         self.clock.increment()

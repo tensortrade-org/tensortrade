@@ -13,7 +13,7 @@ from tensortrade.oms.instruments import USD
 
 class TestTensorTradeRewardScheme:
 
-    def setup(self):
+    def setup_method(self):
         self.config = {
             'base_instrument': 'USD',
             'instruments': 'ETH',
