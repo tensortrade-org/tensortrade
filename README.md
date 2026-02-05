@@ -6,7 +6,7 @@
 
 **Train RL agents to trade. Can they beat Buy-and-Hold?**
 
-[![Build Status](https://travis-ci.com/tensortrade-org/tensortrade.svg?branch=master)](https://travis-ci.org/tensortrade-org/tensortrade)
+[![Tests](https://github.com/tensortrade-org/tensortrade/actions/workflows/tests.yml/badge.svg)](https://github.com/tensortrade-org/tensortrade/actions/workflows/tests.yml)
 [![Documentation Status](https://readthedocs.org/projects/tensortrade/badge/?version=latest)](https://tensortrade.org)
 [![Apache License](https://img.shields.io/github/license/tensortrade-org/tensortrade.svg?color=brightgreen)](http://www.apache.org/licenses/LICENSE-2.0)
 [![Discord](https://img.shields.io/discord/592446624882491402.svg?color=brightgreen)](https://discord.gg/ZZ7BGWh)
