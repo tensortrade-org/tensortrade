@@ -267,7 +267,7 @@ def main():
 
     # PPO config with anti-overfitting settings
     config = (
-        PPOConfig()
+        PPOConfig().api_stack(enable_rl_module_and_learner=False, enable_env_runner_and_connector_v2=False)
         .environment(env="TradingEnv", env_config=base_config)
         .framework("torch")
         .env_runners(num_env_runners=4)
@@ -279,8 +279,8 @@ def main():
             clip_param=0.1,  # Tighter clipping = smaller updates
             entropy_coeff=0.05,  # HIGH entropy = more exploration, less overfitting
             train_batch_size=8000,
-            sgd_minibatch_size=256,
-            num_sgd_iter=5,  # Fewer SGD iterations = less overfitting
+            minibatch_size=256,
+            num_epochs=5,  # Fewer SGD iterations = less overfitting
             vf_clip_param=100.0,
             kl_coeff=0.3,  # KL penalty for stability
             # Smaller network

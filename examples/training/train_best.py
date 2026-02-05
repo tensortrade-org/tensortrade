@@ -193,7 +193,7 @@ def main():
 
     # Best Optuna hyperparameters
     config = (
-        PPOConfig()
+        PPOConfig().api_stack(enable_rl_module_and_learner=False, enable_env_runner_and_connector_v2=False)
         .environment(env="TradingEnv", env_config=env_config)
         .framework("torch")
         .env_runners(num_env_runners=4)
@@ -205,8 +205,8 @@ def main():
             clip_param=0.123,
             entropy_coeff=0.015,
             train_batch_size=2000,
-            sgd_minibatch_size=256,
-            num_sgd_iter=7,
+            minibatch_size=256,
+            num_epochs=7,
             vf_clip_param=100.0,
             model={"fcnet_hiddens": [128, 128], "fcnet_activation": "tanh"},
         )

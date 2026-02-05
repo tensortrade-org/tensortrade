@@ -40,7 +40,7 @@ class DQNAgent(Agent):
                  env: 'TradingEnv',
                  policy_network: tf.keras.Model = None):
         self.env = env
-        self.n_actions = env.action_space.n
+        self.n_actions = int(env.action_space.n)
         self.observation_shape = env.observation_space.shape
 
         self.policy_network = policy_network or self._build_policy_network()
@@ -313,14 +313,20 @@ class DQNAgent(Agent):
         print('====      AGENT ID: {}      ===='.format(self.id))
 
         while episode < n_episodes and not stop_training:
-            state = self.env.reset()
+            result = self.env.reset()
+            state = result[0] if isinstance(result, tuple) else result
             done = False
             steps_done = 0
 
             while not done:
                 threshold = eps_end + (eps_start - eps_end) * np.exp(-total_steps_done / eps_decay_steps)
                 action = self.get_action(state, threshold=threshold)
-                next_state, reward, done, _ = self.env.step(action)
+                step_result = self.env.step(action)
+                if len(step_result) == 5:
+                    next_state, reward, terminated, truncated, _ = step_result
+                    done = terminated or truncated
+                else:
+                    next_state, reward, done, _ = step_result
 
                 memory.push(state, action, reward, next_state, done)
 

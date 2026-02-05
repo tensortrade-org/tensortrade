@@ -180,7 +180,7 @@ def objective(trial: optuna.Trial) -> float:
     }
 
     config = (
-        PPOConfig()
+        PPOConfig().api_stack(enable_rl_module_and_learner=False, enable_env_runner_and_connector_v2=False)
         .environment(env="TradingEnv", env_config=env_config)
         .framework("torch")
         .env_runners(num_env_runners=2)  # Fewer workers for faster trials
@@ -192,8 +192,8 @@ def objective(trial: optuna.Trial) -> float:
             clip_param=clip,
             entropy_coeff=entropy,
             train_batch_size=batch_size,
-            sgd_minibatch_size=min(256, batch_size // 4),
-            num_sgd_iter=sgd_iters,
+            minibatch_size=min(256, batch_size // 4),
+            num_epochs=sgd_iters,
             vf_clip_param=100.0,
             model={"fcnet_hiddens": [hidden_size, hidden_size], "fcnet_activation": "tanh"},
         )
@@ -327,7 +327,7 @@ def main():
     }
 
     final_config = (
-        PPOConfig()
+        PPOConfig().api_stack(enable_rl_module_and_learner=False, enable_env_runner_and_connector_v2=False)
         .environment(env="TradingEnv", env_config=env_config)
         .framework("torch")
         .env_runners(num_env_runners=4)
@@ -339,8 +339,8 @@ def main():
             clip_param=best["clip"],
             entropy_coeff=best["entropy"],
             train_batch_size=best["batch_size"],
-            sgd_minibatch_size=min(256, best["batch_size"] // 4),
-            num_sgd_iter=best["sgd_iters"],
+            minibatch_size=min(256, best["batch_size"] // 4),
+            num_epochs=best["sgd_iters"],
             vf_clip_param=100.0,
             model={"fcnet_hiddens": [best["hidden_size"], best["hidden_size"]],
                    "fcnet_activation": "tanh"},

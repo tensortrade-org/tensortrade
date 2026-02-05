@@ -179,7 +179,7 @@ def main():
 
     # Tiny network, high entropy
     config = (
-        PPOConfig()
+        PPOConfig().api_stack(enable_rl_module_and_learner=False, enable_env_runner_and_connector_v2=False)
         .environment(env="TradingEnv", env_config=cfg)
         .framework("torch")
         .env_runners(num_env_runners=4)
@@ -191,8 +191,8 @@ def main():
             clip_param=0.1,
             entropy_coeff=0.1,  # Very high entropy
             train_batch_size=4000,
-            sgd_minibatch_size=128,
-            num_sgd_iter=5,
+            minibatch_size=128,
+            num_epochs=5,
             vf_clip_param=100.0,
             model={"fcnet_hiddens": [32, 32], "fcnet_activation": "tanh"},
         )

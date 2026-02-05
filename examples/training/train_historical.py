@@ -304,7 +304,7 @@ def main():
     num_iterations = 100  # More iterations for better learning
 
     config = (
-        PPOConfig()
+        PPOConfig().api_stack(enable_rl_module_and_learner=False, enable_env_runner_and_connector_v2=False)
         .environment(env="TradingEnv", env_config=train_config)
         .framework("torch")
         .env_runners(num_env_runners=6)  # More parallel workers
@@ -316,8 +316,8 @@ def main():
             clip_param=0.2,
             entropy_coeff=0.005,  # Less exploration as we train longer
             train_batch_size=12000,  # Larger batches
-            sgd_minibatch_size=512,  # Larger minibatches
-            num_sgd_iter=15,  # More SGD iterations per batch
+            minibatch_size=512,  # Larger minibatches
+            num_epochs=15,  # More SGD iterations per batch
             vf_clip_param=1000.0,
         )
         .resources(num_gpus=0)

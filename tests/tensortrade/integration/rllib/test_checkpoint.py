@@ -90,6 +90,10 @@ class TestCheckpoint:
 
         config = (
             PPOConfig()
+            .api_stack(
+                enable_rl_module_and_learner=False,
+                enable_env_runner_and_connector_v2=False,
+            )
             .environment(env="TradingEnv", env_config=minimal_env_config)
             .framework("torch")
             .env_runners(num_env_runners=0)
@@ -97,7 +101,7 @@ class TestCheckpoint:
                 lr=3e-4,
                 train_batch_size=200,
                 minibatch_size=32,
-                num_epochs=1,
+                num_sgd_iter=1,
             )
             .resources(num_gpus=0)
         )
@@ -125,6 +129,10 @@ class TestCheckpoint:
 
         config = (
             PPOConfig()
+            .api_stack(
+                enable_rl_module_and_learner=False,
+                enable_env_runner_and_connector_v2=False,
+            )
             .environment(env="TradingEnv", env_config=minimal_env_config)
             .framework("torch")
             .env_runners(num_env_runners=0)
@@ -132,7 +140,7 @@ class TestCheckpoint:
                 lr=3e-4,
                 train_batch_size=200,
                 minibatch_size=32,
-                num_epochs=1,
+                num_sgd_iter=1,
             )
             .resources(num_gpus=0)
         )
@@ -164,6 +172,10 @@ class TestCheckpoint:
 
         config = (
             PPOConfig()
+            .api_stack(
+                enable_rl_module_and_learner=False,
+                enable_env_runner_and_connector_v2=False,
+            )
             .environment(env="TradingEnv", env_config=minimal_env_config)
             .framework("torch")
             .env_runners(num_env_runners=0)
@@ -171,7 +183,7 @@ class TestCheckpoint:
                 lr=3e-4,
                 train_batch_size=200,
                 minibatch_size=32,
-                num_epochs=1,
+                num_sgd_iter=1,
             )
             .resources(num_gpus=0)
         )
@@ -216,6 +228,10 @@ class TestLSTMCheckpoint:
 
         config = (
             PPOConfig()
+            .api_stack(
+                enable_rl_module_and_learner=False,
+                enable_env_runner_and_connector_v2=False,
+            )
             .environment(env="TradingEnv", env_config=minimal_env_config)
             .framework("torch")
             .env_runners(num_env_runners=0)
@@ -223,7 +239,7 @@ class TestLSTMCheckpoint:
                 lr=3e-4,
                 train_batch_size=200,
                 minibatch_size=32,
-                num_epochs=1,
+                num_sgd_iter=1,
                 model={
                     "use_lstm": True,
                     "lstm_cell_size": 64,

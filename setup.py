@@ -46,9 +46,9 @@ setup(
     license='Apache 2.0',
     python_requires='>=3.12',
     install_requires=[
-        'numpy>=1.26.4,<2.0',  # numpy 2.0 breaks tensorflow
-        'pandas>=2.2.3,<3.0',
-        'gymnasium>=0.28.1,<1.0',
+        'numpy>=1.26.4',
+        'pandas>=2.2.3,<3.0',  # pandas 3.0 has breaking ewm API changes
+        'gymnasium>=0.28.1',
         'pyyaml>=5.1.2',
         'stochastic>=0.6.0',
         'tensorflow>=2.15.1',

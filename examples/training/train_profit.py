@@ -244,7 +244,7 @@ def main():
 
     # PPO config optimized for generalization
     config = (
-        PPOConfig()
+        PPOConfig().api_stack(enable_rl_module_and_learner=False, enable_env_runner_and_connector_v2=False)
         .environment(env="TradingEnv", env_config=env_config)
         .framework("torch")
         .env_runners(num_env_runners=4)
@@ -256,8 +256,8 @@ def main():
             clip_param=0.1,    # Tight clipping
             entropy_coeff=0.05,  # High entropy for exploration
             train_batch_size=4000,
-            sgd_minibatch_size=256,
-            num_sgd_iter=5,
+            minibatch_size=256,
+            num_epochs=5,
             vf_clip_param=100.0,
             model={"fcnet_hiddens": [64, 64], "fcnet_activation": "tanh"},
         )

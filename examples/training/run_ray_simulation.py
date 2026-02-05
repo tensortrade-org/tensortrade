@@ -93,7 +93,7 @@ def create_env(config):
     data = pd.read_csv(
         filepath_or_buffer=config["csv_filename"],
         parse_dates=['date']
-    ).fillna(method='backfill').fillna(method='ffill')
+    ).bfill().ffill()
 
     # Setup exchange
     commission = 0.001
@@ -118,7 +118,7 @@ def create_env(config):
         'rsi_7': rsi(data['close'], period=7),
         'rsi_14': rsi(data['close'], period=14),
         'macd_normal': macd(data['close'], fast=12, slow=26, signal=9),
-    }).fillna(method='bfill').fillna(method='ffill')
+    }).bfill().ffill()
 
     # Create feed streams
     with NameSpace("bitstamp"):
@@ -163,7 +163,7 @@ def create_env(config):
 
 def main():
     import ray
-    from ray import tune
+    from ray.rllib.algorithms.ppo import PPOConfig
     from ray.tune.registry import register_env
 
     print("=" * 60)
@@ -200,52 +200,55 @@ def main():
     print("\nStarting PPO training...")
 
     try:
-        # Use older tune.run API which is more stable
-        analysis = tune.run(
-            "PPO",
-            stop={
-                "training_iteration": 10,
-                "episode_reward_mean": 5000,
-            },
-            config={
-                "env": "TradingEnv",
-                "env_config": env_config_training,
-                "log_level": "WARN",
-                "framework": "torch",
-                "num_workers": 2,
-                "num_gpus": 0,
-                "lr": 1e-4,
-                "gamma": 0.99,
-                "lambda": 0.95,
-                "clip_param": 0.2,
-                "entropy_coeff": 0.01,
-                "train_batch_size": 2000,
-                "sgd_minibatch_size": 128,
-                "num_sgd_iter": 10,
-                "model": {
-                    "fcnet_hiddens": [256, 256],
-                },
-                "observation_filter": "MeanStdFilter",
-                "evaluation_interval": 2,
-                "evaluation_config": {
-                    "env_config": env_config_evaluation,
-                    "explore": False,
-                },
-            },
-            checkpoint_freq=5,
-            checkpoint_at_end=True,
-            verbose=1,
+        config = (
+            PPOConfig()
+            .api_stack(
+                enable_rl_module_and_learner=False,
+                enable_env_runner_and_connector_v2=False,
+            )
+            .environment(env="TradingEnv", env_config=env_config_training)
+            .framework("torch")
+            .env_runners(num_env_runners=2)
+            .training(
+                lr=1e-4,
+                gamma=0.99,
+                lambda_=0.95,
+                clip_param=0.2,
+                entropy_coeff=0.01,
+                train_batch_size=2000,
+                minibatch_size=128,
+                num_epochs=10,
+            )
+            .resources(num_gpus=0)
+            .evaluation(
+                evaluation_interval=2,
+                evaluation_config={"env_config": env_config_evaluation, "explore": False},
+            )
         )
+
+        algo = config.build()
+
+        num_iterations = 10
+        print(f"\nTraining for {num_iterations} iterations...")
+
+        best_reward = float('-inf')
+        for i in range(num_iterations):
+            result = algo.train()
+            reward = result.get("env_runners", {}).get("episode_reward_mean", 0)
+            print(f"  Iteration {i+1}/{num_iterations} | "
+                  f"reward_mean={reward:.2f}")
+            if reward > best_reward:
+                best_reward = reward
+            if reward >= 5000:
+                print(f"  Target reward reached!")
+                break
 
         print("\n" + "=" * 60)
         print("Training Complete!")
         print("=" * 60)
+        print(f"Best reward: {best_reward:.2f}")
 
-        best_trial = analysis.get_best_trial("episode_reward_mean", "max", "last")
-        if best_trial:
-            print(f"Best trial reward: {best_trial.last_result.get('episode_reward_mean', 'N/A')}")
-            if best_trial.checkpoint:
-                print(f"Best checkpoint: {best_trial.checkpoint.path}")
+        algo.stop()
 
     except Exception as e:
         print(f"Training error: {e}")

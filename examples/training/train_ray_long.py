@@ -175,7 +175,7 @@ def main():
     print()
 
     config = (
-        PPOConfig()
+        PPOConfig().api_stack(enable_rl_module_and_learner=False, enable_env_runner_and_connector_v2=False)
         .environment(env="TradingEnv", env_config=env_config)
         .framework("torch")
         .env_runners(num_env_runners=4)
@@ -187,8 +187,8 @@ def main():
             clip_param=0.2,
             entropy_coeff=0.01,
             train_batch_size=8000,  # Larger batches for longer training
-            sgd_minibatch_size=256,
-            num_sgd_iter=10,
+            minibatch_size=256,
+            num_epochs=10,
             vf_clip_param=1000.0,
         )
         .resources(num_gpus=0)

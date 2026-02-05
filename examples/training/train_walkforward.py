@@ -335,7 +335,7 @@ def main():
     }
 
     config = (
-        PPOConfig()
+        PPOConfig().api_stack(enable_rl_module_and_learner=False, enable_env_runner_and_connector_v2=False)
         .environment(env="TradingEnv", env_config=base_config)
         .framework("torch")
         .env_runners(num_env_runners=6)
@@ -347,8 +347,8 @@ def main():
             clip_param=0.15,  # Tighter clipping
             entropy_coeff=0.01,  # More exploration
             train_batch_size=16000,
-            sgd_minibatch_size=512,
-            num_sgd_iter=20,
+            minibatch_size=512,
+            num_epochs=20,
             vf_clip_param=1000.0,
         )
         .resources(num_gpus=0)

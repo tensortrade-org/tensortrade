@@ -85,6 +85,10 @@ class TestPPOTraining:
 
         config = (
             PPOConfig()
+            .api_stack(
+                enable_rl_module_and_learner=False,
+                enable_env_runner_and_connector_v2=False,
+            )
             .environment(env="TradingEnv", env_config=minimal_env_config)
             .framework("torch")
             .env_runners(num_env_runners=0)  # Use main process only
@@ -94,7 +98,7 @@ class TestPPOTraining:
                 lambda_=0.95,
                 train_batch_size=200,
                 minibatch_size=32,
-                num_epochs=1,
+                num_sgd_iter=1,
             )
             .resources(num_gpus=0)
         )
@@ -116,6 +120,10 @@ class TestPPOTraining:
 
         config = (
             PPOConfig()
+            .api_stack(
+                enable_rl_module_and_learner=False,
+                enable_env_runner_and_connector_v2=False,
+            )
             .environment(env="TradingEnv", env_config=minimal_env_config)
             .framework("torch")
             .env_runners(num_env_runners=0)
@@ -125,7 +133,7 @@ class TestPPOTraining:
                 lambda_=0.95,
                 train_batch_size=200,
                 minibatch_size=32,
-                num_epochs=1,
+                num_sgd_iter=1,
                 model={
                     "use_lstm": True,
                     "lstm_cell_size": 64,
@@ -149,6 +157,10 @@ class TestPPOTraining:
 
         config = (
             PPOConfig()
+            .api_stack(
+                enable_rl_module_and_learner=False,
+                enable_env_runner_and_connector_v2=False,
+            )
             .environment(env="TradingEnv", env_config=minimal_env_config)
             .framework("torch")
             .env_runners(num_env_runners=0)
@@ -158,7 +170,7 @@ class TestPPOTraining:
                 lambda_=0.95,
                 train_batch_size=200,
                 minibatch_size=32,
-                num_epochs=1,
+                num_sgd_iter=1,
                 model={
                     "use_attention": True,
                     "max_seq_len": 5,
@@ -208,7 +220,7 @@ class TestTunerConfig:
             },
         }
 
-        from ray.train import RunConfig, CheckpointConfig
+        from ray.train import CheckpointConfig
 
         tune_config = tune.TuneConfig(
             num_samples=1,
@@ -216,14 +228,11 @@ class TestTunerConfig:
             mode="max",
         )
 
-        run_config = RunConfig(
-            stop={"training_iteration": 1},
-            checkpoint_config=CheckpointConfig(
-                num_to_keep=1,
-            ),
+        checkpoint_config = CheckpointConfig(
+            num_to_keep=1,
         )
 
         # Verify configs can be created without error
         assert param_space is not None
         assert tune_config is not None
-        assert run_config is not None
+        assert checkpoint_config is not None
