@@ -50,8 +50,8 @@ interface AllTradesParams {
 interface AnalysisRequest {
 	experiment_ids?: string[];
 	analysis_type?: string;
+	study_name?: string;
 	prompt?: string;
-	[key: string]: unknown;
 }
 
 interface ActionResponse {

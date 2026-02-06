@@ -48,7 +48,9 @@ class InsightsEngine:
             api_key=api_key or os.environ.get("ANTHROPIC_API_KEY")
         )
 
-    async def analyze_experiment(self, experiment_id: str) -> InsightReport:
+    async def analyze_experiment(
+        self, experiment_id: str, *, custom_prompt: str | None = None
+    ) -> InsightReport:
         """Analyze a single experiment's performance."""
         exp = self.store.get_experiment(experiment_id)
         if not exp:
@@ -62,10 +64,11 @@ class InsightsEngine:
             prompt=prompt,
             experiment_ids=[experiment_id],
             analysis_type="experiment",
+            custom_prompt=custom_prompt,
         )
 
     async def compare_experiments(
-        self, experiment_ids: list[str]
+        self, experiment_ids: list[str], *, custom_prompt: str | None = None
     ) -> InsightReport:
         """Compare multiple experiments and identify what works."""
         experiments = []
@@ -83,10 +86,11 @@ class InsightsEngine:
             prompt=prompt,
             experiment_ids=experiment_ids,
             analysis_type="comparison",
+            custom_prompt=custom_prompt,
         )
 
     async def suggest_next_strategy(
-        self, study_name: str
+        self, study_name: str, *, custom_prompt: str | None = None
     ) -> InsightReport:
         """Analyze Optuna study and suggest next hyperparameter regions."""
         trials = self.store.get_optuna_trials(study_name)
@@ -98,9 +102,12 @@ class InsightsEngine:
             prompt=prompt,
             experiment_ids=[],
             analysis_type="strategy",
+            custom_prompt=custom_prompt,
         )
 
-    async def analyze_trades(self, experiment_id: str) -> InsightReport:
+    async def analyze_trades(
+        self, experiment_id: str, *, custom_prompt: str | None = None
+    ) -> InsightReport:
         """Deep analysis of trade patterns."""
         exp = self.store.get_experiment(experiment_id)
         if not exp:
@@ -115,6 +122,7 @@ class InsightsEngine:
             prompt=prompt,
             experiment_ids=[experiment_id],
             analysis_type="trades",
+            custom_prompt=custom_prompt,
         )
 
     def _build_experiment_prompt(self, exp, iterations, trades) -> str:
@@ -247,9 +255,13 @@ Format as JSON:
         prompt: str,
         experiment_ids: list[str],
         analysis_type: str,
+        custom_prompt: str | None = None,
     ) -> InsightReport:
         """Send prompt to Claude and parse structured response."""
         import asyncio
+
+        if custom_prompt:
+            prompt += f"\n\nAdditional user question/context:\n{custom_prompt}"
 
         # Run synchronous API call in executor
         loop = asyncio.get_event_loop()

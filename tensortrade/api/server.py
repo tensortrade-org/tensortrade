@@ -325,17 +325,29 @@ def _register_routes(app: FastAPI) -> None:
         from tensortrade.api.insights import InsightsEngine
 
         engine = InsightsEngine(store, api_key)
-        analysis_type = body.get("type", "experiment")
+        analysis_type = body.get("analysis_type", "experiment")
+        experiment_ids = body.get("experiment_ids", [])
+        experiment_id = experiment_ids[0] if experiment_ids else body.get("experiment_id")
+        custom_prompt = body.get("prompt")
 
         try:
             if analysis_type == "experiment":
-                report = await engine.analyze_experiment(body["experiment_id"])
+                if not experiment_id:
+                    return {"error": "experiment_ids required for experiment analysis"}
+                report = await engine.analyze_experiment(experiment_id, custom_prompt=custom_prompt)
             elif analysis_type == "comparison":
-                report = await engine.compare_experiments(body["experiment_ids"])
+                if len(experiment_ids) < 2:
+                    return {"error": "At least 2 experiment_ids required for comparison"}
+                report = await engine.compare_experiments(experiment_ids, custom_prompt=custom_prompt)
             elif analysis_type == "strategy":
-                report = await engine.suggest_next_strategy(body["study_name"])
+                study_name = body.get("study_name")
+                if not study_name:
+                    return {"error": "study_name required for strategy analysis"}
+                report = await engine.suggest_next_strategy(study_name, custom_prompt=custom_prompt)
             elif analysis_type == "trades":
-                report = await engine.analyze_trades(body["experiment_id"])
+                if not experiment_id:
+                    return {"error": "experiment_ids required for trade analysis"}
+                report = await engine.analyze_trades(experiment_id, custom_prompt=custom_prompt)
             else:
                 return {"error": f"Unknown analysis type: {analysis_type}"}
 

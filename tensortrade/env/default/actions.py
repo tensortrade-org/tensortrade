@@ -120,13 +120,19 @@ class TensorTradeActionScheme(ActionScheme):
 
 
 class BSH(TensorTradeActionScheme):
-    """A simple discrete action scheme where the only options are to buy, sell,
-    or hold.
+    """A simple discrete action scheme where the only options are to hold, buy,
+    or sell.
+
+    Actions
+    -------
+    0 : Hold — do nothing
+    1 : Buy  — convert cash to asset (no-op if already holding asset)
+    2 : Sell — convert asset to cash (no-op if already holding cash)
 
     Parameters
     ----------
     cash : `Wallet`
-        The wallet to hold funds in the base intrument.
+        The wallet to hold funds in the base instrument.
     asset : `Wallet`
         The wallet to hold funds in the quote instrument.
     """
@@ -139,28 +145,29 @@ class BSH(TensorTradeActionScheme):
         self.asset = asset
 
         self.listeners = []
-        self.action = 0
+        self._position = 0  # 0 = in cash, 1 = in asset
 
     @property
     def action_space(self):
-        return Discrete(2)
+        return Discrete(3)
 
     def attach(self, listener):
         self.listeners += [listener]
         return self
 
-    def get_orders(self, action: int, portfolio: 'Portfolio') -> 'Order':
+    def get_orders(self, action: int, portfolio: 'Portfolio') -> 'List[Order]':
         order = None
 
-        if abs(action - self.action) > 0:
-            src = self.cash if self.action == 0 else self.asset
-            tgt = self.asset if self.action == 0 else self.cash
-
-            if src.balance == 0:  # We need to check, regardless of the proposed order, if we have balance in 'src'
-                return []  # Otherwise just return an empty order list
-
-            order = proportion_order(portfolio, src, tgt, 1.0)
-            self.action = action
+        if action == 1 and self._position == 0:
+            # Buy: cash -> asset
+            if self.cash.balance.as_float() > 0:
+                order = proportion_order(portfolio, self.cash, self.asset, 1.0)
+                self._position = 1
+        elif action == 2 and self._position == 1:
+            # Sell: asset -> cash
+            if self.asset.balance.as_float() > 0:
+                order = proportion_order(portfolio, self.asset, self.cash, 1.0)
+                self._position = 0
 
         for listener in self.listeners:
             listener.on_action(action)
@@ -169,7 +176,7 @@ class BSH(TensorTradeActionScheme):
 
     def reset(self):
         super().reset()
-        self.action = 0
+        self._position = 0
 
 
 class SimpleOrders(TensorTradeActionScheme):

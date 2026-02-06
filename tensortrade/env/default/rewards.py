@@ -206,7 +206,10 @@ class PBR(TensorTradeRewardScheme):
         self.feed.compile()
 
     def on_action(self, action: int) -> None:
-        self.position = -1 if action == 0 else 1
+        if action == 1:
+            self.position = 1   # Buy → long
+        elif action == 2:
+            self.position = -1  # Sell → flat/short
 
     def get_reward(self, portfolio: 'Portfolio') -> float:
         return self.feed.next()["reward"]
@@ -282,7 +285,10 @@ class AdvancedPBR(TensorTradeRewardScheme):
             self.trade_count += 1
 
         self.prev_action = action
-        self.position = -1 if action == 0 else 1
+        if action == 1:
+            self.position = 1   # Buy → long
+        elif action == 2:
+            self.position = -1  # Sell → flat/short
 
     def get_reward(self, portfolio: 'Portfolio') -> float:
         data = self.feed.next()
