@@ -356,6 +356,78 @@ export interface TrainingProgress {
 	eta_seconds: number | null;
 }
 
+// --- Campaign (Live Optuna) Messages ---
+
+export interface CampaignStartMessage {
+	type: "campaign_start";
+	study_name: string;
+	total_trials: number;
+	search_space: Record<string, CampaignSearchParam>;
+}
+
+export interface CampaignSearchParam {
+	type: "float" | "int" | "categorical";
+	low?: number;
+	high?: number;
+	log?: boolean;
+	choices?: (number | string)[];
+}
+
+export interface TrialStartMessage {
+	type: "trial_start";
+	trial_number: number;
+	params: Record<string, number | string>;
+	total_trials: number;
+}
+
+export interface TrialUpdateMessage {
+	type: "trial_update";
+	trial_number: number;
+	iteration: number;
+	total_iterations: number;
+	metrics: Record<string, number>;
+}
+
+export interface TrialPrunedMessage {
+	type: "trial_pruned";
+	trial_number: number;
+	pruned_at_iteration: number;
+	intermediate_value: number | null;
+}
+
+export interface TrialCompleteMessage {
+	type: "trial_complete";
+	trial_number: number;
+	value: number | null;
+	params: Record<string, number | string>;
+	duration_seconds: number;
+	is_best: boolean;
+}
+
+export interface CampaignImportanceMessage {
+	type: "campaign_importance";
+	importance: Record<string, number>;
+}
+
+export interface CampaignProgressMessage {
+	type: "campaign_progress";
+	trials_completed: number;
+	trials_pruned: number;
+	total_trials: number;
+	best_value: number | null;
+	elapsed_seconds: number;
+	eta_seconds: number | null;
+}
+
+export interface CampaignEndMessage {
+	type: "campaign_end";
+	status: string;
+	best_value: number | null;
+	best_params: Record<string, number | string>;
+	total_completed: number;
+	total_pruned: number;
+}
+
 export type WebSocketMessage =
 	| StepUpdate
 	| TradeEvent
@@ -365,6 +437,35 @@ export type WebSocketMessage =
 	| InferenceStatus
 	| EpisodeMetrics
 	| TrainingProgress
+	| CampaignStartMessage
+	| TrialStartMessage
+	| TrialUpdateMessage
+	| TrialPrunedMessage
+	| TrialCompleteMessage
+	| CampaignImportanceMessage
+	| CampaignProgressMessage
+	| CampaignEndMessage
 	| { type: "training_disconnected" }
 	| { type: "experiment_start"; experiment_id: string; name: string }
 	| { type: "experiment_end"; experiment_id: string; status: string };
+
+// --- Campaign Launch Types ---
+
+export interface CampaignLaunchRequest {
+	study_name: string;
+	dataset_id: string;
+	n_trials: number;
+	iterations_per_trial: number;
+}
+
+export interface CampaignLaunchResponse {
+	study_name: string;
+	status: string;
+}
+
+export interface RunningCampaign {
+	study_name: string;
+	started_at: string;
+	n_trials: number;
+	dataset_id: string;
+}

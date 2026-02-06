@@ -2,6 +2,7 @@
 
 import { useWebSocket } from "@/hooks/useWebSocket";
 import type { WebSocketMessage } from "@/lib/types";
+import { useCampaignStore } from "@/stores/campaignStore";
 import { useInferenceStore } from "@/stores/inferenceStore";
 import { useTrainingStore } from "@/stores/trainingStore";
 import { useCallback, useEffect } from "react";
@@ -28,8 +29,45 @@ export function DashboardShell({ children }: DashboardShellProps) {
 	const inferenceAddTrade = useInferenceStore((s) => s.addTrade);
 	const inferenceReset = useInferenceStore((s) => s.reset);
 
+	const campaignOnStart = useCampaignStore((s) => s.onCampaignStart);
+	const campaignOnTrialStart = useCampaignStore((s) => s.onTrialStart);
+	const campaignOnTrialUpdate = useCampaignStore((s) => s.onTrialUpdate);
+	const campaignOnTrialPruned = useCampaignStore((s) => s.onTrialPruned);
+	const campaignOnTrialComplete = useCampaignStore((s) => s.onTrialComplete);
+	const campaignOnImportance = useCampaignStore((s) => s.onImportance);
+	const campaignOnProgress = useCampaignStore((s) => s.onProgress);
+	const campaignOnEnd = useCampaignStore((s) => s.onCampaignEnd);
+
 	const handleMessage = useCallback(
 		(msg: WebSocketMessage) => {
+			// Route campaign messages to campaignStore
+			switch (msg.type) {
+				case "campaign_start":
+					campaignOnStart(msg);
+					return;
+				case "trial_start":
+					campaignOnTrialStart(msg);
+					return;
+				case "trial_update":
+					campaignOnTrialUpdate(msg);
+					return;
+				case "trial_pruned":
+					campaignOnTrialPruned(msg);
+					return;
+				case "trial_complete":
+					campaignOnTrialComplete(msg);
+					return;
+				case "campaign_importance":
+					campaignOnImportance(msg);
+					return;
+				case "campaign_progress":
+					campaignOnProgress(msg);
+					return;
+				case "campaign_end":
+					campaignOnEnd(msg);
+					return;
+			}
+
 			// Route inference messages to inferenceStore
 			if ("source" in msg && msg.source === "inference") {
 				switch (msg.type) {
@@ -107,6 +145,14 @@ export function DashboardShell({ children }: DashboardShellProps) {
 			inferenceAddStep,
 			inferenceAddTrade,
 			inferenceReset,
+			campaignOnStart,
+			campaignOnTrialStart,
+			campaignOnTrialUpdate,
+			campaignOnTrialPruned,
+			campaignOnTrialComplete,
+			campaignOnImportance,
+			campaignOnProgress,
+			campaignOnEnd,
 		],
 	);
 

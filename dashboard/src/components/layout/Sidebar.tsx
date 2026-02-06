@@ -12,6 +12,7 @@ interface NavItem {
 const navItems: NavItem[] = [
 	{ label: "Overview", href: "/", icon: "\u2302" },
 	{ label: "Launch", href: "/launch", icon: "\u25B6" },
+	{ label: "Alpha Search", href: "/campaign", icon: "\u2694" },
 	{ label: "HP Studio", href: "/hyperparams", icon: "\u2692" },
 	{ label: "Datasets", href: "/datasets", icon: "\u25A6" },
 	{ label: "Inference", href: "/live", icon: "\u23E9" },

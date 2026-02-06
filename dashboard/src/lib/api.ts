@@ -1,4 +1,6 @@
 import type {
+	CampaignLaunchRequest,
+	CampaignLaunchResponse,
 	DatasetConfig,
 	DatasetPreview,
 	ExperimentDetail,
@@ -13,6 +15,7 @@ import type {
 	OptunaStudyDetail,
 	OptunaStudySummary,
 	ParamImportance,
+	RunningCampaign,
 	RunningExperiment,
 	SplitConfig,
 	StudyCurvesResponse,
@@ -284,4 +287,21 @@ export async function getRunningExperiments(): Promise<RunningExperiment[]> {
 
 export async function cancelTraining(experimentId: string): Promise<{ status: string }> {
 	return postJSON<{ status: string }>(`/training/${experimentId}/cancel`, {});
+}
+
+// --- Campaign (Live Optuna) ---
+
+export async function launchCampaign(
+	request: CampaignLaunchRequest,
+): Promise<CampaignLaunchResponse> {
+	return postJSON<CampaignLaunchResponse>(
+		"/campaign/launch",
+		request as unknown as Record<string, unknown>,
+	);
+}
+
+export async function getRunningCampaign(): Promise<RunningCampaign | null> {
+	const result = await fetchJSON<{ is_active: boolean; study_name?: string }>("/campaign/running");
+	if (!result.is_active) return null;
+	return result as unknown as RunningCampaign;
 }

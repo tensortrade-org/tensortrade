@@ -37,6 +37,8 @@ class ConnectionManager:
         self._is_paused = False
         self._current_experiment_id: str | None = None
         self._current_iteration = 0
+        self._is_campaign = False
+        self._campaign_name: str | None = None
 
     async def connect_dashboard(self, ws: WebSocket) -> None:
         await ws.accept()
@@ -85,6 +87,8 @@ class ConnectionManager:
             "current_iteration": self._current_iteration,
             "dashboard_clients": len(self.dashboard_clients),
             "training_producers": len(self.training_producers),
+            "is_campaign": self._is_campaign,
+            "campaign_name": self._campaign_name,
         }
 
 
@@ -588,6 +592,35 @@ def _register_routes(app: FastAPI) -> None:
             return {"error": "not found or not running"}
         return {"status": "cancelled"}
 
+    # --- REST: Campaign (Live Optuna) ---
+
+    @app.post("/api/campaign/launch")
+    async def launch_campaign(body: dict) -> dict:
+        launcher = _get_launcher()
+        study_name = body.get("study_name", "")
+        dataset_id = body.get("dataset_id", "")
+        if not study_name or not dataset_id:
+            return {"error": "study_name and dataset_id are required"}
+        try:
+            campaign_id = launcher.launch_campaign(
+                study_name=study_name,
+                dataset_id=dataset_id,
+                n_trials=body.get("n_trials", 50),
+                iterations_per_trial=body.get("iterations_per_trial", 40),
+            )
+            return {"study_name": campaign_id, "status": "launched"}
+        except (ValueError, RuntimeError) as e:
+            return {"error": str(e)}
+
+    @app.get("/api/campaign/running")
+    async def get_running_campaign() -> dict:
+        if _manager._is_campaign and _manager._campaign_name:
+            return {
+                "study_name": _manager._campaign_name,
+                "is_active": True,
+            }
+        return {"is_active": False}
+
     # --- REST: Status ---
 
     @app.get("/api/status")
@@ -645,10 +678,19 @@ def _register_routes(app: FastAPI) -> None:
                 try:
                     msg = json.loads(data)
                     # Track iteration progress
-                    if msg.get("type") == "training_update":
+                    msg_type = msg.get("type")
+                    if msg_type == "training_update":
                         _manager._current_iteration = msg.get("iteration", 0)
-                    if msg.get("type") == "experiment_start":
+                    if msg_type == "experiment_start":
                         _manager._current_experiment_id = msg.get("experiment_id")
+
+                    # Track campaign lifecycle
+                    if msg_type == "campaign_start":
+                        _manager._is_campaign = True
+                        _manager._campaign_name = msg.get("study_name")
+                    elif msg_type == "campaign_end":
+                        _manager._is_campaign = False
+                        _manager._campaign_name = None
 
                     # Forward to all dashboard clients
                     await _manager.broadcast_to_dashboards(msg)
