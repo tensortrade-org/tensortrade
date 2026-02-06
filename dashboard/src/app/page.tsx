@@ -5,11 +5,15 @@ import { StatusBadge } from "@/components/common/Badge";
 import { Card, CardHeader } from "@/components/common/Card";
 import { LoadingState } from "@/components/common/Spinner";
 import { MetricCards } from "@/components/experiments/MetricCards";
+import { ActionDistributionChart } from "@/components/training/ActionDistributionChart";
+import { EpisodePnLChart } from "@/components/training/EpisodePnLChart";
+import { EpisodeRewardChart } from "@/components/training/EpisodeRewardChart";
+import { ProgressBar } from "@/components/training/ProgressBar";
 import { StatusIndicator } from "@/components/training/StatusIndicator";
 import { TrainingControls } from "@/components/training/TrainingControls";
 import { useApi } from "@/hooks/useApi";
 import { getExperiments } from "@/lib/api";
-import { formatCurrency, formatNumber, formatPercent } from "@/lib/formatters";
+import { formatCurrency } from "@/lib/formatters";
 import type { ExperimentSummary, TrainingUpdate } from "@/lib/types";
 import { useTrainingStore } from "@/stores/trainingStore";
 import { useCallback, useMemo } from "react";
@@ -120,12 +124,18 @@ export default function TrainingOverviewPage() {
 				</div>
 			</div>
 
+			{/* Training Progress Bar */}
+			<Card>
+				<CardHeader title="Training Progress" />
+				<ProgressBar />
+			</Card>
+
 			{/* Metric Cards */}
 			<MetricCards metrics={latestMetrics} />
 
 			{/* Training Metrics Chart */}
 			<Card>
-				<CardHeader title="Training Progress" />
+				<CardHeader title="Iteration Metrics" />
 				<div className="h-80">
 					{iterationRecords.length > 0 ? (
 						<MetricsLineChart
@@ -139,6 +149,15 @@ export default function TrainingOverviewPage() {
 					)}
 				</div>
 			</Card>
+
+			{/* Episode Charts */}
+			<div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+				<EpisodeRewardChart />
+				<EpisodePnLChart />
+			</div>
+
+			{/* Action Distribution */}
+			<ActionDistributionChart />
 
 			{/* Recent Experiments */}
 			<Card>

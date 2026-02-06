@@ -92,5 +92,6 @@ def create(portfolio: 'Portfolio',
         min_periods=min_periods,
         random_start_pct=random_start_pct,
         device=kwargs.get("device", None),
+        max_episode_steps=kwargs.get("max_episode_steps", None),
     )
     return env

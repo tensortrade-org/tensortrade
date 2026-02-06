@@ -19,6 +19,10 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Query
 from fastapi.middleware.cors import CORSMiddleware
 
 from tensortrade.training.experiment_store import ExperimentStore
+from tensortrade.training.hyperparameter_store import HyperparameterStore
+from tensortrade.training.dataset_store import DatasetStore
+from tensortrade.training.feature_engine import FeatureEngine
+from tensortrade.training.launcher import TrainingLauncher
 
 logger = logging.getLogger(__name__)
 
@@ -87,6 +91,10 @@ class ConnectionManager:
 # Module-level state
 _manager = ConnectionManager()
 _store: ExperimentStore | None = None
+_hp_store: HyperparameterStore | None = None
+_ds_store: DatasetStore | None = None
+_launcher: TrainingLauncher | None = None
+_feature_engine: FeatureEngine | None = None
 
 
 def _get_store() -> ExperimentStore:
@@ -96,14 +104,49 @@ def _get_store() -> ExperimentStore:
     return _store
 
 
+def _get_hp_store() -> HyperparameterStore:
+    global _hp_store
+    if _hp_store is None:
+        _hp_store = HyperparameterStore()
+    return _hp_store
+
+
+def _get_ds_store() -> DatasetStore:
+    global _ds_store
+    if _ds_store is None:
+        _ds_store = DatasetStore()
+    return _ds_store
+
+
+def _get_launcher() -> TrainingLauncher:
+    global _launcher
+    if _launcher is None:
+        _launcher = TrainingLauncher(_get_store(), _get_hp_store(), _get_ds_store())
+    return _launcher
+
+
+def _get_feature_engine() -> FeatureEngine:
+    global _feature_engine
+    if _feature_engine is None:
+        _feature_engine = FeatureEngine()
+    return _feature_engine
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
-    global _store
+    global _store, _hp_store, _ds_store, _feature_engine
     _store = ExperimentStore()
+    _hp_store = HyperparameterStore()
+    _ds_store = DatasetStore()
+    _feature_engine = FeatureEngine()
     logger.info("TensorTrade API server started")
     yield
     if _store:
         _store.close()
+    if _hp_store:
+        _hp_store.close()
+    if _ds_store:
+        _ds_store.close()
     logger.info("TensorTrade API server stopped")
 
 
@@ -322,6 +365,228 @@ def _register_routes(app: FastAPI) -> None:
         return store.get_all_trades(
             limit=limit, offset=offset, experiment_id=experiment_id, side=side
         )
+
+    # --- REST: Hyperparameter Packs ---
+
+    @app.get("/api/packs")
+    async def list_packs() -> list[dict]:
+        hp_store = _get_hp_store()
+        packs = hp_store.list_packs()
+        return [asdict(p) for p in packs]
+
+    @app.get("/api/packs/{pack_id}")
+    async def get_pack(pack_id: str) -> dict:
+        hp_store = _get_hp_store()
+        pack = hp_store.get_pack(pack_id)
+        if not pack:
+            return {"error": "not found"}
+        return asdict(pack)
+
+    @app.post("/api/packs")
+    async def create_pack(body: dict) -> dict:
+        hp_store = _get_hp_store()
+        name = body.get("name", "")
+        if not name:
+            return {"error": "name is required"}
+        try:
+            pack_id = hp_store.create_pack(
+                name=name,
+                description=body.get("description", ""),
+                config=body.get("config"),
+            )
+            pack = hp_store.get_pack(pack_id)
+            return asdict(pack) if pack else {"error": "creation failed"}
+        except Exception as e:
+            return {"error": str(e)}
+
+    @app.put("/api/packs/{pack_id}")
+    async def update_pack(pack_id: str, body: dict) -> dict:
+        hp_store = _get_hp_store()
+        updated = hp_store.update_pack(
+            pack_id,
+            name=body.get("name"),
+            description=body.get("description"),
+            config=body.get("config"),
+        )
+        if not updated:
+            return {"error": "not found"}
+        pack = hp_store.get_pack(pack_id)
+        return asdict(pack) if pack else {"error": "not found"}
+
+    @app.delete("/api/packs/{pack_id}")
+    async def delete_pack(pack_id: str) -> dict:
+        hp_store = _get_hp_store()
+        deleted = hp_store.delete_pack(pack_id)
+        if not deleted:
+            return {"error": "not found"}
+        return {"status": "deleted"}
+
+    @app.post("/api/packs/{pack_id}/duplicate")
+    async def duplicate_pack(pack_id: str) -> dict:
+        hp_store = _get_hp_store()
+        try:
+            new_id = hp_store.duplicate_pack(pack_id)
+            pack = hp_store.get_pack(new_id)
+            return asdict(pack) if pack else {"error": "duplication failed"}
+        except ValueError as e:
+            return {"error": str(e)}
+
+    # --- REST: Datasets ---
+
+    @app.get("/api/datasets")
+    async def list_datasets() -> list[dict]:
+        ds_store = _get_ds_store()
+        datasets = ds_store.list_configs()
+        return [asdict(d) for d in datasets]
+
+    @app.get("/api/datasets/features")
+    async def list_feature_types() -> list[dict]:
+        engine = _get_feature_engine()
+        return engine.list_available()
+
+    @app.get("/api/datasets/{dataset_id}")
+    async def get_dataset(dataset_id: str) -> dict:
+        ds_store = _get_ds_store()
+        ds = ds_store.get_config(dataset_id)
+        if not ds:
+            return {"error": "not found"}
+        return asdict(ds)
+
+    @app.post("/api/datasets")
+    async def create_dataset(body: dict) -> dict:
+        ds_store = _get_ds_store()
+        name = body.get("name", "")
+        if not name:
+            return {"error": "name is required"}
+        try:
+            ds_id = ds_store.create_config(
+                name=name,
+                description=body.get("description", ""),
+                source_type=body.get("source_type", "csv_upload"),
+                source_config=body.get("source_config"),
+                features=body.get("features"),
+                split_config=body.get("split_config"),
+            )
+            ds = ds_store.get_config(ds_id)
+            return asdict(ds) if ds else {"error": "creation failed"}
+        except Exception as e:
+            return {"error": str(e)}
+
+    @app.put("/api/datasets/{dataset_id}")
+    async def update_dataset(dataset_id: str, body: dict) -> dict:
+        ds_store = _get_ds_store()
+        updated = ds_store.update_config(
+            dataset_id,
+            name=body.get("name"),
+            description=body.get("description"),
+            source_type=body.get("source_type"),
+            source_config=body.get("source_config"),
+            features=body.get("features"),
+            split_config=body.get("split_config"),
+        )
+        if not updated:
+            return {"error": "not found"}
+        ds = ds_store.get_config(dataset_id)
+        return asdict(ds) if ds else {"error": "not found"}
+
+    @app.delete("/api/datasets/{dataset_id}")
+    async def delete_dataset(dataset_id: str) -> dict:
+        ds_store = _get_ds_store()
+        deleted = ds_store.delete_config(dataset_id)
+        if not deleted:
+            return {"error": "not found"}
+        return {"status": "deleted"}
+
+    @app.get("/api/datasets/{dataset_id}/preview")
+    async def preview_dataset(dataset_id: str) -> dict:
+        ds_store = _get_ds_store()
+        ds = ds_store.get_config(dataset_id)
+        if not ds:
+            return {"error": "not found"}
+
+        engine = _get_feature_engine()
+        try:
+            # Load sample data based on source type
+            if ds.source_type == "crypto_download":
+                from tensortrade.data.cdd import CryptoDataDownload
+                cdd = CryptoDataDownload()
+                data = cdd.fetch(
+                    ds.source_config.get("exchange", "Bitfinex"),
+                    ds.source_config.get("base", "USD"),
+                    ds.source_config.get("quote", "BTC"),
+                    ds.source_config.get("timeframe", "1h"),
+                )
+                data = data[["date", "open", "high", "low", "close", "volume"]]
+            elif ds.source_type == "synthetic":
+                from tensortrade.stochastic.processes.gbm import gbm
+                data = gbm(
+                    base_price=ds.source_config.get("base_price", 50000),
+                    base_volume=ds.source_config.get("base_volume", 1000),
+                    start_date="2020-01-01",
+                    times_to_generate=min(ds.source_config.get("num_candles", 5000), 5000),
+                    time_frame=ds.source_config.get("timeframe", "1h"),
+                )
+            else:
+                return {"error": f"Preview not supported for source_type: {ds.source_type}"}
+
+            preview = engine.preview(data, ds.features, sample_rows=100)
+
+            # Add OHLCV sample and date range
+            ohlcv_cols = ["date", "open", "high", "low", "close", "volume"]
+            available = [c for c in ohlcv_cols if c in data.columns]
+            ohlcv_sample = data[available].tail(100).to_dict(orient="records")
+
+            date_range = {}
+            if "date" in data.columns:
+                date_range = {
+                    "start": str(data["date"].iloc[0]),
+                    "end": str(data["date"].iloc[-1]),
+                }
+
+            return {
+                "rows": preview["rows"],
+                "columns": list(data.columns),
+                "date_range": date_range,
+                "ohlcv_sample": ohlcv_sample,
+                "feature_stats": preview["stats"],
+            }
+        except Exception as e:
+            return {"error": str(e)}
+
+    # --- REST: Training Launcher ---
+
+    @app.post("/api/training/launch")
+    async def launch_training(body: dict) -> dict:
+        launcher = _get_launcher()
+        name = body.get("name", "")
+        hp_pack_id = body.get("hp_pack_id", "")
+        dataset_id = body.get("dataset_id", "")
+        if not name or not hp_pack_id or not dataset_id:
+            return {"error": "name, hp_pack_id, and dataset_id are required"}
+        try:
+            experiment_id = launcher.launch(
+                name=name,
+                hp_pack_id=hp_pack_id,
+                dataset_id=dataset_id,
+                tags=body.get("tags", []),
+                overrides=body.get("overrides"),
+            )
+            return {"experiment_id": experiment_id, "status": "launched"}
+        except ValueError as e:
+            return {"error": str(e)}
+
+    @app.get("/api/training/running")
+    async def list_running() -> list[dict]:
+        launcher = _get_launcher()
+        return launcher.list_running()
+
+    @app.post("/api/training/{experiment_id}/cancel")
+    async def cancel_training(experiment_id: str) -> dict:
+        launcher = _get_launcher()
+        cancelled = launcher.cancel(experiment_id)
+        if not cancelled:
+            return {"error": "not found or not running"}
+        return {"status": "cancelled"}
 
     # --- REST: Status ---
 

@@ -102,3 +102,26 @@ class TrainingStatusMessage(TypedDict, total=False):
     is_paused: bool
     experiment_id: str | None
     current_iteration: int
+
+
+class EpisodeMetricsMessage(TypedDict, total=False):
+    type: str  # "episode_metrics"
+    episode: int
+    reward_total: float
+    pnl: float
+    pnl_pct: float
+    net_worth: float
+    trade_count: int
+    hold_count: int
+    buy_count: int
+    sell_count: int
+    action_distribution: dict[str, int]
+
+
+class TrainingProgressMessage(TypedDict, total=False):
+    type: str  # "training_progress"
+    experiment_id: str
+    iteration: int
+    total_iterations: int
+    elapsed_seconds: float
+    eta_seconds: float | None

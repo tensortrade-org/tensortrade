@@ -4,7 +4,7 @@ import { useWebSocket } from "@/hooks/useWebSocket";
 import type { WebSocketMessage } from "@/lib/types";
 import { useInferenceStore } from "@/stores/inferenceStore";
 import { useTrainingStore } from "@/stores/trainingStore";
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import { Header } from "./Header";
 import { Sidebar } from "./Sidebar";
 
@@ -19,6 +19,8 @@ export function DashboardShell({ children }: DashboardShellProps) {
 	const setStatus = useTrainingStore((s) => s.setStatus);
 	const setConnected = useTrainingStore((s) => s.setConnected);
 	const reset = useTrainingStore((s) => s.reset);
+	const addEpisode = useTrainingStore((s) => s.addEpisode);
+	const setProgress = useTrainingStore((s) => s.setProgress);
 
 	const inferenceSetStatus = useInferenceStore((s) => s.setStatus);
 	const inferenceAddStep = useInferenceStore((s) => s.addStep);
@@ -70,6 +72,12 @@ export function DashboardShell({ children }: DashboardShellProps) {
 				case "training_disconnected":
 					reset();
 					break;
+				case "episode_metrics":
+					addEpisode(msg);
+					break;
+				case "training_progress":
+					setProgress(msg);
+					break;
 			}
 		},
 		[
@@ -78,6 +86,8 @@ export function DashboardShell({ children }: DashboardShellProps) {
 			addIteration,
 			setStatus,
 			reset,
+			addEpisode,
+			setProgress,
 			inferenceSetStatus,
 			inferenceAddStep,
 			inferenceAddTrade,
@@ -92,10 +102,9 @@ export function DashboardShell({ children }: DashboardShellProps) {
 		onMessage: handleMessage,
 	});
 
-	const connectedState = useTrainingStore((s) => s.isConnected);
-	if (connected !== connectedState) {
+	useEffect(() => {
 		setConnected(connected);
-	}
+	}, [connected, setConnected]);
 
 	return (
 		<div className="flex h-screen overflow-hidden">

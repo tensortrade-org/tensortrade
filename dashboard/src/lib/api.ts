@@ -1,13 +1,23 @@
 import type {
+	DatasetConfig,
+	DatasetPreview,
 	ExperimentDetail,
 	ExperimentSummary,
+	FeatureCatalogEntry,
+	FeatureSpec,
+	HyperparameterPack,
 	InsightReport,
+	LaunchRequest,
+	LaunchResponse,
 	LeaderboardEntry,
 	OptunaStudyDetail,
 	OptunaStudySummary,
 	ParamImportance,
+	RunningExperiment,
+	SplitConfig,
 	StudyCurvesResponse,
 	TradeRecord,
+	TrainingConfig,
 	TrainingStatus,
 } from "@/lib/types";
 
@@ -72,6 +82,22 @@ async function postJSON<T>(url: string, body: Record<string, unknown>): Promise<
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify(body),
 	});
+	if (!res.ok) throw new Error(`API error: ${res.status}`);
+	return res.json();
+}
+
+async function putJSON<T>(url: string, body: Record<string, unknown>): Promise<T> {
+	const res = await fetch(`${API_BASE}${url}`, {
+		method: "PUT",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify(body),
+	});
+	if (!res.ok) throw new Error(`API error: ${res.status}`);
+	return res.json();
+}
+
+async function deleteJSON<T>(url: string): Promise<T> {
+	const res = await fetch(`${API_BASE}${url}`, { method: "DELETE" });
 	if (!res.ok) throw new Error(`API error: ${res.status}`);
 	return res.json();
 }
@@ -156,4 +182,106 @@ export async function startInference(
 		experiment_id: experimentId,
 		use_random_agent: useRandomAgent,
 	} satisfies InferenceRunRequest);
+}
+
+// --- Hyperparameter Packs ---
+
+export async function getHyperparamPacks(): Promise<HyperparameterPack[]> {
+	return fetchJSON<HyperparameterPack[]>("/packs");
+}
+
+export async function getHyperparamPack(id: string): Promise<HyperparameterPack> {
+	return fetchJSON<HyperparameterPack>(`/packs/${id}`);
+}
+
+interface CreateHyperparamPackRequest {
+	name: string;
+	description: string;
+	config: TrainingConfig;
+}
+
+export async function createHyperparamPack(
+	pack: CreateHyperparamPackRequest,
+): Promise<HyperparameterPack> {
+	return postJSON<HyperparameterPack>("/packs", pack as unknown as Record<string, unknown>);
+}
+
+interface UpdateHyperparamPackRequest {
+	name?: string;
+	description?: string;
+	config?: TrainingConfig;
+}
+
+export async function updateHyperparamPack(
+	id: string,
+	pack: UpdateHyperparamPackRequest,
+): Promise<HyperparameterPack> {
+	return putJSON<HyperparameterPack>(`/packs/${id}`, pack as unknown as Record<string, unknown>);
+}
+
+export async function deleteHyperparamPack(id: string): Promise<{ status: string }> {
+	return deleteJSON<{ status: string }>(`/packs/${id}`);
+}
+
+export async function duplicateHyperparamPack(id: string): Promise<HyperparameterPack> {
+	return postJSON<HyperparameterPack>(`/packs/${id}/duplicate`, {});
+}
+
+// --- Datasets ---
+
+export async function getDatasets(): Promise<DatasetConfig[]> {
+	return fetchJSON<DatasetConfig[]>("/datasets");
+}
+
+export async function getDataset(id: string): Promise<DatasetConfig> {
+	return fetchJSON<DatasetConfig>(`/datasets/${id}`);
+}
+
+interface CreateDatasetRequest {
+	name: string;
+	description: string;
+	source_type: string;
+	source_config: Record<string, string | number | boolean>;
+	features: FeatureSpec[];
+	split_config: SplitConfig;
+}
+
+export async function createDataset(dataset: CreateDatasetRequest): Promise<DatasetConfig> {
+	return postJSON<DatasetConfig>("/datasets", dataset as unknown as Record<string, unknown>);
+}
+
+export async function updateDataset(
+	id: string,
+	dataset: Record<string, unknown>,
+): Promise<DatasetConfig> {
+	return putJSON<DatasetConfig>(`/datasets/${id}`, dataset);
+}
+
+export async function deleteDataset(id: string): Promise<{ status: string }> {
+	return deleteJSON<{ status: string }>(`/datasets/${id}`);
+}
+
+export async function getDatasetPreview(id: string): Promise<DatasetPreview> {
+	return fetchJSON<DatasetPreview>(`/datasets/${id}/preview`);
+}
+
+export async function getFeatureCatalog(): Promise<FeatureCatalogEntry[]> {
+	return fetchJSON<FeatureCatalogEntry[]>("/datasets/features");
+}
+
+// --- Training Launcher ---
+
+export async function launchTraining(request: LaunchRequest): Promise<LaunchResponse> {
+	return postJSON<LaunchResponse>(
+		"/training/launch",
+		request as unknown as Record<string, unknown>,
+	);
+}
+
+export async function getRunningExperiments(): Promise<RunningExperiment[]> {
+	return fetchJSON<RunningExperiment[]>("/training/running");
+}
+
+export async function cancelTraining(experimentId: string): Promise<{ status: string }> {
+	return postJSON<{ status: string }>(`/training/${experimentId}/cancel`, {});
 }

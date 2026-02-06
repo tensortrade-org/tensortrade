@@ -202,6 +202,160 @@ export interface EpisodeSummary {
 	hold_count: number;
 }
 
+// --- Hyperparameter Packs ---
+
+export interface ModelConfig {
+	fcnet_hiddens: number[];
+	fcnet_activation: string;
+}
+
+export interface TrainingConfig {
+	algorithm: string;
+	learning_rate: number;
+	gamma: number;
+	lambda_: number;
+	clip_param: number;
+	entropy_coeff: number;
+	vf_loss_coeff: number;
+	num_sgd_iter: number;
+	sgd_minibatch_size: number;
+	train_batch_size: number;
+	num_rollout_workers: number;
+	rollout_fragment_length: number;
+	model: ModelConfig;
+	action_scheme: "BSH" | "SimpleOrders" | "ManagedRiskOrders";
+	reward_scheme: "SimpleProfit" | "RiskAdjustedReturns" | "PBR" | "AdvancedPBR";
+	reward_params: Record<string, number>;
+	commission: number;
+	initial_cash: number;
+	window_size: number;
+	max_allowed_loss: number;
+	max_episode_steps: number | null;
+	num_iterations: number;
+}
+
+export interface HyperparameterPack {
+	id: string;
+	name: string;
+	description: string;
+	config: TrainingConfig;
+	created_at: string;
+	updated_at: string;
+}
+
+// --- Dataset Configuration ---
+
+export interface FeatureSpec {
+	type: string;
+	[key: string]: string | number | boolean | number[] | undefined;
+}
+
+export interface SplitConfig {
+	train_pct: number;
+	val_pct: number;
+	test_pct: number;
+}
+
+export interface DatasetConfig {
+	id: string;
+	name: string;
+	description: string;
+	source_type: "csv_upload" | "crypto_download" | "synthetic";
+	source_config: Record<string, string | number | boolean>;
+	features: FeatureSpec[];
+	split_config: SplitConfig;
+	created_at: string;
+	updated_at: string;
+}
+
+export interface OHLCVSample {
+	date: string;
+	open: number;
+	high: number;
+	low: number;
+	close: number;
+	volume: number;
+}
+
+export interface FeatureStats {
+	mean: number;
+	std: number;
+	min: number;
+	max: number;
+}
+
+export interface DatasetPreview {
+	rows: number;
+	columns: string[];
+	date_range: { start: string; end: string };
+	ohlcv_sample: OHLCVSample[];
+	feature_stats: Record<string, FeatureStats>;
+}
+
+export interface FeatureParamDef {
+	name: string;
+	type: string;
+	default: string | number | boolean;
+	min?: number;
+	max?: number;
+	description: string;
+}
+
+export interface FeatureCatalogEntry {
+	type: string;
+	name: string;
+	description: string;
+	params: FeatureParamDef[];
+}
+
+// --- Training Launch ---
+
+export interface LaunchRequest {
+	name: string;
+	hp_pack_id: string;
+	dataset_id: string;
+	tags: string[];
+	overrides?: Partial<TrainingConfig>;
+}
+
+export interface LaunchResponse {
+	experiment_id: string;
+	status: string;
+}
+
+export interface RunningExperiment {
+	experiment_id: string;
+	name: string;
+	started_at: string;
+	iteration: number;
+	total_iterations: number;
+}
+
+// --- Enhanced Training Messages ---
+
+export interface EpisodeMetrics {
+	type: "episode_metrics";
+	episode: number;
+	reward_total: number;
+	pnl: number;
+	pnl_pct: number;
+	net_worth: number;
+	trade_count: number;
+	hold_count: number;
+	buy_count: number;
+	sell_count: number;
+	action_distribution: Record<string, number>;
+}
+
+export interface TrainingProgress {
+	type: "training_progress";
+	experiment_id: string;
+	iteration: number;
+	total_iterations: number;
+	elapsed_seconds: number;
+	eta_seconds: number | null;
+}
+
 export type WebSocketMessage =
 	| StepUpdate
 	| TradeEvent
@@ -209,6 +363,8 @@ export type WebSocketMessage =
 	| EpisodeEvent
 	| TrainingStatus
 	| InferenceStatus
+	| EpisodeMetrics
+	| TrainingProgress
 	| { type: "training_disconnected" }
 	| { type: "experiment_start"; experiment_id: string; name: string }
 	| { type: "experiment_end"; experiment_id: string; status: string };

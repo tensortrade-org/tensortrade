@@ -15,6 +15,7 @@ build/
 .vscode/
 *.sublime-*
 tags
+.venv
 
 dashboard/.next
 dashboard/node_modules

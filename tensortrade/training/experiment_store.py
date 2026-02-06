@@ -453,7 +453,8 @@ class ExperimentStore:
 
     # Metric aliases: when a metric isn't found, try these fallbacks
     _METRIC_ALIASES: dict[str, list[str]] = {
-        "pnl": ["pnl", "test_pnl", "best_val_pnl", "objective_value"],
+        "pnl": ["pnl", "pnl_mean", "test_pnl", "best_val_pnl", "objective_value"],
+        "net_worth": ["net_worth", "net_worth_mean", "final_net_worth"],
         "test_pnl": ["test_pnl", "pnl"],
         "objective_value": ["objective_value", "best_val_pnl", "pnl"],
     }

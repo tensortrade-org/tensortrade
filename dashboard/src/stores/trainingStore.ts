@@ -1,9 +1,17 @@
-import type { StepUpdate, TradeEvent, TrainingStatus, TrainingUpdate } from "@/lib/types";
+import type {
+	EpisodeMetrics,
+	StepUpdate,
+	TradeEvent,
+	TrainingProgress,
+	TrainingStatus,
+	TrainingUpdate,
+} from "@/lib/types";
 import { create } from "zustand";
 
 const MAX_STEPS = 1000;
 const MAX_ITERATIONS = 500;
 const MAX_TRADES = 500;
+const MAX_EPISODES = 500;
 
 interface TrainingState {
 	status: TrainingStatus | null;
@@ -11,25 +19,38 @@ interface TrainingState {
 	iterations: TrainingUpdate[];
 	steps: StepUpdate[];
 	trades: TradeEvent[];
+	episodes: EpisodeMetrics[];
+	progress: TrainingProgress | null;
 	isConnected: boolean;
 
 	setStatus: (status: TrainingStatus) => void;
 	addIteration: (update: TrainingUpdate) => void;
 	addStep: (step: StepUpdate) => void;
 	addTrade: (trade: TradeEvent) => void;
+	addEpisode: (episode: EpisodeMetrics) => void;
+	setProgress: (progress: TrainingProgress | null) => void;
 	setConnected: (connected: boolean) => void;
 	reset: () => void;
 }
 
 const initialState: Pick<
 	TrainingState,
-	"status" | "currentIteration" | "iterations" | "steps" | "trades" | "isConnected"
+	| "status"
+	| "currentIteration"
+	| "iterations"
+	| "steps"
+	| "trades"
+	| "episodes"
+	| "progress"
+	| "isConnected"
 > = {
 	status: null,
 	currentIteration: 0,
 	iterations: [],
 	steps: [],
 	trades: [],
+	episodes: [],
+	progress: null,
 	isConnected: false,
 };
 
@@ -66,6 +87,16 @@ export const useTrainingStore = create<TrainingState>((set) => ({
 				trades: next.length > MAX_TRADES ? next.slice(-MAX_TRADES) : next,
 			};
 		}),
+
+	addEpisode: (episode: EpisodeMetrics) =>
+		set((state) => {
+			const next = [...state.episodes, episode];
+			return {
+				episodes: next.length > MAX_EPISODES ? next.slice(-MAX_EPISODES) : next,
+			};
+		}),
+
+	setProgress: (progress: TrainingProgress | null) => set({ progress }),
 
 	setConnected: (connected: boolean) => set({ isConnected: connected }),
 
