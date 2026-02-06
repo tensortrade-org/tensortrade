@@ -6,7 +6,7 @@ services:
   - docker
 
 python:
-  - '3.11.9'
+  - '3.12'
 
 install:
   - sudo apt-get update
