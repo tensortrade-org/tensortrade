@@ -68,9 +68,14 @@ export function MetricsLineChart({ data, metricKeys }: MetricsLineChartProps) {
 		return point;
 	});
 
+	const useDualAxis = metricKeys.length === 2;
+
 	return (
 		<ResponsiveContainer width="100%" height="100%">
-			<LineChart data={chartData} margin={{ top: 8, right: 16, left: 8, bottom: 8 }}>
+			<LineChart
+				data={chartData}
+				margin={{ top: 8, right: useDualAxis ? 16 : 16, left: 8, bottom: 8 }}
+			>
 				<XAxis
 					dataKey="iteration"
 					stroke="#8b8fa3"
@@ -79,11 +84,22 @@ export function MetricsLineChart({ data, metricKeys }: MetricsLineChartProps) {
 					axisLine={{ stroke: "#2a2e45" }}
 				/>
 				<YAxis
-					stroke="#8b8fa3"
-					tick={{ fill: "#8b8fa3", fontSize: 11 }}
+					yAxisId="left"
+					stroke={LINE_COLORS[0]}
+					tick={{ fill: LINE_COLORS[0], fontSize: 11 }}
 					tickLine={{ stroke: "#2a2e45" }}
 					axisLine={{ stroke: "#2a2e45" }}
 				/>
+				{useDualAxis && (
+					<YAxis
+						yAxisId="right"
+						orientation="right"
+						stroke={LINE_COLORS[1]}
+						tick={{ fill: LINE_COLORS[1], fontSize: 11 }}
+						tickLine={{ stroke: "#2a2e45" }}
+						axisLine={{ stroke: "#2a2e45" }}
+					/>
+				)}
 				<Tooltip content={<ChartTooltip />} />
 				<Legend wrapperStyle={{ color: "#8b8fa3", fontSize: 11 }} />
 				{metricKeys.map((key, idx) => (
@@ -91,6 +107,7 @@ export function MetricsLineChart({ data, metricKeys }: MetricsLineChartProps) {
 						key={key}
 						type="monotone"
 						dataKey={key}
+						yAxisId={useDualAxis && idx === 1 ? "right" : "left"}
 						stroke={LINE_COLORS[idx % LINE_COLORS.length]}
 						strokeWidth={2}
 						dot={false}
