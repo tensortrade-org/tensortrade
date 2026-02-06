@@ -212,7 +212,7 @@ sudo apt-get install python3-dev python3-pip build-essential
 # Follow: https://developer.nvidia.com/cuda-downloads
 
 # Install TensorFlow with CUDA
-pip install tensorflow[and-cuda]==2.15.1
+pip install tensorflow[and-cuda]>=2.15.1
 ```
 
 ### macOS (12.0+)
@@ -266,7 +266,7 @@ pip install ray[rllib]
 pip uninstall tensorflow
 
 # Install TensorFlow with CUDA support
-pip install tensorflow[and-cuda]==2.15.1
+pip install tensorflow[and-cuda]>=2.15.1
 
 # Verify CUDA is available
 python -c "import tensorflow as tf; print(tf.config.list_physical_devices('GPU'))"

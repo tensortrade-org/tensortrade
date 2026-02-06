@@ -175,8 +175,8 @@ tensortrade/
 |-------|----------|
 | "No stream satisfies selector" | Update to v1.0.4-dev1+ |
 | Ray installation fails | Run `pip install --upgrade pip` first |
-| TensorFlow CUDA issues | `pip install tensorflow[and-cuda]==2.15.1` |
 | NumPy version conflict | `pip install "numpy>=1.26.4,<2.0"` |
+| TensorFlow CUDA issues | `pip install tensorflow[and-cuda]>=2.15.1` |
 
 ---
 

@@ -81,7 +81,7 @@ pip install ray[default,tune,rllib,serve]==2.37.0
 #### 2. TensorFlow CUDA Issues
 ```bash
 # For CUDA support:
-pip install tensorflow[and-cuda]==2.15.1
+pip install tensorflow[and-cuda]>=2.15.1
 ```
 
 #### 3. NumPy Compatibility
