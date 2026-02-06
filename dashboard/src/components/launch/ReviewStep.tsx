@@ -4,8 +4,9 @@ import { useApi } from "@/hooks/useApi";
 import { getDatasets, getHyperparamPacks, launchTraining } from "@/lib/api";
 import type { DatasetConfig, HyperparameterPack, LaunchRequest, TrainingConfig } from "@/lib/types";
 import { useLaunchStore } from "@/stores/launchStore";
-import Link from "next/link";
-import { useCallback } from "react";
+import { useTrainingStore } from "@/stores/trainingStore";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useRef } from "react";
 
 interface ReviewCardProps {
 	title: string;
@@ -60,6 +61,24 @@ export function ReviewStep() {
 	const setLaunchedExperimentId = useLaunchStore((s) => s.setLaunchedExperimentId);
 	const reset = useLaunchStore((s) => s.reset);
 
+	const startWarmingUp = useTrainingStore((s) => s.startWarmingUp);
+	const router = useRouter();
+	const redirectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+	// Auto-navigate to homepage after successful launch
+	useEffect(() => {
+		if (launchedExperimentId) {
+			redirectTimerRef.current = setTimeout(() => {
+				router.push("/");
+			}, 3000);
+		}
+		return () => {
+			if (redirectTimerRef.current) {
+				clearTimeout(redirectTimerRef.current);
+			}
+		};
+	}, [launchedExperimentId, router]);
+
 	const datasetFetcher = useCallback(() => getDatasets(), []);
 	const { data: datasets } = useApi<DatasetConfig[]>(datasetFetcher, []);
 	const selectedDataset = datasets?.find((d) => d.id === datasetId) ?? null;
@@ -88,6 +107,7 @@ export function ReviewStep() {
 			};
 			const response = await launchTraining(request);
 			setLaunchedExperimentId(response.experiment_id);
+			startWarmingUp(response.experiment_id);
 		} catch (err) {
 			const message = err instanceof Error ? err.message : "Failed to launch training";
 			setLaunchError(message);
@@ -109,16 +129,25 @@ export function ReviewStep() {
 						{launchedExperimentId}
 					</code>
 				</p>
+				<p className="text-xs text-[var(--text-secondary)]">
+					Redirecting to dashboard in a few seconds...
+				</p>
 				<div className="flex gap-3">
-					<Link
-						href="/"
-						className="rounded-md bg-[var(--accent-blue)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--accent-blue)]/80"
-					>
-						View Dashboard
-					</Link>
 					<button
 						type="button"
-						onClick={reset}
+						onClick={() => router.push("/")}
+						className="rounded-md bg-[var(--accent-blue)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--accent-blue)]/80"
+					>
+						View Dashboard Now
+					</button>
+					<button
+						type="button"
+						onClick={() => {
+							if (redirectTimerRef.current) {
+								clearTimeout(redirectTimerRef.current);
+							}
+							reset();
+						}}
 						className="rounded-md border border-[var(--border-color)] px-4 py-2 text-sm font-medium text-[var(--text-secondary)] transition-colors hover:bg-[var(--bg-secondary)]"
 					>
 						Launch Another

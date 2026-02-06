@@ -130,6 +130,16 @@ class TrainingBridge:
                                 break
 
                             await ws.send(json.dumps(msg))
+
+                        # Drain remaining queued messages before closing
+                        while not self._queue.empty():
+                            try:
+                                msg = self._queue.get_nowait()
+                                if msg is None:
+                                    break
+                                await ws.send(json.dumps(msg))
+                            except (queue.Empty, Exception):
+                                break
                     finally:
                         recv_task.cancel()
                         self._connected.clear()

@@ -114,6 +114,10 @@ export default function TrainingOverviewPage() {
 		[store.iterations, store.status?.experiment_id],
 	);
 
+	const isWarmingUp = useTrainingStore((s) => s.isWarmingUp);
+	const completedExperiment = useTrainingStore((s) => s.completedExperiment);
+	const dismissCompleted = useTrainingStore((s) => s.dismissCompleted);
+
 	return (
 		<div className="space-y-6">
 			<div className="flex items-center justify-between">
@@ -124,40 +128,119 @@ export default function TrainingOverviewPage() {
 				</div>
 			</div>
 
+			{/* Training Complete Banner */}
+			{completedExperiment && (
+				<div className="flex items-center justify-between rounded-lg border border-[var(--accent-green)]/30 bg-[var(--accent-green)]/10 px-4 py-3">
+					<div className="flex items-center gap-3">
+						<div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--accent-green)]/20">
+							<svg
+								className="h-5 w-5 text-[var(--accent-green)]"
+								fill="none"
+								viewBox="0 0 24 24"
+								stroke="currentColor"
+								strokeWidth={2}
+								aria-label="Checkmark"
+								role="img"
+							>
+								<path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+							</svg>
+						</div>
+						<div>
+							<p className="text-sm font-medium text-[var(--accent-green)]">
+								Training {completedExperiment.status === "completed" ? "Complete" : "Ended"}
+							</p>
+							<p className="text-xs text-[var(--text-secondary)]">
+								Experiment {completedExperiment.experimentId.slice(0, 8)} finished.{" "}
+								<a
+									href={`/experiments/${completedExperiment.experimentId}`}
+									className="text-[var(--accent-blue)] hover:underline"
+								>
+									View results
+								</a>
+							</p>
+						</div>
+					</div>
+					<button
+						type="button"
+						onClick={dismissCompleted}
+						className="rounded p-1 text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]"
+					>
+						<svg
+							className="h-4 w-4"
+							fill="none"
+							viewBox="0 0 24 24"
+							stroke="currentColor"
+							strokeWidth={2}
+							aria-label="Dismiss"
+							role="img"
+						>
+							<path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+						</svg>
+					</button>
+				</div>
+			)}
+
+			{/* Warming Up State */}
+			{isWarmingUp && (
+				<Card>
+					<div className="flex flex-col items-center gap-4 py-12">
+						<div className="relative">
+							<div className="h-12 w-12 rounded-full border-4 border-[var(--border-color)]" />
+							<div className="absolute inset-0 h-12 w-12 animate-spin rounded-full border-4 border-transparent border-t-[var(--accent-amber)]" />
+						</div>
+						<div className="text-center">
+							<p className="text-sm font-medium text-[var(--accent-amber)]">
+								Training is starting up...
+							</p>
+							<p className="mt-1 text-xs text-[var(--text-secondary)]">
+								Initializing Ray, loading data, and building the environment. This may take a
+								minute.
+							</p>
+						</div>
+					</div>
+				</Card>
+			)}
+
 			{/* Training Progress Bar */}
-			<Card>
-				<CardHeader title="Training Progress" />
-				<ProgressBar />
-			</Card>
+			{!isWarmingUp && (
+				<Card>
+					<CardHeader title="Training Progress" />
+					<ProgressBar />
+				</Card>
+			)}
 
 			{/* Metric Cards */}
-			<MetricCards metrics={latestMetrics} />
+			{!isWarmingUp && <MetricCards metrics={latestMetrics} />}
 
 			{/* Training Metrics Chart */}
-			<Card>
-				<CardHeader title="Iteration Metrics" />
-				<div className="h-80">
-					{iterationRecords.length > 0 ? (
-						<MetricsLineChart
-							data={iterationRecords}
-							metricKeys={["episode_return_mean", "pnl_mean"]}
-						/>
-					) : (
-						<div className="flex h-full items-center justify-center text-sm text-[var(--text-secondary)]">
-							No training iterations yet. Start a training run to see metrics.
-						</div>
-					)}
-				</div>
-			</Card>
+			{!isWarmingUp && (
+				<Card>
+					<CardHeader title="Iteration Metrics" />
+					<div className="h-80">
+						{iterationRecords.length > 0 ? (
+							<MetricsLineChart
+								data={iterationRecords}
+								metricKeys={["episode_return_mean", "pnl_mean"]}
+							/>
+						) : (
+							<div className="flex h-full items-center justify-center text-sm text-[var(--text-secondary)]">
+								No training iterations yet. Start a training run to see metrics.
+							</div>
+						)}
+					</div>
+				</Card>
+			)}
 
 			{/* Episode Charts */}
-			<div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-				<EpisodeRewardChart />
-				<EpisodePnLChart />
-			</div>
+			{!isWarmingUp && (
+				<div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+					<EpisodeRewardChart />
+					<EpisodePnLChart />
+				</div>
+			)}
 
 			{/* Action Distribution */}
-			<ActionDistributionChart />
+			{!isWarmingUp && <ActionDistributionChart />}
 
 			{/* Recent Experiments */}
 			<Card>

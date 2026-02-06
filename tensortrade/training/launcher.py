@@ -111,12 +111,15 @@ class TrainingLauncher:
         # Generate and write the training script
         script_path = self._generate_script(experiment_id, name, config, dataset)
 
-        # Spawn subprocess
+        # Spawn subprocess — redirect to log file to avoid pipe buffer deadlock
+        log_dir = os.path.expanduser("~/.tensortrade/launch_scripts")
+        log_path = os.path.join(log_dir, f"launch_{experiment_id}.log")
+        log_file = open(log_path, "w")  # noqa: SIM115
         python = sys.executable
         process = subprocess.Popen(
             [python, script_path],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            stdout=log_file,
+            stderr=log_file,
             start_new_session=True,
         )
 

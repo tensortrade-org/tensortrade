@@ -16,7 +16,7 @@ After this tutorial, you will:
 
 ```bash
 # Install training dependencies
-pip install -r examples/requirements.txt
+uv pip install -r examples/requirements.txt
 ```
 
 This installs:

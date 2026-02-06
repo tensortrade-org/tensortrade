@@ -18,7 +18,7 @@ Make sure TensorTrade is installed:
 
 ```bash
 # From the tensortrade directory
-pip install -e .
+uv pip install -e .
 
 # Verify
 python -c "import tensortrade; print('OK')"

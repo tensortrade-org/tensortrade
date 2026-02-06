@@ -22,7 +22,7 @@ This directory contains training scripts for reinforcement learning agents using
 
 ```bash
 # Install dependencies
-pip install -r ../requirements.txt
+uv pip install -r ../requirements.txt
 
 # Run simple training demo
 python train_simple.py
@@ -54,11 +54,11 @@ See [docs/EXPERIMENTS.md](../../docs/EXPERIMENTS.md) for detailed experiment res
 ## Requirements
 
 ```bash
-pip install ray[default,tune,rllib,serve]==2.37.0
-pip install optuna
+uv pip install ray[default,tune,rllib,serve]==2.37.0
+uv pip install optuna
 ```
 
 Or install all example dependencies:
 ```bash
-pip install -r ../requirements.txt
+uv pip install -r ../requirements.txt
 ```

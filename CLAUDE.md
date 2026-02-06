@@ -61,11 +61,32 @@ cd dashboard && npx biome check --write src/
 - `examples/training/` — training scripts
 - `tests/` — pytest test suite
 
+## Training System
+
+- `tensortrade/training/launcher.py` — generates and spawns training scripts as subprocesses
+- `tensortrade/training/experiment_store.py` — SQLite store at `~/.tensortrade/experiments.db`
+- `tensortrade/training/dataset_store.py` — dataset configs (synthetic + crypto)
+- `tensortrade/training/hyperparameter_store.py` — HP pack presets
+- `tensortrade/training/feature_engine.py` — computes features (returns, RSI, SMA, volatility, etc.)
+
+### WebSocket Architecture
+- Training subprocess connects to `/ws/training` (producer)
+- Dashboard connects to `/ws/dashboard` (consumer)
+- Server forwards messages from producer to all dashboard clients
+- Message types: `experiment_start`, `training_update`, `training_progress`, `episode_metrics`, `experiment_end`
+
+### RLlib Notes (Ray 2.53)
+- Uses old API stack: `api_stack(enable_rl_module_and_learner=False, enable_env_runner_and_connector_v2=False)`
+- `EpisodeV2` does NOT have `last_action_for()` — track actions via env wrapper instead
+- Metrics at `result["env_runners"]` (new) or top-level (old); check both
+- RLlib returns NaN for metrics when no episodes complete; always use `safe_float()` helper
+
 ## Key Technical Details
 
-- Python 3.12+, TensorFlow 2.20, numpy 1.26.4, pandas 2.3.3, gymnasium 1.1.1
+- Python 3.12+, TensorFlow 2.20, Ray 2.53, numpy 1.26.4, pandas 2.3.3, gymnasium 1.1.1
 - `env.action_space.n` returns numpy int; Keras needs `int()` cast
 - Gymnasium returns 5-tuple from `step()` (not 4)
 - Use `ta` library (not `pandas_ta` — incompatible with numpy <2.2.6)
 - Never use `any` type in TypeScript — create proper interfaces
 - Run `npx biome check --write src/` after editing dashboard code
+- Docker changes need `docker rmi tensortrade:latest` before rebuild

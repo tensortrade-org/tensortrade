@@ -11,13 +11,13 @@ TensorTrade requires Python >= 3.11.9 for all functionality to work as expected.
 You can install the package from PyPi via pip or from the Github repo.
 
 ```bash
-pip install tensortrade
+uv pip install tensortrade
 ```
 
 OR
 
 ```bash
-pip install git+https://github.com/tensortrade-org/tensortrade.git
+uv pip install git+https://github.com/tensortrade-org/tensortrade.git
 ```
 
 

@@ -18,9 +18,10 @@ export function DashboardShell({ children }: DashboardShellProps) {
 	const addIteration = useTrainingStore((s) => s.addIteration);
 	const setStatus = useTrainingStore((s) => s.setStatus);
 	const setConnected = useTrainingStore((s) => s.setConnected);
-	const reset = useTrainingStore((s) => s.reset);
 	const addEpisode = useTrainingStore((s) => s.addEpisode);
 	const setProgress = useTrainingStore((s) => s.setProgress);
+	const clearWarmingUp = useTrainingStore((s) => s.clearWarmingUp);
+	const markCompleted = useTrainingStore((s) => s.markCompleted);
 
 	const inferenceSetStatus = useInferenceStore((s) => s.setStatus);
 	const inferenceAddStep = useInferenceStore((s) => s.addStep);
@@ -65,18 +66,31 @@ export function DashboardShell({ children }: DashboardShellProps) {
 					break;
 				case "training_update":
 					addIteration(msg);
+					clearWarmingUp();
 					break;
 				case "status":
 					setStatus(msg);
+					if (msg.is_training) {
+						clearWarmingUp();
+					}
 					break;
 				case "training_disconnected":
-					reset();
+					// Don't reset — preserve chart data from the completed run
 					break;
 				case "episode_metrics":
 					addEpisode(msg);
 					break;
 				case "training_progress":
 					setProgress(msg);
+					clearWarmingUp();
+					break;
+				case "experiment_start":
+					clearWarmingUp();
+					break;
+				case "experiment_end":
+					if ("experiment_id" in msg && "status" in msg) {
+						markCompleted(msg.experiment_id as string, msg.status as string);
+					}
 					break;
 			}
 		},
@@ -85,9 +99,10 @@ export function DashboardShell({ children }: DashboardShellProps) {
 			addTrade,
 			addIteration,
 			setStatus,
-			reset,
 			addEpisode,
 			setProgress,
+			clearWarmingUp,
+			markCompleted,
 			inferenceSetStatus,
 			inferenceAddStep,
 			inferenceAddTrade,

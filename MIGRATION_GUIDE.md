@@ -35,8 +35,8 @@ python --version
 2. Install Python
 3. Create new virtual environment:
    ```bash
-   python -m venv tensortrade-env
-   source tensortrade-env/bin/activate  # On Windows: tensortrade-env\Scripts\activate
+   uv venv --python 3.12 .venv
+   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
    ```
 
 ### Step 2: Update Dependencies
@@ -44,9 +44,9 @@ python --version
 **Update requirements.txt:**
 ```bash
 cd tensortrade
-pip install -r requirements.txt --upgrade
-pip install -r examples/requirements.txt --upgrade
-pip install -e . --upgrade
+uv pip install -r requirements.txt --upgrade
+uv pip install -r examples/requirements.txt --upgrade
+uv pip install -e . --upgrade
 ```
 
 **Key dependency changes:**
@@ -210,7 +210,7 @@ pytest tests/tensortrade/integration/test_end_to_end.py -v
 
 **Solution:**
 ```bash
-pip install ray[default,tune,rllib,serve]==2.37.0
+uv pip install ray[default,tune,rllib,serve]==2.37.0
 ```
 
 ### Issue 3: NumPy Version Conflict
@@ -219,7 +219,7 @@ pip install ray[default,tune,rllib,serve]==2.37.0
 
 **Solution:**
 ```bash
-pip install "numpy>=1.26.4,<2.0" --force-reinstall
+uv pip install "numpy>=1.26.4,<2.0" --force-reinstall
 ```
 
 ### Issue 4: Ray Tune API Error
@@ -357,16 +357,16 @@ If migration fails and you need to rollback:
 
 ```bash
 # Uninstall current version
-pip uninstall tensortrade
+uv pip uninstall tensortrade
 
 # Install old version
-pip install tensortrade==1.0.3
+uv pip install tensortrade==1.0.3
 
 # Downgrade dependencies
-pip install ray==1.9.2
-pip install tensorflow==2.7.0
-pip install "numpy>=1.17.0"
-pip install "pandas>=0.25.0"
+uv pip install ray==1.9.2
+uv pip install tensorflow==2.7.0
+uv pip install "numpy>=1.17.0"
+uv pip install "pandas>=0.25.0"
 ```
 
 **Note:** Consider using a separate virtual environment for testing migration before committing.

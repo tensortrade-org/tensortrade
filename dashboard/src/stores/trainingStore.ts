@@ -13,6 +13,12 @@ const MAX_ITERATIONS = 500;
 const MAX_TRADES = 500;
 const MAX_EPISODES = 500;
 
+interface CompletedExperiment {
+	experimentId: string;
+	status: string;
+	completedAt: string;
+}
+
 interface TrainingState {
 	status: TrainingStatus | null;
 	currentIteration: number;
@@ -22,6 +28,9 @@ interface TrainingState {
 	episodes: EpisodeMetrics[];
 	progress: TrainingProgress | null;
 	isConnected: boolean;
+	isWarmingUp: boolean;
+	pendingExperimentId: string | null;
+	completedExperiment: CompletedExperiment | null;
 
 	setStatus: (status: TrainingStatus) => void;
 	addIteration: (update: TrainingUpdate) => void;
@@ -30,6 +39,10 @@ interface TrainingState {
 	addEpisode: (episode: EpisodeMetrics) => void;
 	setProgress: (progress: TrainingProgress | null) => void;
 	setConnected: (connected: boolean) => void;
+	startWarmingUp: (experimentId: string) => void;
+	clearWarmingUp: () => void;
+	markCompleted: (experimentId: string, status: string) => void;
+	dismissCompleted: () => void;
 	reset: () => void;
 }
 
@@ -43,6 +56,9 @@ const initialState: Pick<
 	| "episodes"
 	| "progress"
 	| "isConnected"
+	| "isWarmingUp"
+	| "pendingExperimentId"
+	| "completedExperiment"
 > = {
 	status: null,
 	currentIteration: 0,
@@ -52,6 +68,9 @@ const initialState: Pick<
 	episodes: [],
 	progress: null,
 	isConnected: false,
+	isWarmingUp: false,
+	pendingExperimentId: null,
+	completedExperiment: null,
 };
 
 export const useTrainingStore = create<TrainingState>((set) => ({
@@ -99,6 +118,24 @@ export const useTrainingStore = create<TrainingState>((set) => ({
 	setProgress: (progress: TrainingProgress | null) => set({ progress }),
 
 	setConnected: (connected: boolean) => set({ isConnected: connected }),
+
+	startWarmingUp: (experimentId: string) =>
+		set({ isWarmingUp: true, pendingExperimentId: experimentId }),
+
+	clearWarmingUp: () => set({ isWarmingUp: false, pendingExperimentId: null }),
+
+	markCompleted: (experimentId: string, status: string) =>
+		set({
+			completedExperiment: {
+				experimentId,
+				status,
+				completedAt: new Date().toISOString(),
+			},
+			isWarmingUp: false,
+			pendingExperimentId: null,
+		}),
+
+	dismissCompleted: () => set({ completedExperiment: null }),
 
 	reset: () => set(initialState),
 }));

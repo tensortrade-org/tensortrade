@@ -17,12 +17,15 @@ TensorTrade is an open-source Python framework for building, training, and evalu
 ## Quick Start
 
 ```bash
-# Requires Python 3.12+
-python3.12 -m venv tensortrade-env && source tensortrade-env/bin/activate
-pip install -e .
+# Requires Python 3.12+ and uv (https://docs.astral.sh/uv/)
+uv venv --python 3.12 .venv
+source .venv/bin/activate
+
+# Install core library
+uv pip install -e .
 
 # For training with Ray/RLlib (recommended)
-pip install -r examples/requirements.txt
+uv pip install -r examples/requirements.txt
 
 # Run training
 python examples/training/train_simple.py
@@ -116,25 +119,49 @@ The agent demonstrates directional prediction capability at zero commission. The
 
 ---
 
+## Training Dashboard
+
+TensorTrade includes a real-time training dashboard for monitoring experiments.
+
+```bash
+# Start backend API (port 8000)
+.venv/bin/python -m tensortrade.api.server
+
+# Start frontend (port 3000) — in another terminal
+cd dashboard && npm run dev
+```
+
+Features:
+- Live training progress with iteration tracking and ETA
+- Real-time iteration metrics (reward, PnL) charts
+- Episode reward and P&L tracking
+- Action distribution visualization
+- Experiment history with final metrics
+- Launch training runs from the UI with dataset and hyperparameter selection
+
+---
+
 ## Installation
 
-**Requirements:** Python 3.11 or 3.12
+**Requirements:** Python 3.12+ and [uv](https://docs.astral.sh/uv/)
 
 ```bash
 # Create environment
-python3.12 -m venv tensortrade-env
-source tensortrade-env/bin/activate  # Windows: tensortrade-env\Scripts\activate
+uv venv --python 3.12 .venv
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
 
 # Install
-pip install --upgrade pip
-pip install -r requirements.txt
-pip install -e .
+uv pip install -r requirements.txt
+uv pip install -e .
 
 # Verify
 pytest tests/tensortrade/unit -v
 
 # Training dependencies (optional)
-pip install -r examples/requirements.txt
+uv pip install -r examples/requirements.txt
+
+# Dashboard dependencies (optional)
+uv pip install -e ".[dashboard]"
 ```
 
 See [ENVIRONMENT_SETUP.md](docs/ENVIRONMENT_SETUP.md) for platform-specific instructions and troubleshooting.
@@ -157,7 +184,14 @@ tensortrade/
 │   ├── env/              # Trading environments
 │   ├── feed/             # Data pipeline
 │   ├── oms/              # Order management
+│   ├── api/              # FastAPI backend
+│   ├── training/         # Training modules
 │   └── data/             # Data fetching
+├── dashboard/             # Next.js training dashboard
+│   ├── src/app/          # Pages (file-based routing)
+│   ├── src/components/   # React components
+│   ├── src/stores/       # Zustand state stores
+│   └── src/lib/          # API client & types
 ├── examples/
 │   ├── training/         # Training scripts
 │   └── notebooks/        # Jupyter tutorials
@@ -174,9 +208,9 @@ tensortrade/
 | Issue | Solution |
 |-------|----------|
 | "No stream satisfies selector" | Update to v1.0.4-dev1+ |
-| Ray installation fails | Run `pip install --upgrade pip` first |
-| TensorFlow CUDA issues | `pip install tensorflow[and-cuda]==2.15.1` |
-| NumPy version conflict | `pip install "numpy>=1.26.4,<2.0"` |
+| Ray installation fails | `uv pip install ray[default,tune,rllib]==2.37.0` |
+| TensorFlow CUDA issues | `uv pip install tensorflow[and-cuda]==2.15.1` |
+| NumPy version conflict | `uv pip install "numpy>=1.26.4,<2.0"` |
 
 ---
 

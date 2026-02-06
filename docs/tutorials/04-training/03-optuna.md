@@ -41,7 +41,7 @@ Optuna approach:
 ## Setup
 
 ```bash
-pip install optuna
+uv pip install optuna
 ```
 
 ---

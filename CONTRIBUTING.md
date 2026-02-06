@@ -52,16 +52,16 @@ Here's a quick guide to submitting your improvements:
 
 4) Write tests. Your code should have full unit test coverage. If you want to see your PR merged promptly, this is crucial. Use the _coverage_  module module to make sure that code coverage is increased on the component you are working on. PRs that decrease coverage may be rejected. 
 
-5) Run our test suite locally. It's easy: from the TensorTrade folder, simply run: `py.test tests/`.
+5) Run our test suite locally. It's easy: from the TensorTrade folder, simply run: `pytest tests/`.
 
-   - You will need to install the test requirements as well: `pip install -e .[tests]`.
+   - You will need to install the test requirements as well: `uv pip install -e ".[tests]"`.
 
 6) Make sure all tests are passing.
 
 7) We use PEP8 syntax conventions, but we aren't dogmatic when it comes to line length. Make sure your lines stay reasonably sized, though. To make your life easier, we recommend running a PEP8 linter:
 
-   - Install PEP8 packages: `pip install pep8 pytest-pep8 autopep8`
-   - Run a standalone PEP8 check: `py.test --pep8 -m pep8`
+   - Install PEP8 packages: `uv pip install pep8 pytest-pep8 autopep8`
+   - Run a standalone PEP8 check: `pytest --pep8 -m pep8`
    - You can automatically fix some PEP8 error by running: `autopep8 -i --select <errors> <FILENAME>` for example: `autopep8 -i --select E128 tests/tensortrader/backend/test_backends.py`
 
 8) When committing, use appropriate, descriptive commit messages.

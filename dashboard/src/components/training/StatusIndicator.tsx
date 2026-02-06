@@ -34,6 +34,19 @@ function getStatusConfig(isTraining: boolean, isPaused: boolean): StatusConfig {
 export function StatusIndicator() {
 	const status = useTrainingStore((state) => state.status);
 	const currentIteration = useTrainingStore((state) => state.currentIteration);
+	const isWarmingUp = useTrainingStore((state) => state.isWarmingUp);
+
+	if (isWarmingUp) {
+		return (
+			<div className="flex flex-col gap-2">
+				<div className="flex items-center gap-2">
+					<div className="h-2 w-2 animate-pulse rounded-full bg-[var(--accent-amber)]" />
+					<span className="text-sm font-medium text-[var(--accent-amber)]">Starting</span>
+				</div>
+				<p className="text-xs text-[var(--text-secondary)]">Initializing training environment...</p>
+			</div>
+		);
+	}
 
 	if (!status) {
 		return (

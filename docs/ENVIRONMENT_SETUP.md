@@ -5,21 +5,19 @@ This guide provides step-by-step instructions for setting up a working TensorTra
 ## Prerequisites
 
 - **Python 3.12+** (required - Python 3.11 and below are NOT supported)
-- **pip** (latest version recommended)
-- **Virtual environment tool** (venv, conda, or virtualenv)
+- **[uv](https://docs.astral.sh/uv/)** (recommended package manager) — install with `curl -LsSf https://astral.sh/uv/install.sh | sh`
 
 ## Quick Start (Recommended)
 
 ```bash
-# Requires Python 3.12+
-python3.12 -m venv tensortrade-env
-source tensortrade-env/bin/activate  # Windows: tensortrade-env\Scripts\activate
+# Requires Python 3.12+ and uv
+uv venv --python 3.12 .venv
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
 
 # Install core library
-pip install --upgrade pip
-pip install -e .
+uv pip install -e .
 
-# Verify (232 unit tests should pass, 2 skipped)
+# Verify (251 unit tests should pass, 2 skipped)
 pytest tests/tensortrade/unit -v
 ```
 
@@ -29,7 +27,7 @@ For reinforcement learning training, install additional dependencies:
 
 ```bash
 # Install Ray with RLlib and other training dependencies
-pip install -r examples/requirements.txt
+uv pip install -r examples/requirements.txt
 
 # Verify full test suite including RLlib integration (251 passed, 2 skipped)
 pytest tests/ -v
@@ -37,27 +35,24 @@ pytest tests/ -v
 
 ## Alternative Installation Methods
 
-### Option 1: Using venv
+### Option 1: Using uv (Recommended)
 
 ```bash
 # Create virtual environment
-python3.12 -m venv tensortrade-env
+uv venv --python 3.12 .venv
 
 # Activate virtual environment
 # On Windows:
-tensortrade-env\Scripts\activate
+.venv\Scripts\activate
 # On Linux/macOS:
-source tensortrade-env/bin/activate
-
-# Upgrade pip
-python -m pip install --upgrade pip
+source .venv/bin/activate
 
 # Install TensorTrade
-pip install -r requirements.txt
-pip install -e .
+uv pip install -r requirements.txt
+uv pip install -e .
 
 # Install example dependencies (optional)
-pip install -r examples/requirements.txt
+uv pip install -r examples/requirements.txt
 ```
 
 ### Option 2: Using Conda
@@ -70,11 +65,11 @@ conda create -n tensortrade python=3.12
 conda activate tensortrade
 
 # Install TensorTrade
-pip install -r requirements.txt
-pip install -e .
+uv pip install -r requirements.txt
+uv pip install -e .
 
 # Install example dependencies (optional)
-pip install -r examples/requirements.txt
+uv pip install -r examples/requirements.txt
 ```
 
 ### Option 3: Google Colab
@@ -109,21 +104,21 @@ If you have an older version, download Python 3.11 or 3.12 from [python.org](htt
 - Makes it easy to reproduce the environment
 
 ```bash
-# Using venv (use python3.11 or python3.12)
-python3.12 -m venv tensortrade-env
+# Using uv (recommended)
+uv venv --python 3.12 .venv
 
-# Using conda
+# Using conda (alternative)
 conda create -n tensortrade python=3.12
 ```
 
 ### Step 3: Activate Virtual Environment
 
 ```bash
-# Windows (venv)
-tensortrade-env\Scripts\activate
+# Windows (uv/venv)
+.venv\Scripts\activate
 
-# Linux/macOS (venv)
-source tensortrade-env/bin/activate
+# Linux/macOS (uv/venv)
+source .venv/bin/activate
 
 # Conda (all platforms)
 conda activate tensortrade
@@ -132,11 +127,8 @@ conda activate tensortrade
 ### Step 4: Install Core Dependencies
 
 ```bash
-# Upgrade pip first
-python -m pip install --upgrade pip
-
 # Install TensorTrade core dependencies
-pip install -r requirements.txt
+uv pip install -r requirements.txt
 ```
 
 **Core dependencies installed:**
@@ -151,16 +143,16 @@ pip install -r requirements.txt
 
 ```bash
 # Install in editable mode (for development)
-pip install -e .
+uv pip install -e .
 
 # Or install normally
-pip install .
+uv pip install .
 ```
 
 ### Step 6: Install Example Dependencies (Optional)
 
 ```bash
-pip install -r examples/requirements.txt
+uv pip install -r examples/requirements.txt
 ```
 
 **Example dependencies include:**
@@ -212,7 +204,7 @@ sudo apt-get install python3-dev python3-pip build-essential
 # Follow: https://developer.nvidia.com/cuda-downloads
 
 # Install TensorFlow with CUDA
-pip install tensorflow[and-cuda]==2.15.1
+uv pip install tensorflow[and-cuda]==2.15.1
 ```
 
 ### macOS (12.0+)
@@ -238,24 +230,21 @@ xcode-select --install
 python --version
 
 # If using 3.14, switch to 3.12
-python3.12 -m venv tensortrade-env
-source tensortrade-env/bin/activate
+uv venv --python 3.12 .venv
+source .venv/bin/activate
 ```
 
 ### Issue: Ray Installation Fails
 
 **Solution:**
 ```bash
-# Upgrade pip first
-pip install --upgrade pip
-
 # Install Ray separately
-pip install ray[default,tune,rllib,serve]==2.37.0
+uv pip install ray[default,tune,rllib,serve]==2.37.0
 
 # If still fails, try without extras
-pip install ray==2.37.0
-pip install ray[tune]
-pip install ray[rllib]
+uv pip install ray==2.37.0
+uv pip install ray[tune]
+uv pip install ray[rllib]
 ```
 
 ### Issue: TensorFlow CUDA Not Working
@@ -266,7 +255,7 @@ pip install ray[rllib]
 pip uninstall tensorflow
 
 # Install TensorFlow with CUDA support
-pip install tensorflow[and-cuda]==2.15.1
+uv pip install tensorflow[and-cuda]==2.15.1
 
 # Verify CUDA is available
 python -c "import tensorflow as tf; print(tf.config.list_physical_devices('GPU'))"
@@ -277,7 +266,7 @@ python -c "import tensorflow as tf; print(tf.config.list_physical_devices('GPU')
 **Solution:**
 ```bash
 # Ensure NumPy < 2.0 for TensorFlow compatibility
-pip install "numpy>=1.26.4,<2.0" --force-reinstall
+uv pip install "numpy>=1.26.4,<2.0" --force-reinstall
 ```
 
 ### Issue: Pandas API Errors (pct_change, ewm)
@@ -286,7 +275,7 @@ pip install "numpy>=1.26.4,<2.0" --force-reinstall
 
 **Solution:** TensorTrade requires pandas < 3.0:
 ```bash
-pip install "pandas>=2.2.3,<3.0" --force-reinstall
+uv pip install "pandas>=2.2.3,<3.0" --force-reinstall
 ```
 
 ### Issue: importlib-metadata Error
@@ -294,7 +283,7 @@ pip install "pandas>=2.2.3,<3.0" --force-reinstall
 **Solution:**
 ```bash
 # Install compatible version
-pip install "importlib-metadata>=4.13.0,<6.0"
+uv pip install "importlib-metadata>=4.13.0,<6.0"
 ```
 
 ### Issue: "No stream satisfies selector condition"
@@ -307,7 +296,7 @@ This has been fixed in the latest version. Make sure you're using the updated co
 **Solution:**
 ```bash
 # Make sure example dependencies are installed
-pip install -r examples/requirements.txt
+uv pip install -r examples/requirements.txt
 
 # Verify Ray version
 python -c "import ray; print(ray.__version__)"
@@ -394,10 +383,10 @@ If you encounter issues not covered in this guide:
 git pull origin master
 
 # Reinstall
-pip install -e . --upgrade
+uv pip install -e . --upgrade
 
 # Update dependencies
-pip install -r requirements.txt --upgrade
+uv pip install -r requirements.txt --upgrade
 ```
 
 ### Cleaning Up
@@ -407,7 +396,7 @@ pip install -r requirements.txt --upgrade
 deactivate  # or: conda deactivate
 
 # Remove virtual environment
-rm -rf tensortrade-env  # or: conda env remove -n tensortrade
+rm -rf .venv  # or: conda env remove -n tensortrade
 ```
 
 ## Best Practices
@@ -415,6 +404,6 @@ rm -rf tensortrade-env  # or: conda env remove -n tensortrade
 1. **Always use a virtual environment**
 2. **Keep dependencies up to date**
 3. **Test after updates**
-4. **Document your environment** (use `pip freeze > my-requirements.txt`)
+4. **Document your environment** (use `uv pip freeze > my-requirements.txt`)
 5. **Use version control** for your code
 
