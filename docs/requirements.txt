@@ -4,7 +4,7 @@ sphinx
 sphinx_rtd_theme
 sphinxcontrib.apidoc
 nbsphinx
-nbsphinx_link
+myst-parser
 recommonmark
 sphinx_markdown_tables
 ipykernel
