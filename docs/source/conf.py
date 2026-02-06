@@ -51,9 +51,8 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinx.ext.napoleon',  # reading numpydoc strings
     'sphinxcontrib.apidoc',  # automatically generate API docs
-    'nbsphinx',
-    'nbsphinx_link',  # for linking notebooks from outside sphinx source root
-    'recommonmark',   # for including markdown
+    'myst_parser',  # Replaces recommonmark
+    'nbsphinx',  # Modern nbsphinx supports notebooks directly
     'sphinx_markdown_tables'  # Support rendering tables in markdown
 ]
 
@@ -108,7 +107,7 @@ master_doc = 'index'
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = 'en'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
