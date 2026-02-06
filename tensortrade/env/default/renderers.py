@@ -557,6 +557,75 @@ class PlotlyTradingChart(BaseRenderer):
         clear_output(wait=True)
 
 
+class WebSocketRenderer(BaseRenderer):
+    """Sends step data and trades to the dashboard via TrainingBridge.
+
+    Used during evaluation phases to stream real-time OHLCV data,
+    portfolio state, and trade events to the Next.js dashboard.
+
+    Parameters
+    ----------
+    bridge : TrainingBridge
+        The training bridge instance connected to the dashboard server.
+    """
+
+    def __init__(self, bridge: 'TrainingBridge') -> None:
+        super().__init__()
+        self._bridge = bridge
+        self._episode = 0
+
+    def render_env(self,
+                   episode: int = None,
+                   max_episodes: int = None,
+                   step: int = None,
+                   max_steps: int = None,
+                   price_history: 'pd.DataFrame' = None,
+                   net_worth: 'pd.Series' = None,
+                   performance: 'pd.DataFrame' = None,
+                   trades: 'OrderedDict' = None) -> None:
+        if self._bridge is None:
+            return
+
+        self._episode = episode or self._episode
+
+        # Send step update with OHLCV + portfolio
+        if price_history is not None and step is not None and step > 0:
+            idx = min(step - 1, len(price_history) - 1)
+            row = price_history.iloc[idx]
+            msg = {
+                "type": "step_update",
+                "step": step,
+                "open": float(row.get("open", 0)),
+                "high": float(row.get("high", 0)),
+                "low": float(row.get("low", 0)),
+                "close": float(row.get("close", 0)),
+                "volume": float(row.get("volume", 0)),
+                "net_worth": float(net_worth.iloc[-1]) if net_worth is not None and len(net_worth) > 0 else 0,
+            }
+            self._bridge.send(msg)
+
+        # Send new trades
+        if trades:
+            for trade_list in trades.values():
+                for trade in trade_list:
+                    self._bridge.send({
+                        "type": "trade",
+                        "step": trade.step,
+                        "side": trade.side.value if hasattr(trade.side, "value") else str(trade.side),
+                        "price": float(trade.price),
+                        "size": float(trade.size),
+                        "commission": float(trade.commission) if hasattr(trade, "commission") else 0,
+                    })
+
+    def reset(self) -> None:
+        self._episode += 1
+        if self._bridge:
+            self._bridge.send({
+                "type": "episode_start",
+                "episode": self._episode,
+            })
+
+
 class MatplotlibTradingChart(BaseRenderer):
     """ Trading visualization for TensorTrade using Matplotlib
     Parameters
@@ -759,7 +828,8 @@ _registry = {
     "screen-log": ScreenLogger,
     "file-log": FileLogger,
     "plotly": PlotlyTradingChart,
-    "matplot": MatplotlibTradingChart
+    "matplot": MatplotlibTradingChart,
+    "websocket": WebSocketRenderer
 }
 
 

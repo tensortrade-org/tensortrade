@@ -12,6 +12,7 @@ Key principles:
 import os
 import numpy as np
 import pandas as pd
+import argparse
 from typing import Dict, Any
 
 import ray
@@ -160,6 +161,12 @@ def evaluate(algo, data: pd.DataFrame, feature_cols: list, config: Dict, n: int 
 
 
 def main():
+    import sys, pathlib; sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2]))
+    from examples.training._common import create_training_parser, setup_experiment, build_composed_callbacks, finish_experiment, log_training_iteration
+
+    parser = create_training_parser("TensorTrade - Profit Strategy")
+    args = parser.parse_args()
+
     print("=" * 70)
     print("TensorTrade - Profit-Focused Strategy")
     print("=" * 70)
@@ -242,13 +249,17 @@ def main():
     ray.init(num_cpus=6, ignore_reinit_error=True, log_to_driver=False)
     register_env("TradingEnv", create_env)
 
+    # Experiment tracking
+    store, experiment_id, tb_logger, bridge = setup_experiment(args, "train_profit", env_config)
+    ComposedCallbacks = build_composed_callbacks(Callbacks, store, experiment_id, tb_logger, bridge)
+
     # PPO config optimized for generalization
     config = (
         PPOConfig().api_stack(enable_rl_module_and_learner=False, enable_env_runner_and_connector_v2=False)
         .environment(env="TradingEnv", env_config=env_config)
         .framework("torch")
         .env_runners(num_env_runners=4)
-        .callbacks(Callbacks)
+        .callbacks(ComposedCallbacks)
         .training(
             lr=5e-5,           # Low learning rate
             gamma=0.99,        # High discount
@@ -281,6 +292,7 @@ def main():
 
     for i in range(train_iters):
         result = algo.train()
+        log_training_iteration(result, i + 1, store, experiment_id, tb_logger, bridge)
 
         if (i + 1) % 5 == 0:
             pnl = result.get('env_runners', {}).get('custom_metrics', {}).get('pnl_mean', 0)
@@ -341,6 +353,9 @@ def main():
         print(f"\nAgent beat B&H by ${diff:,.0f} (but still lost money)")
     else:
         print(f"\nB&H wins by ${-diff:,.0f}")
+
+    final_metrics = {"test_pnl": float(test_pnl), "test_bh": float(test_bh), "best_val_pnl": float(best_val_pnl)}
+    finish_experiment(store, experiment_id, "completed", final_metrics, tb_logger, bridge)
 
     # Cleanup
     os.remove(train_csv)

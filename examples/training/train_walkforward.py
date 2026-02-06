@@ -10,6 +10,7 @@ Best practices for RL trading:
 """
 
 import os
+import argparse
 import numpy as np
 import pandas as pd
 from datetime import datetime
@@ -210,6 +211,12 @@ def evaluate_agent(algo, eval_config: Dict, num_episodes: int = 10) -> Dict:
 
 
 def main():
+    import sys, pathlib; sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2]))
+    from examples.training._common import create_training_parser, setup_experiment, build_composed_callbacks, finish_experiment, log_training_iteration
+
+    parser = create_training_parser("TensorTrade - Walk-Forward Training")
+    args = parser.parse_args()
+
     print("=" * 80)
     print("TensorTrade - Walk-Forward Training with Multiple Market Regimes")
     print("=" * 80)
@@ -321,6 +328,10 @@ def main():
     ray.init(num_cpus=8, ignore_reinit_error=True, log_to_driver=False)
     register_env("TradingEnv", create_env)
 
+    # Experiment tracking
+    store, experiment_id, tb_logger, bridge = setup_experiment(args, "train_walkforward", {"feature_count": len(feature_cols), "folds": len(folds)})
+    ComposedCallbacks = build_composed_callbacks(WalletTrackingCallbacks, store, experiment_id, tb_logger, bridge)
+
     # Save initial training data (first fold) so algorithm can be built
     initial_fold_csv = os.path.join(os.getcwd(), 'initial_fold.csv')
     folds[0][1].reset_index(drop=True).to_csv(initial_fold_csv, index=False)
@@ -339,7 +350,7 @@ def main():
         .environment(env="TradingEnv", env_config=base_config)
         .framework("torch")
         .env_runners(num_env_runners=6)
-        .callbacks(WalletTrackingCallbacks)
+        .callbacks(ComposedCallbacks)
         .training(
             lr=5e-5,  # Lower LR for stability across regimes
             gamma=0.995,
@@ -387,6 +398,7 @@ def main():
 
     for i in range(total_iterations):
         result = algo.train()
+        log_training_iteration(result, i + 1, store, experiment_id, tb_logger, bridge)
 
         ep_reward = result.get('env_runners', {}).get('episode_return_mean')
         if ep_reward is not None:
@@ -469,6 +481,9 @@ def main():
     # Win rate
     wins = sum(1 for r in eval_results['results'] if r['pnl'] > bh_pnl)
     print(f"\n  Win rate vs B&H: {wins}/{len(eval_results['results'])} episodes ({wins/len(eval_results['results'])*100:.0f}%)")
+
+    final_metrics = {"avg_pnl": float(eval_results['avg_pnl']), "avg_pnl_pct": float(eval_results['avg_pnl_pct']), "bh_pnl": float(bh_pnl)}
+    finish_experiment(store, experiment_id, "completed", final_metrics, tb_logger, bridge)
 
     # Cleanup
     os.remove(eval_csv)

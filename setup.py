@@ -73,6 +73,17 @@ setup(
             'sphinx_markdown_tables',
             'ipykernel'
         ],
+        'dashboard': [
+            'fastapi>=0.115.0',
+            'uvicorn[standard]>=0.34.0',
+            'websockets>=14.0',
+        ],
+        'insights': [
+            'anthropic>=0.42.0',
+        ],
+        'optuna': [
+            'optuna>=4.0.0',
+        ],
     },
     classifiers=[
         'Development Status :: 5 - Production/Stable',

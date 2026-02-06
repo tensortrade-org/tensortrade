@@ -4,8 +4,15 @@ Hyperparameter optimization with Optuna + Ray RLlib.
 
 Runs multiple trials to find the best hyperparameters for trading.
 Uses validation performance to guide the search, tests best on held-out data.
+
+Features:
+- Persistent SQLite storage (survives restarts, can resume studies)
+- Each trial creates an experiment record in the experiment store
+- Support --resume-study flag to continue a previous study
+- Support --n-trials to override trial count
 """
 
+import argparse
 import os
 import numpy as np
 import pandas as pd
@@ -148,11 +155,17 @@ TEST_DATA = None
 FEATURE_COLS = None
 VAL_BH = None
 TEST_BH = None
+OPTUNA_BRIDGE = None
 
 
 def objective(trial: optuna.Trial) -> float:
     """Optuna objective function - returns validation P&L."""
-    global TRAIN_DATA, VAL_DATA, FEATURE_COLS
+    global TRAIN_DATA, VAL_DATA, FEATURE_COLS, OPTUNA_BRIDGE
+    from examples.training._common import log_training_iteration
+
+    # Notify bridge of trial start
+    if OPTUNA_BRIDGE:
+        OPTUNA_BRIDGE.on_trial_begin(trial)
 
     # Hyperparameters to optimize
     lr = trial.suggest_float("lr", 1e-5, 1e-3, log=True)
@@ -205,7 +218,12 @@ def objective(trial: optuna.Trial) -> float:
     # Train for fixed iterations
     train_iters = 40
     for i in range(train_iters):
-        algo.train()
+        result = algo.train()
+
+        # Log per-trial iteration to experiment store
+        trial_exp_id = OPTUNA_BRIDGE.get_experiment_id(trial.number)
+        if trial_exp_id:
+            log_training_iteration(result, i + 1, OPTUNA_BRIDGE.store, trial_exp_id, None, None)
 
         # Early pruning based on intermediate results
         if (i + 1) % 10 == 0:
@@ -230,7 +248,16 @@ def objective(trial: optuna.Trial) -> float:
 
 
 def main():
-    global TRAIN_DATA, VAL_DATA, TEST_DATA, FEATURE_COLS, VAL_BH, TEST_BH
+    global TRAIN_DATA, VAL_DATA, TEST_DATA, FEATURE_COLS, VAL_BH, TEST_BH, OPTUNA_BRIDGE
+
+    import sys, pathlib; sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2]))
+    from examples.training._common import create_training_parser, setup_experiment, finish_experiment, log_training_iteration
+
+    parser = create_training_parser("TensorTrade - Optuna Hyperparameter Optimization")
+    parser.add_argument("--n-trials", type=int, default=100, help="Number of Optuna trials")
+    parser.add_argument("--resume-study", type=str, default=None, help="Resume a named study")
+    parser.add_argument("--study-name", type=str, default="tensortrade_optuna", help="Optuna study name")
+    args = parser.parse_args()
 
     print("=" * 70)
     print("TensorTrade - Optuna Hyperparameter Optimization")
@@ -271,23 +298,55 @@ def main():
     ray.init(num_cpus=6, ignore_reinit_error=True, log_to_driver=False)
     register_env("TradingEnv", create_env)
 
-    # Create Optuna study
+    # Experiment tracking
+    store, experiment_id, tb_logger, bridge = setup_experiment(
+        args, "train_optuna", {"n_trials": args.n_trials, "study_name": args.study_name}
+    )
+
+    # Set up Optuna bridge for trial-experiment linking
+    from tensortrade.training.optuna_bridge import OptunaExperimentBridge
+    OPTUNA_BRIDGE = OptunaExperimentBridge(store, args.study_name, script="train_optuna")
+
+    # Create Optuna study with persistent SQLite storage
     print(f"\n{'='*70}")
     print("Starting Optuna Optimization")
     print(f"{'='*70}")
 
-    n_trials = 100  # Number of different hyperparameter combinations to try
+    n_trials = args.n_trials
+    study_name = args.resume_study or args.study_name
 
-    study = optuna.create_study(
-        direction="maximize",  # Maximize validation P&L
-        sampler=TPESampler(seed=42),
-        pruner=optuna.pruners.MedianPruner(n_startup_trials=5, n_warmup_steps=10)
+    # Persistent storage
+    db_dir = os.path.expanduser("~/.tensortrade")
+    os.makedirs(db_dir, exist_ok=True)
+    storage = optuna.storages.RDBStorage(
+        url=f"sqlite:///{db_dir}/optuna_studies.db",
+        engine_kwargs={"connect_args": {"timeout": 30}}
     )
+
+    if args.resume_study:
+        print(f"Resuming study: {study_name}")
+        study = optuna.load_study(
+            study_name=study_name,
+            storage=storage,
+        )
+        print(f"  Existing trials: {len(study.trials)}")
+    else:
+        study = optuna.create_study(
+            study_name=study_name,
+            storage=storage,
+            direction="maximize",  # Maximize validation P&L
+            sampler=TPESampler(seed=42),
+            pruner=optuna.pruners.MedianPruner(n_startup_trials=5, n_warmup_steps=10),
+            load_if_exists=True,
+        )
 
     print(f"Running {n_trials} trials...")
     print(f"Each trial: 40 training iterations, evaluated on validation set\n")
 
-    def callback(study, trial):
+    # Build callbacks list: console logging + bridge
+    optuna_callbacks = []
+
+    def console_callback(study, trial):
         if trial.state == optuna.trial.TrialState.COMPLETE:
             print(f"Trial {trial.number:2d}: Val P&L ${trial.value:+,.0f} | "
                   f"vs B&H ${trial.value - VAL_BH:+,.0f} | "
@@ -295,7 +354,10 @@ def main():
         elif trial.state == optuna.trial.TrialState.PRUNED:
             print(f"Trial {trial.number:2d}: PRUNED (underperforming)")
 
-    study.optimize(objective, n_trials=n_trials, callbacks=[callback], show_progress_bar=False)
+    optuna_callbacks.append(console_callback)
+    optuna_callbacks.append(OPTUNA_BRIDGE.make_optuna_callback())
+
+    study.optimize(objective, n_trials=n_trials, callbacks=optuna_callbacks, show_progress_bar=False)
 
     # Results
     print(f"\n{'='*70}")
@@ -307,6 +369,14 @@ def main():
     print(f"\nBest hyperparameters:")
     for key, value in study.best_params.items():
         print(f"  {key}: {value}")
+
+    # Show param importance
+    importance = OPTUNA_BRIDGE.get_param_importance(study)
+    if importance:
+        print(f"\nParameter Importance:")
+        for param, score in sorted(importance.items(), key=lambda x: -x[1]):
+            bar = "#" * int(score * 40)
+            print(f"  {param:15s}: {score:.3f} {bar}")
 
     # Train final model with best params and test
     print(f"\n{'='*70}")
@@ -354,6 +424,7 @@ def main():
     print("\nTraining final model for 60 iterations...")
     for i in range(60):
         result = final_algo.train()
+        log_training_iteration(result, i + 1, store, experiment_id, tb_logger, bridge)
         if (i + 1) % 15 == 0:
             pnl = result.get('env_runners', {}).get('custom_metrics', {}).get('pnl_mean', 0)
             print(f"  Iter {i+1}: Train P&L ${pnl:+,.0f}")
@@ -375,7 +446,7 @@ def main():
 
     diff = test_pnl - TEST_BH
     if diff > 0:
-        print(f"\n✓ AGENT WINS by ${diff:+,.0f}!")
+        print(f"\nAGENT WINS by ${diff:+,.0f}!")
     else:
         print(f"\nB&H wins by ${-diff:+,.0f}")
 
@@ -393,6 +464,14 @@ def main():
               f"hidden={int(row['params_hidden_size'])}")
 
     # Cleanup
+    final_metrics = {
+        "test_pnl": float(test_pnl),
+        "test_bh": float(TEST_BH),
+        "best_val_pnl": float(study.best_value),
+        "best_params": study.best_params,
+        "total_trials": len(study.trials),
+    }
+    finish_experiment(store, experiment_id, "completed", final_metrics, tb_logger, bridge)
     os.remove(train_csv)
     final_algo.stop()
     ray.shutdown()

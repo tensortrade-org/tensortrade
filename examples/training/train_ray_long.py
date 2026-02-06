@@ -5,6 +5,7 @@ Shows portfolio net worth at episode boundaries via custom metrics.
 """
 
 import os
+import argparse
 import numpy as np
 import pandas as pd
 from typing import Dict, Any, Optional
@@ -119,6 +120,12 @@ def create_env(config: Dict[str, Any]):
 
 
 def main():
+    import sys, pathlib; sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2]))
+    from examples.training._common import create_training_parser, setup_experiment, build_composed_callbacks, finish_experiment, log_training_iteration
+
+    parser = create_training_parser("TensorTrade - Long Training")
+    args = parser.parse_args()
+
     print("=" * 70)
     print("TensorTrade Long Training Run (5-10 minutes)")
     print("With Wallet Balance Tracking")
@@ -162,6 +169,10 @@ def main():
         "initial_cash": 10000,
     }
 
+    # Experiment tracking
+    store, experiment_id, tb_logger, bridge = setup_experiment(args, "train_ray_long", env_config)
+    ComposedCallbacks = build_composed_callbacks(WalletTrackingCallbacks, store, experiment_id, tb_logger, bridge)
+
     print("\n" + "=" * 70)
     print("Training Configuration")
     print("=" * 70)
@@ -179,7 +190,7 @@ def main():
         .environment(env="TradingEnv", env_config=env_config)
         .framework("torch")
         .env_runners(num_env_runners=4)
-        .callbacks(WalletTrackingCallbacks)
+        .callbacks(ComposedCallbacks)
         .training(
             lr=3e-4,
             gamma=0.99,
@@ -210,6 +221,7 @@ def main():
 
     for i in range(100):
         result = algo.train()
+        log_training_iteration(result, i + 1, store, experiment_id, tb_logger, bridge)
 
         elapsed = time.time() - start_time
 
@@ -254,6 +266,9 @@ def main():
         if elapsed > 600:
             print(f"\n[Reached 10 minute limit at iteration {i+1}]")
             break
+
+    final_metrics = {"best_reward": float(best_reward), "avg_net_worth": float(np.mean(all_net_worths)) if all_net_worths else 0, "avg_pnl": float(np.mean(all_pnls)) if all_pnls else 0}
+    finish_experiment(store, experiment_id, "completed", final_metrics, tb_logger, bridge)
 
     algo.stop()
 
