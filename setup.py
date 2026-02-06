@@ -20,7 +20,7 @@ from setuptools import find_packages, setup
 
 
 if sys.version_info.major != 3:
-    raise NotImplementedError("TensorTrade is only compatible with Python 3.")
+    raise NotImplementedError("TensorTrade is only compatible with Python 3.12 upwards")
 
 
 tensortrade_directory = os.path.abspath(os.path.dirname(__file__))
@@ -84,7 +84,6 @@ setup(
         'Intended Audience :: Information Technology',
         'License :: OSI Approved :: Apache Software License',
         'Operating System :: OS Independent',
-        'Programming Language :: Python :: 3.11',
         'Programming Language :: Python :: 3.12',
         'Topic :: Office/Business :: Financial :: Investment',
         'Topic :: Office/Business :: Financial',
