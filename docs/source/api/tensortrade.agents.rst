@@ -3,8 +3,8 @@ tensortrade.agents package
 
 .. automodule:: tensortrade.agents
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 Subpackages
 -----------

@@ -3,8 +3,8 @@ tensortrade.oms.wallets package
 
 .. automodule:: tensortrade.oms.wallets
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 Submodules
 ----------

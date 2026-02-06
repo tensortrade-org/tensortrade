@@ -3,8 +3,8 @@ tensortrade.env.generic.components package
 
 .. automodule:: tensortrade.env.generic.components
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 Submodules
 ----------

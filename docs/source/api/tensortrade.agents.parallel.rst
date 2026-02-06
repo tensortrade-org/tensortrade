@@ -3,8 +3,8 @@ tensortrade.agents.parallel package
 
 .. automodule:: tensortrade.agents.parallel
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 Submodules
 ----------

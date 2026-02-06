@@ -3,8 +3,8 @@ tensortrade.env package
 
 .. automodule:: tensortrade.env
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 Subpackages
 -----------

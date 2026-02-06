@@ -3,8 +3,8 @@ tensortrade.oms.orders package
 
 .. automodule:: tensortrade.oms.orders
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 Submodules
 ----------

@@ -3,8 +3,8 @@ tensortrade.oms.services.slippage package
 
 .. automodule:: tensortrade.oms.services.slippage
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 Submodules
 ----------
