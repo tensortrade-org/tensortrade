@@ -122,6 +122,12 @@ cmd_start() {
     # Clear stale Next.js cache to avoid MODULE_NOT_FOUND errors
     rm -rf "$ROOT_DIR/dashboard/.next"
 
+    # Ensure node_modules exist (e.g. after branch switch)
+    if [ ! -d "$ROOT_DIR/dashboard/node_modules" ]; then
+        echo -e "${YELLOW}Installing frontend dependencies...${NC}"
+        (cd "$ROOT_DIR/dashboard" && npm install --silent)
+    fi
+
     echo -e "${CYAN}Starting frontend (Next.js :3000)...${NC}"
     cd "$ROOT_DIR/dashboard" && npm run dev \
         > "$LOG_DIR/frontend.log" 2>&1 &

@@ -15,6 +15,13 @@ source .venv/bin/activate
 
 Always use `.venv/bin/python` to run Python commands, or prefix with `uv run`.
 
+## Frontend Setup
+
+```bash
+cd dashboard && npm install
+```
+Run this after cloning or switching branches. `dev.sh` auto-installs if `node_modules/` is missing.
+
 ## Running Servers
 
 ### Quick start (both servers)
