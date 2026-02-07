@@ -1,6 +1,7 @@
 import type {
 	CampaignLaunchRequest,
 	CampaignLaunchResponse,
+	DashboardStats,
 	DatasetConfig,
 	DatasetPreview,
 	ExperimentDetail,
@@ -162,6 +163,10 @@ export async function requestAnalysis(body: AnalysisRequest): Promise<InsightRep
 
 export async function getAllTrades(params?: AllTradesParams): Promise<TradeRecord[]> {
 	return fetchJSON<TradeRecord[]>(`/trades${buildQuery(params)}`);
+}
+
+export async function getDashboardStats(): Promise<DashboardStats> {
+	return fetchJSON<DashboardStats>("/stats");
 }
 
 export async function getStatus(): Promise<TrainingStatus> {

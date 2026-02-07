@@ -308,6 +308,28 @@ export interface FeatureCatalogEntry {
 	params: FeatureParamDef[];
 }
 
+// --- Dashboard Stats ---
+
+export interface DashboardStatsExperiment {
+	id: string;
+	name: string;
+}
+
+export interface DashboardStats {
+	total_experiments: number;
+	completed: number;
+	failed: number;
+	running: number;
+	best_pnl: number | null;
+	best_pnl_experiment: DashboardStatsExperiment | null;
+	best_net_worth: number | null;
+	avg_pnl: number | null;
+	total_trades: number;
+	win_rate: number;
+	total_studies: number;
+	total_optuna_trials: number;
+}
+
 // --- Training Launch ---
 
 export interface LaunchRequest {

@@ -640,6 +640,104 @@ class ExperimentStore:
             for r in rows
         ]
 
+    # --- Dashboard Stats ---
+
+    def get_dashboard_stats(self) -> dict:
+        """Get aggregate dashboard stats in a single efficient query."""
+        row = self._conn.execute("""
+            SELECT
+                COUNT(*) as total_experiments,
+                SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed,
+                SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) as failed,
+                SUM(CASE WHEN status = 'running' THEN 1 ELSE 0 END) as running,
+                MAX(CASE
+                    WHEN status = 'completed'
+                        AND json_extract(final_metrics, '$.pnl') IS NOT NULL
+                    THEN json_extract(final_metrics, '$.pnl')
+                    WHEN status = 'completed'
+                        AND json_extract(final_metrics, '$.pnl_mean') IS NOT NULL
+                    THEN json_extract(final_metrics, '$.pnl_mean')
+                    ELSE NULL
+                END) as best_pnl,
+                MAX(CASE
+                    WHEN status = 'completed'
+                        AND json_extract(final_metrics, '$.net_worth') IS NOT NULL
+                    THEN json_extract(final_metrics, '$.net_worth')
+                    WHEN status = 'completed'
+                        AND json_extract(final_metrics, '$.net_worth_mean') IS NOT NULL
+                    THEN json_extract(final_metrics, '$.net_worth_mean')
+                    ELSE NULL
+                END) as best_net_worth,
+                AVG(CASE
+                    WHEN status = 'completed'
+                        AND json_extract(final_metrics, '$.pnl') IS NOT NULL
+                    THEN json_extract(final_metrics, '$.pnl')
+                    WHEN status = 'completed'
+                        AND json_extract(final_metrics, '$.pnl_mean') IS NOT NULL
+                    THEN json_extract(final_metrics, '$.pnl_mean')
+                    ELSE NULL
+                END) as avg_pnl
+            FROM experiments
+        """).fetchone()
+
+        # Count positive PnL experiments for win rate
+        win_count_row = self._conn.execute("""
+            SELECT COUNT(*) as wins FROM experiments
+            WHERE status = 'completed'
+              AND (
+                  json_extract(final_metrics, '$.pnl') > 0
+                  OR json_extract(final_metrics, '$.pnl_mean') > 0
+              )
+        """).fetchone()
+
+        # Get the best PnL experiment details
+        best_exp_row = self._conn.execute("""
+            SELECT id, name FROM experiments
+            WHERE status = 'completed'
+            ORDER BY
+                COALESCE(
+                    json_extract(final_metrics, '$.pnl'),
+                    json_extract(final_metrics, '$.pnl_mean')
+                ) DESC
+            LIMIT 1
+        """).fetchone()
+
+        # Total trades count
+        trade_count_row = self._conn.execute(
+            "SELECT COUNT(*) as total_trades FROM trades"
+        ).fetchone()
+
+        # Optuna stats
+        optuna_row = self._conn.execute("""
+            SELECT
+                COUNT(DISTINCT study_name) as total_studies,
+                COUNT(*) as total_trials
+            FROM optuna_trials
+        """).fetchone()
+
+        total = row["total_experiments"] or 0
+        completed = row["completed"] or 0
+        win_count = win_count_row["wins"] if win_count_row else 0
+        win_rate = (win_count / completed * 100) if completed > 0 else 0.0
+
+        return {
+            "total_experiments": total,
+            "completed": completed,
+            "failed": row["failed"] or 0,
+            "running": row["running"] or 0,
+            "best_pnl": row["best_pnl"],
+            "best_pnl_experiment": {
+                "id": best_exp_row["id"],
+                "name": best_exp_row["name"],
+            } if best_exp_row else None,
+            "best_net_worth": row["best_net_worth"],
+            "avg_pnl": round(row["avg_pnl"], 2) if row["avg_pnl"] is not None else None,
+            "total_trades": trade_count_row["total_trades"] if trade_count_row else 0,
+            "win_rate": round(win_rate, 1),
+            "total_studies": optuna_row["total_studies"] if optuna_row else 0,
+            "total_optuna_trials": optuna_row["total_trials"] if optuna_row else 0,
+        }
+
     # --- Helpers ---
 
     @staticmethod

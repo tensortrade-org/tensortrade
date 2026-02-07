@@ -690,6 +690,13 @@ def _register_routes(app: FastAPI) -> None:
             }
         return {"is_active": False}
 
+    # --- REST: Dashboard Stats ---
+
+    @app.get("/api/stats")
+    async def get_dashboard_stats() -> dict:
+        store = _get_store()
+        return store.get_dashboard_stats()
+
     # --- REST: Status ---
 
     @app.get("/api/status")

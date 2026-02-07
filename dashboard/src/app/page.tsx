@@ -1,64 +1,152 @@
 "use client";
 
-import { MetricsLineChart } from "@/components/charts/MetricsLineChart";
 import { StatusBadge } from "@/components/common/Badge";
 import { Card, CardHeader } from "@/components/common/Card";
 import { LoadingState } from "@/components/common/Spinner";
-import { MetricCards } from "@/components/experiments/MetricCards";
-import { ActionDistributionChart } from "@/components/training/ActionDistributionChart";
-import { EpisodePnLChart } from "@/components/training/EpisodePnLChart";
-import { EpisodeRewardChart } from "@/components/training/EpisodeRewardChart";
-import { ProgressBar } from "@/components/training/ProgressBar";
 import { StatusIndicator } from "@/components/training/StatusIndicator";
 import { TrainingControls } from "@/components/training/TrainingControls";
 import { useApi } from "@/hooks/useApi";
-import { getExperiments } from "@/lib/api";
-import { formatCurrency } from "@/lib/formatters";
-import type { ExperimentSummary, TrainingUpdate } from "@/lib/types";
+import { getDashboardStats, getExperiments, getLeaderboard } from "@/lib/api";
+import { formatCurrency, formatNumber, formatPercent, formatPnl } from "@/lib/formatters";
+import type { DashboardStats, ExperimentSummary, LeaderboardEntry } from "@/lib/types";
 import { useTrainingStore } from "@/stores/trainingStore";
-import { useCallback, useMemo } from "react";
+import Link from "next/link";
+import { useCallback } from "react";
 
-function buildLatestMetrics(iterations: TrainingUpdate[]): Record<string, number> {
-	const latest = iterations[iterations.length - 1];
-	if (!latest) return {};
-	return {
-		episode_return_mean: latest.episode_return_mean,
-		pnl_mean: latest.pnl_mean,
-		pnl_pct_mean: latest.pnl_pct_mean,
-		net_worth_mean: latest.net_worth_mean,
-		trade_count_mean: latest.trade_count_mean,
-	};
+// --- Stat Card ---
+
+interface StatCardProps {
+	label: string;
+	value: string;
+	accent: "blue" | "green" | "red" | "amber" | "neutral";
 }
 
-function RecentExperimentsTable({
-	experiments,
-}: {
-	experiments: ExperimentSummary[];
-}) {
+const accentClasses: Record<
+	StatCardProps["accent"],
+	{ border: string; text: string; glow: string }
+> = {
+	blue: {
+		border: "border-l-[var(--accent-blue)]",
+		text: "text-[var(--accent-blue)]",
+		glow: "shadow-[inset_0_0_20px_-12px_var(--accent-blue)]",
+	},
+	green: {
+		border: "border-l-[var(--accent-green)]",
+		text: "text-[var(--accent-green)]",
+		glow: "shadow-[inset_0_0_20px_-12px_var(--accent-green)]",
+	},
+	red: {
+		border: "border-l-[var(--accent-red)]",
+		text: "text-[var(--accent-red)]",
+		glow: "shadow-[inset_0_0_20px_-12px_var(--accent-red)]",
+	},
+	amber: {
+		border: "border-l-[var(--accent-amber)]",
+		text: "text-[var(--accent-amber)]",
+		glow: "shadow-[inset_0_0_20px_-12px_var(--accent-amber)]",
+	},
+	neutral: {
+		border: "border-l-[var(--border-color)]",
+		text: "text-[var(--text-primary)]",
+		glow: "",
+	},
+};
+
+function StatCard({ label, value, accent }: StatCardProps) {
+	const styles = accentClasses[accent];
+	return (
+		<div
+			className={`rounded-lg border border-[var(--border-color)] border-l-2 ${styles.border} bg-[var(--bg-card)] p-4 ${styles.glow}`}
+		>
+			<p className="text-xs font-medium uppercase tracking-wider text-[var(--text-secondary)]">
+				{label}
+			</p>
+			<p className={`mt-1.5 font-mono text-xl font-semibold ${styles.text}`}>{value}</p>
+		</div>
+	);
+}
+
+// --- Top Performers Table ---
+
+function TopPerformersTable({ entries }: { entries: LeaderboardEntry[] }) {
 	return (
 		<div className="overflow-x-auto">
 			<table className="w-full text-sm">
 				<thead>
 					<tr className="border-b border-[var(--border-color)] text-left text-xs text-[var(--text-secondary)]">
-						<th className="pb-2 pr-4 font-medium">Name</th>
-						<th className="pb-2 pr-4 font-medium">Script</th>
-						<th className="pb-2 pr-4 font-medium">Status</th>
+						<th className="pb-2 pr-3 font-medium w-8">#</th>
+						<th className="pb-2 pr-3 font-medium">Experiment</th>
+						<th className="pb-2 font-medium text-right">PnL</th>
+					</tr>
+				</thead>
+				<tbody>
+					{entries.map((entry) => (
+						<tr
+							key={entry.experiment_id}
+							className="border-b border-[var(--border-color)]/50 last:border-0"
+						>
+							<td className="py-2 pr-3 font-mono text-xs text-[var(--text-secondary)]">
+								{entry.rank}
+							</td>
+							<td className="py-2 pr-3">
+								<Link
+									href={`/experiments/${entry.experiment_id}`}
+									className="text-[var(--accent-blue)] hover:underline"
+								>
+									{entry.name}
+								</Link>
+							</td>
+							<td className="py-2 text-right font-mono">
+								<span
+									className={
+										entry.metric_value >= 0
+											? "text-[var(--accent-green)]"
+											: "text-[var(--accent-red)]"
+									}
+								>
+									{formatPnl(entry.metric_value)}
+								</span>
+							</td>
+						</tr>
+					))}
+					{entries.length === 0 && (
+						<tr>
+							<td colSpan={3} className="py-6 text-center text-xs text-[var(--text-secondary)]">
+								No completed experiments yet
+							</td>
+						</tr>
+					)}
+				</tbody>
+			</table>
+		</div>
+	);
+}
+
+// --- Recent Experiments Table ---
+
+function RecentExperimentsTable({ experiments }: { experiments: ExperimentSummary[] }) {
+	return (
+		<div className="overflow-x-auto">
+			<table className="w-full text-sm">
+				<thead>
+					<tr className="border-b border-[var(--border-color)] text-left text-xs text-[var(--text-secondary)]">
+						<th className="pb-2 pr-3 font-medium">Name</th>
+						<th className="pb-2 pr-3 font-medium">Status</th>
 						<th className="pb-2 font-medium text-right">PnL</th>
 					</tr>
 				</thead>
 				<tbody>
 					{experiments.map((exp) => (
-						<tr key={exp.id} className="border-b border-[var(--border-color)] last:border-0">
-							<td className="py-2 pr-4">
-								<a
+						<tr key={exp.id} className="border-b border-[var(--border-color)]/50 last:border-0">
+							<td className="py-2 pr-3">
+								<Link
 									href={`/experiments/${exp.id}`}
 									className="text-[var(--accent-blue)] hover:underline"
 								>
 									{exp.name}
-								</a>
+								</Link>
 							</td>
-							<td className="py-2 pr-4 text-[var(--text-secondary)]">{exp.script}</td>
-							<td className="py-2 pr-4">
+							<td className="py-2 pr-3">
 								<StatusBadge status={exp.status} />
 							</td>
 							<td className="py-2 text-right font-mono">
@@ -70,7 +158,7 @@ function RecentExperimentsTable({
 												: "text-[var(--accent-red)]"
 										}
 									>
-										{formatCurrency(exp.final_metrics.pnl_mean)}
+										{formatPnl(exp.final_metrics.pnl_mean)}
 									</span>
 								) : (
 									<span className="text-[var(--text-secondary)]">--</span>
@@ -78,187 +166,200 @@ function RecentExperimentsTable({
 							</td>
 						</tr>
 					))}
+					{experiments.length === 0 && (
+						<tr>
+							<td colSpan={3} className="py-6 text-center text-xs text-[var(--text-secondary)]">
+								No experiments yet
+							</td>
+						</tr>
+					)}
 				</tbody>
 			</table>
 		</div>
 	);
 }
 
-export default function TrainingOverviewPage() {
-	const store = useTrainingStore();
+// --- Quick Action Card ---
 
-	const recentFetcher = useCallback(() => getExperiments({ limit: 5 }), []);
-	const {
-		data: recentExperiments,
-		loading: expLoading,
-		error: expError,
-	} = useApi<ExperimentSummary[]>(recentFetcher, []);
+interface QuickActionProps {
+	href: string;
+	icon: string;
+	title: string;
+	description: string;
+}
 
-	const latestMetrics = useMemo(() => buildLatestMetrics(store.iterations), [store.iterations]);
-
-	const iterationRecords = useMemo(
-		() =>
-			store.iterations.map((it, idx) => ({
-				id: idx,
-				experiment_id: store.status?.experiment_id ?? "",
-				iteration: it.iteration,
-				metrics: {
-					episode_return_mean: it.episode_return_mean,
-					pnl_mean: it.pnl_mean,
-					pnl_pct_mean: it.pnl_pct_mean,
-					net_worth_mean: it.net_worth_mean,
-					trade_count_mean: it.trade_count_mean,
-				},
-				timestamp: new Date().toISOString(),
-			})),
-		[store.iterations, store.status?.experiment_id],
+function QuickAction({ href, icon, title, description }: QuickActionProps) {
+	return (
+		<Link
+			href={href}
+			className="group flex items-center gap-3 rounded-lg border border-[var(--border-color)] bg-[var(--bg-card)] p-4 transition-colors hover:border-[var(--accent-blue)]/40 hover:bg-[var(--bg-tertiary)]"
+		>
+			<span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-[var(--accent-blue)]/10 text-lg text-[var(--accent-blue)] transition-colors group-hover:bg-[var(--accent-blue)]/20">
+				{icon}
+			</span>
+			<div className="min-w-0">
+				<p className="text-sm font-medium text-[var(--text-primary)]">{title}</p>
+				<p className="text-xs text-[var(--text-secondary)]">{description}</p>
+			</div>
+		</Link>
 	);
+}
 
-	const isWarmingUp = useTrainingStore((s) => s.isWarmingUp);
-	const completedExperiment = useTrainingStore((s) => s.completedExperiment);
-	const dismissCompleted = useTrainingStore((s) => s.dismissCompleted);
+// --- Main Page ---
+
+export default function MissionControlPage() {
+	const isTraining = useTrainingStore((s) => s.status?.is_training ?? false);
+
+	const statsFetcher = useCallback(() => getDashboardStats(), []);
+	const leaderboardFetcher = useCallback(() => getLeaderboard({ metric: "pnl" }), []);
+	const recentFetcher = useCallback(() => getExperiments({ limit: 5 }), []);
+
+	const { data: stats, loading: statsLoading } = useApi<DashboardStats>(statsFetcher, []);
+	const { data: leaderboard, loading: lbLoading } = useApi<LeaderboardEntry[]>(
+		leaderboardFetcher,
+		[],
+	);
+	const { data: recent, loading: recentLoading } = useApi<ExperimentSummary[]>(recentFetcher, []);
+
+	const topPerformers = leaderboard?.slice(0, 5) ?? [];
 
 	return (
 		<div className="space-y-6">
+			{/* Page Header */}
 			<div className="flex items-center justify-between">
-				<h1 className="text-xl font-semibold text-[var(--text-primary)]">Training Overview</h1>
-				<div className="flex items-center gap-4">
-					<StatusIndicator />
-					<TrainingControls />
+				<div>
+					<h1 className="text-xl font-semibold text-[var(--text-primary)]">Mission Control</h1>
+					<p className="mt-0.5 text-xs text-[var(--text-secondary)]">
+						Aggregate performance across all training runs
+					</p>
 				</div>
-			</div>
-
-			{/* Training Complete Banner */}
-			{completedExperiment && (
-				<div className="flex items-center justify-between rounded-lg border border-[var(--accent-green)]/30 bg-[var(--accent-green)]/10 px-4 py-3">
-					<div className="flex items-center gap-3">
-						<div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--accent-green)]/20">
-							<svg
-								className="h-5 w-5 text-[var(--accent-green)]"
-								fill="none"
-								viewBox="0 0 24 24"
-								stroke="currentColor"
-								strokeWidth={2}
-								aria-label="Checkmark"
-								role="img"
-							>
-								<path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-							</svg>
-						</div>
-						<div>
-							<p className="text-sm font-medium text-[var(--accent-green)]">
-								Training {completedExperiment.status === "completed" ? "Complete" : "Ended"}
-							</p>
-							<p className="text-xs text-[var(--text-secondary)]">
-								Experiment {completedExperiment.experimentId.slice(0, 8)} finished.{" "}
-								<a
-									href={`/experiments/${completedExperiment.experimentId}`}
-									className="text-[var(--accent-blue)] hover:underline"
-								>
-									View results
-								</a>
-							</p>
-						</div>
-					</div>
-					<button
-						type="button"
-						onClick={dismissCompleted}
-						className="rounded p-1 text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]"
-					>
-						<svg
-							className="h-4 w-4"
-							fill="none"
-							viewBox="0 0 24 24"
-							stroke="currentColor"
-							strokeWidth={2}
-							aria-label="Dismiss"
-							role="img"
-						>
-							<path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-						</svg>
-					</button>
-				</div>
-			)}
-
-			{/* Warming Up State */}
-			{isWarmingUp && (
-				<Card>
-					<div className="flex flex-col items-center gap-4 py-12">
-						<div className="relative">
-							<div className="h-12 w-12 rounded-full border-4 border-[var(--border-color)]" />
-							<div className="absolute inset-0 h-12 w-12 animate-spin rounded-full border-4 border-transparent border-t-[var(--accent-amber)]" />
-						</div>
-						<div className="text-center">
-							<p className="text-sm font-medium text-[var(--accent-amber)]">
-								Training is starting up...
-							</p>
-							<p className="mt-1 text-xs text-[var(--text-secondary)]">
-								Initializing Ray, loading data, and building the environment. This may take a
-								minute.
-							</p>
-						</div>
-					</div>
-				</Card>
-			)}
-
-			{/* Training Progress Bar */}
-			{!isWarmingUp && (
-				<Card>
-					<CardHeader title="Training Progress" />
-					<ProgressBar />
-				</Card>
-			)}
-
-			{/* Metric Cards */}
-			{!isWarmingUp && <MetricCards metrics={latestMetrics} />}
-
-			{/* Training Metrics Chart */}
-			{!isWarmingUp && (
-				<Card>
-					<CardHeader title="Iteration Metrics" />
-					<div className="h-80">
-						{iterationRecords.length > 0 ? (
-							<MetricsLineChart
-								data={iterationRecords}
-								metricKeys={["episode_return_mean", "pnl_mean"]}
-							/>
-						) : (
-							<div className="flex h-full items-center justify-center text-sm text-[var(--text-secondary)]">
-								No training iterations yet. Start a training run to see metrics.
-							</div>
-						)}
-					</div>
-				</Card>
-			)}
-
-			{/* Episode Charts */}
-			{!isWarmingUp && (
-				<div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-					<EpisodeRewardChart />
-					<EpisodePnLChart />
-				</div>
-			)}
-
-			{/* Action Distribution */}
-			{!isWarmingUp && <ActionDistributionChart />}
-
-			{/* Recent Experiments */}
-			<Card>
-				<CardHeader title="Recent Experiments" />
-				{expLoading ? (
-					<LoadingState message="Loading experiments..." />
-				) : expError ? (
-					<div className="py-6 text-center text-sm text-[var(--accent-red)]">
-						Failed to load experiments: {expError.message}
-					</div>
-				) : recentExperiments && recentExperiments.length > 0 ? (
-					<RecentExperimentsTable experiments={recentExperiments} />
-				) : (
-					<div className="py-6 text-center text-sm text-[var(--text-secondary)]">
-						No experiments found.
+				{stats && (
+					<div className="text-right text-xs text-[var(--text-secondary)]">
+						<span className="font-mono">{formatNumber(stats.total_experiments)}</span> experiments
+						tracked
 					</div>
 				)}
-			</Card>
+			</div>
+
+			{/* Active Training Banner */}
+			{isTraining && (
+				<div className="flex items-center justify-between rounded-lg border border-[var(--accent-blue)]/30 bg-[var(--accent-blue)]/5 px-4 py-3">
+					<div className="flex items-center gap-4">
+						<StatusIndicator />
+					</div>
+					<div className="flex items-center gap-3">
+						<TrainingControls />
+						<Link
+							href="/training"
+							className="rounded-md bg-[var(--accent-blue)]/15 px-3 py-1.5 text-xs font-medium text-[var(--accent-blue)] transition-colors hover:bg-[var(--accent-blue)]/25"
+						>
+							Open Monitor
+						</Link>
+					</div>
+				</div>
+			)}
+
+			{/* Stats Grid */}
+			{statsLoading ? (
+				<LoadingState message="Loading stats..." />
+			) : stats ? (
+				<div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
+					<StatCard
+						label="Total Runs"
+						value={formatNumber(stats.total_experiments)}
+						accent="blue"
+					/>
+					<StatCard label="Completed" value={formatNumber(stats.completed)} accent="blue" />
+					<StatCard
+						label="Win Rate"
+						value={formatPercent(stats.win_rate)}
+						accent={stats.win_rate > 50 ? "green" : stats.win_rate > 0 ? "amber" : "neutral"}
+					/>
+					<StatCard
+						label="Best PnL"
+						value={stats.best_pnl !== null ? formatCurrency(stats.best_pnl) : "--"}
+						accent={stats.best_pnl !== null && stats.best_pnl > 0 ? "green" : "neutral"}
+					/>
+					<StatCard
+						label="Best Net Worth"
+						value={stats.best_net_worth !== null ? formatCurrency(stats.best_net_worth) : "--"}
+						accent={stats.best_net_worth !== null ? "green" : "neutral"}
+					/>
+					<StatCard
+						label="Total Trades"
+						value={formatNumber(stats.total_trades)}
+						accent="neutral"
+					/>
+				</div>
+			) : null}
+
+			{/* Two-Column: Leaderboard + Recent */}
+			<div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+				<Card>
+					<CardHeader
+						title="Top Performers"
+						action={
+							<Link
+								href="/leaderboard"
+								className="text-xs text-[var(--accent-blue)] hover:underline"
+							>
+								View all
+							</Link>
+						}
+					/>
+					{lbLoading ? (
+						<LoadingState message="Loading leaderboard..." />
+					) : (
+						<TopPerformersTable entries={topPerformers} />
+					)}
+				</Card>
+
+				<Card>
+					<CardHeader
+						title="Recent Experiments"
+						action={
+							<Link
+								href="/experiments"
+								className="text-xs text-[var(--accent-blue)] hover:underline"
+							>
+								View all
+							</Link>
+						}
+					/>
+					{recentLoading ? (
+						<LoadingState message="Loading experiments..." />
+					) : (
+						<RecentExperimentsTable experiments={recent ?? []} />
+					)}
+				</Card>
+			</div>
+
+			{/* Quick Actions */}
+			<div>
+				<h2 className="mb-3 text-xs font-medium uppercase tracking-wider text-[var(--text-secondary)]">
+					Quick Actions
+				</h2>
+				<div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+					<QuickAction
+						href="/launch"
+						icon={"\u25B6"}
+						title="Launch Training"
+						description="Start a new training run"
+					/>
+					<QuickAction
+						href="/campaign"
+						icon={"\u2694"}
+						title="Alpha Search"
+						description="Run Optuna HP optimization"
+					/>
+					<QuickAction
+						href="/hyperparams"
+						icon={"\u2692"}
+						title="HP Studio"
+						description="Edit hyperparameter packs"
+					/>
+				</div>
+			</div>
 		</div>
 	);
 }
