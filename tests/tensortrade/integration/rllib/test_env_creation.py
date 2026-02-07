@@ -97,7 +97,7 @@ class TestEnvCreation:
         """Action space is discrete for BSH action scheme."""
         env = create_env(minimal_env_config)
         assert isinstance(env.action_space, gym.spaces.Discrete)
-        assert env.action_space.n == 2  # BSH toggles between buy (hold asset) and sell (hold cash)
+        assert env.action_space.n == 3  # BSH: 0=hold, 1=buy, 2=sell
 
     def test_env_reset_returns_tuple(self, minimal_env_config: dict):
         """Environment reset returns (observation, info) tuple per Gymnasium API."""

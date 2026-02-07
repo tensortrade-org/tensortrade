@@ -207,7 +207,7 @@ class TestCheckpoint:
 
         # Verify action is valid
         assert action is not None
-        assert action in [0, 1]  # BSH has 2 actions (toggle between holding cash vs asset)
+        assert action in [0, 1, 2]  # BSH: 0=hold, 1=buy, 2=sell
 
         restored_algo.stop()
 
