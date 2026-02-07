@@ -48,6 +48,12 @@ class TestListAvailable:
             "volatility",
             "volume_ratio",
             "bollinger_position",
+            "macd",
+            "atr",
+            "stochastic",
+            "obv",
+            "roc",
+            "cci",
         }
         assert expected == types
 
@@ -148,6 +154,147 @@ class TestComputeBollingerPosition:
         assert bb_vals.between(0, 1).all()
 
 
+class TestComputeMACD:
+    def test_compute_macd_columns(self, engine, sample_df):
+        specs = [{"type": "macd", "fast": 12, "slow": 26, "signal": 9}]
+        result = engine.compute(sample_df, specs)
+        assert "macd_line" in result.columns
+        assert "macd_signal" in result.columns
+        assert "macd_hist" in result.columns
+
+    def test_compute_macd_bounded(self, engine, sample_df):
+        specs = [{"type": "macd"}]
+        result = engine.compute(sample_df, specs)
+        for col in ["macd_line", "macd_signal", "macd_hist"]:
+            assert result[col].between(-1, 1).all()
+
+    def test_compute_macd_no_nans(self, engine, sample_df):
+        specs = [{"type": "macd"}]
+        result = engine.compute(sample_df, specs)
+        assert result["macd_line"].isna().sum() == 0
+
+
+class TestComputeATR:
+    def test_compute_atr_columns(self, engine, sample_df):
+        specs = [{"type": "atr", "period": 14, "rolling_norm_period": 72}]
+        result = engine.compute(sample_df, specs)
+        assert "atr" in result.columns
+
+    def test_compute_atr_bounded(self, engine, sample_df):
+        specs = [{"type": "atr"}]
+        result = engine.compute(sample_df, specs)
+        assert result["atr"].between(-1, 1).all()
+
+    def test_compute_atr_no_nans(self, engine, sample_df):
+        specs = [{"type": "atr"}]
+        result = engine.compute(sample_df, specs)
+        assert result["atr"].isna().sum() == 0
+
+    def test_compute_atr_fallback_no_high_low(self, engine):
+        df = pd.DataFrame({"close": 100 + np.cumsum(np.random.randn(100) * 0.5)})
+        specs = [{"type": "atr", "period": 14, "rolling_norm_period": 72}]
+        result = engine.compute(df, specs)
+        assert "atr" in result.columns
+        assert result["atr"].isna().sum() == 0
+
+
+class TestComputeStochastic:
+    def test_compute_stochastic_columns(self, engine, sample_df):
+        specs = [{"type": "stochastic", "k_period": 14, "d_period": 3}]
+        result = engine.compute(sample_df, specs)
+        assert "stoch_k" in result.columns
+        assert "stoch_d" in result.columns
+
+    def test_compute_stochastic_bounded(self, engine, sample_df):
+        specs = [{"type": "stochastic"}]
+        result = engine.compute(sample_df, specs)
+        assert result["stoch_k"].between(-1, 1).all()
+        assert result["stoch_d"].between(-1, 1).all()
+
+    def test_compute_stochastic_no_nans(self, engine, sample_df):
+        specs = [{"type": "stochastic"}]
+        result = engine.compute(sample_df, specs)
+        assert result["stoch_k"].isna().sum() == 0
+        assert result["stoch_d"].isna().sum() == 0
+
+    def test_compute_stochastic_fallback_no_high_low(self, engine):
+        df = pd.DataFrame({"close": 100 + np.cumsum(np.random.randn(100) * 0.5)})
+        specs = [{"type": "stochastic"}]
+        result = engine.compute(df, specs)
+        assert "stoch_k" in result.columns
+        assert "stoch_d" in result.columns
+
+
+class TestComputeOBV:
+    def test_compute_obv_columns(self, engine, sample_df):
+        specs = [{"type": "obv", "rolling_norm_period": 20}]
+        result = engine.compute(sample_df, specs)
+        assert "obv" in result.columns
+
+    def test_compute_obv_bounded(self, engine, sample_df):
+        specs = [{"type": "obv"}]
+        result = engine.compute(sample_df, specs)
+        assert result["obv"].between(-1, 1).all()
+
+    def test_compute_obv_no_nans(self, engine, sample_df):
+        specs = [{"type": "obv"}]
+        result = engine.compute(sample_df, specs)
+        assert result["obv"].isna().sum() == 0
+
+    def test_compute_obv_no_volume_col(self, engine):
+        df = pd.DataFrame({"close": [100, 101, 102, 103, 104]})
+        specs = [{"type": "obv"}]
+        result = engine.compute(df, specs)
+        assert "obv" in result.columns
+        assert (result["obv"] == 0.0).all()
+
+
+class TestComputeROC:
+    def test_compute_roc_columns(self, engine, sample_df):
+        specs = [{"type": "roc", "period": 12, "normalize": "tanh"}]
+        result = engine.compute(sample_df, specs)
+        assert "roc" in result.columns
+
+    def test_compute_roc_bounded(self, engine, sample_df):
+        specs = [{"type": "roc"}]
+        result = engine.compute(sample_df, specs)
+        assert result["roc"].between(-1, 1).all()
+
+    def test_compute_roc_no_normalize(self, engine, sample_df):
+        specs = [{"type": "roc", "period": 12, "normalize": "none"}]
+        result = engine.compute(sample_df, specs)
+        assert "roc" in result.columns
+
+    def test_compute_roc_no_nans(self, engine, sample_df):
+        specs = [{"type": "roc"}]
+        result = engine.compute(sample_df, specs)
+        assert result["roc"].isna().sum() == 0
+
+
+class TestComputeCCI:
+    def test_compute_cci_columns(self, engine, sample_df):
+        specs = [{"type": "cci", "period": 20}]
+        result = engine.compute(sample_df, specs)
+        assert "cci" in result.columns
+
+    def test_compute_cci_bounded(self, engine, sample_df):
+        specs = [{"type": "cci"}]
+        result = engine.compute(sample_df, specs)
+        assert result["cci"].between(-1, 1).all()
+
+    def test_compute_cci_no_nans(self, engine, sample_df):
+        specs = [{"type": "cci"}]
+        result = engine.compute(sample_df, specs)
+        assert result["cci"].isna().sum() == 0
+
+    def test_compute_cci_fallback_no_high_low(self, engine):
+        df = pd.DataFrame({"close": 100 + np.cumsum(np.random.randn(100) * 0.5)})
+        specs = [{"type": "cci"}]
+        result = engine.compute(df, specs)
+        assert "cci" in result.columns
+        assert result["cci"].isna().sum() == 0
+
+
 class TestComputeMultipleFeatures:
     def test_compute_multiple_features(self, engine, sample_df):
         specs = [
@@ -231,6 +378,12 @@ class TestGetFeatureColumns:
             {"type": "volatility", "period": 24, "rolling_norm_period": 72},
             {"type": "volume_ratio", "period": 20},
             {"type": "bollinger_position", "period": 20},
+            {"type": "macd"},
+            {"type": "atr"},
+            {"type": "stochastic"},
+            {"type": "obv"},
+            {"type": "roc"},
+            {"type": "cci"},
         ]
         cols = engine.get_feature_columns(specs)
         expected = [
@@ -244,6 +397,15 @@ class TestGetFeatureColumns:
             "vol_norm",
             "vol_ratio",
             "bb_pos",
+            "macd_line",
+            "macd_signal",
+            "macd_hist",
+            "atr",
+            "stoch_k",
+            "stoch_d",
+            "obv",
+            "roc",
+            "cci",
         ]
         assert cols == expected
 

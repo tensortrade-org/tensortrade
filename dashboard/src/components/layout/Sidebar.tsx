@@ -21,7 +21,6 @@ const navItems: NavItem[] = [
 	{ label: "Leaderboard", href: "/leaderboard", icon: "\u2655" },
 	{ label: "Optuna", href: "/optuna", icon: "\u2699" },
 	{ label: "Insights", href: "/insights", icon: "\u2605" },
-	{ label: "Trades", href: "/trades", icon: "\u21C4" },
 ];
 
 export function Sidebar() {

@@ -81,6 +81,22 @@ cd dashboard && npx biome check --write src/
 - `examples/training/` — training scripts
 - `tests/` — pytest test suite
 
+## Database
+
+All training data is stored in SQLite at `~/.tensortrade/experiments.db` (WAL mode for concurrent access).
+
+The database is **auto-initialized on server startup**: tables are created and seed data (3 datasets, 4 HP packs) is inserted if the tables are empty. No manual setup needed.
+
+```bash
+make init-db    # Check database status and seed if empty
+make reset-db   # Delete database and re-seed from scratch
+```
+
+Stores that share the database:
+- `ExperimentStore` — experiments, iterations, trades, optuna_trials, insights
+- `DatasetStore` — dataset_configs (auto-seeds 3 defaults: Synthetic GBM, BTC Hourly, BTC Trend)
+- `HyperparameterStore` — hyperparameter_packs (auto-seeds 4 defaults: Simple PPO, Best Known, Trend Following, Optuna Optimized)
+
 ## Training System
 
 - `tensortrade/training/launcher.py` — generates and spawns training scripts as subprocesses

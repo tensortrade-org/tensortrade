@@ -124,18 +124,27 @@ The agent demonstrates directional prediction capability at zero commission. The
 TensorTrade includes a real-time training dashboard for monitoring experiments.
 
 ```bash
-# Start backend API (port 8000)
-.venv/bin/python -m tensortrade.api.server
+# Quick start (both servers, recommended)
+make dev
 
-# Start frontend (port 3000) — in another terminal
-cd dashboard && npm run dev
+# Or start individually:
+.venv/bin/python -m tensortrade.api.server  # Backend API (port 8000)
+cd dashboard && npm run dev                  # Frontend (port 3000)
+```
+
+The backend automatically initializes the SQLite database at `~/.tensortrade/experiments.db` on first startup, seeding default datasets (Synthetic GBM, BTC/USD Hourly, BTC Trend Features) and hyperparameter packs (Simple PPO, Best Known, Trend Following, Optuna Optimized).
+
+```bash
+make init-db    # Check database status / seed if empty
+make reset-db   # Delete database and re-seed from scratch
+make stop       # Stop all servers
 ```
 
 Features:
 - Live training progress with iteration tracking and ETA
 - Real-time iteration metrics (reward, PnL) charts
 - Episode reward and P&L tracking
-- Action distribution visualization
+- Action distribution visualization (buy/sell/hold breakdown)
 - Experiment history with final metrics
 - Launch training runs from the UI with dataset and hyperparameter selection
 

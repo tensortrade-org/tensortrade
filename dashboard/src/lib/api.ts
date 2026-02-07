@@ -20,7 +20,6 @@ import type {
 	RunningExperiment,
 	SplitConfig,
 	StudyCurvesResponse,
-	TradeRecord,
 	TrainingConfig,
 	TrainingStatus,
 } from "@/lib/types";
@@ -37,19 +36,9 @@ interface ExperimentsParams {
 	limit?: number;
 }
 
-interface TradesParams {
-	episode?: number;
-}
-
 interface LeaderboardParams {
 	metric?: string;
 	script?: string;
-}
-
-interface AllTradesParams {
-	experiment_id?: string;
-	side?: string;
-	limit?: number;
 }
 
 interface AnalysisRequest {
@@ -118,13 +107,6 @@ export async function getExperiment(id: string): Promise<ExperimentDetail> {
 	return fetchJSON<ExperimentDetail>(`/experiments/${id}`);
 }
 
-export async function getExperimentTrades(
-	id: string,
-	params?: TradesParams,
-): Promise<TradeRecord[]> {
-	return fetchJSON<TradeRecord[]>(`/experiments/${id}/trades${buildQuery(params)}`);
-}
-
 export async function getLeaderboard(params?: LeaderboardParams): Promise<LeaderboardEntry[]> {
 	return fetchJSON<LeaderboardEntry[]>(`/leaderboard${buildQuery(params)}`);
 }
@@ -159,10 +141,6 @@ export async function getStudyInsight(studyName: string): Promise<InsightReport 
 
 export async function requestAnalysis(body: AnalysisRequest): Promise<InsightReport> {
 	return postJSON<InsightReport>("/insights/analyze", body);
-}
-
-export async function getAllTrades(params?: AllTradesParams): Promise<TradeRecord[]> {
-	return fetchJSON<TradeRecord[]>(`/trades${buildQuery(params)}`);
 }
 
 export async function getDashboardStats(): Promise<DashboardStats> {

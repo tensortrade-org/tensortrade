@@ -107,6 +107,8 @@ def make_training_callbacks(
             if hasattr(env, "reward_scheme") and hasattr(env.reward_scheme, "get_stats"):
                 stats = env.reward_scheme.get_stats()
                 episode.custom_metrics["trade_count"] = stats.get("trade_count", 0)
+                episode.custom_metrics["buy_count"] = stats.get("buy_count", 0)
+                episode.custom_metrics["sell_count"] = stats.get("sell_count", 0)
                 episode.custom_metrics["hold_count"] = stats.get("hold_count", 0)
 
     ComposedCallbacks.__name__ = f"ComposedCallbacks({base_cls.__name__})"

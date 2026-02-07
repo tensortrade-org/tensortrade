@@ -5,12 +5,12 @@ import { Badge, StatusBadge } from "@/components/common/Badge";
 import { Card, CardHeader } from "@/components/common/Card";
 import { LoadingState } from "@/components/common/Spinner";
 import { MetricCards } from "@/components/experiments/MetricCards";
+import { TradingBehaviorCard } from "@/components/experiments/TradingBehaviorCard";
 import { InsightRequest } from "@/components/insights/InsightRequest";
-import { TradeLogTable } from "@/components/trading/TradeLogTable";
 import { useApi } from "@/hooks/useApi";
-import { getExperiment, getExperimentTrades } from "@/lib/api";
+import { getExperiment } from "@/lib/api";
 import { formatDate } from "@/lib/formatters";
-import type { ExperimentDetail, TradeRecord } from "@/lib/types";
+import type { ExperimentDetail } from "@/lib/types";
 import { useParams } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 
@@ -22,19 +22,11 @@ export default function ExperimentDetailPage() {
 
 	const experimentFetcher = useCallback(() => getExperiment(experimentId), [experimentId]);
 
-	const tradesFetcher = useCallback(() => getExperimentTrades(experimentId), [experimentId]);
-
 	const {
 		data: detail,
 		loading: detailLoading,
 		error: detailError,
 	} = useApi<ExperimentDetail>(experimentFetcher, [experimentId]);
-
-	const {
-		data: trades,
-		loading: tradesLoading,
-		error: tradesError,
-	} = useApi<TradeRecord[]>(tradesFetcher, [experimentId]);
 
 	const metricKeys = useMemo(() => {
 		if (!detail?.iterations || detail.iterations.length === 0) return [];
@@ -116,6 +108,9 @@ export default function ExperimentDetailPage() {
 			{/* Final Metrics */}
 			<MetricCards metrics={experiment.final_metrics} />
 
+			{/* Trading Behavior */}
+			<TradingBehaviorCard iterations={iterations} />
+
 			{/* Iterations Chart */}
 			<Card>
 				<CardHeader title="Training Iterations" />
@@ -128,24 +123,6 @@ export default function ExperimentDetailPage() {
 						</div>
 					)}
 				</div>
-			</Card>
-
-			{/* Trade Log */}
-			<Card>
-				<CardHeader title="Trades" />
-				{tradesLoading ? (
-					<LoadingState message="Loading trades..." />
-				) : tradesError ? (
-					<div className="py-6 text-center text-sm text-[var(--accent-red)]">
-						Failed to load trades: {tradesError.message}
-					</div>
-				) : trades && trades.length > 0 ? (
-					<TradeLogTable trades={trades} />
-				) : (
-					<div className="py-6 text-center text-sm text-[var(--text-secondary)]">
-						No trades recorded.
-					</div>
-				)}
 			</Card>
 
 			{/* Config */}

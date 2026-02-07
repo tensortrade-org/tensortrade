@@ -166,6 +166,134 @@ FEATURE_CATALOG: list[dict[str, object]] = [
             },
         ],
     },
+    {
+        "type": "macd",
+        "name": "MACD",
+        "description": "Moving Average Convergence Divergence with signal line and histogram, tanh-scaled.",
+        "params": [
+            {
+                "name": "fast",
+                "type": "int",
+                "default": 12,
+                "min": 2,
+                "max": 100,
+                "description": "Fast EMA period.",
+            },
+            {
+                "name": "slow",
+                "type": "int",
+                "default": 26,
+                "min": 5,
+                "max": 200,
+                "description": "Slow EMA period.",
+            },
+            {
+                "name": "signal",
+                "type": "int",
+                "default": 9,
+                "min": 2,
+                "max": 50,
+                "description": "Signal line EMA period.",
+            },
+        ],
+    },
+    {
+        "type": "atr",
+        "name": "ATR",
+        "description": "Average True Range measuring volatility from high/low/close, rolling z-score + tanh normalized.",
+        "params": [
+            {
+                "name": "period",
+                "type": "int",
+                "default": 14,
+                "min": 2,
+                "max": 100,
+                "description": "ATR calculation period.",
+            },
+            {
+                "name": "rolling_norm_period",
+                "type": "int",
+                "default": 72,
+                "min": 0,
+                "max": 500,
+                "description": "Period for rolling z-score normalization (0 = no normalization).",
+            },
+        ],
+    },
+    {
+        "type": "stochastic",
+        "name": "Stochastic Oscillator",
+        "description": "Stochastic %K and %D using high/low/close, scaled to [-1, 1].",
+        "params": [
+            {
+                "name": "k_period",
+                "type": "int",
+                "default": 14,
+                "min": 2,
+                "max": 100,
+                "description": "Look-back period for %K.",
+            },
+            {
+                "name": "d_period",
+                "type": "int",
+                "default": 3,
+                "min": 2,
+                "max": 50,
+                "description": "Smoothing period for %D.",
+            },
+        ],
+    },
+    {
+        "type": "obv",
+        "name": "On-Balance Volume",
+        "description": "Cumulative volume weighted by price direction, rolling z-score + tanh normalized.",
+        "params": [
+            {
+                "name": "rolling_norm_period",
+                "type": "int",
+                "default": 20,
+                "min": 2,
+                "max": 500,
+                "description": "Period for rolling z-score normalization.",
+            },
+        ],
+    },
+    {
+        "type": "roc",
+        "name": "Rate of Change",
+        "description": "Percentage rate of change of close price, tanh-normalized.",
+        "params": [
+            {
+                "name": "period",
+                "type": "int",
+                "default": 12,
+                "min": 1,
+                "max": 200,
+                "description": "Look-back period for rate of change.",
+            },
+            {
+                "name": "normalize",
+                "type": "str",
+                "default": "tanh",
+                "description": "Normalization method: 'tanh' or 'none'.",
+            },
+        ],
+    },
+    {
+        "type": "cci",
+        "name": "CCI",
+        "description": "Commodity Channel Index using high/low/close typical price, tanh-scaled.",
+        "params": [
+            {
+                "name": "period",
+                "type": "int",
+                "default": 20,
+                "min": 2,
+                "max": 200,
+                "description": "CCI calculation period.",
+            },
+        ],
+    },
 ]
 
 
@@ -192,6 +320,12 @@ class FeatureEngine:
             "volatility": self._compute_volatility,
             "volume_ratio": self._compute_volume_ratio,
             "bollinger_position": self._compute_bollinger_position,
+            "macd": self._compute_macd,
+            "atr": self._compute_atr,
+            "stochastic": self._compute_stochastic,
+            "obv": self._compute_obv,
+            "roc": self._compute_roc,
+            "cci": self._compute_cci,
         }
 
     def list_available(self) -> list[dict[str, object]]:
@@ -290,6 +424,18 @@ class FeatureEngine:
                 cols.append("vol_ratio")
             elif feat_type == "bollinger_position":
                 cols.append("bb_pos")
+            elif feat_type == "macd":
+                cols.extend(["macd_line", "macd_signal", "macd_hist"])
+            elif feat_type == "atr":
+                cols.append("atr")
+            elif feat_type == "stochastic":
+                cols.extend(["stoch_k", "stoch_d"])
+            elif feat_type == "obv":
+                cols.append("obv")
+            elif feat_type == "roc":
+                cols.append("roc")
+            elif feat_type == "cci":
+                cols.append("cci")
         return cols
 
     # --- Feature computation methods ---
@@ -386,4 +532,111 @@ class FeatureEngine:
         lower = bb_mid - std_dev * bb_std
         band_width = 2 * std_dev * bb_std
         df["bb_pos"] = ((df["close"] - lower) / band_width).clip(0, 1)
+        return df
+
+    @staticmethod
+    def _compute_macd(df: pd.DataFrame, spec: dict[str, object]) -> pd.DataFrame:
+        fast = int(spec.get("fast", 12))  # type: ignore[arg-type]
+        slow = int(spec.get("slow", 26))  # type: ignore[arg-type]
+        signal = int(spec.get("signal", 9))  # type: ignore[arg-type]
+
+        ema_fast = df["close"].ewm(span=fast, adjust=False).mean()
+        ema_slow = df["close"].ewm(span=slow, adjust=False).mean()
+        macd_line = ema_fast - ema_slow
+        macd_signal = macd_line.ewm(span=signal, adjust=False).mean()
+        macd_hist = macd_line - macd_signal
+
+        # Normalize relative to price for scale-invariance, then tanh
+        price = df["close"].replace(0, 1e-10)
+        df["macd_line"] = np.tanh(macd_line / price * 100)
+        df["macd_signal"] = np.tanh(macd_signal / price * 100)
+        df["macd_hist"] = np.tanh(macd_hist / price * 100)
+        return df
+
+    @staticmethod
+    def _compute_atr(df: pd.DataFrame, spec: dict[str, object]) -> pd.DataFrame:
+        period = int(spec.get("period", 14))  # type: ignore[arg-type]
+        rolling_norm_period = int(spec.get("rolling_norm_period", 72))  # type: ignore[arg-type]
+
+        high = df["high"] if "high" in df.columns else df["close"]
+        low = df["low"] if "low" in df.columns else df["close"]
+        close = df["close"]
+
+        prev_close = close.shift(1)
+        tr = pd.concat(
+            [high - low, (high - prev_close).abs(), (low - prev_close).abs()],
+            axis=1,
+        ).max(axis=1)
+        atr = tr.rolling(period).mean()
+
+        if rolling_norm_period > 0:
+            atr_mean = atr.rolling(rolling_norm_period).mean()
+            atr_std = atr.rolling(rolling_norm_period).std()
+            df["atr"] = np.tanh((atr - atr_mean) / (atr_std + 1e-10))
+        else:
+            df["atr"] = atr / close
+        return df
+
+    @staticmethod
+    def _compute_stochastic(df: pd.DataFrame, spec: dict[str, object]) -> pd.DataFrame:
+        k_period = int(spec.get("k_period", 14))  # type: ignore[arg-type]
+        d_period = int(spec.get("d_period", 3))  # type: ignore[arg-type]
+
+        high = df["high"] if "high" in df.columns else df["close"]
+        low = df["low"] if "low" in df.columns else df["close"]
+        close = df["close"]
+
+        lowest_low = low.rolling(k_period).min()
+        highest_high = high.rolling(k_period).max()
+        denom = highest_high - lowest_low
+        # %K in [0, 100], then scale to [-1, 1]
+        stoch_k = ((close - lowest_low) / (denom + 1e-10)) * 100
+        stoch_d = stoch_k.rolling(d_period).mean()
+
+        df["stoch_k"] = (stoch_k - 50) / 50
+        df["stoch_d"] = (stoch_d - 50) / 50
+        return df
+
+    @staticmethod
+    def _compute_obv(df: pd.DataFrame, spec: dict[str, object]) -> pd.DataFrame:
+        rolling_norm_period = int(spec.get("rolling_norm_period", 20))  # type: ignore[arg-type]
+
+        if "volume" in df.columns:
+            direction = np.sign(df["close"].diff())
+            obv = (direction * df["volume"]).cumsum()
+
+            obv_mean = obv.rolling(rolling_norm_period).mean()
+            obv_std = obv.rolling(rolling_norm_period).std()
+            df["obv"] = np.tanh((obv - obv_mean) / (obv_std + 1e-10))
+        else:
+            df["obv"] = 0.0
+        return df
+
+    @staticmethod
+    def _compute_roc(df: pd.DataFrame, spec: dict[str, object]) -> pd.DataFrame:
+        period = int(spec.get("period", 12))  # type: ignore[arg-type]
+        normalize = spec.get("normalize", "tanh")
+
+        roc = df["close"].pct_change(period)
+        if normalize == "tanh":
+            df["roc"] = np.tanh(roc * 10)
+        else:
+            df["roc"] = roc
+        return df
+
+    @staticmethod
+    def _compute_cci(df: pd.DataFrame, spec: dict[str, object]) -> pd.DataFrame:
+        period = int(spec.get("period", 20))  # type: ignore[arg-type]
+
+        high = df["high"] if "high" in df.columns else df["close"]
+        low = df["low"] if "low" in df.columns else df["close"]
+        typical_price = (high + low + df["close"]) / 3
+
+        tp_sma = typical_price.rolling(period).mean()
+        tp_mad = typical_price.rolling(period).apply(
+            lambda x: np.abs(x - x.mean()).mean(), raw=True
+        )
+        cci = (typical_price - tp_sma) / (0.015 * tp_mad + 1e-10)
+        # CCI typically ranges -200 to +200; tanh(cci/200) maps to ~[-1,1]
+        df["cci"] = np.tanh(cci / 200)
         return df

@@ -5,6 +5,8 @@
 #   ./dev.sh          Start both servers
 #   ./dev.sh stop     Stop all running servers
 #   ./dev.sh status   Check if servers are running
+#   ./dev.sh init-db  Initialize database and show seed data counts
+#   ./dev.sh reset-db Delete database and re-seed from scratch
 
 set -euo pipefail
 
@@ -101,6 +103,7 @@ cmd_start() {
 
     load_env
 
+    # Database is auto-initialized on backend startup (tables + seed data)
     echo -e "${CYAN}Starting backend (FastAPI :8000)...${NC}"
     "$ROOT_DIR/.venv/bin/python" -m tensortrade.api.server \
         > "$LOG_DIR/backend.log" 2>&1 &
@@ -148,12 +151,57 @@ cmd_start() {
     echo -e "${GREEN}====================================${NC}"
 }
 
+cmd_reset_db() {
+    local db_path="$HOME/.tensortrade/experiments.db"
+    if [ -f "$db_path" ]; then
+        echo -e "${YELLOW}Removing database: $db_path${NC}"
+        rm -f "$db_path" "${db_path}-wal" "${db_path}-shm"
+        echo -e "${GREEN}Database removed.${NC}"
+    else
+        echo -e "${YELLOW}No database found at $db_path${NC}"
+    fi
+    echo -e "${CYAN}Initializing fresh database with seed data...${NC}"
+    "$ROOT_DIR/.venv/bin/python" -c "
+from tensortrade.training.experiment_store import ExperimentStore
+from tensortrade.training.hyperparameter_store import HyperparameterStore
+from tensortrade.training.dataset_store import DatasetStore
+store = ExperimentStore()
+hp = HyperparameterStore()
+ds = DatasetStore()
+print(f'  Datasets seeded:  {len(ds.list_datasets())}')
+print(f'  HP packs seeded:  {len(hp.list_packs())}')
+store.close(); hp.close(); ds.close()
+"
+    echo -e "${GREEN}Database initialized with seed datasets and HP packs.${NC}"
+}
+
+cmd_init_db() {
+    local db_path="$HOME/.tensortrade/experiments.db"
+    echo -e "${CYAN}Initializing database (seeding if empty)...${NC}"
+    "$ROOT_DIR/.venv/bin/python" -c "
+from tensortrade.training.experiment_store import ExperimentStore
+from tensortrade.training.hyperparameter_store import HyperparameterStore
+from tensortrade.training.dataset_store import DatasetStore
+store = ExperimentStore()
+hp = HyperparameterStore()
+ds = DatasetStore()
+print(f'  Database:   $db_path')
+print(f'  Datasets:   {len(ds.list_datasets())}')
+print(f'  HP packs:   {len(hp.list_packs())}')
+print(f'  Experiments: {len(store.list_experiments())}')
+store.close(); hp.close(); ds.close()
+"
+    echo -e "${GREEN}Database ready.${NC}"
+}
+
 case "${1:-start}" in
-    start)  cmd_start ;;
-    stop)   cmd_stop ;;
-    status) cmd_status ;;
+    start)    cmd_start ;;
+    stop)     cmd_stop ;;
+    status)   cmd_status ;;
+    reset-db) cmd_reset_db ;;
+    init-db)  cmd_init_db ;;
     *)
-        echo "Usage: ./dev.sh [start|stop|status]"
+        echo "Usage: ./dev.sh [start|stop|status|init-db|reset-db]"
         exit 1
         ;;
 esac

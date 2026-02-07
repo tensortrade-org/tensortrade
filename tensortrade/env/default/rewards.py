@@ -209,6 +209,9 @@ class PBR(TensorTradeRewardScheme):
         self.position = 0    # Start in cash (0=flat, 1=long)
         self.commission = commission
         self._traded = False  # Whether current step involved a trade
+        self.buy_count = 0
+        self.sell_count = 0
+        self.hold_count = 0
 
         r = Stream.sensor(price, lambda p: p.value, dtype="float").diff()
         position = Stream.sensor(self, lambda rs: rs.position, dtype="float")
@@ -224,11 +227,15 @@ class PBR(TensorTradeRewardScheme):
         if action == 1:
             if self.position == 0:
                 self._traded = True
+                self.buy_count += 1
             self.position = 1   # Buy → long
         elif action == 2:
             if self.position == 1:
                 self._traded = True
+                self.sell_count += 1
             self.position = 0   # Sell → cash (flat)
+        else:
+            self.hold_count += 1
 
     def get_reward(self, portfolio: 'Portfolio') -> float:
         data = self.feed.next()
@@ -241,10 +248,22 @@ class PBR(TensorTradeRewardScheme):
                 reward -= current_price * self.commission
         return reward
 
+    def get_stats(self) -> dict:
+        """Returns trading statistics for analysis."""
+        return {
+            "trade_count": self.buy_count + self.sell_count,
+            "buy_count": self.buy_count,
+            "sell_count": self.sell_count,
+            "hold_count": self.hold_count,
+        }
+
     def reset(self) -> None:
         """Resets the `position` and `feed` of the reward scheme."""
         self.position = 0
         self._traded = False
+        self.buy_count = 0
+        self.sell_count = 0
+        self.hold_count = 0
         self.feed.reset()
 
 
@@ -310,6 +329,8 @@ class AdvancedPBR(TensorTradeRewardScheme):
 
         self.trade_count = 0
         self.hold_count = 0
+        self.buy_count = 0
+        self.sell_count = 0
 
     def on_action(self, action: int) -> None:
         self._traded = False
@@ -322,10 +343,12 @@ class AdvancedPBR(TensorTradeRewardScheme):
         if action == 1:
             if self.position == 0:
                 self._traded = True
+                self.buy_count += 1
             self.position = 1   # Buy → long
         elif action == 2:
             if self.position == 1:
                 self._traded = True
+                self.sell_count += 1
             self.position = 0   # Sell → cash (flat)
 
     def get_reward(self, portfolio: 'Portfolio') -> float:
@@ -365,13 +388,17 @@ class AdvancedPBR(TensorTradeRewardScheme):
         self._traded = False
         self.trade_count = 0
         self.hold_count = 0
+        self.buy_count = 0
+        self.sell_count = 0
         self.feed.reset()
 
     def get_stats(self) -> dict:
         """Returns trading statistics for analysis."""
         return {
             "trade_count": self.trade_count,
-            "hold_count": self.hold_count
+            "buy_count": self.buy_count,
+            "sell_count": self.sell_count,
+            "hold_count": self.hold_count,
         }
 
 

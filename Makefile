@@ -11,6 +11,12 @@ stop:
 dev-status:
 	./dev.sh status
 
+init-db:
+	./dev.sh init-db
+
+reset-db:
+	./dev.sh reset-db
+
 clean:
 	find . | grep -E '(__pycache__|\.pyc|\.pyo$$)' | xargs rm -rf
 
