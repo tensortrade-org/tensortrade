@@ -11,11 +11,21 @@ import { TrialOutcomesScatter } from "@/components/charts/TrialOutcomesScatter";
 import { Card, CardHeader } from "@/components/common/Card";
 import type { OptunaTrialRecord, TrialCurveData } from "@/lib/types";
 import { useCampaignStore } from "@/stores/campaignStore";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 export default function CampaignPage() {
 	const studyName = useCampaignStore((s) => s.studyName);
 	const isActive = useCampaignStore((s) => s.isActive);
+	const [launching, setLaunching] = useState(false);
+	const launchStudyName = useRef<string | null>(null);
+
+	// Clear launching state once the campaign actually starts via WebSocket
+	useEffect(() => {
+		if (isActive && launching) {
+			setLaunching(false);
+			launchStudyName.current = null;
+		}
+	}, [isActive, launching]);
 	const endStatus = useCampaignStore((s) => s.endStatus);
 	const totalTrials = useCampaignStore((s) => s.totalTrials);
 	const trials = useCampaignStore((s) => s.trials);
@@ -74,8 +84,9 @@ export default function CampaignPage() {
 		// Could navigate to trial detail in future
 	}, []);
 
-	const handleLaunched = useCallback((_studyName: string) => {
-		// Campaign started — store will be populated via WebSocket
+	const handleLaunched = useCallback((name: string) => {
+		launchStudyName.current = name;
+		setLaunching(true);
 	}, []);
 
 	const handleNewCampaign = useCallback(() => {
@@ -95,9 +106,9 @@ export default function CampaignPage() {
 	const latestMetrics = lastIterationEntry?.metrics ?? {};
 
 	// Determine state
-	const isConfigure = !isActive && endStatus == null;
+	const isConfigure = !isActive && !launching && endStatus == null;
 	const isLive = isActive;
-	const isComplete = !isActive && endStatus != null;
+	const isComplete = !isActive && !launching && endStatus != null;
 
 	// For trial iteration total, we derive from trial_update data or use a default
 	const trialIterTotal = useMemo(() => {
@@ -121,6 +132,7 @@ export default function CampaignPage() {
 				<h1 className="text-2xl font-bold text-[var(--text-primary)]">Alpha Search</h1>
 				<p className="mt-1 text-sm text-[var(--text-secondary)]">
 					{isConfigure && "Launch an Optuna HP optimization campaign"}
+					{launching && "Starting campaign..."}
 					{isLive && studyName && (
 						<>
 							Study: <span className="font-medium text-[var(--text-primary)]">{studyName}</span>
@@ -135,6 +147,39 @@ export default function CampaignPage() {
 			{isConfigure && (
 				<Card className="py-8">
 					<CampaignConfigForm onLaunched={handleLaunched} />
+				</Card>
+			)}
+
+			{/* Launching State — waiting for backend to start */}
+			{launching && (
+				<Card className="py-16">
+					<div className="flex flex-col items-center gap-4 text-center">
+						<div className="relative h-12 w-12">
+							<div className="absolute inset-0 animate-ping rounded-full bg-[var(--accent-blue)]/20" />
+							<div className="absolute inset-1 animate-spin rounded-full border-2 border-transparent border-t-[var(--accent-blue)]" />
+							<div className="absolute inset-3 rounded-full bg-[var(--accent-blue)]/60" />
+						</div>
+						<div>
+							<p className="text-lg font-semibold text-[var(--text-primary)]">
+								Starting Alpha Search
+							</p>
+							<p className="mt-1 text-sm text-[var(--text-secondary)]">
+								Initializing Optuna study
+								{launchStudyName.current && (
+									<>
+										{" "}
+										<span className="font-medium text-[var(--text-primary)]">
+											{launchStudyName.current}
+										</span>
+									</>
+								)}
+								...
+							</p>
+							<p className="mt-3 text-xs text-[var(--text-secondary)]">
+								Building environment, compiling model, and preparing first trial
+							</p>
+						</div>
+					</div>
 				</Card>
 			)}
 
