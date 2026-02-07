@@ -231,14 +231,20 @@ class TestBSHListeners:
 class TestPBRRewardIntegration:
     """Tests for PBR reward scheme with 3-action BSH."""
 
+    def test_pbr_starts_at_zero(self):
+        """PBR should initialize with position=0 (cash/flat)."""
+        price = Stream.source([100.0, 101.0, 102.0], dtype="float").rename("USD-BTC")
+        pbr = PBR(price=price)
+        assert pbr.position == 0
+
     def test_pbr_hold_preserves_position(self):
         """PBR on_action(0) should not change position."""
         price = Stream.source([100.0, 101.0, 102.0], dtype="float").rename("USD-BTC")
         pbr = PBR(price=price)
-        initial_position = pbr.position
+        assert pbr.position == 0  # Starts at 0
 
         pbr.on_action(0)  # Hold
-        assert pbr.position == initial_position
+        assert pbr.position == 0
 
     def test_pbr_buy_sets_long(self):
         """PBR on_action(1) should set position to 1 (long)."""
@@ -248,10 +254,35 @@ class TestPBRRewardIntegration:
         pbr.on_action(1)  # Buy
         assert pbr.position == 1
 
-    def test_pbr_sell_sets_short(self):
-        """PBR on_action(2) should set position to -1 (flat/short)."""
+    def test_pbr_sell_sets_zero(self):
+        """PBR on_action(2) should set position to 0 (cash/flat)."""
         price = Stream.source([100.0, 101.0, 102.0], dtype="float").rename("USD-BTC")
         pbr = PBR(price=price)
 
+        pbr.on_action(1)  # Buy first
         pbr.on_action(2)  # Sell
-        assert pbr.position == -1
+        assert pbr.position == 0
+
+    def test_pbr_reset_returns_to_zero(self):
+        """PBR reset() should return position to 0 (cash/flat)."""
+        price = Stream.source([100.0, 101.0, 102.0], dtype="float").rename("USD-BTC")
+        pbr = PBR(price=price)
+
+        pbr.on_action(1)  # Buy → position=1
+        assert pbr.position == 1
+
+        pbr.reset()
+        assert pbr.position == 0
+
+    def test_pbr_commission_penalty(self):
+        """PBR should penalize trades by 2x commission."""
+        price = Stream.source([100.0, 101.0, 102.0], dtype="float").rename("USD-BTC")
+        pbr = PBR(price=price, commission=0.01)
+
+        # Buy triggers a trade
+        pbr.on_action(1)
+        assert pbr._traded is True
+
+        # Hold does not
+        pbr.on_action(0)
+        assert pbr._traded is False
