@@ -597,6 +597,29 @@ class ExperimentStore:
             "created_at": row["created_at"],
         }
 
+    def get_latest_insight_for_study(self, study_name: str) -> dict | None:
+        """Get the most recent insight for a given study."""
+        tag = json.dumps([f"study:{study_name}"])
+        row = self._conn.execute(
+            """SELECT * FROM insights
+               WHERE experiment_ids = ? AND analysis_type = 'campaign_analysis'
+               ORDER BY created_at DESC LIMIT 1""",
+            (tag,),
+        ).fetchone()
+        if row is None:
+            return None
+        return {
+            "id": row["id"],
+            "experiment_ids": json.loads(row["experiment_ids"]),
+            "analysis_type": row["analysis_type"],
+            "summary": row["summary"],
+            "findings": json.loads(row["findings"]),
+            "suggestions": json.loads(row["suggestions"]),
+            "confidence": row["confidence"],
+            "raw_response": row["raw_response"],
+            "created_at": row["created_at"],
+        }
+
     def list_insights(self, limit: int = 50) -> list[dict]:
         """List all stored insights."""
         rows = self._conn.execute(

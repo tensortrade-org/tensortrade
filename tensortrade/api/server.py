@@ -17,6 +17,7 @@ from typing import AsyncGenerator
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Query
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 
 from tensortrade.training.experiment_store import ExperimentStore
 from tensortrade.training.hyperparameter_store import HyperparameterStore
@@ -344,6 +345,11 @@ def _register_routes(app: FastAPI) -> None:
                 if not study_name:
                     return {"error": "study_name required for strategy analysis"}
                 report = await engine.suggest_next_strategy(study_name, custom_prompt=custom_prompt)
+            elif analysis_type == "campaign_analysis":
+                study_name = body.get("study_name")
+                if not study_name:
+                    return {"error": "study_name required for campaign analysis"}
+                report = await engine.analyze_campaign(study_name, custom_prompt=custom_prompt)
             elif analysis_type == "trades":
                 if not experiment_id:
                     return {"error": "experiment_ids required for trade analysis"}
@@ -354,6 +360,57 @@ def _register_routes(app: FastAPI) -> None:
             return asdict(report)
         except Exception as e:
             return {"error": str(e)}
+
+    @app.post("/api/insights/analyze/stream")
+    async def analyze_stream(body: dict) -> StreamingResponse:
+        store = _get_store()
+        api_key = os.environ.get("ANTHROPIC_API_KEY")
+        if not api_key:
+            async def _error_gen() -> AsyncGenerator[str, None]:
+                yield f"event: error\ndata: {json.dumps({'error': 'ANTHROPIC_API_KEY not set'})}\n\n"
+            return StreamingResponse(
+                _error_gen(),
+                media_type="text/event-stream",
+                headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+            )
+
+        analysis_type = body.get("analysis_type", "experiment")
+        if analysis_type != "campaign_analysis":
+            async def _unsupported_gen() -> AsyncGenerator[str, None]:
+                yield f"event: error\ndata: {json.dumps({'error': f'Streaming not supported for type: {analysis_type}'})}\n\n"
+            return StreamingResponse(
+                _unsupported_gen(),
+                media_type="text/event-stream",
+                headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+            )
+
+        study_name = body.get("study_name")
+        if not study_name:
+            async def _missing_gen() -> AsyncGenerator[str, None]:
+                yield f"event: error\ndata: {json.dumps({'error': 'study_name required for campaign analysis'})}\n\n"
+            return StreamingResponse(
+                _missing_gen(),
+                media_type="text/event-stream",
+                headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+            )
+
+        from tensortrade.api.insights import InsightsEngine
+
+        engine = InsightsEngine(store, api_key)
+        custom_prompt = body.get("prompt")
+        return StreamingResponse(
+            engine.stream_campaign_analysis(study_name, custom_prompt=custom_prompt),
+            media_type="text/event-stream",
+            headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+        )
+
+    @app.get("/api/insights/study/{study_name}")
+    async def get_study_insight(study_name: str) -> dict:
+        store = _get_store()
+        insight = store.get_latest_insight_for_study(study_name)
+        if not insight:
+            return {"error": "not found"}
+        return insight
 
     @app.get("/api/insights/{insight_id}")
     async def get_insight(insight_id: str) -> dict:
@@ -732,7 +789,19 @@ def _correlation(x: list[float], y: list[float]) -> float:
 
 # Convenience: run with `python -m tensortrade.api.server`
 if __name__ == "__main__":
+    from pathlib import Path
+
     import uvicorn
+
+    # Load .env from project root if present
+    env_file = Path(__file__).resolve().parents[2] / ".env"
+    if env_file.exists():
+        with open(env_file) as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith("#") and "=" in line:
+                    key, _, value = line.partition("=")
+                    os.environ.setdefault(key.strip(), value.strip())
 
     app = create_app()
     uvicorn.run(app, host="0.0.0.0", port=8000)

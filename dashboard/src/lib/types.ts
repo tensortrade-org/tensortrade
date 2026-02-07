@@ -127,7 +127,7 @@ export interface OptunaStudyDetail {
 export interface InsightReport {
 	id: string;
 	experiment_ids: string[];
-	analysis_type: "experiment" | "comparison" | "strategy" | "trades";
+	analysis_type: "experiment" | "comparison" | "strategy" | "trades" | "campaign_analysis";
 	summary: string;
 	findings: string[];
 	suggestions: string[];

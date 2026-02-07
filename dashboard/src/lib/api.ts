@@ -26,6 +26,10 @@ import type {
 
 const API_BASE = "/api";
 
+// SSE streams bypass the Next.js rewrite proxy (which buffers responses)
+// and hit the FastAPI backend directly.
+const STREAM_API_BASE = process.env.NEXT_PUBLIC_STREAM_API_URL ?? "http://localhost:8000/api";
+
 interface ExperimentsParams {
 	script?: string;
 	status?: string;
@@ -142,6 +146,14 @@ export async function getInsights(): Promise<InsightReport[]> {
 
 export async function getInsight(id: string): Promise<InsightReport> {
 	return fetchJSON<InsightReport>(`/insights/${id}`);
+}
+
+export async function getStudyInsight(studyName: string): Promise<InsightReport | null> {
+	const result = await fetchJSON<InsightReport & { error?: string }>(
+		`/insights/study/${encodeURIComponent(studyName)}`,
+	);
+	if (result.error) return null;
+	return result;
 }
 
 export async function requestAnalysis(body: AnalysisRequest): Promise<InsightReport> {
@@ -304,4 +316,93 @@ export async function getRunningCampaign(): Promise<RunningCampaign | null> {
 	const result = await fetchJSON<{ is_active: boolean; study_name?: string }>("/campaign/running");
 	if (!result.is_active) return null;
 	return result as unknown as RunningCampaign;
+}
+
+// --- Streaming Analysis (SSE) ---
+
+interface SSEChunkData {
+	text: string;
+}
+
+interface SSEErrorData {
+	error: string;
+}
+
+interface StreamAnalysisCallbacks {
+	onChunk: (text: string) => void;
+	onComplete: (report: InsightReport) => void;
+	onError: (message: string) => void;
+}
+
+export async function streamAnalysis(
+	body: AnalysisRequest,
+	callbacks: StreamAnalysisCallbacks,
+): Promise<void> {
+	const res = await fetch(`${STREAM_API_BASE}/insights/analyze/stream`, {
+		method: "POST",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify(body),
+	});
+
+	if (!res.ok) {
+		callbacks.onError(`API error: ${res.status}`);
+		return;
+	}
+
+	if (!res.body) {
+		callbacks.onError("No response body");
+		return;
+	}
+
+	const reader = res.body.pipeThrough(new TextDecoderStream()).getReader();
+	let buffer = "";
+
+	try {
+		while (true) {
+			const { done, value } = await reader.read();
+			if (done) break;
+
+			buffer += value;
+
+			// Parse SSE events from buffer — events are separated by double newlines
+			const parts = buffer.split("\n\n");
+			// Keep the last part as incomplete buffer
+			buffer = parts.pop() ?? "";
+
+			for (const part of parts) {
+				const trimmed = part.trim();
+				if (!trimmed) continue;
+
+				let eventType = "message";
+				let data = "";
+
+				for (const line of trimmed.split("\n")) {
+					if (line.startsWith("event: ")) {
+						eventType = line.slice(7);
+					} else if (line.startsWith("data: ")) {
+						data = line.slice(6);
+					}
+				}
+
+				if (!data) continue;
+
+				try {
+					if (eventType === "chunk") {
+						const parsed = JSON.parse(data) as SSEChunkData;
+						callbacks.onChunk(parsed.text);
+					} else if (eventType === "complete") {
+						const report = JSON.parse(data) as InsightReport;
+						callbacks.onComplete(report);
+					} else if (eventType === "error") {
+						const parsed = JSON.parse(data) as SSEErrorData;
+						callbacks.onError(parsed.error);
+					}
+				} catch {
+					// Skip malformed SSE data
+				}
+			}
+		}
+	} finally {
+		reader.releaseLock();
+	}
 }

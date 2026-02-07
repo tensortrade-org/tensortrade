@@ -38,8 +38,13 @@ htmlcov/
 # Virtual environments
 venv/
 tensortrade-env/
+.env
 .env/
 env/
+
+# Dev server runtime
+.dev-pids/
+.dev-logs/
 
 # Training artifacts
 ray_results/

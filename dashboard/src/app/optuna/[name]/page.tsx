@@ -8,18 +8,28 @@ import { TrialOutcomesScatter } from "@/components/charts/TrialOutcomesScatter";
 import { Badge } from "@/components/common/Badge";
 import { Card, CardHeader } from "@/components/common/Card";
 import { LoadingState } from "@/components/common/Spinner";
+import { Spinner } from "@/components/common/Spinner";
+import { InsightCard } from "@/components/insights/InsightCard";
 import { InsightRequest } from "@/components/insights/InsightRequest";
 import { useApi } from "@/hooks/useApi";
-import { getOptunaStudy, getParamImportance, getStudyCurves } from "@/lib/api";
+import {
+	getOptunaStudy,
+	getParamImportance,
+	getStudyCurves,
+	getStudyInsight,
+	streamAnalysis,
+} from "@/lib/api";
 import { formatDuration, formatNumber } from "@/lib/formatters";
 import type {
+	InsightReport,
 	OptunaStudyDetail,
 	OptunaTrialRecord,
 	ParamImportance as ParamImportanceType,
 	StudyCurvesResponse,
 } from "@/lib/types";
 import { useParams } from "next/navigation";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Markdown from "react-markdown";
 
 interface TrialStateVariant {
 	variant: "success" | "warning" | "danger";
@@ -117,10 +127,27 @@ export default function OptunaStudyDetailPage() {
 	const studyName = decodeURIComponent(params.name as string);
 
 	const [showInsight, setShowInsight] = useState(false);
+	const [analysisReport, setAnalysisReport] = useState<InsightReport | null>(null);
+	const [analyzing, setAnalyzing] = useState(false);
+	const [analysisError, setAnalysisError] = useState<string | null>(null);
+	const [streamingText, setStreamingText] = useState("");
 	const [highlightedTrial, setHighlightedTrial] = useState<number | null>(null);
 	const [curveMetric, setCurveMetric] = useState("pnl_mean");
 	const [heatmapParamX, setHeatmapParamX] = useState<string>("");
 	const [heatmapParamY, setHeatmapParamY] = useState<string>("");
+
+	// Load persisted analysis on mount
+	useEffect(() => {
+		getStudyInsight(studyName).then((insight) => {
+			if (insight?.raw_response) {
+				setAnalysisReport(insight);
+				// Strip JSON fence block from the visible markdown
+				const full = insight.raw_response;
+				const jsonFenceIdx = full.indexOf("```json");
+				setStreamingText(jsonFenceIdx >= 0 ? full.slice(0, jsonFenceIdx).trimEnd() : full);
+			}
+		});
+	}, [studyName]);
 
 	// Three parallel API calls
 	const studyFetcher = useCallback(() => getOptunaStudy(studyName), [studyName]);
@@ -200,9 +227,57 @@ export default function OptunaStudyDetailPage() {
 		setHighlightedTrial((prev) => (prev === trialNumber ? null : trialNumber));
 	}, []);
 
-	const handleInsightComplete = useCallback(() => {
+	const [strategyReport, setStrategyReport] = useState<InsightReport | null>(null);
+
+	const handleInsightComplete = useCallback((report: InsightReport) => {
+		setStrategyReport(report);
 		setShowInsight(false);
 	}, []);
+
+	const accumulatedRef = useRef("");
+
+	const handleAnalyzeResults = useCallback(async () => {
+		setAnalyzing(true);
+		setAnalysisError(null);
+		setAnalysisReport(null);
+		setStreamingText("");
+		accumulatedRef.current = "";
+		try {
+			await streamAnalysis(
+				{
+					analysis_type: "campaign_analysis",
+					study_name: studyName,
+				},
+				{
+					onChunk: (text) => {
+						accumulatedRef.current += text;
+						// Strip the trailing ```json ... block from visible text
+						const full = accumulatedRef.current;
+						const jsonFenceIdx = full.indexOf("```json");
+						const visible = jsonFenceIdx >= 0 ? full.slice(0, jsonFenceIdx).trimEnd() : full;
+						setStreamingText(visible);
+					},
+					onComplete: (report) => {
+						setAnalysisReport(report);
+						// Keep the final markdown visible — don't clear streamingText
+						setAnalyzing(false);
+					},
+					onError: (message) => {
+						setAnalysisError(message);
+						setStreamingText("");
+						setAnalyzing(false);
+					},
+				},
+			);
+			// If stream ended without complete/error events, stop analyzing
+			setAnalyzing(false);
+		} catch (err) {
+			const message = err instanceof Error ? err.message : "Analysis request failed";
+			setAnalysisError(message);
+			setStreamingText("");
+			setAnalyzing(false);
+		}
+	}, [studyName]);
 
 	if (studyLoading) {
 		return <LoadingState message="Loading study..." />;
@@ -245,20 +320,75 @@ export default function OptunaStudyDetailPage() {
 						)}
 					</div>
 				</div>
-				<button
-					type="button"
-					onClick={() => setShowInsight(true)}
-					className="rounded-md bg-[var(--accent-purple)] px-4 py-2 text-sm font-medium text-white hover:opacity-90"
-				>
-					Suggest Strategy
-				</button>
+				<div className="flex items-center gap-2">
+					<button
+						type="button"
+						onClick={handleAnalyzeResults}
+						disabled={analyzing}
+						className="flex items-center gap-2 rounded-md bg-[var(--accent-blue)] px-4 py-2 text-sm font-medium text-white hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+					>
+						{analyzing ? (
+							<>
+								<Spinner size="sm" />
+								Analyzing...
+							</>
+						) : (
+							"Analyze Results"
+						)}
+					</button>
+					<button
+						type="button"
+						onClick={() => setShowInsight(true)}
+						className="rounded-md bg-[var(--accent-purple)] px-4 py-2 text-sm font-medium text-white hover:opacity-90"
+					>
+						Suggest Strategy
+					</button>
+				</div>
 			</div>
 
-			{/* Insight Request */}
+			{/* Insight Request — placed right after header so it's visible */}
 			{showInsight && (
 				<Card>
 					<CardHeader title="Strategy Suggestion" />
 					<InsightRequest onComplete={handleInsightComplete} />
+				</Card>
+			)}
+			{strategyReport && <InsightCard insight={strategyReport} />}
+
+			{/* Campaign Analysis Report */}
+			{analysisError && (
+				<Card>
+					<div className="py-4 text-center text-sm text-[var(--accent-red)]">{analysisError}</div>
+				</Card>
+			)}
+			{streamingText && (
+				<Card>
+					<CardHeader
+						title={analyzing ? "Analyzing Campaign..." : "Campaign Analysis"}
+						action={
+							!analyzing && analysisReport ? (
+								<div className="flex items-center gap-2">
+									<Badge label={analysisReport.analysis_type} variant="info" />
+									<Badge
+										label={analysisReport.confidence}
+										variant={
+											analysisReport.confidence === "high"
+												? "success"
+												: analysisReport.confidence === "medium"
+													? "warning"
+													: "danger"
+										}
+									/>
+								</div>
+							) : undefined
+						}
+					/>
+					<div className="p-4 prose prose-sm prose-invert max-w-none">
+						<Markdown>{streamingText}</Markdown>
+						{analyzing && (
+							<span className="inline-block w-2 h-4 ml-0.5 bg-[var(--accent-blue)] animate-pulse align-text-bottom" />
+						)}
+					</div>
 				</Card>
 			)}
 

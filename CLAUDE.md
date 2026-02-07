@@ -17,19 +17,32 @@ Always use `.venv/bin/python` to run Python commands, or prefix with `uv run`.
 
 ## Running Servers
 
-### Backend API (FastAPI on port 8000)
+### Quick start (both servers)
 ```bash
-.venv/bin/python -m tensortrade.api.server
+make dev        # or: ./dev.sh
 ```
-The app uses a factory function `create_app()` — there is no module-level `app` variable. Use `python -m` to run it, not `uvicorn tensortrade.api.server:app`.
+Starts backend (FastAPI :8000) + frontend (Next.js :3000) in background. Loads `.env` automatically. PIDs tracked in `.dev-pids/`, logs in `.dev-logs/`.
 
-### Frontend Dashboard (Next.js on port 3000)
 ```bash
+make stop       # or: ./dev.sh stop
+make dev-status # or: ./dev.sh status
+```
+
+### Individual servers (if needed)
+```bash
+# Backend only
+.venv/bin/python -m tensortrade.api.server
+
+# Frontend only
 cd dashboard && npm run dev
 ```
+The backend app uses a factory function `create_app()` — there is no module-level `app` variable. Use `python -m` to run it, not `uvicorn tensortrade.api.server:app`. The frontend proxies API/WebSocket calls to port 8000.
 
-### Both together
-Start backend first, then frontend. The frontend proxies API/WebSocket calls to port 8000.
+### Environment variables
+Put secrets in `.env` at project root (git-ignored). The backend loads it on startup.
+```
+ANTHROPIC_API_KEY=sk-ant-...
+```
 
 ## Running Tests
 

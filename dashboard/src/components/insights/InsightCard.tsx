@@ -16,6 +16,7 @@ const ANALYSIS_TYPE_VARIANT: Record<AnalysisType, BadgeVariant> = {
 	comparison: "purple",
 	strategy: "success",
 	trades: "warning",
+	campaign_analysis: "info",
 };
 
 const CONFIDENCE_VARIANT: Record<Confidence, BadgeVariant> = {
@@ -42,7 +43,7 @@ export function InsightCard({ insight }: InsightCardProps) {
 
 			<p className="mb-4 text-sm leading-relaxed text-[var(--text-primary)]">{insight.summary}</p>
 
-			{insight.findings.length > 0 && (
+			{(insight.findings?.length ?? 0) > 0 && (
 				<div className="mb-4">
 					<h4 className="mb-2 text-xs font-medium uppercase tracking-wide text-[var(--text-secondary)]">
 						Findings
@@ -61,7 +62,7 @@ export function InsightCard({ insight }: InsightCardProps) {
 				</div>
 			)}
 
-			{insight.suggestions.length > 0 && (
+			{(insight.suggestions?.length ?? 0) > 0 && (
 				<div>
 					<h4 className="mb-2 text-xs font-medium uppercase tracking-wide text-[var(--text-secondary)]">
 						Suggestions
