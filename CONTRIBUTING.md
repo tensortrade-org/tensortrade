@@ -50,27 +50,33 @@ Here's a quick guide to submitting your improvements:
 
 3) Make sure any new function or class you introduce has proper docstrings. Make sure any code you touch still has up-to-date docstrings and documentation. **Docstring style should be respected.** In particular, they should be formatted in MarkDown, and there should be sections for `Arguments`, `Returns`, `Raises` (if applicable). Look at other docstrings in the codebase for examples.
 
-4) Write tests. Your code should have full unit test coverage. If you want to see your PR merged promptly, this is crucial. Use the _coverage_  module module to make sure that code coverage is increased on the component you are working on. PRs that decrease coverage may be rejected. 
+4) Write tests. Your code should have full unit test coverage. If you want to see your PR merged promptly, this is crucial. Use the _coverage_  module module to make sure that code coverage is increased on the component you are working on. PRs that decrease coverage may be rejected.
 
-5) Run our test suite locally. It's easy: from the TensorTrade folder, simply run: `uv run pytest tests/`.
+5) Install dependencies and set up pre-commit hooks:
 
-   - First, install dependencies with uv: `uv sync --group dev`
-   - Or use make: `make install-dev && make test`
+   ```bash
+   uv sync --group dev
+   uv run pre-commit install
+   ```
 
-6) Make sure all tests are passing.
+   This installs git hooks that automatically run ruff linting and formatting on every commit, so you don't have to think about it.
 
-7) We use ruff for linting and formatting. Make sure your code passes the linter:
+6) Run our test suite locally. It's easy: from the TensorTrade folder, simply run: `uv run pytest tests/`.
+
+7) Make sure all tests are passing.
+
+8) We use ruff for linting and formatting. Pre-commit hooks handle this automatically, but you can also run them manually:
 
    - Run the linter: `uv run ruff check tensortrade/ tests/`
    - Auto-fix issues: `uv run ruff check --fix tensortrade/ tests/`
    - Format code: `uv run ruff format tensortrade/ tests/`
    - Or use make: `make lint` and `make format`
 
-8) When committing, use appropriate, descriptive commit messages.
+9) When committing, use appropriate, descriptive commit messages.
 
-9) Update the documentation. If introducing new functionality, make sure you include code snippets demonstrating the usage of your new feature.
+10) Update the documentation. If introducing new functionality, make sure you include code snippets demonstrating the usage of your new feature.
 
-10) Submit your PR. If your changes have been approved in a previous discussion, and if you have complete (and passing) unit tests as well as proper docstrings/documentation, your PR is likely to be merged promptly.
+11) Submit your PR. If your changes have been approved in a previous discussion, and if you have complete (and passing) unit tests as well as proper docstrings/documentation, your PR is likely to be merged promptly.
 
 
 ---
