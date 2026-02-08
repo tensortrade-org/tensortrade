@@ -36,6 +36,7 @@ venv/
 tensortrade-env/
 .env/
 env/
+!tensortrade/env/
 
 # Training artifacts
 ray_results/

@@ -120,6 +120,63 @@ class TensorTradeActionScheme(ActionScheme):
 
 
 class BSH(TensorTradeActionScheme):
+    """A simple discrete action scheme where the only options are to buy or sell (toggle).
+
+    Actions
+    -------
+    0 : Buy/Sell toggle - switch between cash and asset positions.
+    1 : Buy/Sell toggle - switch between cash and asset positions.
+
+    Parameters
+    ----------
+    cash : `Wallet`
+        The wallet to hold funds in the base intrument.
+    asset : `Wallet`
+        The wallet to hold funds in the quote instrument.
+    """
+
+    registered_name = "bsh"
+
+    def __init__(self, cash: 'Wallet', asset: 'Wallet'):
+        super().__init__()
+        self.cash = cash
+        self.asset = asset
+
+        self.listeners = []
+        self.action = 0
+
+    @property
+    def action_space(self):
+        return Discrete(2)
+
+    def attach(self, listener):
+        self.listeners += [listener]
+        return self
+
+    def get_orders(self, action: int, portfolio: 'Portfolio') -> 'List[Order]':
+        order = None
+
+        if abs(action - self.action) > 0:
+            src = self.cash if self.action == 0 else self.asset
+            tgt = self.asset if self.action == 0 else self.cash
+
+            if src.balance.as_float() == 0:  # We need to check, regardless of the proposed order, if we have balance in 'src'
+                return []  # Otherwise just return an empty order list
+
+            order = proportion_order(portfolio, src, tgt, 1.0)
+            self.action = action
+
+        for listener in self.listeners:
+            listener.on_action(action)
+
+        return [order]
+
+    def reset(self):
+        super().reset()
+        self.action = 0
+
+
+class BSH3(TensorTradeActionScheme):
     """A simple discrete action scheme where the only options are to hold, buy,
     or sell.
 
@@ -137,7 +194,7 @@ class BSH(TensorTradeActionScheme):
         The wallet to hold funds in the quote instrument.
     """
 
-    registered_name = "bsh"
+    registered_name = "bsh3"
 
     def __init__(self, cash: 'Wallet', asset: 'Wallet'):
         super().__init__()
@@ -407,6 +464,7 @@ class ManagedRiskOrders(TensorTradeActionScheme):
 
 _registry = {
     'bsh': BSH,
+    'bsh3': BSH3,
     'simple': SimpleOrders,
     'managed-risk': ManagedRiskOrders,
 }

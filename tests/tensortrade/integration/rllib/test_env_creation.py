@@ -24,7 +24,7 @@ from tensortrade.oms.exchanges import Exchange, ExchangeOptions
 from tensortrade.oms.instruments import USD, BTC
 from tensortrade.oms.services.execution.simulated import execute_order
 from tensortrade.oms.wallets import Portfolio, Wallet
-from tensortrade.env.default.actions import BSH
+from tensortrade.env.default.actions import BSH3
 from tensortrade.env.default.rewards import PBR
 import tensortrade.env.default as default
 
@@ -58,7 +58,7 @@ def create_env(config: dict) -> gym.Env:
     feed.compile()
 
     reward_scheme = PBR(price=price)
-    action_scheme = BSH(cash=cash, asset=asset).attach(reward_scheme)
+    action_scheme = BSH3(cash=cash, asset=asset).attach(reward_scheme)
 
     env = default.create(
         feed=feed,
