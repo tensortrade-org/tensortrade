@@ -94,6 +94,15 @@ class InferenceRunner:
             obs, _ = env.reset()
             done = truncated = False
             step = 0
+
+            # Pre-compute timestamp extrapolation for when OHLCV data runs out
+            if len(ohlcv) >= 2 and "date" in ohlcv.columns:
+                last_ohlcv_ts = int(pd.Timestamp(ohlcv.iloc[-1]["date"]).timestamp())
+                prev_ohlcv_ts = int(pd.Timestamp(ohlcv.iloc[-2]["date"]).timestamp())
+                ts_interval = max(last_ohlcv_ts - prev_ohlcv_ts, 1)
+            else:
+                last_ohlcv_ts = 0
+                ts_interval = 3600  # default 1h
             initial_net_worth = float(env.portfolio.net_worth)
             prev_net_worth = initial_net_worth
             buy_count = 0
@@ -124,7 +133,7 @@ class InferenceRunner:
                 else:
                     o = h = lo = c = net_worth
                     v = 0.0
-                    ts = step
+                    ts = last_ohlcv_ts + (data_idx - len(ohlcv) + 1) * ts_interval
 
                 # Track action distribution (works for BSH and ScaledEntryBSH)
                 if action == 0:
