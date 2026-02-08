@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License
 
+
 import numpy as np
 import pandas as pd
 
@@ -19,9 +20,8 @@ from tensortrade.stochastic.processes.brownian_motion import brownian_motion_log
 from tensortrade.stochastic.utils import ModelParameters, generate
 
 
-def cox_ingersoll_ross_levels(params: 'ModelParameters') -> 'np.array':
-    """
-    Constructs the rate levels of a mean-reverting Cox-Ingersoll-Ross process.
+def cox_ingersoll_ross_levels(params: ModelParameters) -> np.ndarray:
+    """Construct the rate levels of a mean-reverting Cox-Ingersoll-Ross process.
 
     Used to model interest rates as well as stochastic volatility in the Heston
     model. We pass a correlated Brownian motion process into the method from
@@ -53,14 +53,16 @@ def cox_ingersoll_ross_levels(params: 'ModelParameters') -> 'np.array':
     return np.array(levels)
 
 
-def cox(base_price: int = 1,
-        base_volume: int = 1,
-        start_date: str = '2010-01-01',
-        start_date_format: str = '%Y-%m-%d',
-        times_to_generate: int = 1000,
-        time_frame: str = '1h',
-        params: 'ModelParameters' = None) -> 'pd.DataFrame':
-    """Generates price data from the CIR process.
+def cox(
+    base_price: int = 1,
+    base_volume: int = 1,
+    start_date: str = "2010-01-01",
+    start_date_format: str = "%Y-%m-%d",
+    times_to_generate: int = 1000,
+    time_frame: str = "1h",
+    params: ModelParameters | None = None,
+) -> "pd.DataFrame":
+    """Generate price data from the CIR process.
 
     Parameters
     ----------
@@ -88,7 +90,6 @@ def cox(base_price: int = 1,
     ----------
     [1] https://en.wikipedia.org/wiki/Cox%E2%80%93Ingersoll%E2%80%93Ross_model
     """
-
     data_frame = generate(
         price_fn=cox_ingersoll_ross_levels,
         base_price=base_price,
@@ -97,7 +98,7 @@ def cox(base_price: int = 1,
         start_date_format=start_date_format,
         times_to_generate=times_to_generate,
         time_frame=time_frame,
-        params=params
+        params=params,
     )
 
     return data_frame

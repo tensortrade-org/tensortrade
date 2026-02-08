@@ -17,7 +17,6 @@ from typing import Any
 from tensortrade.oms.instruments.quantity import Quantity
 from tensortrade.oms.instruments.trading_pair import TradingPair
 
-
 registry = {}
 
 
@@ -36,7 +35,7 @@ class Instrument:
         The name of the instrument being created.
     """
 
-    def __init__(self, symbol: str, precision: int, name: str = None) -> None:
+    def __init__(self, symbol: str, precision: int, name: str | None = None) -> None:
         self.symbol = symbol
         self.precision = precision
         self.name = name
@@ -129,33 +128,33 @@ class Instrument:
 
 
 # Crypto
-BTC = Instrument('BTC', 8, 'Bitcoin')
-ETH = Instrument('ETH', 8, 'Ethereum')
-XRP = Instrument('XRP', 8, 'XRP')
-NEO = Instrument('NEO', 8, 'NEO')
-BCH = Instrument('BCH', 8, 'Bitcoin Cash')
-LTC = Instrument('LTC', 8, 'Litecoin')
-ETC = Instrument('ETC', 8, 'Ethereum Classic')
-XLM = Instrument('XLM', 8, 'Stellar Lumens')
-LINK = Instrument('LINK', 8, 'Chainlink')
-ATOM = Instrument('ATOM', 8, 'Cosmos')
-DAI = Instrument('DAI', 8, 'Dai')
-USDT = Instrument('USDT', 8, 'Tether')
+BTC = Instrument("BTC", 8, "Bitcoin")
+ETH = Instrument("ETH", 8, "Ethereum")
+XRP = Instrument("XRP", 8, "XRP")
+NEO = Instrument("NEO", 8, "NEO")
+BCH = Instrument("BCH", 8, "Bitcoin Cash")
+LTC = Instrument("LTC", 8, "Litecoin")
+ETC = Instrument("ETC", 8, "Ethereum Classic")
+XLM = Instrument("XLM", 8, "Stellar Lumens")
+LINK = Instrument("LINK", 8, "Chainlink")
+ATOM = Instrument("ATOM", 8, "Cosmos")
+DAI = Instrument("DAI", 8, "Dai")
+USDT = Instrument("USDT", 8, "Tether")
 
 # FX
-USD = Instrument('USD', 2, 'U.S. Dollar')
-EUR = Instrument('EUR', 2, 'Euro')
-JPY = Instrument('JPY', 2, 'Japanese Yen')
-KWN = Instrument('KWN', 2, 'Korean Won')
-AUD = Instrument('AUD', 2, 'Australian Dollar')
+USD = Instrument("USD", 2, "U.S. Dollar")
+EUR = Instrument("EUR", 2, "Euro")
+JPY = Instrument("JPY", 2, "Japanese Yen")
+KWN = Instrument("KWN", 2, "Korean Won")
+AUD = Instrument("AUD", 2, "Australian Dollar")
 
 # Commodities
-XAU = Instrument('XAU', 2, 'Gold futures')
-XAG = Instrument('XAG', 2, 'Silver futures')
+XAU = Instrument("XAU", 2, "Gold futures")
+XAG = Instrument("XAG", 2, "Silver futures")
 
 # Stocks
 
-AAPL = Instrument('AAPL', 2, 'Apple stock')
-MSFT = Instrument('MSFT', 2, 'Microsoft stock')
-TSLA = Instrument('TSLA', 2, 'Tesla stock')
-AMZN = Instrument('AMZN', 2, 'Amazon stock')
+AAPL = Instrument("AAPL", 2, "Apple stock")
+MSFT = Instrument("MSFT", 2, "Microsoft stock")
+TSLA = Instrument("TSLA", 2, "Tesla stock")
+AMZN = Instrument("AMZN", 2, "Amazon stock")

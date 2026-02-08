@@ -1,26 +1,86 @@
-
 import numpy as np
 import pandas as pd
 
 from tensortrade.feed import Stream
-
 from tests.utils.ops import assert_op
 
-
 configurations = [
-    {"com": None, "span": 3, "halflife": None, "alpha": None, "min_periods": 0, "adjust": True, "ignore_na": True},
-    {"com": None, "span": 3, "halflife": None, "alpha": None, "min_periods": 0, "adjust": True, "ignore_na": False},
-    {"com": None, "span": 3, "halflife": None, "alpha": None, "min_periods": 0, "adjust": False, "ignore_na": True},
-    {"com": None, "span": 3, "halflife": None, "alpha": None, "min_periods": 0, "adjust": False, "ignore_na": False},
-    {"com": None, "span": 3, "halflife": None, "alpha": None, "min_periods": 2, "adjust": True, "ignore_na": True},
-    {"com": None, "span": 3, "halflife": None, "alpha": None, "min_periods": 2, "adjust": True, "ignore_na": False},
-    {"com": None, "span": 3, "halflife": None, "alpha": None, "min_periods": 2, "adjust": False, "ignore_na": True},
-    {"com": None, "span": 3, "halflife": None, "alpha": None, "min_periods": 2, "adjust": False, "ignore_na": False}
+    {
+        "com": None,
+        "span": 3,
+        "halflife": None,
+        "alpha": None,
+        "min_periods": 0,
+        "adjust": True,
+        "ignore_na": True,
+    },
+    {
+        "com": None,
+        "span": 3,
+        "halflife": None,
+        "alpha": None,
+        "min_periods": 0,
+        "adjust": True,
+        "ignore_na": False,
+    },
+    {
+        "com": None,
+        "span": 3,
+        "halflife": None,
+        "alpha": None,
+        "min_periods": 0,
+        "adjust": False,
+        "ignore_na": True,
+    },
+    {
+        "com": None,
+        "span": 3,
+        "halflife": None,
+        "alpha": None,
+        "min_periods": 0,
+        "adjust": False,
+        "ignore_na": False,
+    },
+    {
+        "com": None,
+        "span": 3,
+        "halflife": None,
+        "alpha": None,
+        "min_periods": 2,
+        "adjust": True,
+        "ignore_na": True,
+    },
+    {
+        "com": None,
+        "span": 3,
+        "halflife": None,
+        "alpha": None,
+        "min_periods": 2,
+        "adjust": True,
+        "ignore_na": False,
+    },
+    {
+        "com": None,
+        "span": 3,
+        "halflife": None,
+        "alpha": None,
+        "min_periods": 2,
+        "adjust": False,
+        "ignore_na": True,
+    },
+    {
+        "com": None,
+        "span": 3,
+        "halflife": None,
+        "alpha": None,
+        "min_periods": 2,
+        "adjust": False,
+        "ignore_na": False,
+    },
 ]
 
 
 def test_ewm_mean():
-
     array = [1, np.nan, 3, 4, 5, 6, np.nan, 7]
 
     s = Stream.source(array, dtype="float")
@@ -33,7 +93,6 @@ def test_ewm_mean():
 
 
 def test_ewm_var():
-
     array = [1, np.nan, 3, 4, 5, 6, np.nan, 7]
 
     s = Stream.source(array, dtype="float")
@@ -52,7 +111,6 @@ def test_ewm_var():
 
 
 def test_ewm_std():
-
     array = [1, np.nan, 3, 4, 5, 6, np.nan, 7]
 
     s = Stream.source(array, dtype="float")

@@ -1,8 +1,7 @@
-
 import pytest
 
-from tensortrade.oms.instruments import Instrument, Quantity
 from tensortrade.core.exceptions import InvalidTradingPair
+from tensortrade.oms.instruments import Instrument, Quantity
 
 
 def test_init():
@@ -50,13 +49,13 @@ def test_valid_rmul():
     BTC = Instrument("BTC", 8, "Bitcoin")
 
     # int
-    q = 8*BTC
+    q = 8 * BTC
     assert isinstance(q, Quantity)
     assert q.size == 8
     assert q.instrument == BTC
 
     # float
-    q = 8.0*BTC
+    q = 8.0 * BTC
     assert isinstance(q, Quantity)
     assert q.size == 8.0
     assert q.instrument == BTC
@@ -67,11 +66,11 @@ def test_invalid_rmul():
 
     # int
     with pytest.raises(TypeError):
-        q = BTC*8
+        BTC * 8
 
     # float
     with pytest.raises(TypeError):
-        q = BTC*8.0
+        BTC * 8.0
 
 
 # Division
@@ -79,7 +78,7 @@ def test_valid_truediv():
     BTC = Instrument("BTC", 8, "Bitcoin")
     ETH = Instrument("ETH", 8, "Etheruem")
 
-    pair = BTC/ETH
+    pair = BTC / ETH
 
     assert pair.base == BTC
     assert pair.quote == ETH
@@ -89,7 +88,7 @@ def test_invalid_truediv():
     BTC = Instrument("BTC", 8, "Bitcoin")
 
     with pytest.raises(InvalidTradingPair):
-        pair = BTC / BTC
+        BTC / BTC
 
 
 # String

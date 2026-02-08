@@ -1,8 +1,6 @@
-
 import pandas as pd
 
 from tensortrade.feed import Stream
-
 from tests.utils.ops import assert_op
 
 
@@ -29,7 +27,6 @@ def test_clamp_max():
 
 
 def test_min():
-
     s1 = Stream.source([-1, 2, -3, 4, -5], dtype="float")
     s2 = Stream.source([-1, 2, 3, 2, 1], dtype="float")
 
@@ -40,7 +37,6 @@ def test_min():
 
 
 def test_max():
-
     s1 = Stream.source([-1, 2, -3, 4, -5], dtype="float")
     s2 = Stream.source([-1, 2, 3, 2, 1], dtype="float")
 

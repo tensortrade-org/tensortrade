@@ -1,26 +1,17 @@
+from itertools import product
 
 import numpy as np
 import pandas as pd
 
-from itertools import product
-
 from tensortrade.feed import Stream
-
 from tests.utils.ops import assert_op
 
-configurations = [
-    {"min_periods": 0},
-    {"min_periods": 2}
-]
+configurations = [{"min_periods": 0}, {"min_periods": 2}]
 
-arrays = [
-    [1, 2, 3, 4, 5, 6, 7],
-    [1, np.nan, 3, 4, 5, 6, np.nan, 7]
-]
+arrays = [[1, 2, 3, 4, 5, 6, 7], [1, np.nan, 3, 4, 5, 6, np.nan, 7]]
 
 
 def test_expanding_count():
-
     for array, config in product(arrays, configurations):
         s = Stream.source(array, dtype="float")
         w = s.expanding(**config).mean().rename("w")

@@ -1,11 +1,8 @@
-
 import numpy as np
 import pandas as pd
 
 from tensortrade.feed import Stream
-
 from tests.utils.ops import assert_op
-
 
 arrays = [
     [-1, 2, -3, 4, -5, 7, 8],

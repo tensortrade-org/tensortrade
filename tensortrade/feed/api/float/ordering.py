@@ -1,13 +1,12 @@
-
 import numpy as np
 
+from tensortrade.feed.api.float import Float
 from tensortrade.feed.core.base import Stream
 from tensortrade.feed.core.operators import BinOp
-from tensortrade.feed.api.float import Float
 
 
 @Float.register(["clamp_min"])
-def clamp_min(s: "Stream[float]", c_min: float) -> "Stream[float]":
+def clamp_min(s: Stream[float], c_min: float) -> Stream[float]:
     """Clamps the minimum value of a stream.
 
     Parameters
@@ -26,7 +25,7 @@ def clamp_min(s: "Stream[float]", c_min: float) -> "Stream[float]":
 
 
 @Float.register(["clamp_max"])
-def clamp_max(s: "Stream[float]", c_max: float) -> "Stream[float]":
+def clamp_max(s: Stream[float], c_max: float) -> Stream[float]:
     """Clamps the maximum value of a stream.
 
     Parameters
@@ -45,7 +44,7 @@ def clamp_max(s: "Stream[float]", c_max: float) -> "Stream[float]":
 
 
 @Float.register(["clamp"])
-def clamp(s: "Stream[float]", c_min: float, c_max: float) -> "Stream[float]":
+def clamp(s: Stream[float], c_min: float, c_max: float) -> Stream[float]:
     """Clamps the minimum and maximum value of a stream.
 
     Parameters
@@ -68,7 +67,7 @@ def clamp(s: "Stream[float]", c_min: float, c_max: float) -> "Stream[float]":
 
 
 @Float.register(["min"])
-def min(s1: "Stream[float]", s2: "Stream[float]") -> "Stream[float]":
+def min(s1: Stream[float], s2: Stream[float]) -> Stream[float]:
     """Computes the minimum of two streams.
 
     Parameters
@@ -87,7 +86,7 @@ def min(s1: "Stream[float]", s2: "Stream[float]") -> "Stream[float]":
 
 
 @Float.register(["max"])
-def max(s1: "Stream[float]", s2: "Stream[float]") -> "Stream[float]":
+def max(s1: Stream[float], s2: Stream[float]) -> Stream[float]:
     """Computes the maximum of two streams.
 
     Parameters

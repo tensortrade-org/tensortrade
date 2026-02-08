@@ -1,10 +1,10 @@
-
 from abc import ABC, ABCMeta
 from typing import Any
 
-from . import registry
-from tensortrade.core.context import TradingContext, Context
 from tensortrade.core.base import Identifiable
+from tensortrade.core.context import Context, TradingContext
+
+from . import registry
 
 
 class InitContextMeta(ABCMeta):
@@ -15,14 +15,14 @@ class InitContextMeta(ABCMeta):
     subclassed `Component`.
     """
 
-    def __call__(cls, *args, **kwargs) -> 'InitContextMeta':
-        """
+    def __call__(cls, *args, **kwargs) -> object:
+        """Initialize context.
 
         Parameters
         ----------
-        args :
+        args : tuple
             positional arguments to give constructor of subclass of `Component`
-        kwargs :
+        kwargs : dict
             keyword arguments to give constructor of subclass of `Component`
 
         Returns
@@ -36,17 +36,15 @@ class InitContextMeta(ABCMeta):
         data = context.data.get(registered_name, {})
         config = {**context.shared, **data}
 
-        instance = cls.__new__(cls, *args, **kwargs)
-        setattr(instance, 'context', Context(**config))
+        instance = cls.__new__(cls, *args, **kwargs)  # type: ignore
+        instance.context = Context(**config)
         instance.__init__(*args, **kwargs)
 
         return instance
 
 
-class ContextualizedMixin(object):
-    """A mixin that is to be mixed with any class that must function in a
-    contextual setting.
-    """
+class ContextualizedMixin:
+    """A mixin that is to be mixed with any class that must function in a contextual setting."""
 
     @property
     def context(self) -> Context:
@@ -61,7 +59,7 @@ class ContextualizedMixin(object):
 
     @context.setter
     def context(self, context: Context) -> None:
-        """Sets the context for the object.
+        """Set the context for the object.
 
         Parameters
         ----------
@@ -87,10 +85,10 @@ class Component(ABC, ContextualizedMixin, Identifiable, metaclass=InitContextMet
         and passed to a `TradingContext`.
     """
 
-    registered_name = None
+    registered_name: str
 
     def __init_subclass__(cls, **kwargs) -> None:
-        """Constructs the concrete subclass of `Component`.
+        """Construct the concrete subclass of `Component`.
 
         In constructing the subclass, the concrete subclass is also registered
         into the project level registry.
@@ -106,8 +104,8 @@ class Component(ABC, ContextualizedMixin, Identifiable, metaclass=InitContextMet
         if cls not in registry.registry():
             registry.register(cls, cls.registered_name)
 
-    def default(self, key: str, value: Any, kwargs: dict = None) -> Any:
-        """Resolves which defaults value to use for construction.
+    def default(self, key: str, value: Any, kwargs: dict | None = None) -> Any:
+        """Resolve which defaults value to use for construction.
 
         A concrete subclass will use this method to resolve which default value
         it should use when creating an instance. The default value should go to

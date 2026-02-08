@@ -13,20 +13,24 @@
 # limitations under the License
 
 
-from deprecated import deprecated
 import random
+from collections.abc import Callable
+
 import numpy as np
 import tensorflow as tf
+from deprecated import deprecated
 
-from typing import Callable
 
-
-@deprecated(version='1.0.4', reason="Builtin agents are being deprecated in favor of external implementations (ie: Ray)")
+@deprecated(
+    version="1.0.4",
+    reason="Builtin agents are being deprecated in favor of external implementations (ie: Ray)",
+)
 class ParallelDQNModel:
-
-    def __init__(self,
-                 create_env: Callable[[], 'TradingEnvironment'],
-                 policy_network: tf.keras.Model = None):
+    def __init__(
+        self,
+        create_env: Callable[[], "TradingEnvironment"],
+        policy_network: tf.keras.Model = None,
+    ):
         temp_env = create_env()
 
         self.n_actions = temp_env.action_space.n
@@ -38,16 +42,22 @@ class ParallelDQNModel:
         self.target_network.trainable = False
 
     def _build_policy_network(self):
-        network = tf.keras.Sequential([
-            tf.keras.layers.InputLayer(input_shape=self.observation_shape),
-            tf.keras.layers.Conv1D(filters=64, kernel_size=6, padding="same", activation="tanh"),
-            tf.keras.layers.MaxPooling1D(pool_size=2),
-            tf.keras.layers.Conv1D(filters=32, kernel_size=3, padding="same", activation="tanh"),
-            tf.keras.layers.MaxPooling1D(pool_size=2),
-            tf.keras.layers.Flatten(),
-            tf.keras.layers.Dense(self.n_actions, activation="sigmoid"),
-            tf.keras.layers.Dense(self.n_actions, activation="softmax")
-        ])
+        network = tf.keras.Sequential(
+            [
+                tf.keras.layers.InputLayer(input_shape=self.observation_shape),
+                tf.keras.layers.Conv1D(
+                    filters=64, kernel_size=6, padding="same", activation="tanh"
+                ),
+                tf.keras.layers.MaxPooling1D(pool_size=2),
+                tf.keras.layers.Conv1D(
+                    filters=32, kernel_size=3, padding="same", activation="tanh"
+                ),
+                tf.keras.layers.MaxPooling1D(pool_size=2),
+                tf.keras.layers.Flatten(),
+                tf.keras.layers.Dense(self.n_actions, activation="sigmoid"),
+                tf.keras.layers.Dense(self.n_actions, activation="softmax"),
+            ]
+        )
 
         return network
 
@@ -57,18 +67,20 @@ class ParallelDQNModel:
         self.target_network.trainable = False
 
     def save(self, path: str, **kwargs):
-        agent_id: int = kwargs.get('agent_id', 'No_ID')
-        episode: int = kwargs.get('episode', None)
+        agent_id: int = kwargs.get("agent_id", "No_ID")
+        episode: int = kwargs.get("episode", None)
 
         if episode:
-            filename = "policy_network__" + agent_id + "__" + str(episode).zfill(3) + ".hdf5"
+            filename = (
+                "policy_network__" + agent_id + "__" + str(episode).zfill(3) + ".hdf5"
+            )
         else:
             filename = "policy_network__" + agent_id + ".hdf5"
 
         self.policy_network.save(path + filename)
 
     def get_action(self, state: np.ndarray, **kwargs) -> int:
-        threshold: float = kwargs.get('threshold', 0)
+        threshold: float = kwargs.get("threshold", 0)
 
         rand = random.random()
 
@@ -77,7 +89,7 @@ class ParallelDQNModel:
         else:
             return np.argmax(self.policy_network(np.expand_dims(state, 0)))
 
-    def update_networks(self, model: 'ParallelDQNModel'):
+    def update_networks(self, model: "ParallelDQNModel"):
         self.policy_network.set_weights(model.policy_network.get_weights())
         self.target_network.set_weights(model.target_network.get_weights())
 

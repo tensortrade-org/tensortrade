@@ -3,7 +3,7 @@ reduce.py contains functions and classes for reducing multiple streams
 into a single stream.
 """
 
-from typing import List, Callable
+from collections.abc import Callable
 
 import numpy as np
 
@@ -21,7 +21,7 @@ class Aggregate(Stream[T]):
 
     generic_name = "reduce"
 
-    def __init__(self, func: Callable[[List[T]], T]):
+    def __init__(self, func: Callable[[list[T]], T]):
         super().__init__()
         self.func = func
 
@@ -32,7 +32,7 @@ class Aggregate(Stream[T]):
         return True
 
 
-class Reduce(Stream[list]):
+class Reduce(Stream[list[T]]):
     """A stream for reducing multiple streams of the same type.
 
     Parameters
@@ -44,13 +44,13 @@ class Reduce(Stream[list]):
     def __init__(self, dtype: str = None):
         super().__init__(dtype=dtype)
 
-    def forward(self) -> "List[T]":
+    def forward(self) -> list[T]:
         return [s.value for s in self.inputs]
 
     def has_next(self) -> bool:
         return True
 
-    def agg(self, func: "Callable[[List[T]], T]") -> "Stream[T]":
+    def agg(self, func: Callable[[list[T]], T]) -> Stream[T]:
         """Computes the aggregation of the input streams.
 
         Returns
@@ -60,7 +60,7 @@ class Reduce(Stream[list]):
         """
         return Aggregate(func)(*self.inputs).astype(self.inputs[0].dtype)
 
-    def sum(self) -> "Stream[T]":
+    def sum(self) -> Stream[T]:
         """Computes the reduced sum of the input streams.
 
         Returns
@@ -70,7 +70,7 @@ class Reduce(Stream[list]):
         """
         return self.agg(np.sum)
 
-    def min(self) -> "Stream[T]":
+    def min(self) -> Stream[T]:
         """Computes the reduced minimum of the input streams.
 
         Returns
@@ -80,7 +80,7 @@ class Reduce(Stream[list]):
         """
         return self.agg(np.min)
 
-    def max(self) -> "Stream[T]":
+    def max(self) -> Stream[T]:
         """Computes the reduced maximum of the input streams.
 
         Returns
@@ -90,7 +90,7 @@ class Reduce(Stream[list]):
         """
         return self.agg(np.max)
 
-    def prod(self) -> "Stream[T]":
+    def prod(self) -> Stream[T]:
         """Computes the reduced product of the input streams.
 
         Returns
@@ -102,7 +102,7 @@ class Reduce(Stream[list]):
 
 
 @Stream.register_generic_method(["reduce"])
-def reduce(streams: "List[Stream[T]]") -> "Stream[List[T]]":
+def reduce(streams: list[Stream[T]]) -> Stream[list[T]]:
     """Creates a reduce stream from given input streams.
 
     Parameters

@@ -4,41 +4,45 @@ Simple training demo showing actual wallet balances and trade execution.
 """
 
 import numpy as np
-import pandas as pd
+
+import tensortrade.env.default as default
 from tensortrade.data.cdd import CryptoDataDownload
-from tensortrade.feed.core import DataFeed, Stream
-from tensortrade.oms.exchanges import Exchange, ExchangeOptions
-from tensortrade.oms.instruments import USD, BTC
-from tensortrade.oms.services.execution.simulated import execute_order
-from tensortrade.oms.wallets import Wallet, Portfolio
 from tensortrade.env.default.actions import BSH
 from tensortrade.env.default.rewards import PBR
-import tensortrade.env.default as default
+from tensortrade.feed.core import DataFeed, Stream
+from tensortrade.oms.exchanges import Exchange, ExchangeOptions
+from tensortrade.oms.instruments import BTC, USD
+from tensortrade.oms.services.execution.simulated import execute_order
+from tensortrade.oms.wallets import Portfolio, Wallet
 
 
 def main():
-    print("="*70)
+    print("=" * 70)
     print("TensorTrade Training Demo - Showing Wallet Balances")
-    print("="*70)
+    print("=" * 70)
 
     # Fetch data
     print("\nFetching BTC/USD data...")
     cdd = CryptoDataDownload()
     data = cdd.fetch("Bitfinex", "USD", "BTC", "1h")
-    data = data[['date', 'open', 'high', 'low', 'close', 'volume']]
+    data = data[["date", "open", "high", "low", "close", "volume"]]
     data = data.tail(200).reset_index(drop=True)
-    print(f"Using {len(data)} rows | Price range: ${data['close'].min():,.0f} - ${data['close'].max():,.0f}")
+    print(
+        f"Using {len(data)} rows | Price range: ${data['close'].min():,.0f} - ${data['close'].max():,.0f}"
+    )
 
     # Setup
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("Creating Environment...")
-    print("="*70)
+    print("=" * 70)
 
     price_data = list(data["close"])
     price = Stream.source(price_data, dtype="float").rename("USD-BTC")
 
     exchange_options = ExchangeOptions(commission=0.001)
-    exchange = Exchange("exchange", service=execute_order, options=exchange_options)(price)
+    exchange = Exchange("exchange", service=execute_order, options=exchange_options)(
+        price
+    )
 
     initial_cash = 10000
     cash = Wallet(exchange, initial_cash * USD)
@@ -46,8 +50,10 @@ def main():
     portfolio = Portfolio(USD, [cash, asset])
 
     # Features
-    features = [Stream.source(list(data[c]), dtype="float").rename(c)
-                for c in ['open', 'high', 'low', 'close', 'volume']]
+    features = [
+        Stream.source(list(data[c]), dtype="float").rename(c)
+        for c in ["open", "high", "low", "close", "volume"]
+    ]
     feed = DataFeed(features)
     feed.compile()
 
@@ -61,7 +67,7 @@ def main():
         action_scheme=action_scheme,
         reward_scheme=reward_scheme,
         window_size=5,
-        max_allowed_loss=0.5
+        max_allowed_loss=0.5,
     )
 
     print(f"Initial Cash:  ${cash.balance.as_float():,.2f} USD")
@@ -74,13 +80,17 @@ def main():
     for episode in range(num_episodes):
         # Reset for new episode
         price = Stream.source(price_data, dtype="float").rename("USD-BTC")
-        exchange = Exchange("exchange", service=execute_order, options=exchange_options)(price)
+        exchange = Exchange(
+            "exchange", service=execute_order, options=exchange_options
+        )(price)
         cash = Wallet(exchange, initial_cash * USD)
         asset = Wallet(exchange, 0 * BTC)
         portfolio = Portfolio(USD, [cash, asset])
 
-        features = [Stream.source(list(data[c]), dtype="float").rename(c)
-                    for c in ['open', 'high', 'low', 'close', 'volume']]
+        features = [
+            Stream.source(list(data[c]), dtype="float").rename(c)
+            for c in ["open", "high", "low", "close", "volume"]
+        ]
         feed = DataFeed(features)
         feed.compile()
 
@@ -93,7 +103,7 @@ def main():
             action_scheme=action_scheme,
             reward_scheme=reward_scheme,
             window_size=5,
-            max_allowed_loss=0.5
+            max_allowed_loss=0.5,
         )
 
         obs, info = env.reset()
@@ -103,11 +113,13 @@ def main():
         total_reward = 0
         trades = []
 
-        print(f"\n{'='*70}")
+        print(f"\n{'=' * 70}")
         print(f"Episode {episode + 1}/{num_episodes}")
-        print(f"{'='*70}")
-        print(f"{'Step':>5} | {'Action':>5} | {'USD Balance':>14} | {'BTC Balance':>14} | {'Net Worth':>12} | {'Reward':>10}")
-        print("-"*70)
+        print(f"{'=' * 70}")
+        print(
+            f"{'Step':>5} | {'Action':>5} | {'USD Balance':>14} | {'BTC Balance':>14} | {'Net Worth':>12} | {'Reward':>10}"
+        )
+        print("-" * 70)
 
         initial_worth = portfolio.net_worth
 
@@ -131,7 +143,9 @@ def main():
 
             # Log trades and periodic status
             if action != 2 or step == 1 or step % 30 == 0:
-                print(f"{step:5d} | {action_names[action]} | ${usd_bal:>12,.2f} | {btc_bal:>13.6f} | ${worth:>10,.2f} | {reward:>+10.2f}")
+                print(
+                    f"{step:5d} | {action_names[action]} | ${usd_bal:>12,.2f} | {btc_bal:>13.6f} | ${worth:>10,.2f} | {reward:>+10.2f}"
+                )
 
             if action != 2:
                 trades.append({"step": step, "action": action, "worth": worth})
@@ -140,15 +154,17 @@ def main():
         pnl = final_worth - initial_worth
         pnl_pct = (pnl / initial_worth) * 100
 
-        print("-"*70)
-        print(f"Episode Summary:")
-        print(f"  Steps: {step} | Trades: {len(trades)} | Total Reward: {total_reward:.2f}")
+        print("-" * 70)
+        print("Episode Summary:")
+        print(
+            f"  Steps: {step} | Trades: {len(trades)} | Total Reward: {total_reward:.2f}"
+        )
         print(f"  Initial: ${initial_worth:,.2f} -> Final: ${final_worth:,.2f}")
         print(f"  P&L: ${pnl:+,.2f} ({pnl_pct:+.2f}%)")
 
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("Training Complete!")
-    print("="*70)
+    print("=" * 70)
 
 
 if __name__ == "__main__":

@@ -1,18 +1,15 @@
-import threading
 import json
-import yaml
-
+import threading
 from collections import UserDict
-from typing import List
 
 import numpy as np
+import yaml
 
 from . import registry
 
 
 class TradingContext(UserDict):
-    """A class for objects that put themselves in a `Context` using
-    the `with` statement.
+    """A class for objects that put themselves in a `Context` using the `with` statement.
 
     The implementation for this class is heavily borrowed from the pymc3
     library and adapted with the design goals of TensorTrade in mind.
@@ -54,22 +51,18 @@ class TradingContext(UserDict):
             if name not in registry.MAJOR_COMPONENTS:
                 setattr(self, name, config.get(name, {}))
 
-        config_items = {k: config[k]
-                        for k in config.keys()
-                        if k not in registered_names}
+        config_items = {
+            k: config[k] for k in config.keys() if k not in registered_names
+        }
 
         self._config = config
-        self._shared = config.get('shared', {})
+        self._shared = config.get("shared", {})
 
-        self._shared = {
-            **self._shared,
-            **config_items
-        }
+        self._shared = {**self._shared, **config_items}
 
     @property
     def shared(self) -> dict:
-        """The shared values in common for all components involved with the
-        `TradingContext`.
+        """Get the shared values in common for all components involved with the `TradingContext`.
 
         Returns
         -------
@@ -78,8 +71,8 @@ class TradingContext(UserDict):
         """
         return self._shared
 
-    def __enter__(self) -> 'TradingContext':
-        """Adds a new `TradingContext` to the context stack.
+    def __enter__(self) -> "TradingContext":
+        """Add a new `TradingContext` to the context stack.
 
         This method is used for a `with` statement and adds a `TradingContext`
         to the context stack. The new context on the stack is then used by every
@@ -108,21 +101,21 @@ class TradingContext(UserDict):
         type(self).get_contexts().pop()
 
     @classmethod
-    def get_contexts(cls) -> List['TradingContext']:
-        """Gets the stack of trading contexts.
+    def get_contexts(cls) -> list["TradingContext"]:
+        """Get the stack of trading contexts.
 
         Returns
         -------
         List['TradingContext']
             The stack of trading contexts.
         """
-        if not hasattr(cls.contexts, 'stack'):
+        if not hasattr(cls.contexts, "stack"):
             cls.contexts.stack = [TradingContext({})]
         return cls.contexts.stack
 
     @classmethod
-    def get_context(cls) -> 'TradingContext':
-        """Gets the first context on the stack.
+    def get_context(cls) -> "TradingContext":
+        """Get the first context on the stack.
 
         Returns
         -------
@@ -132,8 +125,8 @@ class TradingContext(UserDict):
         return cls.get_contexts()[-1]
 
     @classmethod
-    def from_json(cls, path: str) -> 'TradingContext':
-        """Creates a `TradingContext` from a json file.
+    def from_json(cls, path: str) -> "TradingContext":
+        """Create a `TradingContext` from a json file.
 
         Parameters
         ----------
@@ -150,8 +143,8 @@ class TradingContext(UserDict):
         return TradingContext(config)
 
     @classmethod
-    def from_yaml(cls, path: str) -> 'TradingContext':
-        """Creates a `TradingContext` from a yaml file.
+    def from_yaml(cls, path: str) -> "TradingContext":
+        """Create a `TradingContext` from a yaml file.
 
         Parameters
         ----------
@@ -169,14 +162,12 @@ class TradingContext(UserDict):
 
 
 class Context(UserDict):
-    """A context that is injected into every instance of a class that is
-    a subclass of `Component`.
-    """
+    """A context that is injected into every instance of a class that is a subclass of `Component`."""
 
     def __init__(self, **kwargs):
-        super(Context, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.__dict__ = {**self.__dict__, **self.data}
 
     def __str__(self):
-        data = ['{}={}'.format(k, getattr(self, k)) for k in self.__slots__]
-        return '<{}: {}>'.format(self.__class__.__name__, ', '.join(data))
+        data = [f"{k}={getattr(self, k)}" for k in self.__slots__]
+        return "<{}: {}>".format(self.__class__.__name__, ", ".join(data))

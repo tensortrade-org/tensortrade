@@ -3,12 +3,10 @@ ewm.py contains functions and classes for exponential weighted moving stream
 operations.
 """
 
-from typing import List, Tuple
-
 import numpy as np
 
-from tensortrade.feed.core.base import Stream
 from tensortrade.feed.api.float import Float
+from tensortrade.feed.core.base import Stream
 
 
 class ExponentialWeightedMovingAverage(Stream[float]):
@@ -34,11 +32,9 @@ class ExponentialWeightedMovingAverage(Stream[float]):
     .. [1] https://github.com/pandas-dev/pandas/blob/d9fff2792bf16178d4e450fe7384244e50635733/pandas/_libs/window/aggregations.pyx#L1801
     """
 
-    def __init__(self,
-                 alpha: float,
-                 adjust: bool,
-                 ignore_na: bool,
-                 min_periods: int) -> None:
+    def __init__(
+        self, alpha: float, adjust: bool, ignore_na: bool, min_periods: int
+    ) -> None:
         super().__init__()
         self.alpha = alpha
         self.adjust = adjust
@@ -56,18 +52,16 @@ class ExponentialWeightedMovingAverage(Stream[float]):
     def forward(self) -> float:
         value = self.inputs[0].value
         if self.avg is None:
-            is_observation = (value == value)
+            is_observation = value == value
             self.n += int(is_observation)
             self.avg = value
             return self.avg if self.n >= self.min_periods else np.nan
 
-        is_observation = (value == value)
+        is_observation = value == value
         self.n += is_observation
 
         if self.avg == self.avg:
-
             if is_observation or not self.ignore_na:
-
                 self.old_wt *= self.factor
                 if is_observation:
                     # avoid numerical errors on constant series
@@ -119,12 +113,9 @@ class ExponentialWeightedMovingCovariance(Stream[float]):
         Use a standard estimation bias correction
     """
 
-    def __init__(self,
-                 alpha: float,
-                 adjust: bool,
-                 ignore_na: bool,
-                 min_periods: int,
-                 bias: bool) -> None:
+    def __init__(
+        self, alpha: float, adjust: bool, ignore_na: bool, min_periods: int, bias: bool
+    ) -> None:
         super().__init__()
         self.alpha = alpha
         self.adjust = adjust
@@ -156,12 +147,14 @@ class ExponentialWeightedMovingCovariance(Stream[float]):
         if self.mean_x is None and self.mean_y is None:
             self.mean_x = v1
             self.mean_y = v2
-            is_observation = (self.mean_x == self.mean_x) and (self.mean_y == self.mean_y)
+            is_observation = (self.mean_x == self.mean_x) and (
+                self.mean_y == self.mean_y
+            )
             self.n += int(is_observation)
             if not is_observation:
                 self.mean_x = np.nan
                 self.mean_y = np.nan
-            return (0. if self.bias else np.nan) if self.n >= self.minp else np.nan
+            return (0.0 if self.bias else np.nan) if self.n >= self.minp else np.nan
 
         is_observation = (v1 == v1) and (v2 == v2)
         self.n += is_observation
@@ -169,7 +162,7 @@ class ExponentialWeightedMovingCovariance(Stream[float]):
         if self.mean_x == self.mean_x:
             if is_observation or not self.ignore_na:
                 self.sum_wt *= self.factor
-                self.sum_wt2 *= (self.factor * self.factor)
+                self.sum_wt2 *= self.factor * self.factor
                 self.old_wt *= self.factor
                 if is_observation:
                     old_mean_x = self.mean_x
@@ -179,11 +172,15 @@ class ExponentialWeightedMovingCovariance(Stream[float]):
                     wt_sum = self.old_wt + self.new_wt
 
                     if self.mean_x != v1:
-                        self.mean_x = ((self.old_wt * old_mean_x) + (self.new_wt * v1)) / wt_sum
+                        self.mean_x = (
+                            (self.old_wt * old_mean_x) + (self.new_wt * v1)
+                        ) / wt_sum
 
                     # avoid numerical errors on constant series
                     if self.mean_y != v2:
-                        self.mean_y = ((self.old_wt * old_mean_y) + (self.new_wt * v2)) / wt_sum
+                        self.mean_y = (
+                            (self.old_wt * old_mean_y) + (self.new_wt * v2)
+                        ) / wt_sum
 
                     d1 = old_mean_x - self.mean_x
                     d2 = old_mean_y - self.mean_y
@@ -212,7 +209,7 @@ class ExponentialWeightedMovingCovariance(Stream[float]):
                 numerator = self.sum_wt * self.sum_wt
                 denominator = numerator - self.sum_wt2
                 if denominator > 0:
-                    output = ((numerator / denominator) * self.cov)
+                    output = (numerator / denominator) * self.cov
                 else:
                     output = np.nan
             else:
@@ -240,7 +237,7 @@ class ExponentialWeightedMovingCovariance(Stream[float]):
         super().reset()
 
 
-class EWM(Stream[List[float]]):
+class EWM(Stream[tuple[list[float], list[float]]]):
     r"""Provide exponential weighted (EW) functions.
 
     Exactly one parameter: `com`, `span`, `halflife`, or `alpha` must be
@@ -298,14 +295,15 @@ class EWM(Stream[List[float]]):
     """
 
     def __init__(
-            self,
-            com: float = None,
-            span: float = None,
-            halflife: float = None,
-            alpha: float = None,
-            min_periods: int = 0,
-            adjust: bool = True,
-            ignore_na: bool = False):
+        self,
+        com: float | None = None,
+        span: float | None = None,
+        halflife: float | None = None,
+        alpha: float | None = None,
+        min_periods: int = 0,
+        adjust: bool = True,
+        ignore_na: bool = False,
+    ):
         super().__init__()
         self.com = com
         self.span = span
@@ -331,7 +329,7 @@ class EWM(Stream[List[float]]):
         self.history = []
         self.weights = []
 
-    def forward(self) -> "Tuple[List[float], List[float]]":
+    def forward(self) -> tuple[list[float], list[float]]:
         value = self.inputs[0].value
         if self.ignore_na:
             if not np.isnan(value):
@@ -347,7 +345,7 @@ class EWM(Stream[List[float]]):
             # Compute weights
             if not self.adjust and len(self.weights) > 0:
                 self.weights[-1] *= self.alpha
-            self.weights += [(1 - self.alpha)**len(self.history)]
+            self.weights += [(1 - self.alpha) ** len(self.history)]
 
         return self.history, self.weights
 
@@ -367,7 +365,7 @@ class EWM(Stream[List[float]]):
             alpha=self.alpha,
             min_periods=self.min_periods,
             adjust=self.adjust,
-            ignore_na=self.ignore_na
+            ignore_na=self.ignore_na,
         )(self.inputs[0]).astype("float")
 
     def var(self, bias=False) -> "Stream[float]":
@@ -384,10 +382,10 @@ class EWM(Stream[List[float]]):
             adjust=self.adjust,
             ignore_na=self.ignore_na,
             min_periods=self.min_periods,
-            bias=bias
+            bias=bias,
         )(self.inputs[0], self.inputs[0]).astype("float")
 
-    def std(self, bias=False) -> "Stream[float]":
+    def std(self, bias=False) -> Stream[float]:
         """Computes the exponential weighted moving standard deviation.
 
         Returns
@@ -405,14 +403,16 @@ class EWM(Stream[List[float]]):
 
 
 @Float.register(["ewm"])
-def ewm(s: "Stream[float]",
-        com: float = None,
-        span: float = None,
-        halflife: float = None,
-        alpha: float = None,
-        min_periods: int = 0,
-        adjust: bool = True,
-        ignore_na: bool = False) -> "Stream[Tuple[List[float], List[float]]]":
+def ewm(
+    s: "Stream[float]",
+    com: float | None = None,
+    span: float | None = None,
+    halflife: float | None = None,
+    alpha: float | None = None,
+    min_periods: int = 0,
+    adjust: bool = True,
+    ignore_na: bool = False,
+) -> Stream[tuple[list[float], list[float]]]:
     r"""Computes the weights and values in order to perform an exponential
     weighted moving operation.
 
@@ -455,5 +455,5 @@ def ewm(s: "Stream[float]",
         alpha=alpha,
         min_periods=min_periods,
         adjust=adjust,
-        ignore_na=ignore_na
+        ignore_na=ignore_na,
     )(s)

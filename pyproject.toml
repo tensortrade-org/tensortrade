@@ -1,0 +1,155 @@
+[project]
+name = "tensortrade"
+version = "1.0.4-dev1"
+description = "TensorTrade: A reinforcement learning library for training, evaluating, and deploying robust trading agents."
+readme = "README.md"
+license = "Apache-2.0"
+authors = [
+    { name = "Adam King", email = "adamjking3@gmail.com" },
+    { name = "Matthew Brulhardt", email = "mwbrulhardt@gmail.com" },
+]
+maintainers = [
+    { name = "Carlo Grisetti", email = "carlo.grisetti@gmail.com" },
+]
+requires-python = ">=3.13"
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Natural Language :: English",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Education",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Financial and Insurance Industry",
+    "Intended Audience :: Information Technology",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Office/Business :: Financial :: Investment",
+    "Topic :: Office/Business :: Financial",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+    "Topic :: System :: Distributed Computing",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = [
+    "numpy>=2.0.0",
+    "pandas>=2.2.2",
+    "gymnasium>=1.0.0",
+    "ipython>=8.23.0",
+    "matplotlib>=3.9.0",
+    "plotly>=5.21.0",
+    "deprecated>=1.2.14",
+    "pyyaml>=6.0",
+    "ipywidgets>=8.0.0",
+    "scipy>=1.14.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/tensortrade-org/tensortrade"
+Repository = "https://github.com/tensortrade-org/tensortrade"
+Documentation = "https://tensortrade.org"
+
+[project.optional-dependencies]
+examples = [
+    "ray[default,tune,rllib,serve]>=2.9.0",
+    "ccxt>=4.0.0",
+    "jupyterlab>=4.0.0",
+    "feature-engine>=1.6.0",
+    "scikit-learn>=1.4.0",
+    "optuna>=3.5.0",
+    "quantstats>=0.0.62",
+]
+
+[dependency-groups]
+test = [
+    "pytest>=8.0.0",
+    "pytest-sugar>=1.0.0",
+    "pytest-cov>=4.1.0",
+    "pytest-html>=4.1.0",
+    "ta>=0.11.0",
+]
+lint = [
+    "ruff>=0.3.0",
+    "ty>=0.0.15",
+    "autopep8>=2.0.4",
+    "pre-commit>=3.7.0",
+]
+docs = [
+    "sphinx>=7.0.0",
+    "sphinx-rtd-theme>=2.0.0",
+    "sphinxcontrib-apidoc>=0.4.0",
+    "nbsphinx>=0.9.0",
+    "nbsphinx-link>=1.3.0",
+    "recommonmark>=0.7.1",
+    "sphinx-markdown-tables>=0.0.17",
+    "ipykernel>=6.29.0",
+    "docutils>=0.20,<0.21",
+]
+dev = [
+    { include-group = "test" },
+    { include-group = "lint" },
+    { include-group = "docs" },
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["tensortrade"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/tensortrade",
+]
+
+
+[tool.ruff]
+line-length = 88
+indent-width = 4
+target-version = "py313"
+
+[tool.ruff.lint]
+select = [
+    "E",      # pycodestyle errors
+    "W",      # pycodestyle warnings
+    "F",      # pyflakes
+    "I",      # isort
+    "B",      # flake8-bugbear
+    "UP",     # pyupgrade
+]
+ignore = [
+    "E501",   # line too long (handled by formatter)
+    "B008",   # do not perform function calls in argument defaults
+    "B905",   # zip without strict= (Python 3.10+)
+    "F403",   # star imports
+    "F405",   # may be undefined from star import
+    "F821",   # undefined name (often forward references)
+    "B006",   # mutable argument default
+    "B024",   # abstract base class without abstract methods
+    "B027",   # empty method without abstract decorator
+    "UP046",  # non-PEP695 generic class (Python 3.12+ syntax)
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401", "F403", "E402", "I001"]  # allow re-exports, imports after code, and custom import order
+fixable = ["ALL"]
+unfixable = []
+
+[tool.ruff.lint.isort]
+known-first-party = ["tensortrade"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"
+
+[tool.ty.environment]
+python-version = "3.13"

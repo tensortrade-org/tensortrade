@@ -2,25 +2,23 @@
 operators.py contains function for generic stream operators.
 """
 
-from typing import Callable
+from collections.abc import Callable
 
 from tensortrade.feed.core.base import Stream, T
 from tensortrade.feed.core.operators import (
-    Apply,
-    Lag,
-    Freeze,
     Accumulator,
+    Apply,
     Copy,
-    TypeVar
+    Freeze,
+    Lag,
+    TypeVar,
 )
 
 K = TypeVar("K")
 
 
 @Stream.register_generic_method(["apply"])
-def apply(s: "Stream[T]",
-          func: Callable[[T], K],
-          dtype: str = None) -> "Stream[K]":
+def apply(s: Stream[T], func: Callable[[T], K], dtype: str | None = None) -> Stream[K]:
     """Creates an apply stream.
 
     Parameters
@@ -43,7 +41,7 @@ def apply(s: "Stream[T]",
 
 
 @Stream.register_generic_method(["lag"])
-def lag(s: "Stream[T]", lag: int = 1, dtype: str = None) -> "Stream[T]":
+def lag(s: Stream[T], lag: int = 1, dtype: str | None = None) -> Stream[T]:
     """Creates a lag stream.
 
     Parameters
@@ -66,7 +64,7 @@ def lag(s: "Stream[T]", lag: int = 1, dtype: str = None) -> "Stream[T]":
 
 
 @Stream.register_generic_method(["copy"])
-def copy(s: "Stream[T]") -> "Stream[T]":
+def copy(s: Stream[T]) -> Stream[T]:
     """Creates a copy stream.
 
     Parameters
@@ -83,7 +81,7 @@ def copy(s: "Stream[T]") -> "Stream[T]":
 
 
 @Stream.register_generic_method(["freeze"])
-def freeze(s: "Stream[T]") -> "Stream[T]":
+def freeze(s: Stream[T]) -> Stream[T]:
     """Creates a frozen stream.
 
     Parameters
@@ -100,7 +98,7 @@ def freeze(s: "Stream[T]") -> "Stream[T]":
 
 
 @Stream.register_generic_method(["accumulate"])
-def accumulate(s: "Stream[T]", func: Callable[[T, T], T]) -> "Stream[T]":
+def accumulate(s: Stream[T], func: Callable[[T, T], T]) -> Stream[T]:
     """Creates an accumulation stream.
 
     Parameters

@@ -1,5 +1,4 @@
-"""This module hold the project level registry and provides methods to mutate
-and change the registry.
+"""Module that holds the project level registry and provides methods to mutate and change the registry.
 
 Attributes
 ----------
@@ -10,18 +9,11 @@ MAJOR_COMPONENTS : List[str]
 _REGISTRY = {}
 
 
-MAJOR_COMPONENTS = [
-    "actions",
-    "rewards",
-    "observer",
-    "informer",
-    "stopper",
-    "renderer"
-]
+MAJOR_COMPONENTS = ["actions", "rewards", "observer", "informer", "stopper", "renderer"]
 
 
 def registry() -> dict:
-    """Gets the project level registry.
+    """Get the project level registry.
 
     Returns
     -------
@@ -31,8 +23,8 @@ def registry() -> dict:
     return _REGISTRY
 
 
-def register(component: 'Component', registered_name: str) -> None:
-    """Registers a component into the registry
+def register(component: "Component", registered_name: str) -> None:
+    """Register a component into the registry.
 
     Parameters
     ----------
@@ -42,4 +34,3 @@ def register(component: 'Component', registered_name: str) -> None:
         The name to be associated with the registered component.
     """
     _REGISTRY[component] = registered_name
-

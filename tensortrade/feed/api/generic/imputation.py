@@ -14,7 +14,7 @@ class ForwardFill(Stream[T]):
 
     def __init__(self) -> None:
         super().__init__()
-        self.previous = None
+        self.previous: T | None = None
 
     def forward(self) -> T:
         node = self.inputs[0]

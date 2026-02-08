@@ -1,2 +1,1 @@
-from . import execution
-from . import slippage
+from . import execution, slippage

@@ -1,9 +1,6 @@
 """Holds all the exceptions for the project."""
 
-from typing import Union
-from numbers import Number
-
-
+from decimal import Decimal
 # =============================================================================
 # Quantity Exceptions
 # =============================================================================
@@ -18,16 +15,14 @@ class InvalidNegativeQuantity(Exception):
         More positional arguments for the exception.
     """
 
-    def __init__(self, size: float, *args) -> None:
+    def __init__(self, size: Decimal | float | int, *args) -> None:
         super().__init__(
-            "Invalid Quantity: {}. Amounts cannot be negative.".format(size),
-            *args
+            f"Invalid Quantity: {size}. Amounts cannot be negative.", *args
         )
 
 
 class InvalidNonNumericQuantity(Exception):
-    """Raised when a `Quantity` tries to be instantiated with a value
-    that is not numeric.
+    """Raised when a `Quantity` tries to be instantiated with a value that is not numeric.
 
     Parameters
     ----------
@@ -37,16 +32,14 @@ class InvalidNonNumericQuantity(Exception):
         More positional arguments for the exception.
     """
 
-    def __init__(self, size: Union[float, int, Number], *args) -> None:
+    def __init__(self, size: object, *args) -> None:
         super().__init__(
-            "Invalid Quantity: {}. Amounts cannot be non-numeric.".format(size),
-            *args
+            f"Invalid Quantity: {size}. Amounts cannot be non-numeric.", *args
         )
 
 
 class QuantityOpPathMismatch(Exception):
-    """Raised when an operation tries to occur between quantities that are not
-    under the same path_id.
+    """Raised when an operation tries to occur between quantities that are not under the same path_id.
 
     Parameters
     ----------
@@ -60,9 +53,8 @@ class QuantityOpPathMismatch(Exception):
 
     def __init__(self, left_id: str, right_id: str, *args) -> None:
         super().__init__(
-            "Invalid operation between quantities with unequal path id: {} {}.".format(
-                left_id, right_id),
-            *args
+            f"Invalid operation between quantities with unequal path id: {left_id} {right_id}.",
+            *args,
         )
 
 
@@ -77,10 +69,10 @@ class DoubleLockedQuantity(Exception):
         More positional arguments for the exception.
     """
 
-    def __init__(self, quantity: "Quantity", *args) -> None:
+    def __init__(self, quantity, *args) -> None:
         super().__init__(
-            "Cannot lock quantity that has previously been locked: {}.".format(quantity),
-            *args
+            f"Cannot lock quantity that has previously been locked: {quantity}.",
+            *args,
         )
 
 
@@ -95,16 +87,15 @@ class DoubleUnlockedQuantity(Exception):
         More positional arguments for the exception.
     """
 
-    def __init__(self, quantity: "Quantity", *args) -> None:
+    def __init__(self, quantity, *args) -> None:
         super().__init__(
-            "Cannot unlock quantity that has previously been unlocked: {}.".format(quantity),
-            *args
+            f"Cannot unlock quantity that has previously been unlocked: {quantity}.",
+            *args,
         )
 
 
 class QuantityNotLocked(Exception):
-    """Raised when a locked `Quantity` does not have a path_id in the `Wallet`
-    it is trying to be unlocked in.
+    """Raised when a locked `Quantity` does not have a path_id in the `Wallet` it is trying to be unlocked in.
 
     Parameters
     ----------
@@ -114,10 +105,10 @@ class QuantityNotLocked(Exception):
         More positional arguments for the exception.
     """
 
-    def __init__(self, quantity: "Quantity", *args) -> None:
+    def __init__(self, quantity, *args) -> None:
         super().__init__(
-            "Cannot unlock quantity that has not been locked in this wallet: {}.".format(quantity),
-            *args
+            f"Cannot unlock quantity that has not been locked in this wallet: {quantity}.",
+            *args,
         )
 
 
@@ -137,10 +128,10 @@ class IncompatibleInstrumentOperation(Exception):
         More positional arguments for the exception.
     """
 
-    def __init__(self, left: "Quantity", right: "Quantity", *args) -> None:
+    def __init__(self, left, right, *args) -> None:
         super().__init__(
-            "Instruments are not of the same type ({} and {}).".format(left, right),
-            *args
+            f"Instruments are not of the same type ({left} and {right}).",
+            *args,
         )
 
 
@@ -148,7 +139,7 @@ class IncompatibleInstrumentOperation(Exception):
 # Order Exceptions
 # =============================================================================
 class InvalidOrderQuantity(Exception):
-    """Raised when an `Order` with a non-negative amount is placed
+    """Raised when an `Order` with a non-negative amount is placed.
 
     Parameters
     ----------
@@ -158,10 +149,10 @@ class InvalidOrderQuantity(Exception):
         More positional arguments for the exception.
     """
 
-    def __init__(self, quantity: 'Quantity', *args) -> None:
+    def __init__(self, quantity, *args) -> None:
         super().__init__(
-            "Invalid Quantity: {}. Order sizes must be positive.".format(quantity),
-            *args
+            f"Invalid Quantity: {quantity}. Order sizes must be positive.",
+            *args,
         )
 
 
@@ -169,7 +160,7 @@ class InvalidOrderQuantity(Exception):
 # Wallet Exceptions
 # =============================================================================
 class InsufficientFunds(Exception):
-    """Raised when requested funds are greater than the free balance of a `Wallet`
+    """Raised when requested funds are greater than the free balance of a `Wallet`.
 
     Parameters
     ----------
@@ -181,10 +172,10 @@ class InsufficientFunds(Exception):
         More positional arguments for the exception.
     """
 
-    def __init__(self, balance: 'Quantity', size: 'Quantity', *args) -> None:
+    def __init__(self, balance, size, *args) -> None:
         super().__init__(
-            "Insufficient funds for allocating size {} with balance {}.".format(size, balance),
-            *args
+            f"Insufficient funds for allocating size {size} with balance {balance}.",
+            *args,
         )
 
 
@@ -204,8 +195,5 @@ class InvalidTradingPair(Exception):
         More positional arguments for the exception.
     """
 
-    def __init__(self, base: 'Instrument', quote: 'Instrument', *args) -> None:
-        super().__init__(
-            "Invalid instrument pair {}/{}.".format(base, quote),
-            *args
-        )
+    def __init__(self, base, quote, *args) -> None:
+        super().__init__(f"Invalid instrument pair {base}/{quote}.", *args)

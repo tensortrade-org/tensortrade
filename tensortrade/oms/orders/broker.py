@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License
 
-from typing import List, Dict
 from collections import OrderedDict
 
 from tensortrade.core.base import TimeIndexed
@@ -88,7 +87,7 @@ class Broker(OrderListener, TimeIndexed):
 
                 order.attach(self)
                 order.execute()
-        
+
         for order_id in executed_ids:
             self.unexecuted.remove(self.executed[order_id])
 

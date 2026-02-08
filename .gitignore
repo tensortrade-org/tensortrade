@@ -54,3 +54,5 @@ examples/training_logs/
 # Pipenv
 Pipfile
 Pipfile.lock
+
+.env

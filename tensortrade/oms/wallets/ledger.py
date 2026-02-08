@@ -1,21 +1,21 @@
-
-from typing import List
 from collections import namedtuple
 
 import pandas as pd
 
-
-Transaction = namedtuple('Transaction', [
-    'poid',
-    'step',
-    'source',
-    'target',
-    'memo',
-    'amount',
-    'free',
-    'locked',
-    'locked_poid'
-])
+Transaction = namedtuple(
+    "Transaction",
+    [
+        "poid",
+        "step",
+        "source",
+        "target",
+        "memo",
+        "amount",
+        "free",
+        "locked",
+        "locked_poid",
+    ],
+)
 
 
 class Ledger:
@@ -23,14 +23,16 @@ class Ledger:
     management system."""
 
     def __init__(self):
-        self.transactions: 'List[Transaction]' = []
+        self.transactions: list[Transaction] = []
 
-    def commit(self,
-               wallet: 'Wallet',
-               quantity: 'Quantity',
-               source: str,
-               target: str,
-               memo: str) -> None:
+    def commit(
+        self,
+        wallet: "Wallet",
+        quantity: "Quantity",
+        source: str,
+        target: str,
+        memo: str,
+    ) -> None:
         """Commits a transaction to the ledger records.
 
         Parameters
@@ -47,7 +49,9 @@ class Ledger:
             A description of the transaction.
         """
         poid = quantity.path_id
-        locked_poid_balance = None if poid not in wallet.locked.keys() else wallet.locked[poid]
+        locked_poid_balance = (
+            None if poid not in wallet.locked.keys() else wallet.locked[poid]
+        )
 
         transaction = Transaction(
             poid,
@@ -58,12 +62,12 @@ class Ledger:
             quantity,
             wallet.balance,
             wallet.locked_balance,
-            locked_poid_balance
+            locked_poid_balance,
         )
 
         self.transactions += [transaction]
 
-    def as_frame(self, sort_by_order_seq: bool = False) -> 'pd.DataFrame':
+    def as_frame(self, sort_by_order_seq: bool = False) -> "pd.DataFrame":
         """Converts the ledger records into a data frame.
 
         Parameters

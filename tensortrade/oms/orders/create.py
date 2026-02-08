@@ -13,16 +13,20 @@
 # limitations under the License
 
 from tensortrade.oms.instruments import ExchangePair
+from tensortrade.oms.orders.criteria import Limit, Stop
+from tensortrade.oms.orders.order import Order
+from tensortrade.oms.orders.order_spec import OrderSpec
+from tensortrade.oms.orders.trade import TradeSide, TradeType
 from tensortrade.oms.wallets import Portfolio
-from tensortrade.oms.orders import Order, OrderSpec, TradeSide, TradeType
-from tensortrade.oms.orders.criteria import Stop, Limit
 
 
-def market_order(side: "TradeSide",
-                 exchange_pair: "ExchangePair",
-                 price: float,
-                 size: float,
-                 portfolio: "Portfolio") -> "Order":
+def market_order(
+    side: "TradeSide",
+    exchange_pair: "ExchangePair",
+    price: float,
+    size: float,
+    portfolio: "Portfolio",
+) -> "Order":
     """Creates a market order.
 
     Parameters
@@ -52,19 +56,21 @@ def market_order(side: "TradeSide",
         exchange_pair=exchange_pair,
         price=price,
         quantity=(size * instrument),
-        portfolio=portfolio
+        portfolio=portfolio,
     )
 
     return order
 
 
-def limit_order(side: "TradeSide",
-                exchange_pair: "ExchangePair",
-                limit_price: float,
-                size: float,
-                portfolio: 'Portfolio',
-                start: int = None,
-                end: int = None):
+def limit_order(
+    side: "TradeSide",
+    exchange_pair: "ExchangePair",
+    limit_price: float,
+    size: float,
+    portfolio: "Portfolio",
+    start: int | None = None,
+    end: int | None = None,
+):
     """Creates a limit order.
 
     Parameters
@@ -89,7 +95,6 @@ def limit_order(side: "TradeSide",
     `Order`
         A limit order.
     """
-    side = TradeSide[side]
 
     instrument = side.instrument(exchange_pair.pair)
     order = Order(
@@ -101,19 +106,21 @@ def limit_order(side: "TradeSide",
         quantity=(size * instrument),
         start=start,
         end=end,
-        portfolio=portfolio
+        portfolio=portfolio,
     )
 
     return order
 
 
-def hidden_limit_order(side: "TradeSide",
-                       exchange_pair: "ExchangePair",
-                       limit_price: float,
-                       size: float,
-                       portfolio: "Portfolio",
-                       start: int = None,
-                       end: int = None):
+def hidden_limit_order(
+    side: "TradeSide",
+    exchange_pair: "ExchangePair",
+    limit_price: float,
+    size: float,
+    portfolio: "Portfolio",
+    start: int | None = None,
+    end: int | None = None,
+):
     """Creates a hidden limit order.
 
     Parameters
@@ -138,7 +145,6 @@ def hidden_limit_order(side: "TradeSide",
     `Order`
         A hidden limit order.
     """
-    side = TradeSide[side]
     instrument = side.instrument(exchange_pair.pair)
 
     order = Order(
@@ -151,22 +157,24 @@ def hidden_limit_order(side: "TradeSide",
         start=start,
         end=end,
         portfolio=portfolio,
-        criteria=Limit(limit_price=limit_price)
+        criteria=Limit(limit_price=limit_price),
     )
 
     return order
 
 
-def risk_managed_order(side: "TradeSide",
-                       trade_type: "TradeType",
-                       exchange_pair: "ExchangePair",
-                       price: float,
-                       quantity: "Quantity",
-                       down_percent: float,
-                       up_percent: float,
-                       portfolio: "Portfolio",
-                       start: int = None,
-                       end: int = None):
+def risk_managed_order(
+    side: "TradeSide",
+    trade_type: "TradeType",
+    exchange_pair: "ExchangePair",
+    price: float,
+    quantity: "Quantity",
+    down_percent: float,
+    up_percent: float,
+    portfolio: "Portfolio",
+    start: int | None = None,
+    end: int | None = None,
+):
     """Create a stop order that manages for percentages above and below the
     entry price of the order.
 
@@ -201,7 +209,7 @@ def risk_managed_order(side: "TradeSide",
     """
 
     side = TradeSide(side)
-    instrument = side.instrument(exchange_pair.pair)
+    side.instrument(exchange_pair.pair)
 
     order = Order(
         step=portfolio.clock.step,
@@ -212,7 +220,7 @@ def risk_managed_order(side: "TradeSide",
         start=start,
         end=end,
         quantity=quantity,
-        portfolio=portfolio
+        portfolio=portfolio,
     )
 
     risk_criteria = Stop("down", down_percent) ^ Stop("up", up_percent)
@@ -220,7 +228,7 @@ def risk_managed_order(side: "TradeSide",
         side=TradeSide.SELL if side == TradeSide.BUY else TradeSide.BUY,
         trade_type=TradeType.MARKET,
         exchange_pair=exchange_pair,
-        criteria=risk_criteria
+        criteria=risk_criteria,
     )
 
     order.add_order_spec(risk_management)
@@ -228,10 +236,9 @@ def risk_managed_order(side: "TradeSide",
     return order
 
 
-def proportion_order(portfolio: 'Portfolio',
-                     source: 'Wallet',
-                     target: 'Wallet',
-                     proportion: float) -> 'Order':
+def proportion_order(
+    portfolio: "Portfolio", source: "Wallet", target: "Wallet", proportion: float
+) -> "Order":
     """Creates an order that sends a proportion of funds from one wallet to
     another.
 
@@ -250,19 +257,18 @@ def proportion_order(portfolio: 'Portfolio',
     exchange = source.exchange
 
     base_params = {
-        'step': portfolio.clock.step,
-        'portfolio': portfolio,
-        'trade_type': TradeType.MARKET,
-        'start': portfolio.clock.step,
-        'end': portfolio.clock.step + 1
+        "step": portfolio.clock.step,
+        "portfolio": portfolio,
+        "trade_type": TradeType.MARKET,
+        "start": portfolio.clock.step,
+        "end": portfolio.clock.step + 1,
     }
     pair = None
 
-    is_source_base = (source.instrument == portfolio.base_instrument)
-    is_target_base = (target.instrument == portfolio.base_instrument)
+    is_source_base = source.instrument == portfolio.base_instrument
+    is_target_base = target.instrument == portfolio.base_instrument
 
     if is_source_base or is_target_base:
-
         if is_source_base:
             pair = source.instrument / target.instrument
         else:
@@ -276,10 +282,10 @@ def proportion_order(portfolio: 'Portfolio',
 
         params = {
             **base_params,
-            'side': TradeSide.BUY if is_source_base else TradeSide.SELL,
-            'exchange_pair': exchange_pair,
-            'price': exchange_pair.price,
-            'quantity': quantity
+            "side": TradeSide.BUY if is_source_base else TradeSide.SELL,
+            "exchange_pair": exchange_pair,
+            "price": exchange_pair.price,
+            "quantity": quantity,
         }
 
         return Order(**params)
@@ -293,20 +299,22 @@ def proportion_order(portfolio: 'Portfolio',
 
     params = {
         **base_params,
-        'side': TradeSide.SELL,
-        'exchange_pair': exchange_pair,
-        'price': exchange_pair.price,
-        'quantity': quantity
+        "side": TradeSide.SELL,
+        "exchange_pair": exchange_pair,
+        "price": exchange_pair.price,
+        "quantity": quantity,
     }
 
     order = Order(**params)
 
     pair = portfolio.base_instrument / target.instrument
 
-    order.add_order_spec(OrderSpec(
-        side=TradeSide.BUY,
-        trade_type=TradeType.MARKET,
-        exchange_pair=ExchangePair(exchange, pair),
-        criteria=None
-    ))
+    order.add_order_spec(
+        OrderSpec(
+            side=TradeSide.BUY,
+            trade_type=TradeType.MARKET,
+            exchange_pair=ExchangePair(exchange, pair),
+            criteria=None,
+        )
+    )
     return order

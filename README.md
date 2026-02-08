@@ -10,22 +10,21 @@
 [![Documentation Status](https://readthedocs.org/projects/tensortrade/badge/?version=latest)](https://tensortrade.org)
 [![Apache License](https://img.shields.io/github/license/tensortrade-org/tensortrade.svg?color=brightgreen)](http://www.apache.org/licenses/LICENSE-2.0)
 [![Discord](https://img.shields.io/discord/592446624882491402.svg?color=brightgreen)](https://discord.gg/ZZ7BGWh)
-[![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/release/python-3120/)
+[![Python 3.13+](https://img.shields.io/badge/python-3.13+-blue.svg)](https://www.python.org/downloads/release/python-3130/)
 
 TensorTrade is an open-source Python framework for building, training, and evaluating reinforcement learning agents for algorithmic trading. The framework provides composable components for environments, action schemes, reward functions, and data feeds that can be combined to create custom trading systems.
 
 ## Quick Start
 
 ```bash
-# Requires Python 3.12+
-python3.12 -m venv tensortrade-env && source tensortrade-env/bin/activate
-pip install -e .
+# Requires Python 3.13+
+# Using uv (recommended)
+uv sync
+uv run python examples/training/train_simple.py
 
-# For training with Ray/RLlib (recommended)
-pip install -r examples/requirements.txt
-
-# Run training
-python examples/training/train_simple.py
+# Or using pip
+pip install tensortrade
+pip install tensortrade[examples]  # For training with Ray/RLlib
 ```
 
 ## Documentation & Tutorials
@@ -118,23 +117,53 @@ The agent demonstrates directional prediction capability at zero commission. The
 
 ## Installation
 
-**Requirements:** Python 3.11 or 3.12
+TensorTrade requires Python >= 3.13 for all functionality to work as expected.
+
+### Using pip
+
+You can install TensorTrade as a pre-packaged solution:
 
 ```bash
-# Create environment
-python3.12 -m venv tensortrade-env
-source tensortrade-env/bin/activate  # Windows: tensortrade-env\Scripts\activate
+pip install tensortrade
+```
 
-# Install
-pip install --upgrade pip
-pip install -r requirements.txt
-pip install -e .
+Or install directly from the master branch (latest features, but untested):
 
-# Verify
-pytest tests/tensortrade/unit -v
+```bash
+pip install git+https://github.com/tensortrade-org/tensortrade.git
+```
 
-# Training dependencies (optional)
-pip install -r examples/requirements.txt
+### Using uv (recommended for development)
+
+We recommend using [uv](https://docs.astral.sh/uv/) for development:
+
+```bash
+# Clone the repository
+git clone https://github.com/tensortrade-org/tensortrade.git
+cd tensortrade
+
+# Install with uv (creates virtual environment automatically)
+uv sync
+
+# Install with dev dependencies
+uv sync --group dev
+
+# Install with all optional dependencies (examples, docs)
+uv sync --all-extras --group dev
+```
+
+To run commands in the uv-managed environment:
+
+```bash
+# Run tests
+uv run pytest tests/
+
+# Run linting
+uv run ruff check tensortrade/
+
+# Or use make commands
+make test
+make lint
 ```
 
 See [ENVIRONMENT_SETUP.md](docs/ENVIRONMENT_SETUP.md) for platform-specific instructions and troubleshooting.
@@ -175,8 +204,7 @@ tensortrade/
 |-------|----------|
 | "No stream satisfies selector" | Update to v1.0.4-dev1+ |
 | Ray installation fails | Run `pip install --upgrade pip` first |
-| NumPy version conflict | `pip install "numpy>=1.26.4,<2.0"` |
-| TensorFlow CUDA issues | `pip install tensorflow[and-cuda]>=2.15.1` |
+| NumPy version conflict | `pip install "numpy>=2.0.0"` |
 
 ---
 

@@ -1,6 +1,9 @@
+from typing import Generic, TypeVar, overload
+
+_AccessorT = TypeVar("_AccessorT")
 
 
-class CachedAccessor:
+class CachedAccessor(Generic[_AccessorT]):
     """
     Custom property-like object.
 
@@ -18,9 +21,15 @@ class CachedAccessor:
     .. [1] https://github.com/pandas-dev/pandas/blob/v1.1.0/pandas/core/accessor.py#L285-L289
     """
 
-    def __init__(self, name: str, accessor) -> None:
+    def __init__(self, name: str, accessor: type[_AccessorT]) -> None:
         self._name = name
         self._accessor = accessor
+
+    @overload
+    def __get__(self, instance: None, owner: type) -> type[_AccessorT]: ...
+
+    @overload
+    def __get__(self, instance: object, owner: type) -> _AccessorT: ...
 
     def __get__(self, instance, owner):
         if instance is None:

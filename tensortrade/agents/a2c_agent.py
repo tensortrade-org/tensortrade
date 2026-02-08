@@ -18,27 +18,33 @@ References:
     - http://inoryy.com/post/tensorflow2-deep-reinforcement-learning/#agent-interface
 """
 
-from deprecated import deprecated
 import random
-import numpy as np
-import tensorflow as tf
-
 from collections import namedtuple
-
-from tensortrade.agents import Agent, ReplayMemory
 from datetime import datetime
 
-A2CTransition = namedtuple('A2CTransition', ['state', 'action', 'reward', 'done', 'value'])
+import numpy as np
+import tensorflow as tf
+from deprecated import deprecated
+
+from tensortrade.agents import Agent, ReplayMemory
+
+A2CTransition = namedtuple(
+    "A2CTransition", ["state", "action", "reward", "done", "value"]
+)
 
 
-@deprecated(version='1.0.4', reason="Builtin agents are being deprecated in favor of external implementations (ie: Ray)")
+@deprecated(
+    version="1.0.4",
+    reason="Builtin agents are being deprecated in favor of external implementations (ie: Ray)",
+)
 class A2CAgent(Agent):
-
-    def __init__(self,
-                 env: 'TradingEnvironment',
-                 shared_network: tf.keras.Model = None,
-                 actor_network: tf.keras.Model = None,
-                 critic_network: tf.keras.Model = None):
+    def __init__(
+        self,
+        env: "TradingEnvironment",
+        shared_network: tf.keras.Model = None,
+        actor_network: tf.keras.Model = None,
+        critic_network: tf.keras.Model = None,
+    ):
         self.env = env
         self.n_actions = env.action_space.n
         self.observation_shape = env.observation_space.shape
@@ -50,61 +56,86 @@ class A2CAgent(Agent):
         self.env.agent_id = self.id
 
     def _build_shared_network(self):
-        network = tf.keras.Sequential([
-            tf.keras.layers.InputLayer(input_shape=self.observation_shape),
-            tf.keras.layers.Conv1D(filters=64, kernel_size=6, padding="same", activation="tanh"),
-            tf.keras.layers.MaxPooling1D(pool_size=2),
-            tf.keras.layers.Conv1D(filters=32, kernel_size=3, padding="same", activation="tanh"),
-            tf.keras.layers.MaxPooling1D(pool_size=2),
-            tf.keras.layers.Flatten()
-        ])
+        network = tf.keras.Sequential(
+            [
+                tf.keras.layers.InputLayer(input_shape=self.observation_shape),
+                tf.keras.layers.Conv1D(
+                    filters=64, kernel_size=6, padding="same", activation="tanh"
+                ),
+                tf.keras.layers.MaxPooling1D(pool_size=2),
+                tf.keras.layers.Conv1D(
+                    filters=32, kernel_size=3, padding="same", activation="tanh"
+                ),
+                tf.keras.layers.MaxPooling1D(pool_size=2),
+                tf.keras.layers.Flatten(),
+            ]
+        )
 
         return network
 
     def _build_actor_network(self):
-        actor_head = tf.keras.Sequential([
-            tf.keras.layers.Dense(50, activation='relu'),
-            tf.keras.layers.Dense(self.n_actions, activation='relu')
-        ])
+        actor_head = tf.keras.Sequential(
+            [
+                tf.keras.layers.Dense(50, activation="relu"),
+                tf.keras.layers.Dense(self.n_actions, activation="relu"),
+            ]
+        )
 
         return tf.keras.Sequential([self.shared_network, actor_head])
 
     def _build_critic_network(self):
-        critic_head = tf.keras.Sequential([
-            tf.keras.layers.Dense(50, activation='relu'),
-            tf.keras.layers.Dense(25, activation='relu'),
-            tf.keras.layers.Dense(1, activation='relu')
-        ])
+        critic_head = tf.keras.Sequential(
+            [
+                tf.keras.layers.Dense(50, activation="relu"),
+                tf.keras.layers.Dense(25, activation="relu"),
+                tf.keras.layers.Dense(1, activation="relu"),
+            ]
+        )
 
         return tf.keras.Sequential([self.shared_network, critic_head])
 
     def restore(self, path: str, **kwargs):
-        actor_filename: str = kwargs.get('actor_filename', None)
-        critic_filename: str = kwargs.get('critic_filename', None)
+        actor_filename: str = kwargs.get("actor_filename", None)
+        critic_filename: str = kwargs.get("critic_filename", None)
 
         if not actor_filename or not critic_filename:
             raise ValueError(
-                'The `restore` method requires a directory `path`, a `critic_filename`, and an `actor_filename`.')
+                "The `restore` method requires a directory `path`, a `critic_filename`, and an `actor_filename`."
+            )
 
         self.actor_network = tf.keras.models.load_model(path + actor_filename)
         self.critic_network = tf.keras.models.load_model(path + critic_filename)
 
     def save(self, path: str, **kwargs):
-        episode: int = kwargs.get('episode', None)
+        episode: int = kwargs.get("episode", None)
 
         if episode:
-            suffix = self.id[:7] + "__" + datetime.now().strftime("%Y%m%d_%H%M%S") + ".hdf5"
+            suffix = (
+                self.id[:7] + "__" + datetime.now().strftime("%Y%m%d_%H%M%S") + ".hdf5"
+            )
             actor_filename = "actor_network__" + suffix
             critic_filename = "critic_network__" + suffix
         else:
-            actor_filename = "actor_network__" + self.id[:7] + "__" + datetime.now().strftime("%Y%m%d_%H%M%S") + ".hdf5"
-            critic_filename = "critic_network__" + self.id[:7] + "__" + datetime.now().strftime("%Y%m%d_%H%M%S") + ".hdf5"
+            actor_filename = (
+                "actor_network__"
+                + self.id[:7]
+                + "__"
+                + datetime.now().strftime("%Y%m%d_%H%M%S")
+                + ".hdf5"
+            )
+            critic_filename = (
+                "critic_network__"
+                + self.id[:7]
+                + "__"
+                + datetime.now().strftime("%Y%m%d_%H%M%S")
+                + ".hdf5"
+            )
 
         self.actor_network.save(path + actor_filename)
         self.critic_network.save(path + critic_filename)
 
     def get_action(self, state: np.ndarray, **kwargs) -> int:
-        threshold: float = kwargs.get('threshold', 0)
+        threshold: float = kwargs.get("threshold", 0)
 
         rand = random.random()
 
@@ -112,14 +143,18 @@ class A2CAgent(Agent):
             return np.random.choice(self.n_actions)
         else:
             logits = self.actor_network(state[None, :], training=False)
-            return tf.squeeze(tf.squeeze(tf.random.categorical(logits, 1), axis=-1), axis=-1)
+            return tf.squeeze(
+                tf.squeeze(tf.random.categorical(logits, 1), axis=-1), axis=-1
+            )
 
-    def _apply_gradient_descent(self,
-                                memory: ReplayMemory,
-                                batch_size: int,
-                                learning_rate: float,
-                                discount_factor: float,
-                                entropy_c: float,):
+    def _apply_gradient_descent(
+        self,
+        memory: ReplayMemory,
+        batch_size: int,
+        learning_rate: float,
+        discount_factor: float,
+        entropy_c: float,
+    ):
         huber_loss = tf.keras.losses.Huber()
         wsce_loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
         optimizer = tf.keras.optimizers.Adam(lr=learning_rate)
@@ -137,7 +172,9 @@ class A2CAgent(Agent):
         exp_weighted_return = 0
 
         for reward, done in zip(rewards[::-1], dones[::-1]):
-            exp_weighted_return = reward + discount_factor * exp_weighted_return * (1 - int(done))
+            exp_weighted_return = reward + discount_factor * exp_weighted_return * (
+                1 - int(done)
+            )
             returns += [exp_weighted_return]
 
         returns = returns[::-1]
@@ -146,8 +183,12 @@ class A2CAgent(Agent):
             state_values = self.critic_network(states)
             critic_loss_value = huber_loss(returns, state_values)
 
-        gradients = tape.gradient(critic_loss_value, self.critic_network.trainable_variables)
-        optimizer.apply_gradients(zip(gradients, self.critic_network.trainable_variables))
+        gradients = tape.gradient(
+            critic_loss_value, self.critic_network.trainable_variables
+        )
+        optimizer.apply_gradients(
+            zip(gradients, self.critic_network.trainable_variables)
+        )
 
         with tf.GradientTape() as tape:
             returns = tf.reshape(returns, [batch_size, 1])
@@ -161,25 +202,30 @@ class A2CAgent(Agent):
             entropy_loss_value = tf.keras.losses.categorical_crossentropy(probs, probs)
             policy_total_loss_value = policy_loss_value - entropy_c * entropy_loss_value
 
-        gradients = tape.gradient(policy_total_loss_value,
-                                  self.actor_network.trainable_variables)
-        optimizer.apply_gradients(zip(gradients, self.actor_network.trainable_variables))
+        gradients = tape.gradient(
+            policy_total_loss_value, self.actor_network.trainable_variables
+        )
+        optimizer.apply_gradients(
+            zip(gradients, self.actor_network.trainable_variables)
+        )
 
-    def train(self,
-              n_steps: int = None,
-              n_episodes: int = None,
-              save_every: int = None,
-              save_path: str = None,
-              callback: callable = None,
-              **kwargs) -> float:
-        batch_size: int = kwargs.get('batch_size', 128)
-        discount_factor: float = kwargs.get('discount_factor', 0.9999)
-        learning_rate: float = kwargs.get('learning_rate', 0.0001)
-        eps_start: float = kwargs.get('eps_start', 0.9)
-        eps_end: float = kwargs.get('eps_end', 0.05)
-        eps_decay_steps: int = kwargs.get('eps_decay_steps', 200)
-        entropy_c: int = kwargs.get('entropy_c', 0.0001)
-        memory_capacity: int = kwargs.get('memory_capacity', 1000)
+    def train(
+        self,
+        n_steps: int = None,
+        n_episodes: int = None,
+        save_every: int = None,
+        save_path: str = None,
+        callback: callable = None,
+        **kwargs,
+    ) -> float:
+        batch_size: int = kwargs.get("batch_size", 128)
+        discount_factor: float = kwargs.get("discount_factor", 0.9999)
+        learning_rate: float = kwargs.get("learning_rate", 0.0001)
+        eps_start: float = kwargs.get("eps_start", 0.9)
+        eps_end: float = kwargs.get("eps_end", 0.05)
+        eps_decay_steps: int = kwargs.get("eps_decay_steps", 200)
+        entropy_c: int = kwargs.get("entropy_c", 0.0001)
+        memory_capacity: int = kwargs.get("memory_capacity", 1000)
 
         memory = ReplayMemory(memory_capacity, transition_type=A2CTransition)
         episode = 0
@@ -190,18 +236,20 @@ class A2CAgent(Agent):
         if n_steps and not n_episodes:
             n_episodes = np.iinfo(np.int32).max
 
-        print('====      AGENT ID: {}      ===='.format(self.id))
+        print(f"====      AGENT ID: {self.id}      ====")
 
         while episode < n_episodes and not stop_training:
             state = self.env.reset()
             done = False
 
-            print('====      EPISODE ID ({}/{}): {}      ===='.format(episode + 1,
-                                                                      n_episodes,
-                                                                      self.env.episode_id))
+            print(
+                f"====      EPISODE ID ({episode + 1}/{n_episodes}): {self.env.episode_id}      ===="
+            )
 
             while not done:
-                threshold = eps_end + (eps_start - eps_end) * np.exp(-steps_done / eps_decay_steps)
+                threshold = eps_end + (eps_start - eps_end) * np.exp(
+                    -steps_done / eps_decay_steps
+                )
                 action = self.get_action(state, threshold=threshold)
                 next_state, reward, done, _ = self.env.step(action)
 
@@ -217,11 +265,9 @@ class A2CAgent(Agent):
                 if len(memory) < batch_size:
                     continue
 
-                self._apply_gradient_descent(memory,
-                                             batch_size,
-                                             learning_rate,
-                                             discount_factor,
-                                             entropy_c)
+                self._apply_gradient_descent(
+                    memory, batch_size, learning_rate, discount_factor, entropy_c
+                )
 
                 if n_steps and steps_done >= n_steps:
                     done = True

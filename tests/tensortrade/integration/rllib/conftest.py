@@ -14,8 +14,8 @@
 
 """Shared fixtures for RLlib integration tests."""
 
+from collections.abc import Generator
 from pathlib import Path
-from typing import Generator
 
 import numpy as np
 import pandas as pd
@@ -34,18 +34,20 @@ def sample_ohlcv_data() -> pd.DataFrame:
     prices = initial_price * np.exp(np.cumsum(returns))
 
     # Generate OHLCV data
-    data = pd.DataFrame({
-        'date': pd.date_range(start='2024-01-01', periods=n_samples, freq='h'),
-        'open': prices * (1 + np.random.uniform(-0.01, 0.01, n_samples)),
-        'high': prices * (1 + np.random.uniform(0, 0.02, n_samples)),
-        'low': prices * (1 - np.random.uniform(0, 0.02, n_samples)),
-        'close': prices,
-        'volume': np.random.randint(1000, 10000, n_samples),
-    })
+    data = pd.DataFrame(
+        {
+            "date": pd.date_range(start="2024-01-01", periods=n_samples, freq="h"),
+            "open": prices * (1 + np.random.uniform(-0.01, 0.01, n_samples)),
+            "high": prices * (1 + np.random.uniform(0, 0.02, n_samples)),
+            "low": prices * (1 - np.random.uniform(0, 0.02, n_samples)),
+            "close": prices,
+            "volume": np.random.randint(1000, 10000, n_samples),
+        }
+    )
 
     # Ensure high >= close >= low and high >= open >= low
-    data['high'] = data[['open', 'high', 'low', 'close']].max(axis=1)
-    data['low'] = data[['open', 'high', 'low', 'close']].min(axis=1)
+    data["high"] = data[["open", "high", "low", "close"]].max(axis=1)
+    data["low"] = data[["open", "high", "low", "close"]].min(axis=1)
 
     return data
 
@@ -69,9 +71,9 @@ def minimal_env_config(sample_csv_path: str) -> dict:
 
 
 @pytest.fixture(scope="module")
-def ray_session() -> Generator[None, None, None]:
+def ray_session() -> Generator[None]:
     """Initialize Ray session for module-scoped tests."""
-    import ray
+    ray = pytest.importorskip("ray", reason="ray is not installed")
 
     ray.init(
         num_cpus=2,

@@ -1,7 +1,3 @@
-
-
-import tensortrade.core.clock as clock
-
 from tensortrade.core import Clock, TimeIndexed
 
 
@@ -22,14 +18,11 @@ def test_basic_clock_increment():
 
 
 def test_time_indexed_init():
-
     class FirstExample(TimeIndexed):
-
         def __init__(self, msg):
             self.msg = msg
 
     class SecondExample(TimeIndexed):
-
         def __init__(self, msg):
             self.msg = msg
 
@@ -48,14 +41,11 @@ def test_time_indexed_init():
 
 
 def test_time_indexed_increment():
-
     class FirstExample(TimeIndexed):
-
         def __init__(self, msg):
             self.msg = msg
 
     class SecondExample(TimeIndexed):
-
         def __init__(self, msg):
             self.msg = msg
 

@@ -12,29 +12,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License
 
-import uuid
 import logging
-
-from typing import Dict, Any, Tuple, Optional
+import uuid
 from random import randint
+from typing import Any
 
-import gymnasium
+import gymnasium as gym
 import numpy as np
 
-from tensortrade.core import TimeIndexed, Clock, Component
+from tensortrade.core import Clock, Component, TimeIndexed
 from tensortrade.env.generic import (
     ActionScheme,
-    RewardScheme,
-    Observer,
-    Stopper,
     Informer,
-    Renderer
+    Observer,
+    Renderer,
+    RewardScheme,
+    Stopper,
 )
 
 
-class TradingEnv(gymnasium.Env, TimeIndexed):
-    """A trading environment made for use with Gym-compatible reinforcement
-    learning algorithms.
+class TradingEnv(gym.Env, TimeIndexed):
+    """A trading environment made for use with Gym-compatible reinforcement learning algorithms.
 
     Parameters
     ----------
@@ -55,21 +53,23 @@ class TradingEnv(gymnasium.Env, TimeIndexed):
         Additional keyword arguments needed to create the environment.
     """
 
-    agent_id: str = None
-    episode_id: str = None
+    agent_id: str | None = None
+    episode_id: str | None = None
 
-    def __init__(self,
-                 action_scheme: ActionScheme,
-                 reward_scheme: RewardScheme,
-                 observer: Observer,
-                 stopper: Stopper,
-                 informer: Informer,
-                 renderer: Renderer,
-                 min_periods: int = None,
-                 max_episode_steps: int = None,
-                 random_start_pct: float = 0.00,
-                 device: Optional[str] = None,
-                 **kwargs) -> None:
+    def __init__(
+        self,
+        action_scheme: ActionScheme,
+        reward_scheme: RewardScheme,
+        observer: Observer,
+        stopper: Stopper,
+        informer: Informer,
+        renderer: Renderer,
+        min_periods: int | None = None,
+        max_episode_steps: int | None = None,
+        random_start_pct: float = 0.00,
+        device: str | None = None,
+        **kwargs,
+    ) -> None:
         super().__init__()
         self.clock = Clock()
 
@@ -84,33 +84,41 @@ class TradingEnv(gymnasium.Env, TimeIndexed):
         self.random_start_pct = random_start_pct
         self.device = device
 
+        # Register the environment in Gym and fetch spec
+        gym.register(
+            id="TensorTrade-v0",
+            entry_point=lambda: self,
+            max_episode_steps=max_episode_steps,
+        )
+        self.spec = gym.spec(env_id="TensorTrade-v0")
+
         for c in self.components.values():
             c.clock = self.clock
 
         self.action_space = action_scheme.action_space
         self.observation_space = observer.observation_space
 
-        self._enable_logger = kwargs.get('enable_logger', False)
+        self._enable_logger = kwargs.get("enable_logger", False)
         if self._enable_logger:
-            self.logger = logging.getLogger(kwargs.get('logger_name', __name__))
-            self.logger.setLevel(kwargs.get('log_level', logging.DEBUG))
+            self.logger = logging.getLogger(kwargs.get("logger_name", __name__))
+            self.logger.setLevel(kwargs.get("log_level", logging.DEBUG))
 
     def _ensure_numpy(self, obs: Any) -> np.ndarray:
         """Ensure observation is returned as numpy array for GPU compatibility.
-        
+
         Parameters
         ----------
         obs : Any
             The observation to convert
-            
+
         Returns
         -------
         np.ndarray
             The observation as a numpy array
         """
-        if hasattr(obs, 'cpu'):  # PyTorch tensor
+        if hasattr(obs, "cpu"):  # PyTorch tensor
             return obs.cpu().numpy()
-        elif hasattr(obs, 'numpy'):  # TensorFlow tensor
+        elif hasattr(obs, "numpy"):  # TensorFlow tensor
             return obs.numpy()
         elif isinstance(obs, np.ndarray):
             return obs
@@ -118,19 +126,19 @@ class TradingEnv(gymnasium.Env, TimeIndexed):
             return np.array(obs)
 
     @property
-    def components(self) -> 'Dict[str, Component]':
-        """The components of the environment. (`Dict[str,Component]`, read-only)"""
+    def components(self) -> "dict[str, Component]":
+        """Get the components of the environment (`Dict[str,Component]`, read-only)."""
         return {
             "action_scheme": self.action_scheme,
             "reward_scheme": self.reward_scheme,
             "observer": self.observer,
             "stopper": self.stopper,
             "informer": self.informer,
-            "renderer": self.renderer
+            "renderer": self.renderer,
         }
 
-    def step(self, action: Any) -> 'Tuple[np.array, float, bool, dict]':
-        """Makes one step through the environment.
+    def step(self, action: Any) -> tuple[np.ndarray, float, bool, bool, dict]:
+        """Make one step through the environment.
 
         Parameters
         ----------
@@ -145,7 +153,9 @@ class TradingEnv(gymnasium.Env, TimeIndexed):
         float
             The computed reward for performing the action.
         bool
-            Whether or not the episode is complete.
+            Whether or not the episode is terminated (goal reached or failed).
+        bool
+            Whether or not the episode is truncated (time limit or other).
         dict
             The information gathered after completing the step.
         """
@@ -156,23 +166,34 @@ class TradingEnv(gymnasium.Env, TimeIndexed):
         obs = self._ensure_numpy(obs)
         reward = self.reward_scheme.reward(self)
         terminated = self.stopper.stop(self)
-        # Check if episode should be truncated due to max steps
-        truncated = (self.max_episode_steps is not None and
-                     self.clock.step >= self.max_episode_steps)
+        truncated = False  # Truncation is handled by gymnasium's TimeLimit wrapper
         info = self.informer.info(self)
 
         self.clock.increment()
 
         return obs, reward, terminated, truncated, info
 
-    def reset(self,seed = None, options = None) -> tuple["np.array", dict[str, Any]]:
-        """Resets the environment.
+    def reset(
+        self, *, seed: int | None = None, options: dict | None = None
+    ) -> tuple[np.ndarray, dict]:
+        """Reset the environment.
+
+        Parameters
+        ----------
+        seed : int, optional
+            The seed for the random number generator.
+        options : dict, optional
+            Additional options for resetting the environment.
 
         Returns
         -------
         obs : `np.array`
             The first observation of the environment.
+        info : dict
+            Additional information from the reset.
         """
+        super().reset(seed=seed)
+
         if self.random_start_pct > 0.00:
             size = len(self.observer.feed.process[-1].inputs[0].iterable)
             random_start = randint(0, int(size * self.random_start_pct))
@@ -199,13 +220,13 @@ class TradingEnv(gymnasium.Env, TimeIndexed):
         return obs, info
 
     def render(self, **kwargs) -> None:
-        """Renders the environment."""
+        """Render the environment."""
         self.renderer.render(self, **kwargs)
 
     def save(self) -> None:
-        """Saves the rendered view of the environment."""
+        """Save the rendered view of the environment."""
         self.renderer.save()
 
     def close(self) -> None:
-        """Closes the environment."""
+        """Close the environment."""
         self.renderer.close()

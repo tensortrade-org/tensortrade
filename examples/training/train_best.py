@@ -10,24 +10,24 @@ Uses:
 """
 
 import os
+from typing import Any
+
 import numpy as np
 import pandas as pd
-from typing import Dict, Any
-
 import ray
-from ray.tune.registry import register_env
-from ray.rllib.algorithms.ppo import PPOConfig
 from ray.rllib.algorithms.callbacks import DefaultCallbacks
+from ray.rllib.algorithms.ppo import PPOConfig
+from ray.tune.registry import register_env
 
+import tensortrade.env.default as default
 from tensortrade.data.cdd import CryptoDataDownload
-from tensortrade.feed.core import DataFeed, Stream
-from tensortrade.oms.exchanges import Exchange, ExchangeOptions
-from tensortrade.oms.instruments import USD, BTC
-from tensortrade.oms.services.execution.simulated import execute_order
-from tensortrade.oms.wallets import Wallet, Portfolio
 from tensortrade.env.default.actions import BSH
 from tensortrade.env.default.rewards import PBR
-import tensortrade.env.default as default
+from tensortrade.feed.core import DataFeed, Stream
+from tensortrade.oms.exchanges import Exchange, ExchangeOptions
+from tensortrade.oms.instruments import BTC, USD
+from tensortrade.oms.services.execution.simulated import execute_order
+from tensortrade.oms.wallets import Portfolio, Wallet
 
 
 def add_features(df: pd.DataFrame) -> pd.DataFrame:
@@ -36,68 +36,79 @@ def add_features(df: pd.DataFrame) -> pd.DataFrame:
 
     # Returns
     for p in [1, 4, 12, 24, 48]:
-        df[f'ret_{p}h'] = np.tanh(df['close'].pct_change(p) * 10)
+        df[f"ret_{p}h"] = np.tanh(df["close"].pct_change(p) * 10)
 
     # RSI normalized
-    delta = df['close'].diff()
+    delta = df["close"].diff()
     gain = delta.where(delta > 0, 0).rolling(14).mean()
     loss = (-delta.where(delta < 0, 0)).rolling(14).mean()
     rs = gain / (loss + 1e-10)
-    df['rsi'] = (100 - (100 / (1 + rs)) - 50) / 50
+    df["rsi"] = (100 - (100 / (1 + rs)) - 50) / 50
 
     # Trend
-    sma20 = df['close'].rolling(20).mean()
-    sma50 = df['close'].rolling(50).mean()
-    df['trend_20'] = np.tanh((df['close'] - sma20) / sma20 * 10)
-    df['trend_50'] = np.tanh((df['close'] - sma50) / sma50 * 10)
-    df['trend_strength'] = np.tanh((sma20 - sma50) / sma50 * 20)
+    sma20 = df["close"].rolling(20).mean()
+    sma50 = df["close"].rolling(50).mean()
+    df["trend_20"] = np.tanh((df["close"] - sma20) / sma20 * 10)
+    df["trend_50"] = np.tanh((df["close"] - sma50) / sma50 * 10)
+    df["trend_strength"] = np.tanh((sma20 - sma50) / sma50 * 20)
 
     # Volatility
-    df['vol'] = df['close'].rolling(24).std() / df['close']
-    df['vol_norm'] = np.tanh((df['vol'] - df['vol'].rolling(72).mean()) / df['vol'].rolling(72).std())
+    df["vol"] = df["close"].rolling(24).std() / df["close"]
+    df["vol_norm"] = np.tanh(
+        (df["vol"] - df["vol"].rolling(72).mean()) / df["vol"].rolling(72).std()
+    )
 
     # Volume
-    df['vol_ratio'] = np.log1p(df['volume'] / df['volume'].rolling(20).mean())
+    df["vol_ratio"] = np.log1p(df["volume"] / df["volume"].rolling(20).mean())
 
     # BB position
-    bb_mid = df['close'].rolling(20).mean()
-    bb_std = df['close'].rolling(20).std()
-    df['bb_pos'] = ((df['close'] - (bb_mid - 2*bb_std)) / (4*bb_std)).clip(0, 1)
+    bb_mid = df["close"].rolling(20).mean()
+    bb_std = df["close"].rolling(20).std()
+    df["bb_pos"] = ((df["close"] - (bb_mid - 2 * bb_std)) / (4 * bb_std)).clip(0, 1)
 
     return df.bfill().ffill()
 
 
 class Callbacks(DefaultCallbacks):
-    def on_episode_start(self, *, worker, base_env, policies, episode, env_index=None, **kwargs):
+    def on_episode_start(
+        self, *, worker, base_env, policies, episode, env_index=None, **kwargs
+    ):
         env = base_env.get_sub_environments()[env_index]
-        if hasattr(env, 'portfolio'):
+        if hasattr(env, "portfolio"):
             episode.user_data["initial"] = float(env.portfolio.net_worth)
 
-    def on_episode_end(self, *, worker, base_env, policies, episode, env_index=None, **kwargs):
+    def on_episode_end(
+        self, *, worker, base_env, policies, episode, env_index=None, **kwargs
+    ):
         env = base_env.get_sub_environments()[env_index]
-        if hasattr(env, 'portfolio'):
+        if hasattr(env, "portfolio"):
             final = float(env.portfolio.net_worth)
             initial = episode.user_data.get("initial", 10000)
             episode.custom_metrics["pnl"] = final - initial
             episode.custom_metrics["pnl_pct"] = (final - initial) / initial * 100
 
 
-def create_env(config: Dict[str, Any]):
-    data = pd.read_csv(config["csv_filename"], parse_dates=['date']).bfill().ffill()
+def create_env(config: dict[str, Any]):
+    data = pd.read_csv(config["csv_filename"], parse_dates=["date"]).bfill().ffill()
 
     price = Stream.source(list(data["close"]), dtype="float").rename("USD-BTC")
 
     # ZERO commission to isolate agent skill
     commission = config.get("commission", 0.0)
-    exchange = Exchange("exchange", service=execute_order,
-                       options=ExchangeOptions(commission=commission))(price)
+    exchange = Exchange(
+        "exchange",
+        service=execute_order,
+        options=ExchangeOptions(commission=commission),
+    )(price)
 
     cash = Wallet(exchange, config.get("initial_cash", 10000) * USD)
     asset = Wallet(exchange, 0 * BTC)
     portfolio = Portfolio(USD, [cash, asset])
 
-    features = [Stream.source(list(data[c]), dtype="float").rename(c)
-                for c in config.get("feature_cols", [])]
+    features = [
+        Stream.source(list(data[c]), dtype="float").rename(c)
+        for c in config.get("feature_cols", [])
+    ]
     feed = DataFeed(features)
     feed.compile()
 
@@ -110,15 +121,17 @@ def create_env(config: Dict[str, Any]):
         action_scheme=action_scheme,
         reward_scheme=reward_scheme,
         window_size=config.get("window_size", 10),
-        max_allowed_loss=config.get("max_allowed_loss", 0.4)
+        max_allowed_loss=config.get("max_allowed_loss", 0.4),
     )
     env.portfolio = portfolio
     return env
 
 
-def evaluate(algo, data: pd.DataFrame, feature_cols: list, config: Dict, n: int = 30) -> float:
+def evaluate(
+    algo, data: pd.DataFrame, feature_cols: list, config: dict, n: int = 30
+) -> float:
     """Evaluate and return average P&L."""
-    csv = '/tmp/eval_best.csv'
+    csv = "/tmp/eval_best.csv"
     data.reset_index(drop=True).to_csv(csv, index=False)
 
     env_config = {
@@ -153,30 +166,46 @@ def main():
     print("\nLoading data...")
     cdd = CryptoDataDownload()
     data = cdd.fetch("Bitfinex", "USD", "BTC", "1h")
-    data = data[['date', 'open', 'high', 'low', 'close', 'volume']]
-    data['date'] = pd.to_datetime(data['date'])
-    data.sort_values('date', inplace=True)
+    data = data[["date", "open", "high", "low", "close", "volume"]]
+    data["date"] = pd.to_datetime(data["date"])
+    data.sort_values("date", inplace=True)
     data.reset_index(drop=True, inplace=True)
 
     print("Adding features...")
     data = add_features(data)
-    feature_cols = [c for c in data.columns if c not in ['date', 'open', 'high', 'low', 'close', 'volume']]
+    feature_cols = [
+        c
+        for c in data.columns
+        if c not in ["date", "open", "high", "low", "close", "volume"]
+    ]
 
     # Split data
     test_candles = 30 * 24
     val_candles = 30 * 24
 
     test_data = data.iloc[-test_candles:].copy()
-    val_data = data.iloc[-(test_candles + val_candles):-test_candles].copy()
-    train_data = data.iloc[:-(test_candles + val_candles)].tail(4000).reset_index(drop=True)  # More data
+    val_data = data.iloc[-(test_candles + val_candles) : -test_candles].copy()
+    train_data = (
+        data.iloc[: -(test_candles + val_candles)].tail(4000).reset_index(drop=True)
+    )  # More data
 
-    val_bh = 10000 * (val_data['close'].iloc[-1] - val_data['close'].iloc[0]) / val_data['close'].iloc[0]
-    test_bh = 10000 * (test_data['close'].iloc[-1] - test_data['close'].iloc[0]) / test_data['close'].iloc[0]
+    val_bh = (
+        10000
+        * (val_data["close"].iloc[-1] - val_data["close"].iloc[0])
+        / val_data["close"].iloc[0]
+    )
+    test_bh = (
+        10000
+        * (test_data["close"].iloc[-1] - test_data["close"].iloc[0])
+        / test_data["close"].iloc[0]
+    )
 
-    print(f"\nData: Train={len(train_data)}, Val={len(val_data)} (B&H ${val_bh:+,.0f}), "
-          f"Test={len(test_data)} (B&H ${test_bh:+,.0f})")
+    print(
+        f"\nData: Train={len(train_data)}, Val={len(val_data)} (B&H ${val_bh:+,.0f}), "
+        f"Test={len(test_data)} (B&H ${test_bh:+,.0f})"
+    )
 
-    train_csv = '/tmp/train_best.csv'
+    train_csv = "/tmp/train_best.csv"
     train_data.to_csv(train_csv, index=False)
 
     env_config = {
@@ -193,7 +222,10 @@ def main():
 
     # Best Optuna hyperparameters
     config = (
-        PPOConfig().api_stack(enable_rl_module_and_learner=False, enable_env_runner_and_connector_v2=False)
+        PPOConfig()
+        .api_stack(
+            enable_rl_module_and_learner=False, enable_env_runner_and_connector_v2=False
+        )
         .environment(env="TradingEnv", env_config=env_config)
         .framework("torch")
         .env_runners(num_env_runners=4)
@@ -215,18 +247,22 @@ def main():
 
     algo = config.build()
 
-    print(f"\n{'='*70}")
+    print(f"\n{'=' * 70}")
     print("Training (100 iterations, zero commission)")
-    print(f"{'='*70}")
+    print(f"{'=' * 70}")
 
-    best_val = float('-inf')
+    best_val = float("-inf")
     best_iter = 0
 
     for i in range(100):
         result = algo.train()
 
         if (i + 1) % 10 == 0:
-            pnl = result.get('env_runners', {}).get('custom_metrics', {}).get('pnl_mean', 0)
+            pnl = (
+                result.get("env_runners", {})
+                .get("custom_metrics", {})
+                .get("pnl_mean", 0)
+            )
             val_config = {**env_config, "commission": 0.003}
             val_pnl = evaluate(algo, val_data, feature_cols, val_config, n=10)
 
@@ -235,19 +271,21 @@ def main():
                 best_val = val_pnl
                 best_iter = i + 1
                 marker = " *"
-                algo.save('/tmp/best_model')
+                algo.save("/tmp/best_model")
 
-            print(f"  Iter {i+1:3d}: Train ${pnl:+,.0f} | Val ${val_pnl:+,.0f} "
-                  f"(best ${best_val:+,.0f} @{best_iter}){marker}")
+            print(
+                f"  Iter {i + 1:3d}: Train ${pnl:+,.0f} | Val ${val_pnl:+,.0f} "
+                f"(best ${best_val:+,.0f} @{best_iter}){marker}"
+            )
 
     # Restore best
-    if os.path.exists('/tmp/best_model'):
-        algo.restore('/tmp/best_model')
+    if os.path.exists("/tmp/best_model"):
+        algo.restore("/tmp/best_model")
 
     # Test with different commission levels
-    print(f"\n{'='*70}")
+    print(f"\n{'=' * 70}")
     print("Test Results")
-    print(f"{'='*70}")
+    print(f"{'=' * 70}")
 
     test_config = {**env_config, "commission": 0.0}
     test_pnl_zero = evaluate(algo, test_data, feature_cols, test_config, n=50)
@@ -258,28 +296,33 @@ def main():
     test_config["commission"] = 0.002  # 0.2%
     test_pnl_real = evaluate(algo, test_data, feature_cols, test_config, n=50)
 
-    print(f"\nTest period: {test_data['date'].iloc[0].date()} to {test_data['date'].iloc[-1].date()}")
-    print(f"BTC: ${test_data['close'].iloc[0]:,.0f} -> ${test_data['close'].iloc[-1]:,.0f}")
+    print(
+        f"\nTest period: {test_data['date'].iloc[0].date()} to {test_data['date'].iloc[-1].date()}"
+    )
+    print(
+        f"BTC: ${test_data['close'].iloc[0]:,.0f} -> ${test_data['close'].iloc[-1]:,.0f}"
+    )
 
-    print(f"\n{'='*40}")
+    print(f"\n{'=' * 40}")
     print(f"Agent (0% commission):     ${test_pnl_zero:+,.0f}")
     print(f"Agent (0.1% commission):   ${test_pnl_low:+,.0f}")
     print(f"Agent (0.2% commission):   ${test_pnl_real:+,.0f}")
     print(f"Buy & Hold:                ${test_bh:+,.0f}")
-    print(f"{'='*40}")
+    print(f"{'=' * 40}")
 
     if test_pnl_zero > 0:
-        print(f"\n*** PROFITABLE at 0% commission! ***")
+        print("\n*** PROFITABLE at 0% commission! ***")
     if test_pnl_low > test_bh:
-        print(f"*** BEATS B&H at 0.1% commission! ***")
+        print("*** BEATS B&H at 0.1% commission! ***")
     if test_pnl_real > test_bh:
-        print(f"*** BEATS B&H even at 0.2% commission! ***")
+        print("*** BEATS B&H even at 0.2% commission! ***")
 
     # Cleanup
     os.remove(train_csv)
-    if os.path.exists('/tmp/best_model'):
+    if os.path.exists("/tmp/best_model"):
         import shutil
-        shutil.rmtree('/tmp/best_model')
+
+        shutil.rmtree("/tmp/best_model")
     algo.stop()
     ray.shutdown()
 
