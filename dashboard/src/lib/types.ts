@@ -500,6 +500,8 @@ export interface CampaignLaunchRequest {
 	dataset_id: string;
 	n_trials: number;
 	iterations_per_trial: number;
+	action_schemes?: string[];
+	reward_schemes?: string[];
 }
 
 export interface CampaignLaunchResponse {

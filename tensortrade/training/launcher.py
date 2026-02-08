@@ -182,6 +182,8 @@ class TrainingLauncher:
         n_trials: int = 50,
         iterations_per_trial: int = 40,
         tags: list[str] | None = None,
+        action_schemes: list[str] | None = None,
+        reward_schemes: list[str] | None = None,
     ) -> str:
         """Launch an Optuna HP campaign as a subprocess.
 
@@ -196,7 +198,11 @@ class TrainingLauncher:
         if dataset is None:
             raise ValueError(f"Dataset config not found: {dataset_id}")
 
-        script_path = self._generate_campaign_script(study_name, dataset, n_trials, iterations_per_trial)
+        script_path = self._generate_campaign_script(
+            study_name, dataset, n_trials, iterations_per_trial,
+            action_schemes=action_schemes,
+            reward_schemes=reward_schemes,
+        )
 
         log_dir = os.path.expanduser("~/.tensortrade/launch_scripts")
         os.makedirs(log_dir, exist_ok=True)
@@ -589,17 +595,39 @@ class TrainingLauncher:
 
         return script_path
 
+    # Compatibility matrix: actions that do NOT support PBR/AdvancedPBR
+    _NON_PBR_ACTIONS = {"ScaledEntryBSH", "PartialTakeProfitBSH", "SimpleOrders", "ManagedRiskOrders"}
+    # Rewards that require BSH-style Discrete(3) semantics
+    _BSH_ONLY_REWARDS = {"PBR", "AdvancedPBR"}
+
+    _ALL_ACTION_SCHEMES = [
+        "BSH", "TrailingStopBSH", "BracketBSH", "DrawdownBudgetBSH",
+        "CooldownBSH", "HoldMinimumBSH", "ConfirmationBSH",
+        "ScaledEntryBSH", "PartialTakeProfitBSH", "VolatilitySizedBSH",
+        "SimpleOrders", "ManagedRiskOrders",
+    ]
+    _ALL_REWARD_SCHEMES = [
+        "SimpleProfit", "RiskAdjustedReturns", "PBR", "AdvancedPBR",
+        "FractionalPBR", "MaxDrawdownPenalty", "AdaptiveProfitSeeker",
+    ]
+
     def _generate_campaign_script(
         self,
         study_name: str,
         dataset: object,
         n_trials: int,
         iterations_per_trial: int,
+        action_schemes: list[str] | None = None,
+        reward_schemes: list[str] | None = None,
     ) -> str:
         """Generate a self-contained Optuna campaign script."""
         from tensortrade.training.dataset_store import DatasetConfig
 
         assert isinstance(dataset, DatasetConfig)
+
+        # Default to all schemes if not specified
+        action_list = action_schemes or self._ALL_ACTION_SCHEMES
+        reward_list = reward_schemes or self._ALL_REWARD_SCHEMES
 
         tmp_dir = os.path.expanduser("~/.tensortrade/launch_scripts")
         os.makedirs(tmp_dir, exist_ok=True)
@@ -608,6 +636,8 @@ class TrainingLauncher:
         dataset_source_json = json.dumps(dataset.source_config)
         features_json = json.dumps(dataset.features)
         split_json = json.dumps(dataset.split_config)
+        action_schemes_json = json.dumps(action_list)
+        reward_schemes_json = json.dumps(reward_list)
 
         lines = [
             "#!/usr/bin/env python3",
@@ -651,6 +681,19 @@ class TrainingLauncher:
             f"SOURCE_CONFIG = json.loads('{dataset_source_json}')",
             f"FEATURES = json.loads('{features_json}')",
             f"SPLIT_CONFIG = json.loads('{split_json}')",
+            f"ACTION_CHOICES = json.loads('{action_schemes_json}')",
+            f"REWARD_CHOICES = json.loads('{reward_schemes_json}')",
+            "",
+            "# Compatibility: actions that cannot use PBR/AdvancedPBR",
+            'NON_PBR_ACTIONS = {"ScaledEntryBSH", "PartialTakeProfitBSH", "SimpleOrders", "ManagedRiskOrders"}',
+            'BSH_ONLY_REWARDS = {"PBR", "AdvancedPBR"}',
+            "",
+            "",
+            "def compatible_rewards(action_name):",
+            '    """Return reward choices compatible with a given action scheme."""',
+            "    if action_name in NON_PBR_ACTIONS:",
+            "        return [r for r in REWARD_CHOICES if r not in BSH_ONLY_REWARDS]",
+            "    return REWARD_CHOICES",
             "",
             "",
             "class Callbacks(DefaultCallbacks):",
@@ -784,6 +827,8 @@ class TrainingLauncher:
             '        "window_size": config["window_size"],',
             '        "max_allowed_loss": config["max_allowed_loss"],',
             '        "commission": config["commission"],',
+            '        "action_scheme": config.get("action_scheme", "BSH"),',
+            '        "reward_scheme": config.get("reward_scheme", "PBR"),',
             '        "initial_cash": 10000,',
             "    }",
             "    pnls = []",
@@ -844,6 +889,10 @@ class TrainingLauncher:
             '        "sgd_iters": {"type": "int", "low": 3, "high": 15},',
             '        "batch_size": {"type": "categorical", "choices": [2000, 4000, 8000]},',
             "    }",
+            "    if len(ACTION_CHOICES) > 1:",
+            '        search_space["action_scheme"] = {"type": "categorical", "choices": ACTION_CHOICES}',
+            "    if len(REWARD_CHOICES) > 1:",
+            '        search_space["reward_scheme"] = {"type": "categorical", "choices": REWARD_CHOICES}',
             "",
             "    if bridge:",
             "        bridge.send({",
@@ -890,6 +939,21 @@ class TrainingLauncher:
             '        sgd_iters = trial.suggest_int("sgd_iters", 3, 15)',
             '        batch_size = trial.suggest_categorical("batch_size", [2000, 4000, 8000])',
             "",
+            "        # Sample action/reward scheme (or use single choice if only one)",
+            "        if len(ACTION_CHOICES) > 1:",
+            '            action_scheme_name = trial.suggest_categorical("action_scheme", ACTION_CHOICES)',
+            "        else:",
+            "            action_scheme_name = ACTION_CHOICES[0]",
+            "",
+            "        # Filter rewards for compatibility, then sample",
+            "        valid_rewards = compatible_rewards(action_scheme_name)",
+            "        if len(valid_rewards) > 1:",
+            '            reward_scheme_name = trial.suggest_categorical("reward_scheme", valid_rewards)',
+            "        elif valid_rewards:",
+            "            reward_scheme_name = valid_rewards[0]",
+            "        else:",
+            '            reward_scheme_name = "SimpleProfit"',
+            "",
             "        params = dict(trial.params)",
             "",
             "        if bridge:",
@@ -917,6 +981,8 @@ class TrainingLauncher:
             '            "initial_cash": 10000,',
             '            "max_episode_steps": 500,',
             '            "random_start_pct": 0.5,',
+            '            "action_scheme": action_scheme_name,',
+            '            "reward_scheme": reward_scheme_name,',
             "        }",
             "",
             "        ppo_config = (",
@@ -974,9 +1040,13 @@ class TrainingLauncher:
             "",
             "                # Pruning check every 10 iterations",
             "                if (i + 1) % 10 == 0:",
-            "                    val_pnl = evaluate(algo, val_data, feature_cols,",
-            '                                       {"window_size": window_size, "max_allowed_loss": max_loss,',
-            '                                        "commission": commission}, n=5)',
+            "                    eval_cfg = {",
+            '                        "window_size": window_size, "max_allowed_loss": max_loss,',
+            '                        "commission": commission,',
+            '                        "action_scheme": action_scheme_name,',
+            '                        "reward_scheme": reward_scheme_name,',
+            "                    }",
+            "                    val_pnl = evaluate(algo, val_data, feature_cols, eval_cfg, n=5)",
             "                    trial.report(val_pnl, i)",
             "",
             "                    if trial.should_prune():",
@@ -1008,9 +1078,13 @@ class TrainingLauncher:
             "                        raise optuna.TrialPruned()",
             "",
             "            # Final validation",
-            "            val_pnl = evaluate(algo, val_data, feature_cols,",
-            '                               {"window_size": window_size, "max_allowed_loss": max_loss,',
-            '                                "commission": commission}, n=10)',
+            "            final_eval_cfg = {",
+            '                "window_size": window_size, "max_allowed_loss": max_loss,',
+            '                "commission": commission,',
+            '                "action_scheme": action_scheme_name,',
+            '                "reward_scheme": reward_scheme_name,',
+            "            }",
+            "            val_pnl = evaluate(algo, val_data, feature_cols, final_eval_cfg, n=10)",
             "",
             "            duration = time.time() - trial_start_time",
             "            completed_count += 1",

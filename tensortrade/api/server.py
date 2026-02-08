@@ -680,6 +680,8 @@ def _register_routes(app: FastAPI) -> None:
                 dataset_id=dataset_id,
                 n_trials=body.get("n_trials", 50),
                 iterations_per_trial=body.get("iterations_per_trial", 40),
+                action_schemes=body.get("action_schemes"),
+                reward_schemes=body.get("reward_schemes"),
             )
             return {"study_name": campaign_id, "status": "launched"}
         except (ValueError, RuntimeError) as e:
