@@ -17,6 +17,13 @@ init-db:
 reset-db:
 	./dev.sh reset-db
 
+lint:
+	ruff check tensortrade/ tests/
+
+format:
+	ruff format tensortrade/ tests/
+	ruff check --fix tensortrade/ tests/
+
 clean:
 	find . | grep -E '(__pycache__|\.pyc|\.pyo$$)' | xargs rm -rf
 

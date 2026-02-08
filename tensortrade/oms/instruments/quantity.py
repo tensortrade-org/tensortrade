@@ -13,19 +13,18 @@
 # limitations under the License
 
 import operator
-
-from typing import Union, Tuple, Callable, TypeVar
-from numbers import Number
-from decimal import Decimal, ROUND_DOWN
+from collections.abc import Callable
+from decimal import ROUND_DOWN, Decimal
 from functools import total_ordering
+from numbers import Number
+from typing import TypeVar
 
 from tensortrade.core.exceptions import (
-    InvalidNegativeQuantity,
     IncompatibleInstrumentOperation,
+    InvalidNegativeQuantity,
     InvalidNonNumericQuantity,
-    QuantityOpPathMismatch
+    QuantityOpPathMismatch,
 )
-
 
 T = TypeVar("T")
 
@@ -50,9 +49,9 @@ class Quantity:
         Raised if the `size` of the quantity being created is negative.
     """
 
-    def __init__(self, instrument: 'Instrument', size: Decimal, path_id: str = None):
+    def __init__(self, instrument: "Instrument", size: Decimal, path_id: str = None):
         if size < 0:
-            if abs(size) > Decimal(10)**(-instrument.precision):
+            if abs(size) > Decimal(10) ** (-instrument.precision):
                 raise InvalidNegativeQuantity(float(size))
             else:
                 size = 0
@@ -123,9 +122,7 @@ class Quantity:
         `Quantity`
             The quantized quantity.
         """
-        return Quantity(self.instrument,
-                        self.size.quantize(Decimal(10)**-self.instrument.precision),
-                        self.path_id)
+        return Quantity(self.instrument, self.size.quantize(Decimal(10) ** -self.instrument.precision), self.path_id)
 
     def as_float(self) -> float:
         """Gets the size as a `float`.
@@ -165,12 +162,11 @@ class Quantity:
 
         max_trade_size = Decimal(options.max_trade_size)
         contained_size = max_trade_size / price
-        contained_size = contained_size.quantize(Decimal(10)**-self.instrument.precision, rounding=ROUND_DOWN)
+        contained_size = contained_size.quantize(Decimal(10) ** -self.instrument.precision, rounding=ROUND_DOWN)
         return Quantity(self.instrument, contained_size, self.path_id)
 
     @staticmethod
-    def validate(left: "Union[Quantity, Number]",
-                 right: "Union[Quantity, Number]") -> "Tuple[Quantity, Quantity]":
+    def validate(left: "Quantity | Number", right: "Quantity | Number") -> "tuple[Quantity, Quantity]":
         """Validates the given left and right arguments of a numeric or boolean
         operation.
 
@@ -232,9 +228,7 @@ class Quantity:
         raise Exception(f"Invalid quantity operation arguments: {left} and {right}")
 
     @staticmethod
-    def _bool_op(left: "Union[Quantity, Number]",
-                 right: "Union[Quantity,Number]",
-                 op: "Callable[[T, T], bool]") -> bool:
+    def _bool_op(left: "Quantity | Number", right: "Quantity | Number", op: "Callable[[T, T], bool]") -> bool:
         """Performs a generic boolean operation on two quantities.
 
         Parameters
@@ -256,9 +250,7 @@ class Quantity:
         return boolean
 
     @staticmethod
-    def _math_op(left: "Union[Quantity, Number]",
-                 right: "Union[Quantity, Number]",
-                 op: "Callable[[T, T], T]") -> "Quantity":
+    def _math_op(left: "Quantity | Number", right: "Quantity | Number", op: "Callable[[T, T], T]") -> "Quantity":
         """Performs a generic numeric operation on two quantities.
 
         Parameters
@@ -282,28 +274,28 @@ class Quantity:
     def __add__(self, other: "Quantity") -> "Quantity":
         return Quantity._math_op(self, other, operator.add)
 
-    def __sub__(self, other: "Union[Quantity, Number]") -> "Quantity":
+    def __sub__(self, other: "Quantity | Number") -> "Quantity":
         return Quantity._math_op(self, other, operator.sub)
 
-    def __iadd__(self, other: "Union[Quantity, Number]") -> "Quantity":
+    def __iadd__(self, other: "Quantity | Number") -> "Quantity":
         return Quantity._math_op(self, other, operator.iadd)
 
-    def __isub__(self, other: "Union[Quantity, Number]") -> "Quantity":
+    def __isub__(self, other: "Quantity | Number") -> "Quantity":
         return Quantity._math_op(self, other, operator.isub)
 
-    def __mul__(self, other: "Union[Quantity, Number]") -> "Quantity":
+    def __mul__(self, other: "Quantity | Number") -> "Quantity":
         return Quantity._math_op(self, other, operator.mul)
 
-    def __rmul__(self, other: "Union[Quantity, Number]") -> "Quantity":
+    def __rmul__(self, other: "Quantity | Number") -> "Quantity":
         return Quantity.__mul__(self, other)
 
-    def __lt__(self, other: "Union[Quantity, Number]") -> bool:
+    def __lt__(self, other: "Quantity | Number") -> bool:
         return Quantity._bool_op(self, other, operator.lt)
 
-    def __eq__(self, other: "Union[Quantity, Number]") -> bool:
+    def __eq__(self, other: "Quantity | Number") -> bool:
         return Quantity._bool_op(self, other, operator.eq)
 
-    def __ne__(self, other: "Union[Quantity, Number]") -> bool:
+    def __ne__(self, other: "Quantity | Number") -> bool:
         return Quantity._bool_op(self, other, operator.ne)
 
     def __neg__(self) -> bool:
@@ -316,6 +308,3 @@ class Quantity:
 
     def __repr__(self) -> str:
         return str(self)
-
-
-

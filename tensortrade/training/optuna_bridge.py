@@ -102,12 +102,8 @@ class OptunaExperimentBridge:
     def get_study_summary(self, study: optuna.Study) -> dict:
         """Get a summary of the study results."""
         trials = study.trials
-        complete_trials = [
-            t for t in trials if t.state == optuna.trial.TrialState.COMPLETE
-        ]
-        pruned_trials = [
-            t for t in trials if t.state == optuna.trial.TrialState.PRUNED
-        ]
+        complete_trials = [t for t in trials if t.state == optuna.trial.TrialState.COMPLETE]
+        pruned_trials = [t for t in trials if t.state == optuna.trial.TrialState.PRUNED]
 
         values = [t.value for t in complete_trials if t.value is not None]
 
@@ -137,12 +133,14 @@ class OptunaExperimentBridge:
         history: list[dict] = []
         for trial in study.trials:
             if trial.state == optuna.trial.TrialState.COMPLETE:
-                history.append({
-                    "trial_number": trial.number,
-                    "value": trial.value,
-                    "params": dict(trial.params),
-                    "duration": trial.duration.total_seconds() if trial.duration else None,
-                })
+                history.append(
+                    {
+                        "trial_number": trial.number,
+                        "value": trial.value,
+                        "params": dict(trial.params),
+                        "duration": trial.duration.total_seconds() if trial.duration else None,
+                    }
+                )
         return history
 
 
@@ -152,4 +150,4 @@ def _std(values: list[float]) -> float:
         return 0.0
     mean = sum(values) / len(values)
     variance = sum((v - mean) ** 2 for v in values) / (len(values) - 1)
-    return variance ** 0.5
+    return variance**0.5

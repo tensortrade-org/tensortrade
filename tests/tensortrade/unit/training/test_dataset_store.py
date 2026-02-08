@@ -5,9 +5,9 @@ import sqlite3
 import pytest
 
 from tensortrade.training.dataset_store import (
+    SEED_DATASETS,
     DatasetConfig,
     DatasetStore,
-    SEED_DATASETS,
 )
 
 

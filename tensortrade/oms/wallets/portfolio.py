@@ -13,20 +13,18 @@
 # limitations under the License
 
 import re
-
-from typing import Callable, Tuple, List, TypeVar
-
+from collections import OrderedDict
+from collections.abc import Callable
+from typing import TypeVar
 
 from tensortrade.core import Component, TimedIdentifiable
 from tensortrade.oms.exchanges import Exchange
+from tensortrade.oms.instruments import ExchangePair, Instrument, Quantity
 from tensortrade.oms.orders import OrderListener
-from tensortrade.oms.instruments import Instrument, Quantity, ExchangePair
-from tensortrade.oms.wallets.wallet import Wallet
 from tensortrade.oms.wallets.ledger import Ledger
-from collections import OrderedDict
+from tensortrade.oms.wallets.wallet import Wallet
 
-
-WalletType = TypeVar("WalletType", Wallet, Tuple[Exchange, Instrument, float])
+WalletType = TypeVar("WalletType", Wallet, tuple[Exchange, Instrument, float])
 
 
 class Portfolio(Component, TimedIdentifiable):
@@ -46,18 +44,20 @@ class Portfolio(Component, TimedIdentifiable):
 
     registered_name = "portfolio"
 
-    def __init__(self,
-                 base_instrument: Instrument,
-                 wallets: List[WalletType] = None,
-                 order_listener: 'OrderListener' = None,
-                 performance_listener: Callable[[OrderedDict], None] = None):
+    def __init__(
+        self,
+        base_instrument: Instrument,
+        wallets: list[WalletType] = None,
+        order_listener: "OrderListener" = None,
+        performance_listener: Callable[[OrderedDict], None] = None,
+    ):
         super().__init__()
 
         wallets = wallets or []
 
-        self.base_instrument = self.default('base_instrument', base_instrument)
-        self.order_listener = self.default('order_listener', order_listener)
-        self.performance_listener = self.default('performance_listener', performance_listener)
+        self.base_instrument = self.default("base_instrument", base_instrument)
+        self.order_listener = self.default("order_listener", order_listener)
+        self.performance_listener = self.default("performance_listener", performance_listener)
         self._wallets = {}
 
         for wallet in wallets:
@@ -70,12 +70,12 @@ class Portfolio(Component, TimedIdentifiable):
         self._keys = None
 
     @property
-    def wallets(self) -> 'List[Wallet]':
+    def wallets(self) -> "list[Wallet]":
         """All the wallets in the portfolio. (`List[Wallet]`, read-only)"""
         return list(self._wallets.values())
 
     @property
-    def exchanges(self) -> 'List[Exchange]':
+    def exchanges(self) -> "list[Exchange]":
         """All the exchanges in the portfolio. (`List[Exchange]`, read-only)"""
         exchanges = []
         for w in self.wallets:
@@ -84,26 +84,26 @@ class Portfolio(Component, TimedIdentifiable):
         return exchanges
 
     @property
-    def ledger(self) -> 'Ledger':
+    def ledger(self) -> "Ledger":
         """The ledger that keeps track of transactions. (`Ledger`, read-only)"""
         return Wallet.ledger
 
     @property
-    def exchange_pairs(self) -> 'List[ExchangePair]':
+    def exchange_pairs(self) -> "list[ExchangePair]":
         """All the exchange pairs in the portfolio. (`List[ExchangePair]`, read-only)"""
         exchange_pairs = []
         for w in self.wallets:
             if w.instrument != self.base_instrument:
-                exchange_pairs += [ExchangePair(w.exchange, self.base_instrument/w.instrument)]
+                exchange_pairs += [ExchangePair(w.exchange, self.base_instrument / w.instrument)]
         return exchange_pairs
 
     @property
-    def initial_balance(self) -> 'Quantity':
+    def initial_balance(self) -> "Quantity":
         """The initial balance of the base instrument over all wallets. (`Quantity`, read-only)"""
         return self._initial_balance
 
     @property
-    def base_balance(self) -> 'Quantity':
+    def base_balance(self) -> "Quantity":
         """The current balance of the base instrument over all wallets. (`Quantity`, read-only)"""
         return self.balance(self.base_instrument)
 
@@ -123,26 +123,26 @@ class Portfolio(Component, TimedIdentifiable):
         return 1.0 - self.net_worth / self.initial_net_worth
 
     @property
-    def performance(self) -> 'OrderedDict':
+    def performance(self) -> "OrderedDict":
         """The performance of the portfolio since the last reset. (`OrderedDict`, read-only)"""
         return self._performance
 
     @property
-    def balances(self) -> 'List[Quantity]':
+    def balances(self) -> "list[Quantity]":
         """The current unlocked balance of each instrument over all wallets. (`List[Quantity]`, read-only)"""
         return [wallet.balance for wallet in self._wallets.values()]
 
     @property
-    def locked_balances(self) -> 'List[Quantity]':
+    def locked_balances(self) -> "list[Quantity]":
         """The current locked balance of each instrument over all wallets. (`List[Quantity]`, read-only)"""
         return [wallet.locked_balance for wallet in self._wallets.values()]
 
     @property
-    def total_balances(self) -> 'List[Quantity]':
+    def total_balances(self) -> "list[Quantity]":
         """The current total balance of each instrument over all wallets. (`List[Quantity]`, read-only)"""
         return [wallet.total_balance for wallet in self._wallets.values()]
 
-    def balance(self, instrument: Instrument) -> 'Quantity':
+    def balance(self, instrument: Instrument) -> "Quantity":
         """Gets the total balance of the portfolio in a specific instrument
         available for use.
 
@@ -164,7 +164,7 @@ class Portfolio(Component, TimedIdentifiable):
 
         return balance
 
-    def locked_balance(self, instrument: Instrument) -> 'Quantity':
+    def locked_balance(self, instrument: Instrument) -> "Quantity":
         """Gets the total balance a specific instrument locked in orders over
         the entire portfolio.
 
@@ -186,7 +186,7 @@ class Portfolio(Component, TimedIdentifiable):
 
         return balance
 
-    def total_balance(self, instrument: Instrument) -> 'Quantity':
+    def total_balance(self, instrument: Instrument) -> "Quantity":
         """Gets the total balance of a specific instrument over the portfolio,
         both available for use and locked in orders.
 
@@ -202,7 +202,7 @@ class Portfolio(Component, TimedIdentifiable):
         """
         return self.balance(instrument) + self.locked_balance(instrument)
 
-    def get_wallet(self, exchange_id: str, instrument: 'Instrument') -> 'Wallet':
+    def get_wallet(self, exchange_id: str, instrument: "Instrument") -> "Wallet":
         """Gets wallet by the `exchange_id` and `instrument`.
 
         Parameters
@@ -231,7 +231,7 @@ class Portfolio(Component, TimedIdentifiable):
             wallet = Wallet.from_tuple(wallet)
         self._wallets[(wallet.exchange.id, wallet.instrument.symbol)] = wallet
 
-    def remove(self, wallet: 'Wallet') -> None:
+    def remove(self, wallet: "Wallet") -> None:
         """Removes a wallet from the portfolio.
 
         Parameters
@@ -241,7 +241,7 @@ class Portfolio(Component, TimedIdentifiable):
         """
         self._wallets.pop((wallet.exchange.id, wallet.instrument.symbol), None)
 
-    def remove_pair(self, exchange: 'Exchange', instrument: 'Instrument') -> None:
+    def remove_pair(self, exchange: "Exchange", instrument: "Instrument") -> None:
         """Removes a wallet from the portfolio by `exchange` and `instrument`.
 
         Parameters
@@ -254,7 +254,7 @@ class Portfolio(Component, TimedIdentifiable):
         self._wallets.pop((exchange.id, instrument.symbol), None)
 
     @staticmethod
-    def _find_keys(data: dict) -> 'List[str]':
+    def _find_keys(data: dict) -> "list[str]":
         """Finds the keys that can attributed to the net worth of the portfolio.
 
         Parameters
@@ -269,18 +269,11 @@ class Portfolio(Component, TimedIdentifiable):
             The list of strings attributed to net worth.
         """
         price_pattern = re.compile("\\w+:/([A-Z]{3,4}).([A-Z]{3,4})")
-        endings = [
-            ":/free",
-            ":/locked",
-            ":/total",
-            "worth"
-        ]
+        endings = [":/free", ":/locked", ":/total", "worth"]
 
         keys = []
-        for k in data.keys():
-            if any(k.endswith(end) for end in endings):
-                keys += [k]
-            elif price_pattern.match(k):
+        for k in data:
+            if any(k.endswith(end) for end in endings) or price_pattern.match(k):
                 keys += [k]
 
         return keys
@@ -301,11 +294,11 @@ class Portfolio(Component, TimedIdentifiable):
 
         index = self.clock.step
         performance_data = {k: data[k] for k in self._keys}
-        performance_data['base_symbol'] = self.base_instrument.symbol
+        performance_data["base_symbol"] = self.base_instrument.symbol
         performance_step = OrderedDict()
         performance_step[index] = performance_data
 
-        net_worth = data['net_worth']
+        net_worth = data["net_worth"]
 
         if self._performance is None:
             self._performance = performance_step

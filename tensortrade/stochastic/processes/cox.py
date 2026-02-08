@@ -19,7 +19,7 @@ from tensortrade.stochastic.processes.brownian_motion import brownian_motion_log
 from tensortrade.stochastic.utils import ModelParameters, generate
 
 
-def cox_ingersoll_ross_levels(params: 'ModelParameters') -> 'np.array':
+def cox_ingersoll_ross_levels(params: "ModelParameters") -> "np.array":
     """
     Constructs the rate levels of a mean-reverting Cox-Ingersoll-Ross process.
 
@@ -53,13 +53,15 @@ def cox_ingersoll_ross_levels(params: 'ModelParameters') -> 'np.array':
     return np.array(levels)
 
 
-def cox(base_price: int = 1,
-        base_volume: int = 1,
-        start_date: str = '2010-01-01',
-        start_date_format: str = '%Y-%m-%d',
-        times_to_generate: int = 1000,
-        time_frame: str = '1h',
-        params: 'ModelParameters' = None) -> 'pd.DataFrame':
+def cox(
+    base_price: int = 1,
+    base_volume: int = 1,
+    start_date: str = "2010-01-01",
+    start_date_format: str = "%Y-%m-%d",
+    times_to_generate: int = 1000,
+    time_frame: str = "1h",
+    params: "ModelParameters" = None,
+) -> "pd.DataFrame":
     """Generates price data from the CIR process.
 
     Parameters
@@ -97,7 +99,7 @@ def cox(base_price: int = 1,
         start_date_format=start_date_format,
         times_to_generate=times_to_generate,
         time_frame=time_frame,
-        params=params
+        params=params,
     )
 
     return data_frame

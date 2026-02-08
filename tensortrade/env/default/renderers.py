@@ -851,7 +851,7 @@ def get(identifier: str) -> 'BaseRenderer':
     KeyError:
         Raised if identifier is not associated with any `BaseRenderer`
     """
-    if identifier not in _registry.keys():
+    if identifier not in _registry:
         msg = f"Identifier {identifier} is not associated with any `BaseRenderer`."
         raise KeyError(msg)
     return _registry[identifier]()

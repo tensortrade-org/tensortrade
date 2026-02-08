@@ -9,10 +9,9 @@ import json
 import os
 import sqlite3
 import uuid
-from dataclasses import dataclass, field, asdict
-from datetime import datetime, timezone
-from pathlib import Path
-from typing import Sequence
+from collections.abc import Sequence
+from dataclasses import asdict, dataclass, field
+from datetime import UTC, datetime
 
 
 @dataclass
@@ -171,7 +170,7 @@ class ExperimentStore:
     ) -> str:
         """Create a new experiment and return its ID."""
         exp_id = str(uuid.uuid4())
-        now = datetime.now(timezone.utc).isoformat()
+        now = datetime.now(UTC).isoformat()
         self._conn.execute(
             """INSERT INTO experiments (id, name, script, status, started_at, config, tags)
                VALUES (?, ?, ?, 'running', ?, ?, ?)""",
@@ -187,7 +186,7 @@ class ExperimentStore:
         final_metrics: dict | None = None,
     ) -> None:
         """Mark an experiment as completed/failed/pruned."""
-        now = datetime.now(timezone.utc).isoformat()
+        now = datetime.now(UTC).isoformat()
         self._conn.execute(
             """UPDATE experiments
                SET status = ?, completed_at = ?, final_metrics = ?
@@ -198,9 +197,7 @@ class ExperimentStore:
 
     def get_experiment(self, experiment_id: str) -> Experiment | None:
         """Retrieve a single experiment by ID."""
-        row = self._conn.execute(
-            "SELECT * FROM experiments WHERE id = ?", (experiment_id,)
-        ).fetchone()
+        row = self._conn.execute("SELECT * FROM experiments WHERE id = ?", (experiment_id,)).fetchone()
         if row is None:
             return None
         return self._row_to_experiment(row)
@@ -235,7 +232,7 @@ class ExperimentStore:
         metrics: dict,
     ) -> None:
         """Log metrics for a training iteration."""
-        now = datetime.now(timezone.utc).isoformat()
+        now = datetime.now(UTC).isoformat()
         self._conn.execute(
             """INSERT INTO iterations (experiment_id, iteration, metrics, timestamp)
                VALUES (?, ?, ?, ?)""",
@@ -243,9 +240,7 @@ class ExperimentStore:
         )
         self._conn.commit()
 
-    def get_iterations(
-        self, experiment_id: str
-    ) -> list[IterationRecord]:
+    def get_iterations(self, experiment_id: str) -> list[IterationRecord]:
         """Get all iterations for an experiment."""
         rows = self._conn.execute(
             """SELECT * FROM iterations WHERE experiment_id = ?
@@ -291,10 +286,7 @@ class ExperimentStore:
         self._conn.executemany(
             """INSERT INTO trades (experiment_id, episode, step, side, price, size, commission)
                VALUES (?, ?, ?, ?, ?, ?, ?)""",
-            [
-                (t.experiment_id, t.episode, t.step, t.side, t.price, t.size, t.commission)
-                for t in trades
-            ],
+            [(t.experiment_id, t.episode, t.step, t.side, t.price, t.size, t.commission) for t in trades],
         )
         self._conn.commit()
 
@@ -383,9 +375,7 @@ class ExperimentStore:
         )
         self._conn.commit()
 
-    def get_optuna_trials(
-        self, study_name: str
-    ) -> list[OptunaTrialRecord]:
+    def get_optuna_trials(self, study_name: str) -> list[OptunaTrialRecord]:
         """Get all trials for a study."""
         rows = self._conn.execute(
             """SELECT * FROM optuna_trials WHERE study_name = ?
@@ -442,10 +432,7 @@ class ExperimentStore:
             }
             if trial.experiment_id:
                 iterations = self.get_iterations(trial.experiment_id)
-                trial_data["iterations"] = [
-                    {"iteration": it.iteration, "metrics": it.metrics}
-                    for it in iterations
-                ]
+                trial_data["iterations"] = [{"iteration": it.iteration, "metrics": it.metrics} for it in iterations]
             results.append(trial_data)
         return results
 
@@ -472,9 +459,7 @@ class ExperimentStore:
         """
         candidates = self._METRIC_ALIASES.get(metric, [metric])
         for candidate in candidates:
-            entries = self._get_leaderboard_for_metric(
-                candidate, script, limit, tags
-            )
+            entries = self._get_leaderboard_for_metric(candidate, script, limit, tags)
             if entries:
                 return entries
         return []
@@ -497,7 +482,7 @@ class ExperimentStore:
         if script:
             query += " AND script = ?"
             params.append(script)
-        query += f" ORDER BY json_extract(final_metrics, ?) DESC LIMIT ?"
+        query += " ORDER BY json_extract(final_metrics, ?) DESC LIMIT ?"
         params.extend([f"$.{metric}", limit])
 
         rows = self._conn.execute(query, params).fetchall()
@@ -524,9 +509,7 @@ class ExperimentStore:
 
     # --- Comparison ---
 
-    def compare_experiments(
-        self, experiment_ids: list[str]
-    ) -> list[dict]:
+    def compare_experiments(self, experiment_ids: list[str]) -> list[dict]:
         """Compare multiple experiments side-by-side."""
         placeholders = ",".join("?" for _ in experiment_ids)
         rows = self._conn.execute(
@@ -537,11 +520,13 @@ class ExperimentStore:
         for row in rows:
             exp = self._row_to_experiment(row)
             iterations = self.get_iterations(exp.id)
-            results.append({
-                "experiment": asdict(exp),
-                "iteration_count": len(iterations),
-                "iterations": [asdict(it) for it in iterations],
-            })
+            results.append(
+                {
+                    "experiment": asdict(exp),
+                    "iteration_count": len(iterations),
+                    "iterations": [asdict(it) for it in iterations],
+                }
+            )
         return results
 
     # --- Insights ---
@@ -558,7 +543,7 @@ class ExperimentStore:
         raw_response: str,
     ) -> None:
         """Store an AI-generated insight."""
-        now = datetime.now(timezone.utc).isoformat()
+        now = datetime.now(UTC).isoformat()
         self._conn.execute(
             """INSERT INTO insights
                (id, experiment_ids, analysis_type, summary, findings,
@@ -580,9 +565,7 @@ class ExperimentStore:
 
     def get_insight(self, insight_id: str) -> dict | None:
         """Retrieve a stored insight."""
-        row = self._conn.execute(
-            "SELECT * FROM insights WHERE id = ?", (insight_id,)
-        ).fetchone()
+        row = self._conn.execute("SELECT * FROM insights WHERE id = ?", (insight_id,)).fetchone()
         if row is None:
             return None
         return {
@@ -703,9 +686,7 @@ class ExperimentStore:
         """).fetchone()
 
         # Total trades count
-        trade_count_row = self._conn.execute(
-            "SELECT COUNT(*) as total_trades FROM trades"
-        ).fetchone()
+        trade_count_row = self._conn.execute("SELECT COUNT(*) as total_trades FROM trades").fetchone()
 
         # Optuna stats
         optuna_row = self._conn.execute("""
@@ -729,7 +710,9 @@ class ExperimentStore:
             "best_pnl_experiment": {
                 "id": best_exp_row["id"],
                 "name": best_exp_row["name"],
-            } if best_exp_row else None,
+            }
+            if best_exp_row
+            else None,
             "best_net_worth": row["best_net_worth"],
             "avg_pnl": round(row["avg_pnl"], 2) if row["avg_pnl"] is not None else None,
             "total_trades": trade_count_row["total_trades"] if trade_count_row else 0,

@@ -10,6 +10,7 @@ import {
 	getHyperparamPacks,
 	updateHyperparamPack,
 } from "@/lib/api";
+import { ACTION_GROUPS, ACTION_SCHEMES, REWARD_SCHEMES, isCompatible } from "@/lib/scheme-compat";
 import type { HyperparameterPack, ModelConfig, TrainingConfig } from "@/lib/types";
 import { useHyperparamStore } from "@/stores/hyperparamStore";
 import { useCallback, useState } from "react";
@@ -486,11 +487,9 @@ export function PackEditor() {
 				<ParamSelect
 					label="Action Scheme"
 					value={config.action_scheme}
-					options={[
-						{ value: "BSH", label: "BSH (Buy/Sell/Hold)" },
-						{ value: "SimpleOrders", label: "Simple Orders" },
-						{ value: "ManagedRiskOrders", label: "Managed Risk Orders" },
-					]}
+					options={ACTION_SCHEMES.map((a) => ({ value: a.value, label: a.label }))}
+					groups={ACTION_GROUPS}
+					optionGroup={(value) => ACTION_SCHEMES.find((a) => a.value === value)?.group}
 					onChange={(v) =>
 						updateEditingConfig("action_scheme", v as TrainingConfig["action_scheme"])
 					}
@@ -499,17 +498,18 @@ export function PackEditor() {
 				<ParamSelect
 					label="Reward Scheme"
 					value={config.reward_scheme}
-					options={[
-						{ value: "SimpleProfit", label: "Simple Profit" },
-						{ value: "RiskAdjustedReturns", label: "Risk-Adjusted Returns" },
-						{ value: "PBR", label: "PBR" },
-						{ value: "AdvancedPBR", label: "Advanced PBR" },
-					]}
+					options={REWARD_SCHEMES.map((r) => ({ value: r.value, label: r.label }))}
 					onChange={(v) =>
 						updateEditingConfig("reward_scheme", v as TrainingConfig["reward_scheme"])
 					}
 					description="Reward calculation scheme"
 				/>
+				{!isCompatible(config.action_scheme, config.reward_scheme) && (
+					<p className="text-xs text-amber-500 mt-1 px-1">
+						{config.reward_scheme} requires Discrete(3) BSH-style actions. {config.action_scheme} is
+						not compatible — use SimpleProfit or RiskAdjustedReturns.
+					</p>
+				)}
 				<ParamSlider
 					label="Commission"
 					value={config.commission}

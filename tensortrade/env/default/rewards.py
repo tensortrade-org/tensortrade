@@ -5,8 +5,7 @@ import numpy as np
 import pandas as pd
 
 from tensortrade.env.generic import RewardScheme, TradingEnv
-from tensortrade.feed.core import Stream, DataFeed
-import math
+from tensortrade.feed.core import DataFeed, Stream
 
 
 class TensorTradeRewardScheme(RewardScheme):
@@ -402,11 +401,170 @@ class AdvancedPBR(TensorTradeRewardScheme):
         }
 
 
+class FractionalPBR(TensorTradeRewardScheme):
+    """Position-based returns for fractional positions (0.0 to 1.0).
+
+    Unlike PBR which tracks a binary position (0=cash, 1=long), this scheme
+    computes the actual position fraction from the portfolio each step.
+    This makes it compatible with ALL action schemes, including Discrete(4)
+    schemes like ScaledEntryBSH and PartialTakeProfitBSH.
+
+    reward = price_diff * prev_position_fraction
+             - |position_change| * price * commission
+
+    Parameters
+    ----------
+    price : `Stream`
+        The price stream to use for computing rewards.
+    commission : float
+        The exchange commission rate. Default 0.003.
+    """
+
+    registered_name = "fractional-pbr"
+
+    def __init__(self, price: 'Stream', commission: float = 0.003) -> None:
+        super().__init__()
+        self.commission = commission
+        self._prev_position_frac = 0.0
+
+        current_price = Stream.sensor(price, lambda p: p.value, dtype="float")
+        price_diff = current_price.diff().fillna(0).rename("price_diff")
+
+        self.feed = DataFeed([price_diff, current_price.rename("current_price")])
+        self.feed.compile()
+
+        self.buy_count = 0
+        self.sell_count = 0
+        self.hold_count = 0
+
+    def on_action(self, action: int) -> None:
+        """Track action for stats only. Position is read from portfolio."""
+        if action == 1:
+            self.buy_count += 1
+        elif action == 2:
+            self.sell_count += 1
+        else:
+            self.hold_count += 1
+
+    def get_reward(self, portfolio: 'Portfolio') -> float:
+        data = self.feed.next()
+        price_diff = data["price_diff"]
+        current_price = data["current_price"]
+
+        # Compute position fraction from portfolio
+        net_worth = portfolio.net_worth
+        if net_worth and net_worth > 0:
+            base_balance = portfolio.base_balance.as_float()
+            position_frac = max(0.0, min(1.0, 1.0 - base_balance / net_worth))
+        else:
+            position_frac = 0.0
+
+        # Reward: price movement weighted by previous position fraction
+        reward = price_diff * self._prev_position_frac
+
+        # Commission penalty proportional to position change
+        position_change = abs(position_frac - self._prev_position_frac)
+        if position_change > 0.001 and current_price > 0:
+            reward -= current_price * self.commission * position_change
+
+        self._prev_position_frac = position_frac
+        return reward
+
+    def get_stats(self) -> dict:
+        """Returns trading statistics for analysis."""
+        return {
+            "trade_count": self.buy_count + self.sell_count,
+            "buy_count": self.buy_count,
+            "sell_count": self.sell_count,
+            "hold_count": self.hold_count,
+        }
+
+    def reset(self) -> None:
+        self._prev_position_frac = 0.0
+        self.buy_count = 0
+        self.sell_count = 0
+        self.hold_count = 0
+        self.feed.reset()
+
+
+class MaxDrawdownPenalty(TensorTradeRewardScheme):
+    """Reward that penalizes drawdown deepening.
+
+    Each step the reward is::
+
+        reward = (net_worth - prev_net_worth) / initial_net_worth
+                 - penalty_weight * max(0, drawdown_t - drawdown_{t-1})
+
+    where ``drawdown_t = (equity_peak - net_worth) / equity_peak``.
+
+    This teaches the agent to avoid letting drawdown deepen, even when net
+    worth is still rising.  Pairs naturally with DrawdownBudgetBSH.
+
+    Compatible with ALL action schemes.
+
+    Parameters
+    ----------
+    penalty_weight : float
+        How strongly to penalize drawdown deepening. Default 2.0.
+    """
+
+    registered_name = "max-drawdown-penalty"
+
+    def __init__(self, penalty_weight: float = 2.0) -> None:
+        super().__init__()
+        self.penalty_weight = penalty_weight
+        self._equity_peak = 0.0
+        self._prev_net_worth = 0.0
+        self._prev_drawdown = 0.0
+        self._initial_net_worth = 0.0
+
+    def get_reward(self, portfolio: 'Portfolio') -> float:
+        net_worth = portfolio.net_worth or 0.0
+
+        # Initialize on first call
+        if self._initial_net_worth == 0.0:
+            self._initial_net_worth = net_worth
+            self._prev_net_worth = net_worth
+            self._equity_peak = net_worth
+            return 0.0
+
+        # Update equity peak
+        self._equity_peak = max(self._equity_peak, net_worth)
+
+        # Current drawdown fraction
+        if self._equity_peak > 0:
+            drawdown = (self._equity_peak - net_worth) / self._equity_peak
+        else:
+            drawdown = 0.0
+
+        # Base reward: normalized net worth change
+        if self._initial_net_worth > 0:
+            reward = (net_worth - self._prev_net_worth) / self._initial_net_worth
+        else:
+            reward = 0.0
+
+        # Drawdown penalty: only when drawdown is deepening
+        drawdown_increase = max(0.0, drawdown - self._prev_drawdown)
+        reward -= self.penalty_weight * drawdown_increase
+
+        self._prev_net_worth = net_worth
+        self._prev_drawdown = drawdown
+        return reward
+
+    def reset(self) -> None:
+        self._equity_peak = 0.0
+        self._prev_net_worth = 0.0
+        self._prev_drawdown = 0.0
+        self._initial_net_worth = 0.0
+
+
 _registry = {
     'simple': SimpleProfit,
     'risk-adjusted': RiskAdjustedReturns,
     'pbr': PBR,
     'advanced-pbr': AdvancedPBR,
+    'fractional-pbr': FractionalPBR,
+    'max-drawdown-penalty': MaxDrawdownPenalty,
 }
 
 
@@ -428,7 +586,7 @@ def get(identifier: str) -> 'TensorTradeRewardScheme':
     KeyError:
         Raised if identifier is not associated with any `RewardScheme`
     """
-    if identifier not in _registry.keys():
+    if identifier not in _registry:
         msg = f"Identifier {identifier} is not associated with any `RewardScheme`."
         raise KeyError(msg)
     return _registry[identifier]()

@@ -8,7 +8,7 @@ import os
 import sqlite3
 import uuid
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 
 @dataclass
@@ -170,13 +170,11 @@ class HyperparameterStore:
 
     def _seed_defaults(self) -> None:
         """Seed default packs if table is empty."""
-        count = self._conn.execute(
-            "SELECT COUNT(*) FROM hyperparameter_packs"
-        ).fetchone()[0]
+        count = self._conn.execute("SELECT COUNT(*) FROM hyperparameter_packs").fetchone()[0]
         if count > 0:
             return
 
-        now = datetime.now(timezone.utc).isoformat()
+        now = datetime.now(UTC).isoformat()
         for seed in SEED_PACKS:
             pack_id = str(uuid.uuid4())
             self._conn.execute(
@@ -202,7 +200,7 @@ class HyperparameterStore:
     ) -> str:
         """Create a new hyperparameter pack. Returns the new pack ID."""
         pack_id = str(uuid.uuid4())
-        now = datetime.now(timezone.utc).isoformat()
+        now = datetime.now(UTC).isoformat()
         self._conn.execute(
             """INSERT INTO hyperparameter_packs
                (id, name, description, config, created_at, updated_at)
@@ -214,27 +212,21 @@ class HyperparameterStore:
 
     def get_pack(self, pack_id: str) -> HyperparameterPack | None:
         """Retrieve a single pack by ID."""
-        row = self._conn.execute(
-            "SELECT * FROM hyperparameter_packs WHERE id = ?", (pack_id,)
-        ).fetchone()
+        row = self._conn.execute("SELECT * FROM hyperparameter_packs WHERE id = ?", (pack_id,)).fetchone()
         if row is None:
             return None
         return self._row_to_pack(row)
 
     def get_pack_by_name(self, name: str) -> HyperparameterPack | None:
         """Retrieve a pack by name."""
-        row = self._conn.execute(
-            "SELECT * FROM hyperparameter_packs WHERE name = ?", (name,)
-        ).fetchone()
+        row = self._conn.execute("SELECT * FROM hyperparameter_packs WHERE name = ?", (name,)).fetchone()
         if row is None:
             return None
         return self._row_to_pack(row)
 
     def list_packs(self) -> list[HyperparameterPack]:
         """List all hyperparameter packs ordered by name."""
-        rows = self._conn.execute(
-            "SELECT * FROM hyperparameter_packs ORDER BY name"
-        ).fetchall()
+        rows = self._conn.execute("SELECT * FROM hyperparameter_packs ORDER BY name").fetchall()
         return [self._row_to_pack(r) for r in rows]
 
     def update_pack(
@@ -249,7 +241,7 @@ class HyperparameterStore:
         if existing is None:
             return False
 
-        now = datetime.now(timezone.utc).isoformat()
+        now = datetime.now(UTC).isoformat()
         new_name = name if name is not None else existing.name
         new_desc = description if description is not None else existing.description
         new_config = config if config is not None else existing.config
@@ -265,9 +257,7 @@ class HyperparameterStore:
 
     def delete_pack(self, pack_id: str) -> bool:
         """Delete a pack. Returns True if deleted, False if not found."""
-        cursor = self._conn.execute(
-            "DELETE FROM hyperparameter_packs WHERE id = ?", (pack_id,)
-        )
+        cursor = self._conn.execute("DELETE FROM hyperparameter_packs WHERE id = ?", (pack_id,))
         self._conn.commit()
         return cursor.rowcount > 0
 

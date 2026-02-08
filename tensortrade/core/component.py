@@ -1,10 +1,10 @@
-
 from abc import ABC, ABCMeta
 from typing import Any
 
-from . import registry
-from tensortrade.core.context import TradingContext, Context
 from tensortrade.core.base import Identifiable
+from tensortrade.core.context import Context, TradingContext
+
+from . import registry
 
 
 class InitContextMeta(ABCMeta):
@@ -15,7 +15,7 @@ class InitContextMeta(ABCMeta):
     subclassed `Component`.
     """
 
-    def __call__(cls, *args, **kwargs) -> 'InitContextMeta':
+    def __call__(cls, *args, **kwargs) -> "InitContextMeta":
         """
 
         Parameters
@@ -37,13 +37,13 @@ class InitContextMeta(ABCMeta):
         config = {**context.shared, **data}
 
         instance = cls.__new__(cls, *args, **kwargs)
-        setattr(instance, 'context', Context(**config))
+        setattr(instance, "context", Context(**config))
         instance.__init__(*args, **kwargs)
 
         return instance
 
 
-class ContextualizedMixin(object):
+class ContextualizedMixin:
     """A mixin that is to be mixed with any class that must function in a
     contextual setting.
     """

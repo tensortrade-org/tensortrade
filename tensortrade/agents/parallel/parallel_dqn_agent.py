@@ -13,12 +13,12 @@
 # limitations under the License
 
 
-from deprecated import deprecated
-import time
-import numpy as np
 import multiprocessing as mp
+import time
+from collections.abc import Callable
 
-from typing import Callable
+import numpy as np
+from deprecated import deprecated
 
 from tensortrade.agents import Agent
 from tensortrade.agents.parallel.parallel_dqn_model import ParallelDQNModel
@@ -27,12 +27,11 @@ from tensortrade.agents.parallel.parallel_dqn_trainer import ParallelDQNTrainer
 from tensortrade.agents.parallel.parallel_queue import ParallelQueue
 
 
-@deprecated(version='1.0.4', reason="Builtin agents are being deprecated in favor of external implementations (ie: Ray)")
+@deprecated(
+    version="1.0.4", reason="Builtin agents are being deprecated in favor of external implementations (ie: Ray)"
+)
 class ParallelDQNAgent(Agent):
-
-    def __init__(self,
-                 create_env: Callable[[None], 'TradingEnvironment'],
-                 model: ParallelDQNModel = None):
+    def __init__(self, create_env: Callable[[None], "TradingEnvironment"], model: ParallelDQNModel = None):
         self.create_env = create_env
         self.model = model or ParallelDQNModel(create_env=self.create_env)
 
@@ -45,107 +44,124 @@ class ParallelDQNAgent(Agent):
     def get_action(self, state: np.ndarray, **kwargs) -> int:
         return self.model.get_action(state, **kwargs)
 
-    def update_networks(self, model: 'ParallelDQNModel'):
+    def update_networks(self, model: "ParallelDQNModel"):
         self.model.update_networks(model)
 
     def update_target_network(self):
         self.model.update_target_network()
 
-    def _start_trainer_process(self,
-                               create_env,
-                               memory_queue,
-                               model_update_queue,
-                               done_queue,
-                               n_steps,
-                               n_episodes,
-                               eps_start,
-                               eps_end,
-                               eps_decay_steps,
-                               update_target_every):
-        trainer_process = ParallelDQNTrainer(self,
-                                             create_env,
-                                             memory_queue,
-                                             model_update_queue,
-                                             done_queue,
-                                             n_steps,
-                                             n_episodes,
-                                             eps_start,
-                                             eps_end,
-                                             eps_decay_steps,
-                                             update_target_every)
+    def _start_trainer_process(
+        self,
+        create_env,
+        memory_queue,
+        model_update_queue,
+        done_queue,
+        n_steps,
+        n_episodes,
+        eps_start,
+        eps_end,
+        eps_decay_steps,
+        update_target_every,
+    ):
+        trainer_process = ParallelDQNTrainer(
+            self,
+            create_env,
+            memory_queue,
+            model_update_queue,
+            done_queue,
+            n_steps,
+            n_episodes,
+            eps_start,
+            eps_end,
+            eps_decay_steps,
+            update_target_every,
+        )
 
         trainer_process.start()
 
         return trainer_process
 
-    def _start_optimizer_process(self,
-                                 model,
-                                 n_envs,
-                                 memory_queue,
-                                 model_update_queue,
-                                 done_queue,
-                                 discount_factor,
-                                 batch_size,
-                                 learning_rate,
-                                 memory_capacity):
-        optimizer_process = ParallelDQNOptimizer(model,
-                                                 n_envs,
-                                                 memory_queue,
-                                                 model_update_queue,
-                                                 done_queue,
-                                                 discount_factor,
-                                                 batch_size,
-                                                 learning_rate,
-                                                 memory_capacity)
+    def _start_optimizer_process(
+        self,
+        model,
+        n_envs,
+        memory_queue,
+        model_update_queue,
+        done_queue,
+        discount_factor,
+        batch_size,
+        learning_rate,
+        memory_capacity,
+    ):
+        optimizer_process = ParallelDQNOptimizer(
+            model,
+            n_envs,
+            memory_queue,
+            model_update_queue,
+            done_queue,
+            discount_factor,
+            batch_size,
+            learning_rate,
+            memory_capacity,
+        )
 
         optimizer_process.daemon = True
         optimizer_process.start()
 
         return optimizer_process
 
-    def train(self,
-              n_steps: int = None,
-              n_episodes: int = None,
-              save_every: int = None,
-              save_path: str = None,
-              callback: callable = None,
-              **kwargs) -> float:
-        n_envs: int = kwargs.get('n_envs', mp.cpu_count())
-        batch_size: int = kwargs.get('batch_size', 128)
-        discount_factor: float = kwargs.get('discount_factor', 0.9999)
-        learning_rate: float = kwargs.get('learning_rate', 0.0001)
-        eps_start: float = kwargs.get('eps_start', 0.9)
-        eps_end: float = kwargs.get('eps_end', 0.05)
-        eps_decay_steps: int = kwargs.get('eps_decay_steps', 2000)
-        update_target_every: int = kwargs.get('update_target_every', 1000)
-        memory_capacity: int = kwargs.get('memory_capacity', 10000)
+    def train(
+        self,
+        n_steps: int = None,
+        n_episodes: int = None,
+        save_every: int = None,
+        save_path: str = None,
+        callback: callable = None,
+        **kwargs,
+    ) -> float:
+        n_envs: int = kwargs.get("n_envs", mp.cpu_count())
+        batch_size: int = kwargs.get("batch_size", 128)
+        discount_factor: float = kwargs.get("discount_factor", 0.9999)
+        learning_rate: float = kwargs.get("learning_rate", 0.0001)
+        eps_start: float = kwargs.get("eps_start", 0.9)
+        eps_end: float = kwargs.get("eps_end", 0.05)
+        eps_decay_steps: int = kwargs.get("eps_decay_steps", 2000)
+        update_target_every: int = kwargs.get("update_target_every", 1000)
+        memory_capacity: int = kwargs.get("memory_capacity", 10000)
 
         memory_queue = ParallelQueue()
         model_update_queue = ParallelQueue()
         done_queue = ParallelQueue()
 
-        print('====      AGENT ID: {}      ===='.format(self.id))
+        print(f"====      AGENT ID: {self.id}      ====")
 
-        trainers = [self._start_trainer_process(self.create_env,
-                                                memory_queue,
-                                                model_update_queue,
-                                                done_queue,
-                                                n_steps,
-                                                n_episodes,
-                                                eps_start,
-                                                eps_end,
-                                                eps_decay_steps,
-                                                update_target_every) for _ in range(n_envs)]
+        trainers = [
+            self._start_trainer_process(
+                self.create_env,
+                memory_queue,
+                model_update_queue,
+                done_queue,
+                n_steps,
+                n_episodes,
+                eps_start,
+                eps_end,
+                eps_decay_steps,
+                update_target_every,
+            )
+            for _ in range(n_envs)
+        ]
 
-        self._start_optimizer_process(self.model,
-                                      n_envs,
-                                      memory_queue,
-                                      model_update_queue,
-                                      done_queue,
-                                      discount_factor,
-                                      batch_size,
-                                      learning_rate,
-                                      memory_capacity)
+        self._start_optimizer_process(
+            self.model,
+            n_envs,
+            memory_queue,
+            model_update_queue,
+            done_queue,
+            discount_factor,
+            batch_size,
+            learning_rate,
+            memory_capacity,
+        )
 
         while done_queue.qsize() < n_envs:
             time.sleep(5)

@@ -1,4 +1,3 @@
-
 import unittest.mock as mock
 
 from tensortrade.oms.orders.criteria import Timed
@@ -10,8 +9,8 @@ def test_init():
     assert criteria.duration == 8
 
 
-@mock.patch('tensortrade.exchanges.Exchange')
-@mock.patch('tensortrade.orders.Order')
+@mock.patch("tensortrade.exchanges.Exchange")
+@mock.patch("tensortrade.orders.Order")
 def test_call(mock_order_class, mock_exchange_class):
 
     exchange = mock_exchange_class.return_value

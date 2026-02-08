@@ -1,6 +1,6 @@
 """Tests for TrainingLauncher."""
 
-from unittest.mock import MagicMock, PropertyMock
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -60,7 +60,6 @@ class TestLaunchResolvesConfig:
         ds_store.get_config.return_value = _make_dataset_config()
 
         # Mock subprocess to avoid actually spawning processes
-        import subprocess
         from unittest.mock import patch
 
         mock_process = MagicMock()
@@ -79,12 +78,9 @@ class TestLaunchResolvesConfig:
 
     def test_launch_merges_overrides(self, launcher, mock_stores):
         _, hp_store, ds_store = mock_stores
-        hp_store.get_pack.return_value = _make_hp_pack(
-            config={"algorithm": "PPO", "learning_rate": 5e-5}
-        )
+        hp_store.get_pack.return_value = _make_hp_pack(config={"algorithm": "PPO", "learning_rate": 5e-5})
         ds_store.get_config.return_value = _make_dataset_config()
 
-        import subprocess
         from unittest.mock import patch
 
         mock_process = MagicMock()

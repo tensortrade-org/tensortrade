@@ -14,38 +14,30 @@
 
 """Tests for RLlib checkpoint save/restore functionality."""
 
-import os
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 import pytest
 
-from tensortrade.feed.core import DataFeed, Stream
-from tensortrade.oms.exchanges import Exchange, ExchangeOptions
-from tensortrade.oms.instruments import USD, BTC
-from tensortrade.oms.services.execution.simulated import execute_order
-from tensortrade.oms.wallets import Portfolio, Wallet
+import tensortrade.env.default as default
 from tensortrade.env.default.actions import BSH
 from tensortrade.env.default.rewards import PBR
-import tensortrade.env.default as default
+from tensortrade.feed.core import DataFeed, Stream
+from tensortrade.oms.exchanges import Exchange, ExchangeOptions
+from tensortrade.oms.instruments import BTC, USD
+from tensortrade.oms.services.execution.simulated import execute_order
+from tensortrade.oms.wallets import Portfolio, Wallet
 
 
 def create_env(config: dict):
     """Create a TensorTrade environment from config."""
-    data = pd.read_csv(
-        filepath_or_buffer=config["csv_filename"],
-        parse_dates=['date']
-    ).bfill().ffill()
+    data = pd.read_csv(filepath_or_buffer=config["csv_filename"], parse_dates=["date"]).bfill().ffill()
 
     commission = config.get("commission", 0.001)
     price = Stream.source(list(data["close"]), dtype="float").rename("USD-BTC")
     exchange_options = ExchangeOptions(commission=commission)
-    exchange = Exchange(
-        "exchange",
-        service=execute_order,
-        options=exchange_options
-    )(price)
+    exchange = Exchange("exchange", service=execute_order, options=exchange_options)(price)
 
     initial_cash = config.get("initial_cash", 10000)
     cash = Wallet(exchange, initial_cash * USD)
@@ -53,8 +45,7 @@ def create_env(config: dict):
     portfolio = Portfolio(USD, [cash, asset])
 
     features = [
-        Stream.source(list(data[c]), dtype="float").rename(c)
-        for c in ['open', 'high', 'low', 'close', 'volume']
+        Stream.source(list(data[c]), dtype="float").rename(c) for c in ["open", "high", "low", "close", "volume"]
     ]
     feed = DataFeed(features)
     feed.compile()
@@ -68,7 +59,7 @@ def create_env(config: dict):
         action_scheme=action_scheme,
         reward_scheme=reward_scheme,
         window_size=config.get("window_size", 10),
-        max_allowed_loss=config.get("max_allowed_loss", 0.5)
+        max_allowed_loss=config.get("max_allowed_loss", 0.5),
     )
 
     return env
@@ -79,12 +70,10 @@ def create_env(config: dict):
 class TestCheckpoint:
     """Tests for checkpoint save and restore."""
 
-    def test_checkpoint_save_creates_files(
-        self, minimal_env_config: dict, ray_session, tmp_path: Path
-    ):
+    def test_checkpoint_save_creates_files(self, minimal_env_config: dict, ray_session, tmp_path: Path):
         """Saving a checkpoint creates checkpoint files."""
-        from ray.tune.registry import register_env
         from ray.rllib.algorithms.ppo import PPOConfig
+        from ray.tune.registry import register_env
 
         register_env("TradingEnv", create_env)
 
@@ -118,12 +107,10 @@ class TestCheckpoint:
         assert checkpoint_result is not None
         assert checkpoint_result.checkpoint is not None
 
-    def test_checkpoint_restore_loads_algorithm(
-        self, minimal_env_config: dict, ray_session, tmp_path: Path
-    ):
+    def test_checkpoint_restore_loads_algorithm(self, minimal_env_config: dict, ray_session, tmp_path: Path):
         """Restoring from checkpoint loads the algorithm correctly."""
-        from ray.tune.registry import register_env
         from ray.rllib.algorithms.ppo import PPO, PPOConfig
+        from ray.tune.registry import register_env
 
         register_env("TradingEnv", create_env)
 
@@ -161,12 +148,10 @@ class TestCheckpoint:
 
         restored_algo.stop()
 
-    def test_restored_algo_computes_actions(
-        self, minimal_env_config: dict, ray_session, tmp_path: Path
-    ):
+    def test_restored_algo_computes_actions(self, minimal_env_config: dict, ray_session, tmp_path: Path):
         """Restored algorithm can compute actions."""
-        from ray.tune.registry import register_env
         from ray.rllib.algorithms.ppo import PPO, PPOConfig
+        from ray.tune.registry import register_env
 
         register_env("TradingEnv", create_env)
 
@@ -217,12 +202,10 @@ class TestCheckpoint:
 class TestLSTMCheckpoint:
     """Tests for LSTM model checkpoint save/restore."""
 
-    def test_lstm_checkpoint_restore(
-        self, minimal_env_config: dict, ray_session, tmp_path: Path
-    ):
+    def test_lstm_checkpoint_restore(self, minimal_env_config: dict, ray_session, tmp_path: Path):
         """LSTM model checkpoint can be saved and restored."""
-        from ray.tune.registry import register_env
         from ray.rllib.algorithms.ppo import PPO, PPOConfig
+        from ray.tune.registry import register_env
 
         register_env("TradingEnv", create_env)
 
@@ -265,9 +248,7 @@ class TestLSTMCheckpoint:
         lstm_cell_size = 64
         state = [np.zeros(lstm_cell_size), np.zeros(lstm_cell_size)]
 
-        action, state_out, _ = restored_algo.compute_single_action(
-            obs, state=state, full_fetch=True
-        )
+        action, state_out, _ = restored_algo.compute_single_action(obs, state=state, full_fetch=True)
 
         assert action is not None
         assert state_out is not None

@@ -13,27 +13,31 @@
 # limitations under the License
 
 
-from deprecated import deprecated
-import tensorflow as tf
-
 from multiprocessing import Process, Queue
 
-from tensortrade.agents import ReplayMemory, DQNTransition
+import tensorflow as tf
+from deprecated import deprecated
+
+from tensortrade.agents import DQNTransition, ReplayMemory
 
 
-@deprecated(version='1.0.4', reason="Builtin agents are being deprecated in favor of external implementations (ie: Ray)")
+@deprecated(
+    version="1.0.4", reason="Builtin agents are being deprecated in favor of external implementations (ie: Ray)"
+)
 class ParallelDQNOptimizer(Process):
-    def __init__(self,
-                 model: 'ParallelDQNModel',
-                 n_envs: int,
-                 memory_queue: Queue,
-                 model_update_queue: Queue,
-                 done_queue: Queue,
-                 discount_factor: float = 0.9999,
-                 batch_size: int = 128,
-                 #learning_rate: float = 0.0001,
-                 learning_rate: float = 0.001,
-                 memory_capacity: int = 10000):
+    def __init__(
+        self,
+        model: "ParallelDQNModel",
+        n_envs: int,
+        memory_queue: Queue,
+        model_update_queue: Queue,
+        done_queue: Queue,
+        discount_factor: float = 0.9999,
+        batch_size: int = 128,
+        # learning_rate: float = 0.0001,
+        learning_rate: float = 0.001,
+        memory_capacity: int = 10000,
+    ):
         super().__init__()
 
         self.model = model
@@ -50,7 +54,7 @@ class ParallelDQNOptimizer(Process):
         memory = ReplayMemory(self.memory_capacity, transition_type=DQNTransition)
 
         # Optimization strategy.
-        #optimizer = tf.keras.optimizers.Adam(learning_rate=self.learning_rate)
+        # optimizer = tf.keras.optimizers.Adam(learning_rate=self.learning_rate)
         optimizer = tf.keras.optimizers.Nadam(learning_rate=self.learning_rate)
 
         loss_fn = tf.keras.losses.Huber()
@@ -74,19 +78,16 @@ class ParallelDQNOptimizer(Process):
 
             with tf.GradientTape() as tape:
                 state_action_values = tf.math.reduce_sum(
-                    self.model.policy_network(state_batch) *
-                    tf.one_hot(action_batch, self.model.n_actions),
-                    axis=1
+                    self.model.policy_network(state_batch) * tf.one_hot(action_batch, self.model.n_actions), axis=1
                 )
 
                 next_state_values = tf.where(
                     done_batch,
                     tf.zeros(self.batch_size),
-                    tf.math.reduce_max(self.model.target_network(next_state_batch), axis=1)
+                    tf.math.reduce_max(self.model.target_network(next_state_batch), axis=1),
                 )
 
-                expected_state_action_values = reward_batch + \
-                    (self.discount_factor * next_state_values)
+                expected_state_action_values = reward_batch + (self.discount_factor * next_state_values)
                 loss_value = loss_fn(expected_state_action_values, state_action_values)
 
             variables = self.model.policy_network.trainable_variables

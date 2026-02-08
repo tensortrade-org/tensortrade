@@ -1,6 +1,6 @@
 """Tests for Training Launch API endpoints."""
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 from starlette.testclient import TestClient
@@ -12,9 +12,9 @@ from tensortrade.api.server import create_app
 def stores(tmp_path):
     db_path = str(tmp_path / "test_launch.db")
 
+    from tensortrade.training.dataset_store import DatasetStore
     from tensortrade.training.experiment_store import ExperimentStore
     from tensortrade.training.hyperparameter_store import HyperparameterStore
-    from tensortrade.training.dataset_store import DatasetStore
 
     exp_store = ExperimentStore(db_path=db_path)
     hp_store = HyperparameterStore(db_path=db_path)
@@ -60,12 +60,15 @@ def client(stores, mock_launcher):
 
 class TestLaunchTraining:
     def test_launch_training(self, client, mock_launcher):
-        resp = client.post("/api/training/launch", json={
-            "name": "Test Launch",
-            "hp_pack_id": "hp-123",
-            "dataset_id": "ds-456",
-            "tags": ["test"],
-        })
+        resp = client.post(
+            "/api/training/launch",
+            json={
+                "name": "Test Launch",
+                "hp_pack_id": "hp-123",
+                "dataset_id": "ds-456",
+                "tags": ["test"],
+            },
+        )
         assert resp.status_code == 200
         data = resp.json()
         assert data["experiment_id"] == "test-launched-exp-id"
@@ -80,31 +83,40 @@ class TestLaunchTraining:
         )
 
     def test_launch_training_with_overrides(self, client, mock_launcher):
-        resp = client.post("/api/training/launch", json={
-            "name": "Override Launch",
-            "hp_pack_id": "hp-123",
-            "dataset_id": "ds-456",
-            "tags": [],
-            "overrides": {"learning_rate": 1e-3},
-        })
+        resp = client.post(
+            "/api/training/launch",
+            json={
+                "name": "Override Launch",
+                "hp_pack_id": "hp-123",
+                "dataset_id": "ds-456",
+                "tags": [],
+                "overrides": {"learning_rate": 1e-3},
+            },
+        )
         assert resp.status_code == 200
         data = resp.json()
         assert data["status"] == "launched"
 
     def test_launch_training_missing_fields(self, client):
-        resp = client.post("/api/training/launch", json={
-            "name": "Incomplete",
-        })
+        resp = client.post(
+            "/api/training/launch",
+            json={
+                "name": "Incomplete",
+            },
+        )
         data = resp.json()
         assert "error" in data
 
     def test_launch_training_value_error(self, client, mock_launcher):
         mock_launcher.launch.side_effect = ValueError("HP pack not found")
-        resp = client.post("/api/training/launch", json={
-            "name": "Bad Launch",
-            "hp_pack_id": "bad-hp",
-            "dataset_id": "ds-456",
-        })
+        resp = client.post(
+            "/api/training/launch",
+            json={
+                "name": "Bad Launch",
+                "hp_pack_id": "bad-hp",
+                "dataset_id": "ds-456",
+            },
+        )
         data = resp.json()
         assert "error" in data
         assert "HP pack not found" in data["error"]

@@ -11,18 +11,18 @@ import asyncio
 import json
 import logging
 import os
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from dataclasses import asdict
-from typing import AsyncGenerator
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Query
+from fastapi import FastAPI, Query, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 
-from tensortrade.training.experiment_store import ExperimentStore
-from tensortrade.training.hyperparameter_store import HyperparameterStore
 from tensortrade.training.dataset_store import DatasetStore
+from tensortrade.training.experiment_store import ExperimentStore
 from tensortrade.training.feature_engine import FeatureEngine
+from tensortrade.training.hyperparameter_store import HyperparameterStore
 from tensortrade.training.launcher import TrainingLauncher
 
 logger = logging.getLogger(__name__)
@@ -188,9 +188,7 @@ def _register_routes(app: FastAPI) -> None:
         offset: int = Query(default=0, ge=0),
     ) -> list[dict]:
         store = _get_store()
-        experiments = store.list_experiments(
-            script=script, status=status, limit=limit, offset=offset
-        )
+        experiments = store.list_experiments(script=script, status=status, limit=limit, offset=offset)
         return [asdict(e) for e in experiments]
 
     @app.get("/api/experiments/{experiment_id}")
@@ -213,9 +211,7 @@ def _register_routes(app: FastAPI) -> None:
         offset: int = Query(default=0, ge=0),
     ) -> list[dict]:
         store = _get_store()
-        trades = store.get_trades(
-            experiment_id, episode=episode, limit=limit, offset=offset
-        )
+        trades = store.get_trades(experiment_id, episode=episode, limit=limit, offset=offset)
         return [asdict(t) for t in trades]
 
     # --- REST: Leaderboard ---
@@ -306,12 +302,14 @@ def _register_routes(app: FastAPI) -> None:
 
         experiment_id = body.get("experiment_id")
         use_random_agent = body.get("use_random_agent", True)
+        dataset_id = body.get("dataset_id")
         if not experiment_id:
             return {"error": "experiment_id is required"}
 
         store = _get_store()
-        runner = InferenceRunner(store, _manager)
-        asyncio.create_task(runner.run_episode(experiment_id, use_random_agent))
+        ds_store = _get_ds_store()
+        runner = InferenceRunner(store, _manager, ds_store)
+        asyncio.create_task(runner.run_episode(experiment_id, use_random_agent, dataset_id))
         return {"status": "started"}
 
     # --- REST: Insights ---
@@ -366,8 +364,10 @@ def _register_routes(app: FastAPI) -> None:
         store = _get_store()
         api_key = os.environ.get("ANTHROPIC_API_KEY")
         if not api_key:
+
             async def _error_gen() -> AsyncGenerator[str, None]:
                 yield f"event: error\ndata: {json.dumps({'error': 'ANTHROPIC_API_KEY not set'})}\n\n"
+
             return StreamingResponse(
                 _error_gen(),
                 media_type="text/event-stream",
@@ -376,8 +376,10 @@ def _register_routes(app: FastAPI) -> None:
 
         analysis_type = body.get("analysis_type", "experiment")
         if analysis_type != "campaign_analysis":
+
             async def _unsupported_gen() -> AsyncGenerator[str, None]:
                 yield f"event: error\ndata: {json.dumps({'error': f'Streaming not supported for type: {analysis_type}'})}\n\n"
+
             return StreamingResponse(
                 _unsupported_gen(),
                 media_type="text/event-stream",
@@ -386,8 +388,10 @@ def _register_routes(app: FastAPI) -> None:
 
         study_name = body.get("study_name")
         if not study_name:
+
             async def _missing_gen() -> AsyncGenerator[str, None]:
                 yield f"event: error\ndata: {json.dumps({'error': 'study_name required for campaign analysis'})}\n\n"
+
             return StreamingResponse(
                 _missing_gen(),
                 media_type="text/event-stream",
@@ -435,9 +439,7 @@ def _register_routes(app: FastAPI) -> None:
         offset: int = Query(default=0, ge=0),
     ) -> list[dict]:
         store = _get_store()
-        return store.get_all_trades(
-            limit=limit, offset=offset, experiment_id=experiment_id, side=side
-        )
+        return store.get_all_trades(limit=limit, offset=offset, experiment_id=experiment_id, side=side)
 
     # --- REST: Hyperparameter Packs ---
 
@@ -582,6 +584,7 @@ def _register_routes(app: FastAPI) -> None:
             # Load sample data based on source type
             if ds.source_type == "crypto_download":
                 from tensortrade.data.cdd import CryptoDataDownload
+
                 cdd = CryptoDataDownload()
                 data = cdd.fetch(
                     ds.source_config.get("exchange", "Bitfinex"),
@@ -592,6 +595,7 @@ def _register_routes(app: FastAPI) -> None:
                 data = data[["date", "open", "high", "low", "close", "volume"]]
             elif ds.source_type == "synthetic":
                 from tensortrade.stochastic.processes.gbm import gbm
+
                 data = gbm(
                     base_price=ds.source_config.get("base_price", 50000),
                     base_volume=ds.source_config.get("base_volume", 1000),
@@ -774,9 +778,11 @@ def _register_routes(app: FastAPI) -> None:
                     pass
         except WebSocketDisconnect:
             _manager.disconnect_training(ws)
-            await _manager.broadcast_to_dashboards({
-                "type": "training_disconnected",
-            })
+            await _manager.broadcast_to_dashboards(
+                {
+                    "type": "training_disconnected",
+                }
+            )
 
 
 def _correlation(x: list[float], y: list[float]) -> float:

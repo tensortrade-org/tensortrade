@@ -1,5 +1,4 @@
-
-from typing import List, Callable
+from collections.abc import Callable
 
 
 class Methods:
@@ -19,7 +18,7 @@ class Methods:
         return cls(stream)
 
     @classmethod
-    def register_method(cls, func: Callable, names: "List[str]"):
+    def register_method(cls, func: Callable, names: "list[str]"):
         """Injects an accessor into a specific stream instance.
 
         Parameters
@@ -29,9 +28,11 @@ class Methods:
         names : `List[str]`
             The names to be given to the function.
         """
+
         def method(self, *args, **kwargs):
             args = (self.stream,) + args
             return func(*args, **kwargs)
+
         for name in names:
             setattr(cls, name, method)
         return method

@@ -1,24 +1,22 @@
-
-import pytest
 import unittest.mock as mock
-
 from decimal import Decimal
 
-from tensortrade.oms.orders import OrderListener, Order, TradeType, TradeSide
-from tensortrade.oms.instruments import USD, BTC, ExchangePair
-from tensortrade.oms.wallets import Wallet, Portfolio
+import pytest
+
 from tensortrade.oms.exchanges import ExchangeOptions
+from tensortrade.oms.instruments import BTC, USD, ExchangePair
+from tensortrade.oms.orders import Order, OrderListener, TradeSide, TradeType
+from tensortrade.oms.wallets import Portfolio, Wallet
 
 
 @pytest.fixture
 def execute_listener():
 
     class ExecuteListener(OrderListener):
-
         def __init__(self):
             self.listened = False
 
-        def on_execute(self, order: 'Order'):
+        def on_execute(self, order: "Order"):
             self.listened = True
 
     return ExecuteListener()
@@ -28,11 +26,10 @@ def execute_listener():
 def fill_listener():
 
     class FillListener(OrderListener):
-
         def __init__(self):
             self.listened = False
 
-        def on_fill(self, order: 'Order', trade: 'Trade'):
+        def on_fill(self, order: "Order", trade: "Trade"):
             self.listened = True
 
     return FillListener()
@@ -42,11 +39,10 @@ def fill_listener():
 def complete_listener():
 
     class CompleteListener(OrderListener):
-
         def __init__(self):
             self.listened = False
 
-        def on_complete(self, order: 'Order'):
+        def on_complete(self, order: "Order"):
             self.listened = True
 
     return CompleteListener()
@@ -56,11 +52,10 @@ def complete_listener():
 def cancel_listener():
 
     class CancelListener(OrderListener):
-
         def __init__(self):
             self.listened = False
 
-        def on_cancel(self, order: 'Order'):
+        def on_cancel(self, order: "Order"):
             self.listened = True
 
     return CancelListener()
@@ -80,13 +75,15 @@ def test_on_execute(mock_exchange_class, execute_listener):
     wallets = [Wallet(exchange, 10000 * USD), Wallet(exchange, 0 * BTC)]
     portfolio = Portfolio(USD, wallets)
 
-    order = Order(step=0,
-                  exchange_pair=ExchangePair(exchange, USD / BTC),
-                  side=TradeSide.BUY,
-                  trade_type=TradeType.MARKET,
-                  quantity=5200.00 * USD,
-                  portfolio=portfolio,
-                  price=Decimal(7000.00))
+    order = Order(
+        step=0,
+        exchange_pair=ExchangePair(exchange, USD / BTC),
+        side=TradeSide.BUY,
+        trade_type=TradeType.MARKET,
+        quantity=5200.00 * USD,
+        portfolio=portfolio,
+        price=Decimal(7000.00),
+    )
 
     order.attach(execute_listener)
 
@@ -109,13 +106,15 @@ def test_on_cancel(mock_exchange_class, cancel_listener):
     wallets = [Wallet(exchange, 10000 * USD), Wallet(exchange, 0 * BTC)]
     portfolio = Portfolio(USD, wallets)
 
-    order = Order(step=0,
-                  exchange_pair=ExchangePair(exchange, USD / BTC),
-                  side=TradeSide.BUY,
-                  trade_type=TradeType.MARKET,
-                  quantity=5200.00 * USD,
-                  portfolio=portfolio,
-                  price=Decimal(7000.00))
+    order = Order(
+        step=0,
+        exchange_pair=ExchangePair(exchange, USD / BTC),
+        side=TradeSide.BUY,
+        trade_type=TradeType.MARKET,
+        quantity=5200.00 * USD,
+        portfolio=portfolio,
+        price=Decimal(7000.00),
+    )
 
     order.attach(cancel_listener)
 
@@ -139,13 +138,15 @@ def test_on_fill(mock_trade_class, mock_exchange_class, fill_listener):
     wallets = [Wallet(exchange, 10000 * USD), Wallet(exchange, 0 * BTC)]
     portfolio = Portfolio(USD, wallets)
 
-    order = Order(step=0,
-                  exchange_pair=ExchangePair(exchange, USD / BTC),
-                  side=TradeSide.BUY,
-                  trade_type=TradeType.MARKET,
-                  quantity=5200.00 * USD,
-                  portfolio=portfolio,
-                  price=Decimal(7000.00))
+    order = Order(
+        step=0,
+        exchange_pair=ExchangePair(exchange, USD / BTC),
+        side=TradeSide.BUY,
+        trade_type=TradeType.MARKET,
+        quantity=5200.00 * USD,
+        portfolio=portfolio,
+        price=Decimal(7000.00),
+    )
 
     order.attach(fill_listener)
 
@@ -176,13 +177,15 @@ def test_on_complete(mock_trade_class, mock_exchange_class, complete_listener):
     wallets = [Wallet(exchange, 10000 * USD), Wallet(exchange, 0 * BTC)]
     portfolio = Portfolio(USD, wallets)
 
-    order = Order(step=0,
-                  exchange_pair=ExchangePair(exchange, USD / BTC),
-                  side=TradeSide.BUY,
-                  trade_type=TradeType.MARKET,
-                  quantity=5200.00 * USD,
-                  portfolio=portfolio,
-                  price=Decimal(7000.00))
+    order = Order(
+        step=0,
+        exchange_pair=ExchangePair(exchange, USD / BTC),
+        side=TradeSide.BUY,
+        trade_type=TradeType.MARKET,
+        quantity=5200.00 * USD,
+        portfolio=portfolio,
+        price=Decimal(7000.00),
+    )
 
     order.attach(complete_listener)
 

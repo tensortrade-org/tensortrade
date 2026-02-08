@@ -8,18 +8,15 @@ global_clock : `Clock`
 """
 
 import uuid
-
 from abc import ABCMeta
 
 from tensortrade.core.clock import Clock
 
-
 global_clock = Clock()
 
 
-class Identifiable(object, metaclass=ABCMeta):
-    """Identifiable mixin for adding a unique `id` property to instances of a class.
-    """
+class Identifiable(metaclass=ABCMeta):
+    """Identifiable mixin for adding a unique `id` property to instances of a class."""
 
     @property
     def id(self) -> str:
@@ -30,7 +27,7 @@ class Identifiable(object, metaclass=ABCMeta):
         str
            The identifier for the object.
         """
-        if not hasattr(self, '_id'):
+        if not hasattr(self, "_id"):
             self._id = str(uuid.uuid4())
         return self._id
 
@@ -47,8 +44,7 @@ class Identifiable(object, metaclass=ABCMeta):
 
 
 class TimeIndexed:
-    """A class for objects that are indexed by time.
-    """
+    """A class for objects that are indexed by time."""
 
     _clock = global_clock
 

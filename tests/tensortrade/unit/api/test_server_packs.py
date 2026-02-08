@@ -4,7 +4,7 @@ import pytest
 from starlette.testclient import TestClient
 
 from tensortrade.api.server import create_app
-from tensortrade.training.hyperparameter_store import HyperparameterStore, SEED_PACKS
+from tensortrade.training.hyperparameter_store import SEED_PACKS, HyperparameterStore
 
 
 @pytest.fixture
@@ -12,8 +12,8 @@ def stores(tmp_path):
     db_path = str(tmp_path / "test_packs.db")
     hp_store = HyperparameterStore(db_path=db_path)
 
-    from tensortrade.training.experiment_store import ExperimentStore
     from tensortrade.training.dataset_store import DatasetStore
+    from tensortrade.training.experiment_store import ExperimentStore
 
     exp_store = ExperimentStore(db_path=db_path)
     ds_store = DatasetStore(db_path=db_path)
@@ -57,11 +57,14 @@ class TestListPacks:
 
 class TestCreatePack:
     def test_create_pack(self, client):
-        resp = client.post("/api/packs", json={
-            "name": "New Custom Pack",
-            "description": "Created via API",
-            "config": {"algorithm": "PPO", "learning_rate": 1e-4},
-        })
+        resp = client.post(
+            "/api/packs",
+            json={
+                "name": "New Custom Pack",
+                "description": "Created via API",
+                "config": {"algorithm": "PPO", "learning_rate": 1e-4},
+            },
+        )
         assert resp.status_code == 200
         data = resp.json()
         assert "error" not in data
@@ -94,16 +97,22 @@ class TestGetPack:
 class TestUpdatePack:
     def test_update_pack(self, client):
         # Create a pack first
-        create_resp = client.post("/api/packs", json={
-            "name": "To Update",
-            "config": {"lr": 0.001},
-        })
+        create_resp = client.post(
+            "/api/packs",
+            json={
+                "name": "To Update",
+                "config": {"lr": 0.001},
+            },
+        )
         pack_id = create_resp.json()["id"]
 
-        resp = client.put(f"/api/packs/{pack_id}", json={
-            "name": "Updated Pack",
-            "description": "Updated description",
-        })
+        resp = client.put(
+            f"/api/packs/{pack_id}",
+            json={
+                "name": "Updated Pack",
+                "description": "Updated description",
+            },
+        )
         assert resp.status_code == 200
         data = resp.json()
         assert data["name"] == "Updated Pack"
@@ -117,10 +126,13 @@ class TestUpdatePack:
 
 class TestDeletePack:
     def test_delete_pack(self, client):
-        create_resp = client.post("/api/packs", json={
-            "name": "To Delete",
-            "config": {},
-        })
+        create_resp = client.post(
+            "/api/packs",
+            json={
+                "name": "To Delete",
+                "config": {},
+            },
+        )
         pack_id = create_resp.json()["id"]
 
         resp = client.delete(f"/api/packs/{pack_id}")

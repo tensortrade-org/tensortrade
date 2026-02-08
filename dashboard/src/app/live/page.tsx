@@ -4,6 +4,7 @@ import { ActionDistribution } from "@/components/charts/ActionDistribution";
 import { CandlestickChart } from "@/components/charts/CandlestickChart";
 import { PortfolioChart } from "@/components/charts/PortfolioChart";
 import { Card, CardHeader } from "@/components/common/Card";
+import { DatasetSelector } from "@/components/inference/DatasetSelector";
 import { EpisodeProgressBar } from "@/components/inference/EpisodeProgressBar";
 import { EpisodeSummaryCard } from "@/components/inference/EpisodeSummaryCard";
 import { ExperimentSelector } from "@/components/inference/ExperimentSelector";
@@ -21,6 +22,7 @@ const ACTION_LABELS: Record<number, string> = {
 
 export default function InferencePlaybackPage() {
 	const [selectedExperiment, setSelectedExperiment] = useState<string | null>(null);
+	const [selectedDataset, setSelectedDataset] = useState("");
 
 	const status = useInferenceStore((s) => s.status);
 	const steps = useInferenceStore((s) => s.steps);
@@ -28,6 +30,7 @@ export default function InferencePlaybackPage() {
 	const episodeSummary = useInferenceStore((s) => s.episodeSummary);
 	const currentStep = useInferenceStore((s) => s.currentStep);
 	const totalSteps = useInferenceStore((s) => s.totalSteps);
+	const datasetName = useInferenceStore((s) => s.datasetName);
 	const reset = useInferenceStore((s) => s.reset);
 
 	const latestStep = steps[steps.length - 1];
@@ -48,11 +51,11 @@ export default function InferencePlaybackPage() {
 		if (!selectedExperiment) return;
 		reset();
 		try {
-			await startInference(selectedExperiment, true);
+			await startInference(selectedExperiment, true, selectedDataset || undefined);
 		} catch (err) {
 			console.error("Failed to start inference:", err);
 		}
-	}, [selectedExperiment, reset]);
+	}, [selectedExperiment, selectedDataset, reset]);
 
 	const handleReset = useCallback(() => {
 		reset();
@@ -65,13 +68,21 @@ export default function InferencePlaybackPage() {
 				<div className="flex items-center gap-3">
 					<h1 className="text-xl font-semibold text-[var(--text-primary)]">Inference Playback</h1>
 					<ExperimentSelector value={selectedExperiment} onChange={setSelectedExperiment} />
+					<DatasetSelector value={selectedDataset} onChange={setSelectedDataset} />
 				</div>
-				<InferenceControls
-					status={status}
-					onRun={handleRun}
-					onReset={handleReset}
-					disabled={!selectedExperiment}
-				/>
+				<div className="flex items-center gap-3">
+					{datasetName && status !== "idle" && (
+						<span className="rounded-md bg-[var(--bg-secondary)] px-2 py-1 text-xs text-[var(--text-secondary)]">
+							{datasetName}
+						</span>
+					)}
+					<InferenceControls
+						status={status}
+						onRun={handleRun}
+						onReset={handleReset}
+						disabled={!selectedExperiment}
+					/>
+				</div>
 			</div>
 
 			{/* Main area: Candlestick + Side panel */}

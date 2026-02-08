@@ -57,24 +57,26 @@ class ModelParameters:
         The starting volatility value for the Heston model.
     """
 
-    def __init__(self,
-                 all_s0: float,
-                 all_time: int,
-                 all_delta: float,
-                 all_sigma: float,
-                 gbm_mu: float,
-                 jumps_lambda: float = 0.0,
-                 jumps_sigma: float = 0.0,
-                 jumps_mu: float = 0.0,
-                 cir_a: float = 0.0,
-                 cir_mu: float = 0.0,
-                 all_r0: float = 0.0,
-                 cir_rho: float = 0.0,
-                 ou_a: float = 0.0,
-                 ou_mu: float = 0.0,
-                 heston_a: float = 0.0,
-                 heston_mu: float = 0.0,
-                 heston_vol0: float = 0.0) -> None:
+    def __init__(
+        self,
+        all_s0: float,
+        all_time: int,
+        all_delta: float,
+        all_sigma: float,
+        gbm_mu: float,
+        jumps_lambda: float = 0.0,
+        jumps_sigma: float = 0.0,
+        jumps_mu: float = 0.0,
+        cir_a: float = 0.0,
+        cir_mu: float = 0.0,
+        all_r0: float = 0.0,
+        cir_rho: float = 0.0,
+        ou_a: float = 0.0,
+        ou_mu: float = 0.0,
+        heston_a: float = 0.0,
+        heston_mu: float = 0.0,
+        heston_vol0: float = 0.0,
+    ) -> None:
         self.all_s0 = all_s0
         self.all_time = all_time
         self.all_delta = all_delta
@@ -94,7 +96,7 @@ class ModelParameters:
         self.heston_vol0 = heston_vol0
 
 
-def default(base_price: float, t_gen: int, delta: float) -> 'ModelParameters':
+def default(base_price: float, t_gen: int, delta: float) -> "ModelParameters":
     """Creates a basic model parameter set with key parameters specified default
     parameters.
 
@@ -129,11 +131,11 @@ def default(base_price: float, t_gen: int, delta: float) -> 'ModelParameters':
         ou_mu=0.5,
         heston_a=0.25,
         heston_mu=0.35,
-        heston_vol0=0.06125
+        heston_vol0=0.06125,
     )
 
 
-def random(base_price: float, t_gen: int, delta: float) -> 'ModelParameters':
+def random(base_price: float, t_gen: int, delta: float) -> "ModelParameters":
     """Creates a random model parameter set with key parameters specified
     default parameters.
 
@@ -168,5 +170,5 @@ def random(base_price: float, t_gen: int, delta: float) -> 'ModelParameters':
         ou_mu=0.5,
         heston_a=uniform(1, 5),
         heston_mu=uniform(0.156, 0.693),
-        heston_vol0=0.06125
+        heston_vol0=0.06125,
     )

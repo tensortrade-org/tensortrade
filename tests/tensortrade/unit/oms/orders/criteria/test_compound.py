@@ -1,13 +1,12 @@
-
 import unittest.mock as mock
 
-from tensortrade.oms.orders.criteria import Criteria, Limit, Stop, Timed
-from tensortrade.oms.instruments import USD, BTC
+from tensortrade.oms.instruments import BTC, USD
 from tensortrade.oms.orders import TradeSide
+from tensortrade.oms.orders.criteria import Criteria, Limit, Stop, Timed
 
 
-@mock.patch('tensortrade.exchanges.Exchange')
-@mock.patch('tensortrade.orders.Order')
+@mock.patch("tensortrade.exchanges.Exchange")
+@mock.patch("tensortrade.orders.Order")
 def test_and(mock_order_class, mock_exchange_class):
 
     # Test initialization
@@ -16,7 +15,7 @@ def test_and(mock_order_class, mock_exchange_class):
     assert isinstance(criteria, Criteria)
 
     order = mock_order_class.return_value
-    order.pair = USD/BTC
+    order.pair = USD / BTC
     order.created_at = 0
 
     exchange = mock_exchange_class.return_value
@@ -66,8 +65,8 @@ def test_and(mock_order_class, mock_exchange_class):
     assert not criteria(order, exchange)
 
 
-@mock.patch('tensortrade.exchanges.Exchange')
-@mock.patch('tensortrade.orders.Order')
+@mock.patch("tensortrade.exchanges.Exchange")
+@mock.patch("tensortrade.orders.Order")
 def test_or(mock_order_class, mock_exchange_class):
 
     # Test Initialization
@@ -76,7 +75,7 @@ def test_or(mock_order_class, mock_exchange_class):
     assert isinstance(criteria, Criteria)
 
     order = mock_order_class.return_value
-    order.pair = USD/BTC
+    order.pair = USD / BTC
     order.price = 7000.00
 
     exchange = mock_exchange_class.return_value
@@ -109,8 +108,8 @@ def test_or(mock_order_class, mock_exchange_class):
     assert criteria(order, exchange)
 
 
-@mock.patch('tensortrade.exchanges.Exchange')
-@mock.patch('tensortrade.orders.Order')
+@mock.patch("tensortrade.exchanges.Exchange")
+@mock.patch("tensortrade.orders.Order")
 def test_xor(mock_order_class, mock_exchange_class):
 
     # Test Initialization
@@ -119,7 +118,7 @@ def test_xor(mock_order_class, mock_exchange_class):
     assert isinstance(criteria, Criteria)
 
     order = mock_order_class.return_value
-    order.pair = USD/BTC
+    order.pair = USD / BTC
     order.price = 7000.00
 
     exchange = mock_exchange_class.return_value
@@ -152,8 +151,8 @@ def test_xor(mock_order_class, mock_exchange_class):
     assert criteria(order, exchange)
 
 
-@mock.patch('tensortrade.exchanges.Exchange')
-@mock.patch('tensortrade.orders.Order')
+@mock.patch("tensortrade.exchanges.Exchange")
+@mock.patch("tensortrade.orders.Order")
 def test_invert(mock_order_class, mock_exchange_class):
 
     # Test Initialization

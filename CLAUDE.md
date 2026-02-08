@@ -63,6 +63,12 @@ ANTHROPIC_API_KEY=sk-ant-...
 cd dashboard && npm run test
 ```
 
+### Python lint/format
+```bash
+make lint       # ruff check tensortrade/ tests/
+make format     # ruff format + auto-fix
+```
+
 ### Frontend lint/format
 ```bash
 cd dashboard && npx biome check --write src/
@@ -124,5 +130,6 @@ Stores that share the database:
 - Gymnasium returns 5-tuple from `step()` (not 4)
 - Use `ta` library (not `pandas_ta` — incompatible with numpy <2.2.6)
 - Never use `any` type in TypeScript — create proper interfaces
+- Run `make lint` after editing Python code (ruff)
 - Run `npx biome check --write src/` after editing dashboard code
 - Docker changes need `docker rmi tensortrade:latest` before rebuild

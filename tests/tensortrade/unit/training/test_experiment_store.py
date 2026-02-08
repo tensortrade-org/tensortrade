@@ -1,16 +1,15 @@
 """Tests for the ExperimentStore SQLite backend."""
 
 import os
-import tempfile
+
 import pytest
 
 from tensortrade.training.experiment_store import (
-    ExperimentStore,
     Experiment,
+    ExperimentStore,
     IterationRecord,
-    TradeRecord,
     OptunaTrialRecord,
-    LeaderboardEntry,
+    TradeRecord,
 )
 
 
@@ -36,9 +35,7 @@ def experiment_id(store):
 
 class TestExperimentCRUD:
     def test_create_experiment(self, store):
-        exp_id = store.create_experiment(
-            name="my_run", script="train_advanced", config={"lr": 0.001}
-        )
+        exp_id = store.create_experiment(name="my_run", script="train_advanced", config={"lr": 0.001})
         assert isinstance(exp_id, str)
         assert len(exp_id) == 36  # UUID format
 
@@ -197,7 +194,12 @@ class TestOptunaTrials:
 
     def test_optuna_trial_with_experiment_link(self, store, experiment_id):
         store.log_optuna_trial(
-            "my_study", 0, {"lr": 0.001}, 0.85, "complete", 120.0,
+            "my_study",
+            0,
+            {"lr": 0.001},
+            0.85,
+            "complete",
+            120.0,
             experiment_id=experiment_id,
         )
         trials = store.get_optuna_trials("my_study")

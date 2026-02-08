@@ -1,8 +1,6 @@
-
 import pandas as pd
 
 from tensortrade.feed import Stream
-
 from tests.utils.ops import assert_op
 
 
@@ -15,7 +13,7 @@ def test_add():
     w1 = s1.add(s2).rename("w1")
     w2 = (s1 + s2).rename("w2")
 
-    assert_op([w1, w2], 6*[0])
+    assert_op([w1, w2], 6 * [0])
 
     # (left, right) : (Stream, float)
     s1 = Stream.source([1, 2, 3, 4, 5, 6], dtype="float")
@@ -117,7 +115,7 @@ def test_div():
 
 
 def test_rdiv():
-    expected = [6, 3, 2, 3/2, 6/5, 1]
+    expected = [6, 3, 2, 3 / 2, 6 / 5, 1]
 
     # (left, right) : (Stream, Stream)
     s = Stream.source([2, 4, 6, 8, 10, 12], dtype="float")
@@ -154,6 +152,6 @@ def test_pow():
     s1 = s.pow(3).rename("s1")
     s2 = (s**3).rename("s2")
 
-    expected = list(pd.Series(array)**3)
+    expected = list(pd.Series(array) ** 3)
 
     assert_op([s1, s2], expected)

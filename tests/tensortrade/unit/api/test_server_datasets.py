@@ -4,7 +4,7 @@ import pytest
 from starlette.testclient import TestClient
 
 from tensortrade.api.server import create_app
-from tensortrade.training.dataset_store import DatasetStore, SEED_DATASETS
+from tensortrade.training.dataset_store import SEED_DATASETS, DatasetStore
 from tensortrade.training.feature_engine import FEATURE_CATALOG
 
 
@@ -39,6 +39,7 @@ def client(stores):
     server_module._ds_store = ds_store
 
     from tensortrade.training.feature_engine import FeatureEngine
+
     server_module._feature_engine = FeatureEngine()
 
     app = create_app()
@@ -63,14 +64,17 @@ class TestListDatasets:
 
 class TestCreateDataset:
     def test_create_dataset(self, client):
-        resp = client.post("/api/datasets", json={
-            "name": "New Dataset",
-            "description": "Test dataset",
-            "source_type": "synthetic",
-            "source_config": {"base_price": 100},
-            "features": [{"type": "rsi", "period": 14}],
-            "split_config": {"train_pct": 0.8, "val_pct": 0.1, "test_pct": 0.1},
-        })
+        resp = client.post(
+            "/api/datasets",
+            json={
+                "name": "New Dataset",
+                "description": "Test dataset",
+                "source_type": "synthetic",
+                "source_config": {"base_price": 100},
+                "features": [{"type": "rsi", "period": 14}],
+                "split_config": {"train_pct": 0.8, "val_pct": 0.1, "test_pct": 0.1},
+            },
+        )
         assert resp.status_code == 200
         data = resp.json()
         assert "error" not in data
@@ -101,16 +105,22 @@ class TestGetDataset:
 
 class TestUpdateDataset:
     def test_update_dataset(self, client):
-        create_resp = client.post("/api/datasets", json={
-            "name": "To Update",
-            "source_type": "csv_upload",
-        })
+        create_resp = client.post(
+            "/api/datasets",
+            json={
+                "name": "To Update",
+                "source_type": "csv_upload",
+            },
+        )
         ds_id = create_resp.json()["id"]
 
-        resp = client.put(f"/api/datasets/{ds_id}", json={
-            "name": "Updated Dataset",
-            "description": "Updated via API",
-        })
+        resp = client.put(
+            f"/api/datasets/{ds_id}",
+            json={
+                "name": "Updated Dataset",
+                "description": "Updated via API",
+            },
+        )
         assert resp.status_code == 200
         data = resp.json()
         assert data["name"] == "Updated Dataset"
@@ -124,10 +134,13 @@ class TestUpdateDataset:
 
 class TestDeleteDataset:
     def test_delete_dataset(self, client):
-        create_resp = client.post("/api/datasets", json={
-            "name": "To Delete",
-            "source_type": "csv_upload",
-        })
+        create_resp = client.post(
+            "/api/datasets",
+            json={
+                "name": "To Delete",
+                "source_type": "csv_upload",
+            },
+        )
         ds_id = create_resp.json()["id"]
 
         resp = client.delete(f"/api/datasets/{ds_id}")

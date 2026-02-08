@@ -2,12 +2,12 @@
 expanding.py contains functions and classes for expanding stream operations.
 """
 
-from typing import Callable, List
+from collections.abc import Callable
 
 import numpy as np
 
-from tensortrade.feed.core.base import Stream
 from tensortrade.feed.api.float import Float
+from tensortrade.feed.core.base import Stream
 
 
 class ExpandingNode(Stream[float]):
@@ -19,7 +19,7 @@ class ExpandingNode(Stream[float]):
         A function that aggregates the history of a stream.
     """
 
-    def __init__(self, func: "Callable[[List[float]], float]") -> None:
+    def __init__(self, func: "Callable[[list[float]], float]") -> None:
         super().__init__()
         self.func = func
 
@@ -44,7 +44,7 @@ class ExpandingCount(ExpandingNode):
         return self.func(self.inputs[0].value)
 
 
-class Expanding(Stream[List[float]]):
+class Expanding(Stream[list[float]]):
     """A stream that generates the entire history of a stream at each time step.
 
     Parameters
@@ -61,7 +61,7 @@ class Expanding(Stream[List[float]]):
         self.min_periods = min_periods
         self.history = []
 
-    def forward(self) -> "List[float]":
+    def forward(self) -> "list[float]":
         v = self.inputs[0].value
         if not np.isnan(v):
             self.history += [v]
@@ -70,7 +70,7 @@ class Expanding(Stream[List[float]]):
     def has_next(self) -> bool:
         return True
 
-    def agg(self, func: Callable[[List[float]], float]) -> "Stream[float]":
+    def agg(self, func: Callable[[list[float]], float]) -> "Stream[float]":
         """Computes an aggregation of a stream's history.
 
         Parameters
@@ -172,7 +172,7 @@ class Expanding(Stream[List[float]]):
 
 
 @Float.register(["expanding"])
-def expanding(s: "Stream[float]", min_periods: int = 1) -> "Stream[List[float]]":
+def expanding(s: "Stream[float]", min_periods: int = 1) -> "Stream[list[float]]":
     """Computes a stream that generates the entire history of a stream at each
     time step.
 
@@ -184,6 +184,4 @@ def expanding(s: "Stream[float]", min_periods: int = 1) -> "Stream[List[float]]"
         The number of periods to wait before producing values from the aggregation
         function.
     """
-    return Expanding(
-        min_periods=min_periods
-    )(s)
+    return Expanding(min_periods=min_periods)(s)

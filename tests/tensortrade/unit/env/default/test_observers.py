@@ -94,7 +94,7 @@ def test_create_internal_data_feed():
     bitfinex_net_worth = 10000 + (10 * 7000) + (5 * 200)
     binance_net_worth = 1000 + (5 * 7005) + (20 * 201) + (3 * 56)
 
-    data['net_worth'] = sum(data[k] if k.endswith("worth") or k.endswith("USD:/total") else 0 for k in data.keys())
+    data['net_worth'] = sum(data[k] if k.endswith("worth") or k.endswith("USD:/total") else 0 for k in data)
 
     assert feed.next() == data
 

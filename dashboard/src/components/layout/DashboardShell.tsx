@@ -23,6 +23,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
 	const setProgress = useTrainingStore((s) => s.setProgress);
 	const clearWarmingUp = useTrainingStore((s) => s.clearWarmingUp);
 	const markCompleted = useTrainingStore((s) => s.markCompleted);
+	const resetTraining = useTrainingStore((s) => s.reset);
 
 	const inferenceSetStatus = useInferenceStore((s) => s.setStatus);
 	const inferenceAddStep = useInferenceStore((s) => s.addStep);
@@ -123,7 +124,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
 					clearWarmingUp();
 					break;
 				case "experiment_start":
-					clearWarmingUp();
+					resetTraining();
 					break;
 				case "experiment_end":
 					if ("experiment_id" in msg && "status" in msg) {
@@ -141,6 +142,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
 			setProgress,
 			clearWarmingUp,
 			markCompleted,
+			resetTraining,
 			inferenceSetStatus,
 			inferenceAddStep,
 			inferenceAddTrade,

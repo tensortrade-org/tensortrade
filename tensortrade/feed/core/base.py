@@ -1,22 +1,11 @@
-
 import inspect
-
 from abc import abstractmethod
-from typing import (
-    Generic,
-    Iterable,
-    TypeVar,
-    Dict,
-    Any,
-    Callable,
-    List,
-    Tuple
-)
+from collections.abc import Callable, Iterable
+from typing import Any, Generic, TypeVar
 
 from tensortrade.core import Observable
 from tensortrade.feed.core.accessors import CachedAccessor
 from tensortrade.feed.core.mixins import DataTypeMixin
-
 
 T = TypeVar("T")
 
@@ -40,14 +29,14 @@ class Named:
     """
 
     generic_name: str = "generic"
-    namespaces: List[str] = []
-    names: Dict[str, int] = {}
+    namespaces: list[str] = []
+    names: dict[str, int] = {}
 
     def __init__(self, name: str = None):
         if not name:
             name = self.generic_name
 
-            if name in Stream.names.keys():
+            if name in Stream.names:
                 Stream.names[name] += 1
                 name += ":/" + str(Stream.names[name] - 1)
             else:
@@ -128,14 +117,14 @@ class Stream(Generic[T], Named, Observable):
         Converts the data type to `dtype`.
     """
 
-    _mixins: "Dict[str, DataTypeMixin]" = {}
-    _accessors: "List[CachedAccessor]" = []
+    _mixins: "dict[str, DataTypeMixin]" = {}
+    _accessors: "list[CachedAccessor]" = []
     generic_name: str = "stream"
 
     def __new__(cls, *args, **kwargs):
         dtype = kwargs.get("dtype")
         instance = super().__new__(cls)
-        if dtype in Stream._mixins.keys():
+        if dtype in Stream._mixins:
             mixin = Stream._mixins[dtype]
             instance = Stream.extend_instance(instance, mixin)
         return instance
@@ -214,13 +203,13 @@ class Stream(Generic[T], Named, Observable):
         for listener in self.listeners:
             if hasattr(listener, "reset"):
                 listener.reset()
-        
+
         for stream in self.inputs:
             stream.reset()
 
         self.value = None
 
-    def gather(self) -> "List[Tuple[Stream, Stream]]":
+    def gather(self) -> "list[tuple[Stream, Stream]]":
         """Gathers all the edges of the DAG connected in ancestry with this
         stream.
 
@@ -250,7 +239,7 @@ class Stream(Generic[T], Named, Observable):
         return IterableStream(iterable, dtype=dtype)
 
     @staticmethod
-    def group(streams: "List[Stream[T]]") -> "Stream[dict]":
+    def group(streams: "list[Stream[T]]") -> "Stream[dict]":
         """Creates a group of streams.
 
         Parameters
@@ -267,9 +256,7 @@ class Stream(Generic[T], Named, Observable):
         return Group()(*streams)
 
     @staticmethod
-    def sensor(obj: "Any",
-               func: "Callable[[Any], T]",
-               dtype: str = None) -> "Stream[T]":
+    def sensor(obj: "Any", func: "Callable[[Any], T]", dtype: str = None) -> "Stream[T]":
         """Creates a stream from observing a value from an object.
 
         Parameters
@@ -290,8 +277,7 @@ class Stream(Generic[T], Named, Observable):
         return Sensor(obj, func, dtype=dtype)
 
     @staticmethod
-    def select(streams: "List[Stream[T]]",
-               func: "Callable[[Stream[T]], bool]") -> "Stream[T]":
+    def select(streams: "list[Stream[T]]", func: "Callable[[Stream[T]], bool]") -> "Stream[T]":
         """Selects a stream satisfying particular criteria from a list of
         streams.
 
@@ -352,9 +338,9 @@ class Stream(Generic[T], Named, Observable):
         return Placeholder(dtype=dtype)
 
     @staticmethod
-    def _gather(stream: "Stream",
-                vertices: "List[Stream]",
-                edges: "List[Tuple[Stream, Stream]]") -> "List[Tuple[Stream, Stream]]":
+    def _gather(
+        stream: "Stream", vertices: "list[Stream]", edges: "list[tuple[Stream, Stream]]"
+    ) -> "list[tuple[Stream, Stream]]":
         """Gathers all the edges relating back to this particular node.
 
         Parameters
@@ -384,7 +370,7 @@ class Stream(Generic[T], Named, Observable):
         return edges
 
     @staticmethod
-    def toposort(edges: "List[Tuple[Stream, Stream]]") -> "List[Stream]":
+    def toposort(edges: "list[tuple[Stream, Stream]]") -> "list[Stream]":
         """Sorts the order in which streams should be run.
 
         Parameters
@@ -431,10 +417,12 @@ class Stream(Generic[T], Named, Observable):
         name : str
             The name of the data type.
         """
+
         def wrapper(accessor):
             setattr(cls, name, CachedAccessor(name, accessor))
             cls._accessors += [name]
             return accessor
+
         return wrapper
 
     @classmethod
@@ -447,13 +435,15 @@ class Stream(Generic[T], Named, Observable):
         dtype : str
             The name of the data type the mixin is being registered for.
         """
+
         def wrapper(mixin):
             cls._mixins[dtype] = mixin
             return mixin
+
         return wrapper
 
     @classmethod
-    def register_generic_method(cls, names: "List[str]"):
+    def register_generic_method(cls, names: "list[str]"):
         """A function decorator that registers the decorated function with the
         names provided as a method to the `Stream` class.
 
@@ -464,13 +454,16 @@ class Stream(Generic[T], Named, Observable):
         names : `List[str]`
             The list of names to be used as aliases for the same method.
         """
+
         def wrapper(func):
             def method(self, *args, **kwargs):
                 args = (self,) + args
                 return func(*args, **kwargs)
+
             for name in names:
                 setattr(Stream, name, method)
             return method
+
         return wrapper
 
     @staticmethod
@@ -522,7 +515,7 @@ class IterableStream(Stream[T]):
             self.generator = iter(source)
 
         self.stop = False
-        
+
         try:
             self.current = next(self.generator)
         except StopIteration:
@@ -548,7 +541,7 @@ class IterableStream(Stream[T]):
         if self.is_gen:
             self.generator = self.gen_fn()
         else:
-            self.generator = iter(self.iterable[self._random_start:])
+            self.generator = iter(self.iterable[self._random_start :])
         self.stop = False
 
         try:
@@ -569,7 +562,7 @@ class Group(Stream[T]):
         self.streams = {s.name: s for s in inputs}
         return self
 
-    def forward(self) -> "Dict[T]":
+    def forward(self) -> "dict[T]":
         return {s.name: s.value for s in self.inputs}
 
     def __getitem__(self, name) -> "Stream[T]":
@@ -613,18 +606,17 @@ class Constant(Stream[T]):
 
 
 class Placeholder(Stream[T]):
-    """A stream that acts as a placeholder for data to be provided at later date.
-    """
+    """A stream that acts as a placeholder for data to be provided at later date."""
 
     generic_name = "placeholder"
 
     def __init__(self, dtype: str = None) -> None:
         super().__init__(dtype=dtype)
 
-    def push(self, value: 'T') -> None:
+    def push(self, value: "T") -> None:
         self.value = value
 
-    def forward(self) -> 'T':
+    def forward(self) -> "T":
         return self.value
 
     def has_next(self) -> bool:

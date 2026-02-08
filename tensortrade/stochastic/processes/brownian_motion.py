@@ -17,7 +17,7 @@ import numpy as np
 from tensortrade.stochastic.utils import ModelParameters, convert_to_prices
 
 
-def brownian_motion_log_returns(params: 'ModelParameters') -> 'np.array':
+def brownian_motion_log_returns(params: "ModelParameters") -> "np.array":
     """Constructs a Wiener process (Brownian Motion).
 
     Parameters
@@ -38,7 +38,7 @@ def brownian_motion_log_returns(params: 'ModelParameters') -> 'np.array':
     return np.random.normal(loc=0, scale=sqrt_delta_sigma, size=params.all_time)
 
 
-def brownian_motion_levels(params: 'ModelParameters') -> 'np.array':
+def brownian_motion_levels(params: "ModelParameters") -> "np.array":
     """Constructs a price sequence whose returns evolve according to brownian
     motion.
 

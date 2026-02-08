@@ -1,4 +1,3 @@
-
 from decimal import Decimal
 
 
@@ -32,13 +31,10 @@ class ExchangePair:
         return hash(str(self))
 
     def __eq__(self, other):
-        if isinstance(other, ExchangePair):
-            if str(self) == str(other):
-                return True
-        return False
+        return isinstance(other, ExchangePair) and str(self) == str(other)
 
     def __str__(self):
-        return "{}:{}".format(self.exchange.name, self.pair)
+        return f"{self.exchange.name}:{self.pair}"
 
     def __repr__(self):
         return str(self)

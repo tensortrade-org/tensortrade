@@ -20,11 +20,14 @@ interface CandlestickChartProps {
 	trades: TradeEvent[];
 }
 
+const VISIBLE_WINDOW = 50;
+
 export function CandlestickChart({ steps, trades }: CandlestickChartProps) {
 	const containerRef = useRef<HTMLDivElement>(null);
 	const chartRef = useRef<IChartApi | null>(null);
 	const candleSeriesRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
 	const volumeSeriesRef = useRef<ISeriesApi<"Line"> | null>(null);
+	const prevStepCountRef = useRef(0);
 
 	useEffect(() => {
 		if (!containerRef.current) return;
@@ -103,25 +106,50 @@ export function CandlestickChart({ steps, trades }: CandlestickChartProps) {
 	}, []);
 
 	useEffect(() => {
-		if (!candleSeriesRef.current || !volumeSeriesRef.current) return;
-		if (steps.length === 0) return;
+		if (!candleSeriesRef.current || !volumeSeriesRef.current || !chartRef.current) return;
+		if (steps.length === 0) {
+			prevStepCountRef.current = 0;
+			return;
+		}
 
-		const candleData: CandlestickData<Time>[] = steps.map((s) => ({
-			time: s.step as Time,
-			open: s.open,
-			high: s.high,
-			low: s.low,
-			close: s.close,
-		}));
+		const prevCount = prevStepCountRef.current;
 
-		const volumeData = steps.map((s) => ({
-			time: s.step as Time,
-			value: s.volume,
-		}));
+		if (prevCount === 0) {
+			// First data or reset — full setData
+			const candleData: CandlestickData<Time>[] = steps.map((s) => ({
+				time: s.step as Time,
+				open: s.open,
+				high: s.high,
+				low: s.low,
+				close: s.close,
+			}));
+			const volumeData = steps.map((s) => ({
+				time: s.step as Time,
+				value: s.volume,
+			}));
+			candleSeriesRef.current.setData(candleData);
+			volumeSeriesRef.current.setData(volumeData);
+		} else {
+			// Incremental — only update new steps
+			for (let i = prevCount; i < steps.length; i++) {
+				const s = steps[i];
+				candleSeriesRef.current.update({
+					time: s.step as Time,
+					open: s.open,
+					high: s.high,
+					low: s.low,
+					close: s.close,
+				});
+				volumeSeriesRef.current.update({
+					time: s.step as Time,
+					value: s.volume,
+				});
+			}
+		}
 
-		candleSeriesRef.current.setData(candleData);
-		volumeSeriesRef.current.setData(volumeData);
+		prevStepCountRef.current = steps.length;
 
+		// Trade markers (must be set on full array each time)
 		if (trades.length > 0) {
 			const markers: SeriesMarker<Time>[] = trades
 				.map((t) => ({
@@ -136,18 +164,23 @@ export function CandlestickChart({ steps, trades }: CandlestickChartProps) {
 			candleSeriesRef.current.setMarkers(markers);
 		}
 
-		if (chartRef.current) {
-			chartRef.current.timeScale().fitContent();
-		}
+		// Rolling window: show last VISIBLE_WINDOW candles, scrolling right
+		const lastStep = steps[steps.length - 1].step;
+		const rangeFrom = Math.max(1, lastStep - VISIBLE_WINDOW + 1);
+		chartRef.current.timeScale().setVisibleRange({
+			from: rangeFrom as Time,
+			to: (lastStep + 2) as Time,
+		});
 	}, [steps, trades]);
 
-	if (steps.length === 0) {
-		return (
-			<div className="flex h-full w-full items-center justify-center text-[var(--text-secondary)]">
-				No price data available
-			</div>
-		);
-	}
-
-	return <div ref={containerRef} className="h-full w-full" />;
+	return (
+		<div className="relative h-full w-full">
+			<div ref={containerRef} className="h-full w-full" />
+			{steps.length === 0 && (
+				<div className="absolute inset-0 flex items-center justify-center text-[var(--text-secondary)]">
+					No price data available
+				</div>
+			)}
+		</div>
+	);
 }

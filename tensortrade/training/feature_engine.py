@@ -10,7 +10,6 @@ from collections.abc import Callable
 import numpy as np
 import pandas as pd
 
-
 # Registry of available feature types with their parameter schemas
 FEATURE_CATALOG: list[dict[str, object]] = [
     {
@@ -308,7 +307,8 @@ class FeatureEngine:
     """
 
     AVAILABLE_FEATURES: dict[str, dict[str, object]] = {
-        entry["type"]: entry for entry in FEATURE_CATALOG  # type: ignore[misc]
+        entry["type"]: entry
+        for entry in FEATURE_CATALOG  # type: ignore[misc]
     }
 
     def __init__(self) -> None:
@@ -332,9 +332,7 @@ class FeatureEngine:
         """Return the feature catalog with parameter schemas."""
         return FEATURE_CATALOG
 
-    def compute(
-        self, df: pd.DataFrame, feature_specs: list[dict[str, object]]
-    ) -> pd.DataFrame:
+    def compute(self, df: pd.DataFrame, feature_specs: list[dict[str, object]]) -> pd.DataFrame:
         """Compute features on a DataFrame based on specs.
 
         Args:
@@ -633,9 +631,7 @@ class FeatureEngine:
         typical_price = (high + low + df["close"]) / 3
 
         tp_sma = typical_price.rolling(period).mean()
-        tp_mad = typical_price.rolling(period).apply(
-            lambda x: np.abs(x - x.mean()).mean(), raw=True
-        )
+        tp_mad = typical_price.rolling(period).apply(lambda x: np.abs(x - x.mean()).mean(), raw=True)
         cci = (typical_price - tp_sma) / (0.015 * tp_mad + 1e-10)
         # CCI typically ranges -200 to +200; tanh(cci/200) maps to ~[-1,1]
         df["cci"] = np.tanh(cci / 200)

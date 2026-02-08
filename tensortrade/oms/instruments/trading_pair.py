@@ -43,16 +43,13 @@ class TradingPair:
         return hash(str(self))
 
     def __eq__(self, other: "Any") -> bool:
-        if isinstance(other, TradingPair):
-            if str(self) == str(other):
-                return True
-        return False
+        return isinstance(other, TradingPair) and str(self) == str(other)
 
     def __ne__(self, other: "Any") -> bool:
         return not self.__eq__(other)
 
     def __str__(self) -> str:
-        return "{}/{}".format(self.base.symbol, self.quote.symbol)
+        return f"{self.base.symbol}/{self.quote.symbol}"
 
     def __repr__(self) -> str:
         return str(self)

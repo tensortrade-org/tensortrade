@@ -8,7 +8,7 @@ import os
 import sqlite3
 import uuid
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 
 @dataclass
@@ -123,13 +123,11 @@ class DatasetStore:
 
     def _seed_defaults(self) -> None:
         """Seed default datasets if table is empty."""
-        count = self._conn.execute(
-            "SELECT COUNT(*) FROM dataset_configs"
-        ).fetchone()[0]
+        count = self._conn.execute("SELECT COUNT(*) FROM dataset_configs").fetchone()[0]
         if count > 0:
             return
 
-        now = datetime.now(timezone.utc).isoformat()
+        now = datetime.now(UTC).isoformat()
         for seed in SEED_DATASETS:
             ds_id = str(uuid.uuid4())
             self._conn.execute(
@@ -162,7 +160,7 @@ class DatasetStore:
     ) -> str:
         """Create a new dataset configuration. Returns the new config ID."""
         ds_id = str(uuid.uuid4())
-        now = datetime.now(timezone.utc).isoformat()
+        now = datetime.now(UTC).isoformat()
         sc = source_config or {}
         feats = features or []
         split = split_config or {"train_pct": 0.7, "val_pct": 0.15, "test_pct": 0.15}
@@ -189,27 +187,21 @@ class DatasetStore:
 
     def get_config(self, config_id: str) -> DatasetConfig | None:
         """Retrieve a single dataset config by ID."""
-        row = self._conn.execute(
-            "SELECT * FROM dataset_configs WHERE id = ?", (config_id,)
-        ).fetchone()
+        row = self._conn.execute("SELECT * FROM dataset_configs WHERE id = ?", (config_id,)).fetchone()
         if row is None:
             return None
         return self._row_to_dataset(row)
 
     def get_config_by_name(self, name: str) -> DatasetConfig | None:
         """Retrieve a dataset config by name."""
-        row = self._conn.execute(
-            "SELECT * FROM dataset_configs WHERE name = ?", (name,)
-        ).fetchone()
+        row = self._conn.execute("SELECT * FROM dataset_configs WHERE name = ?", (name,)).fetchone()
         if row is None:
             return None
         return self._row_to_dataset(row)
 
     def list_configs(self) -> list[DatasetConfig]:
         """List all dataset configurations ordered by name."""
-        rows = self._conn.execute(
-            "SELECT * FROM dataset_configs ORDER BY name"
-        ).fetchall()
+        rows = self._conn.execute("SELECT * FROM dataset_configs ORDER BY name").fetchall()
         return [self._row_to_dataset(r) for r in rows]
 
     def update_config(
@@ -227,7 +219,7 @@ class DatasetStore:
         if existing is None:
             return False
 
-        now = datetime.now(timezone.utc).isoformat()
+        now = datetime.now(UTC).isoformat()
         new_name = name if name is not None else existing.name
         new_desc = description if description is not None else existing.description
         new_src_type = source_type if source_type is not None else existing.source_type
@@ -257,9 +249,7 @@ class DatasetStore:
 
     def delete_config(self, config_id: str) -> bool:
         """Delete a dataset config. Returns True if deleted."""
-        cursor = self._conn.execute(
-            "DELETE FROM dataset_configs WHERE id = ?", (config_id,)
-        )
+        cursor = self._conn.execute("DELETE FROM dataset_configs WHERE id = ?", (config_id,))
         self._conn.commit()
         return cursor.rowcount > 0
 
@@ -274,7 +264,6 @@ class DatasetStore:
             raise ValueError(f"Dataset config not found: {config_id}")
 
         import numpy as np
-        import pandas as pd
 
         from tensortrade.training.feature_engine import FeatureEngine
 
@@ -326,13 +315,15 @@ class DatasetStore:
             rng = np.random.default_rng(42)
             returns = rng.normal(drift, vol, n)
             prices = base_price * np.exp(np.cumsum(returns))
-            df = pd.DataFrame({
-                "open": prices * (1 + rng.normal(0, 0.001, n)),
-                "high": prices * (1 + np.abs(rng.normal(0, vol, n))),
-                "low": prices * (1 - np.abs(rng.normal(0, vol, n))),
-                "close": prices,
-                "volume": base_volume * (1 + rng.normal(0, 0.3, n)),
-            })
+            df = pd.DataFrame(
+                {
+                    "open": prices * (1 + rng.normal(0, 0.001, n)),
+                    "high": prices * (1 + np.abs(rng.normal(0, vol, n))),
+                    "low": prices * (1 - np.abs(rng.normal(0, vol, n))),
+                    "close": prices,
+                    "volume": base_volume * (1 + rng.normal(0, 0.3, n)),
+                }
+            )
             return df
 
         # For csv_upload and crypto_download, return an empty OHLCV frame

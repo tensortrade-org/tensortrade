@@ -1,14 +1,16 @@
 """Tests for the FastAPI dashboard server."""
 
-import pytest
 from unittest.mock import patch
 
-from tensortrade.api.server import create_app, _manager, ConnectionManager
+import pytest
+
+from tensortrade.api.server import ConnectionManager, create_app
 
 
 @pytest.fixture
 def store(tmp_path):
     from tensortrade.training.experiment_store import ExperimentStore
+
     db_path = str(tmp_path / "test_server.db")
     s = ExperimentStore(db_path=db_path)
     yield s

@@ -5,7 +5,7 @@ Provides structured logging of trading metrics to TensorBoard
 with grouped scalar layouts for Trading, Performance, and Behavior.
 """
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 
 @dataclass
@@ -22,8 +22,9 @@ class TradingTensorBoardLogger:
     """
 
     def __init__(self, config: TensorBoardConfig | None = None) -> None:
-        from torch.utils.tensorboard import SummaryWriter
         import os
+
+        from torch.utils.tensorboard import SummaryWriter
 
         self.config = config or TensorBoardConfig()
         log_dir = os.path.expanduser(self.config.log_dir)
@@ -37,6 +38,7 @@ class TradingTensorBoardLogger:
     def _setup_layout(self) -> None:
         """Set up custom scalar layout for organized dashboards."""
         from torch.utils.tensorboard.summary import custom_scalars
+
         layout = {
             "Trading": {
                 "PnL": ["Multiline", ["Trading/pnl", "Trading/pnl_pct"]],
@@ -85,9 +87,7 @@ class TradingTensorBoardLogger:
             if value is not None:
                 self._writer.add_scalar(tag, float(value), iteration)
 
-    def log_evaluation(
-        self, metrics: dict, iteration: int, prefix: str = "Eval"
-    ) -> None:
+    def log_evaluation(self, metrics: dict, iteration: int, prefix: str = "Eval") -> None:
         """Log evaluation-phase metrics (validation or test)."""
         for key, value in metrics.items():
             if isinstance(value, (int, float)):

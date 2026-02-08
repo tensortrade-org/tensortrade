@@ -263,7 +263,7 @@ class TensorTradeObserver(Observer):
         data = self.feed.next()
 
         # Save renderer information to history
-        if "renderer" in data.keys():
+        if "renderer" in data:
             self.renderer_history += [data["renderer"]]
 
         # Push new observation to observation history
@@ -422,7 +422,7 @@ class IntradayObserver(Observer):
         data = self.feed.next()
 
         # Save renderer information to history
-        if "renderer" in data.keys():
+        if "renderer" in data:
             self.renderer_history += [data["renderer"]]
 
         # Push new observation to observation history

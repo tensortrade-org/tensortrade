@@ -19,31 +19,24 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from tensortrade.feed.core import DataFeed, Stream
-from tensortrade.oms.exchanges import Exchange, ExchangeOptions
-from tensortrade.oms.instruments import USD, BTC
-from tensortrade.oms.services.execution.simulated import execute_order
-from tensortrade.oms.wallets import Portfolio, Wallet
+import tensortrade.env.default as default
 from tensortrade.env.default.actions import BSH
 from tensortrade.env.default.rewards import PBR
-import tensortrade.env.default as default
+from tensortrade.feed.core import DataFeed, Stream
+from tensortrade.oms.exchanges import Exchange, ExchangeOptions
+from tensortrade.oms.instruments import BTC, USD
+from tensortrade.oms.services.execution.simulated import execute_order
+from tensortrade.oms.wallets import Portfolio, Wallet
 
 
 def create_env(config: dict) -> gym.Env:
     """Create a TensorTrade environment from config."""
-    data = pd.read_csv(
-        filepath_or_buffer=config["csv_filename"],
-        parse_dates=['date']
-    ).bfill().ffill()
+    data = pd.read_csv(filepath_or_buffer=config["csv_filename"], parse_dates=["date"]).bfill().ffill()
 
     commission = config.get("commission", 0.001)
     price = Stream.source(list(data["close"]), dtype="float").rename("USD-BTC")
     exchange_options = ExchangeOptions(commission=commission)
-    exchange = Exchange(
-        "exchange",
-        service=execute_order,
-        options=exchange_options
-    )(price)
+    exchange = Exchange("exchange", service=execute_order, options=exchange_options)(price)
 
     initial_cash = config.get("initial_cash", 10000)
     cash = Wallet(exchange, initial_cash * USD)
@@ -51,8 +44,7 @@ def create_env(config: dict) -> gym.Env:
     portfolio = Portfolio(USD, [cash, asset])
 
     features = [
-        Stream.source(list(data[c]), dtype="float").rename(c)
-        for c in ['open', 'high', 'low', 'close', 'volume']
+        Stream.source(list(data[c]), dtype="float").rename(c) for c in ["open", "high", "low", "close", "volume"]
     ]
     feed = DataFeed(features)
     feed.compile()
@@ -66,7 +58,7 @@ def create_env(config: dict) -> gym.Env:
         action_scheme=action_scheme,
         reward_scheme=reward_scheme,
         window_size=config.get("window_size", 10),
-        max_allowed_loss=config.get("max_allowed_loss", 0.5)
+        max_allowed_loss=config.get("max_allowed_loss", 0.5),
     )
 
     return env
@@ -79,10 +71,10 @@ class TestEnvCreation:
         """Environment creation returns a valid Gymnasium environment."""
         env = create_env(minimal_env_config)
         assert isinstance(env, gym.Env)
-        assert hasattr(env, 'observation_space')
-        assert hasattr(env, 'action_space')
-        assert hasattr(env, 'reset')
-        assert hasattr(env, 'step')
+        assert hasattr(env, "observation_space")
+        assert hasattr(env, "action_space")
+        assert hasattr(env, "reset")
+        assert hasattr(env, "step")
 
     def test_env_observation_space_shape(self, minimal_env_config: dict):
         """Observation space has correct shape based on window_size."""
@@ -142,6 +134,7 @@ class TestRayEnvRegistration:
 
         # Verify registration works by checking Ray can create the env
         from ray.rllib.env.env_context import EnvContext
+
         env_context = EnvContext(
             env_config=minimal_env_config,
             worker_index=0,

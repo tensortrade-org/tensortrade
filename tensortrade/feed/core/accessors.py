@@ -1,5 +1,3 @@
-
-
 class CachedAccessor:
     """
     Custom property-like object.

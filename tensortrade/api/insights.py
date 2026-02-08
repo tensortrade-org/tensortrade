@@ -11,8 +11,8 @@ import json
 import os
 import uuid
 from collections.abc import AsyncGenerator
-from dataclasses import dataclass, field, asdict
-from datetime import datetime, timezone
+from dataclasses import asdict, dataclass, field
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -29,9 +29,7 @@ class InsightReport:
     suggestions: list[str]
     confidence: str  # "high" | "medium" | "low"
     raw_response: str
-    created_at: str = field(
-        default_factory=lambda: datetime.now(timezone.utc).isoformat()
-    )
+    created_at: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
 
 
 class InsightsEngine:
@@ -45,13 +43,9 @@ class InsightsEngine:
         import anthropic
 
         self.store = store
-        self.client = anthropic.Anthropic(
-            api_key=api_key or os.environ.get("ANTHROPIC_API_KEY")
-        )
+        self.client = anthropic.Anthropic(api_key=api_key or os.environ.get("ANTHROPIC_API_KEY"))
 
-    async def analyze_experiment(
-        self, experiment_id: str, *, custom_prompt: str | None = None
-    ) -> InsightReport:
+    async def analyze_experiment(self, experiment_id: str, *, custom_prompt: str | None = None) -> InsightReport:
         """Analyze a single experiment's performance."""
         exp = self.store.get_experiment(experiment_id)
         if not exp:
@@ -90,9 +84,7 @@ class InsightsEngine:
             custom_prompt=custom_prompt,
         )
 
-    async def suggest_next_strategy(
-        self, study_name: str, *, custom_prompt: str | None = None
-    ) -> InsightReport:
+    async def suggest_next_strategy(self, study_name: str, *, custom_prompt: str | None = None) -> InsightReport:
         """Analyze Optuna study and suggest next hyperparameter regions."""
         trials = self.store.get_optuna_trials(study_name)
         if not trials:
@@ -106,9 +98,7 @@ class InsightsEngine:
             custom_prompt=custom_prompt,
         )
 
-    async def analyze_campaign(
-        self, study_name: str, *, custom_prompt: str | None = None
-    ) -> InsightReport:
+    async def analyze_campaign(self, study_name: str, *, custom_prompt: str | None = None) -> InsightReport:
         """Comprehensive written analysis of an Optuna campaign's results."""
         trials = self.store.get_optuna_trials(study_name)
         if not trials:
@@ -162,9 +152,7 @@ class InsightsEngine:
                             loop.call_soon_threadsafe(queue.put_nowait, text)
                     loop.call_soon_threadsafe(queue.put_nowait, None)
                 except Exception as exc:
-                    loop.call_soon_threadsafe(
-                        queue.put_nowait, f"__ERROR__:{exc}"
-                    )
+                    loop.call_soon_threadsafe(queue.put_nowait, f"__ERROR__:{exc}")
 
             # Fire the stream in a background thread — don't await it,
             # so we can drain the queue concurrently as chunks arrive.
@@ -176,7 +164,7 @@ class InsightsEngine:
                 if chunk is None:
                     break
                 if isinstance(chunk, str) and chunk.startswith("__ERROR__:"):
-                    error_msg = chunk[len("__ERROR__:"):]
+                    error_msg = chunk[len("__ERROR__:") :]
                     yield f"event: error\ndata: {json.dumps({'error': error_msg})}\n\n"
                     return
                 accumulated_text += chunk
@@ -214,19 +202,19 @@ class InsightsEngine:
         except Exception as exc:
             yield f"event: error\ndata: {json.dumps({'error': str(exc)})}\n\n"
 
-    async def analyze_trades(
-        self, experiment_id: str, *, custom_prompt: str | None = None
-    ) -> InsightReport:
+    async def analyze_trades(self, experiment_id: str, *, custom_prompt: str | None = None) -> InsightReport:
         """Deep analysis of trade patterns."""
         exp = self.store.get_experiment(experiment_id)
         if not exp:
             raise ValueError(f"Experiment {experiment_id} not found")
 
         trades = self.store.get_trades(experiment_id, limit=1000)
-        if not trades:
-            raise ValueError(f"No trades found for experiment {experiment_id}")
-
-        prompt = self._build_trades_prompt(exp, trades)
+        if trades:
+            prompt = self._build_trades_prompt(exp, trades)
+        else:
+            # No individual trade records — fall back to iteration metrics
+            iterations = self.store.get_iterations(experiment_id)
+            prompt = self._build_trades_from_iterations_prompt(exp, iterations)
         return await self._query_claude(
             prompt=prompt,
             experiment_ids=[experiment_id],
@@ -237,16 +225,19 @@ class InsightsEngine:
     def _build_experiment_prompt(self, exp, iterations, trades) -> str:
         iter_summary = []
         for it in iterations[-20:]:  # Last 20 iterations
-            iter_summary.append(
-                f"  Iter {it.iteration}: {json.dumps(it.metrics)}"
-            )
+            iter_summary.append(f"  Iter {it.iteration}: {json.dumps(it.metrics)}")
 
-        trade_summary = {"total": len(trades), "buys": 0, "sells": 0}
-        for t in trades:
-            if t.side == "buy":
-                trade_summary["buys"] += 1
-            else:
-                trade_summary["sells"] += 1
+        # Individual trade records are only available for non-RLlib runs.
+        # Iteration metrics already have aggregated trading stats.
+        trade_section = ""
+        if trades:
+            trade_summary = {"total": len(trades), "buys": 0, "sells": 0}
+            for t in trades:
+                if t.side == "buy":
+                    trade_summary["buys"] += 1
+                else:
+                    trade_summary["sells"] += 1
+            trade_section = f"\nIndividual Trade Records: {json.dumps(trade_summary)}\n"
 
         return f"""Analyze this reinforcement learning trading experiment:
 
@@ -257,9 +248,12 @@ Final Metrics: {json.dumps(exp.final_metrics, indent=2)}
 
 Recent Training Iterations (last 20):
 {chr(10).join(iter_summary)}
-
-Trade Summary: {json.dumps(trade_summary)}
-Total Trades: {len(trades)}
+{trade_section}
+IMPORTANT: Iteration metrics contain aggregated per-iteration trading statistics.
+Metrics like trade_count_mean, buy_count_mean, sell_count_mean, pnl_mean, pnl_pct_mean,
+and net_worth_mean reflect actual trading activity inside the RL environment each iteration.
+Use these to assess trading behavior. Individual trade records are not always available
+because trades execute inside the RLlib training loop.
 
 Provide:
 1. A 2-3 sentence performance summary
@@ -301,8 +295,7 @@ Format as JSON:
         trial_summaries = []
         for t in trials:
             trial_summaries.append(
-                f"  Trial {t.trial_number}: value={t.value}, state={t.state}, "
-                f"params={json.dumps(t.params)}"
+                f"  Trial {t.trial_number}: value={t.value}, state={t.state}, params={json.dumps(t.params)}"
             )
 
         complete = [t for t in trials if t.state == "complete"]
@@ -313,8 +306,8 @@ Format as JSON:
 Study: {study_name}
 Total Trials: {len(trials)}
 Completed: {len(complete)}
-Best Value: {max(values) if values else 'N/A'}
-Worst Value: {min(values) if values else 'N/A'}
+Best Value: {max(values) if values else "N/A"}
+Worst Value: {min(values) if values else "N/A"}
 
 All Trials:
 {chr(10).join(trial_summaries)}
@@ -349,14 +342,10 @@ Format as JSON:
 
         top5_lines = []
         for t in top5:
-            top5_lines.append(
-                f"  Trial {t.trial_number}: value={t.value}, params={json.dumps(t.params)}"
-            )
+            top5_lines.append(f"  Trial {t.trial_number}: value={t.value}, params={json.dumps(t.params)}")
         bottom5_lines = []
         for t in bottom5:
-            bottom5_lines.append(
-                f"  Trial {t.trial_number}: value={t.value}, params={json.dumps(t.params)}"
-            )
+            bottom5_lines.append(f"  Trial {t.trial_number}: value={t.value}, params={json.dumps(t.params)}")
 
         # Parameter importance via correlation
         importance_lines = self._compute_param_importance(complete)
@@ -364,9 +353,7 @@ Format as JSON:
         # Convergence info
         convergence_info = "N/A"
         if best_trial:
-            convergence_info = (
-                f"Best found at trial {best_trial.trial_number} of {len(trials)} total. "
-            )
+            convergence_info = f"Best found at trial {best_trial.trial_number} of {len(trials)} total. "
             if best_trial.trial_number < len(trials) * 0.3:
                 convergence_info += "Early convergence — search may benefit from wider exploration."
             elif best_trial.trial_number > len(trials) * 0.8:
@@ -381,7 +368,7 @@ Study: {study_name}
 Total Trials: {len(trials)} (completed: {len(complete)}, pruned: {len(pruned)}, failed: {len(failed)})
 Best Value: {best_value}
 Worst Value: {worst_value}
-Average Value: {f'{avg_value:.2f}' if avg_value is not None else 'N/A'}
+Average Value: {f"{avg_value:.2f}" if avg_value is not None else "N/A"}
 
 Best Trial Parameters:
 {best_params_str}
@@ -390,10 +377,10 @@ Top 5 Trials:
 {chr(10).join(top5_lines)}
 
 Bottom 5 Trials:
-{chr(10).join(bottom5_lines) if bottom5_lines else '  (fewer than 10 completed trials)'}
+{chr(10).join(bottom5_lines) if bottom5_lines else "  (fewer than 10 completed trials)"}
 
 Parameter Importance (correlation with objective):
-{chr(10).join(importance_lines) if importance_lines else '  Insufficient data'}
+{chr(10).join(importance_lines) if importance_lines else "  Insufficient data"}
 
 Convergence: {convergence_info}
 
@@ -462,14 +449,16 @@ Write Part 1 first (the human-readable analysis), then Part 2 (the JSON block) a
     def _build_trades_prompt(self, exp, trades) -> str:
         trade_data = []
         for t in trades[:200]:  # Limit context
-            trade_data.append({
-                "episode": t.episode,
-                "step": t.step,
-                "side": t.side,
-                "price": t.price,
-                "size": t.size,
-                "commission": t.commission,
-            })
+            trade_data.append(
+                {
+                    "episode": t.episode,
+                    "step": t.step,
+                    "side": t.side,
+                    "price": t.price,
+                    "size": t.size,
+                    "commission": t.commission,
+                }
+            )
 
         return f"""Analyze the trade patterns from this RL trading experiment:
 
@@ -485,6 +474,40 @@ Provide:
 1. A 2-3 sentence overview of trading behavior
 2. Key findings about entry/exit timing, position sizing, and patterns (3-5 points)
 3. Suggestions for improving trading strategy (3-5 actionable improvements)
+4. Confidence level
+
+Format as JSON:
+{{"summary": "...", "findings": ["..."], "suggestions": ["..."], "confidence": "..."}}"""
+
+    def _build_trades_from_iterations_prompt(self, exp, iterations) -> str:
+        """Build trade analysis prompt from iteration metrics when individual trade records are unavailable."""
+        iter_summary = []
+        for it in iterations[-30:]:
+            iter_summary.append(f"  Iter {it.iteration}: {json.dumps(it.metrics)}")
+
+        return f"""Analyze the trading behavior from this RL trading experiment using iteration-level metrics.
+Individual trade records are not available because trades execute inside the RLlib training loop,
+but the iteration metrics contain per-iteration aggregated trading statistics.
+
+Experiment: {exp.name}
+Config: {json.dumps(exp.config, indent=2)}
+Final Metrics: {json.dumps(exp.final_metrics, indent=2)}
+
+Recent Iterations (last 30):
+{chr(10).join(iter_summary)}
+
+Key metrics to analyze:
+- trade_count_mean: average trades per episode in that iteration
+- buy_count_mean / sell_count_mean: buy vs sell action breakdown
+- hold_count_mean: how often the agent holds (no action)
+- pnl_mean / pnl_pct_mean: profitability per iteration
+- net_worth_mean: portfolio value evolution
+- episode_return_mean: RL reward signal
+
+Provide:
+1. A 2-3 sentence overview of trading behavior and how it evolved during training
+2. Key findings about trade frequency, buy/sell balance, hold behavior, and profitability trends (3-5 points)
+3. Suggestions for improving trading behavior (3-5 actionable improvements)
 4. Confidence level
 
 Format as JSON:

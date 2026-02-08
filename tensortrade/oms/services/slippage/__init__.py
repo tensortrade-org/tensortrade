@@ -1,10 +1,7 @@
-from .slippage_model import SlippageModel
 from .random_slippage_model import RandomUniformSlippageModel
+from .slippage_model import SlippageModel
 
-
-_registry = {
-    'uniform': RandomUniformSlippageModel
-}
+_registry = {"uniform": RandomUniformSlippageModel}
 
 
 def get(identifier: str) -> SlippageModel:
@@ -16,6 +13,6 @@ def get(identifier: str) -> SlippageModel:
     Raises:
         KeyError: if identifier is not associated with any `SlippageModel`
     """
-    if identifier not in _registry.keys():
-        raise KeyError('Identifier {} is not associated with any `SlippageModel`.'.format(identifier))
+    if identifier not in _registry:
+        raise KeyError(f"Identifier {identifier} is not associated with any `SlippageModel`.")
     return _registry[identifier]()

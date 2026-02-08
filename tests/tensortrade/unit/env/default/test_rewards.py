@@ -1,14 +1,17 @@
 
-import pytest
-import numpy as np
-import pandas as pd
 from collections import OrderedDict
 
-import tensortrade.env.default.rewards as rewards
+import numpy as np
+import pandas as pd
+import pytest
 
+import tensortrade.env.default.rewards as rewards
 from tensortrade.core import TradingContext
-from tensortrade.oms.wallets import Portfolio
-from tensortrade.oms.instruments import USD
+from tensortrade.feed.core import DataFeed, Stream
+from tensortrade.oms.exchanges import Exchange, ExchangeOptions
+from tensortrade.oms.instruments import BTC, USD
+from tensortrade.oms.services.execution.simulated import execute_order
+from tensortrade.oms.wallets import Portfolio, Wallet
 
 
 class TestTensorTradeRewardScheme:
@@ -123,3 +126,209 @@ class TestRiskAdjustedReturns:
         sortino_ratio = scheme._sortino_ratio(returns)
 
         assert sortino_ratio == expected_ratio
+
+
+class TestFractionalPBR:
+    """Tests for FractionalPBR reward scheme."""
+
+    def _make_env_components(self, n_steps=10, initial_cash=10000.0):
+        """Create minimal env components for testing FractionalPBR."""
+        prices = [100.0 + i * 0.5 for i in range(n_steps)]
+        price = Stream.source(prices, dtype="float").rename("USD-BTC")
+
+        exchange = Exchange(
+            "exchange", service=execute_order,
+            options=ExchangeOptions(commission=0.001)
+        )(price)
+
+        cash = Wallet(exchange, initial_cash * USD)
+        asset = Wallet(exchange, 0 * BTC)
+        portfolio = Portfolio(USD, [cash, asset])
+
+        return price, portfolio, cash, asset
+
+    def test_init_defaults(self):
+        """FractionalPBR should initialize with zero position fraction."""
+        price, _, _, _ = self._make_env_components()
+        fpbr = rewards.FractionalPBR(price=price)
+        assert fpbr._prev_position_frac == 0.0
+        assert fpbr.commission == 0.003
+
+    def test_custom_commission(self):
+        """FractionalPBR should accept custom commission."""
+        price, _, _, _ = self._make_env_components()
+        fpbr = rewards.FractionalPBR(price=price, commission=0.01)
+        assert fpbr.commission == 0.01
+
+    def test_on_action_stats(self):
+        """on_action should track buy/sell/hold counts for stats."""
+        price, _, _, _ = self._make_env_components()
+        fpbr = rewards.FractionalPBR(price=price)
+
+        fpbr.on_action(0)  # hold
+        fpbr.on_action(1)  # buy
+        fpbr.on_action(1)  # buy
+        fpbr.on_action(2)  # sell
+
+        stats = fpbr.get_stats()
+        assert stats["buy_count"] == 2
+        assert stats["sell_count"] == 1
+        assert stats["hold_count"] == 1
+        assert stats["trade_count"] == 3
+
+    def test_reset(self):
+        """Reset should clear all state."""
+        price, _, _, _ = self._make_env_components()
+        fpbr = rewards.FractionalPBR(price=price)
+
+        fpbr.on_action(1)
+        fpbr._prev_position_frac = 0.5
+
+        fpbr.reset()
+        assert fpbr._prev_position_frac == 0.0
+        assert fpbr.buy_count == 0
+        assert fpbr.sell_count == 0
+        assert fpbr.hold_count == 0
+
+    def test_reward_via_env(self):
+        """FractionalPBR should return zero reward when holding only cash."""
+        import tensortrade.env.default as default
+        from tensortrade.env.default.actions import BSH
+
+        n_steps = 10
+        prices = [100.0 + i * 0.5 for i in range(n_steps)]
+        price = Stream.source(prices, dtype="float").rename("USD-BTC")
+
+        exchange = Exchange(
+            "exchange", service=execute_order,
+            options=ExchangeOptions(commission=0.0)
+        )(price)
+
+        cash = Wallet(exchange, 10000.0 * USD)
+        asset = Wallet(exchange, 0 * BTC)
+        portfolio = Portfolio(USD, [cash, asset])
+
+        features = [Stream.source(prices, dtype="float").rename("close")]
+        feed = DataFeed(features)
+        feed.compile()
+
+        fpbr = rewards.FractionalPBR(price=price, commission=0.0)
+        action_scheme = BSH(cash=cash, asset=asset).attach(fpbr)
+
+        env = default.create(
+            feed=feed,
+            portfolio=portfolio,
+            action_scheme=action_scheme,
+            reward_scheme=fpbr,
+            window_size=1,
+            max_allowed_loss=0.99,
+        )
+
+        # Step with hold action — should get ~0 reward (all cash, no exposure)
+        _, reward, _, _, _ = env.step(0)
+        assert reward == pytest.approx(0.0, abs=1e-6)
+
+    def test_registry(self):
+        """FractionalPBR should be in the registry."""
+        assert 'fractional-pbr' in rewards._registry
+        assert rewards._registry['fractional-pbr'] == rewards.FractionalPBR
+
+
+class TestMaxDrawdownPenalty:
+    """Tests for MaxDrawdownPenalty reward scheme."""
+
+    def _make_portfolio_with_net_worth(self, net_worth):
+        """Create a portfolio mock with a specific net worth."""
+        portfolio = Portfolio(USD)
+        portfolio._net_worth = net_worth
+        portfolio._initial_net_worth = net_worth
+        return portfolio
+
+    def test_init_defaults(self):
+        """MaxDrawdownPenalty should initialize with default penalty weight."""
+        scheme = rewards.MaxDrawdownPenalty()
+        assert scheme.penalty_weight == 2.0
+
+    def test_custom_penalty_weight(self):
+        """MaxDrawdownPenalty should accept custom penalty weight."""
+        scheme = rewards.MaxDrawdownPenalty(penalty_weight=5.0)
+        assert scheme.penalty_weight == 5.0
+
+    def test_first_call_returns_zero(self):
+        """First call should return 0 (initialization step)."""
+        scheme = rewards.MaxDrawdownPenalty()
+        portfolio = self._make_portfolio_with_net_worth(10000.0)
+        assert scheme.get_reward(portfolio) == 0.0
+
+    def test_positive_return_no_drawdown(self):
+        """Rising net worth with no drawdown should give positive reward."""
+        scheme = rewards.MaxDrawdownPenalty()
+        p = self._make_portfolio_with_net_worth(10000.0)
+
+        scheme.get_reward(p)  # init
+
+        p._net_worth = 10100.0
+        reward = scheme.get_reward(p)
+        # (10100 - 10000) / 10000 = 0.01, no drawdown penalty
+        assert reward == pytest.approx(0.01, abs=1e-6)
+
+    def test_drawdown_deepening_penalized(self):
+        """Deepening drawdown should reduce the reward."""
+        scheme = rewards.MaxDrawdownPenalty(penalty_weight=2.0)
+        p = self._make_portfolio_with_net_worth(10000.0)
+
+        scheme.get_reward(p)  # init
+
+        # Price goes up first (establish peak)
+        p._net_worth = 10500.0
+        scheme.get_reward(p)
+
+        # Now price drops — drawdown deepens
+        p._net_worth = 10000.0
+        reward = scheme.get_reward(p)
+
+        # base reward = (10000 - 10500) / 10000 = -0.05
+        # drawdown = (10500 - 10000) / 10500 ≈ 0.04762
+        # drawdown increase from 0 → 0.04762
+        # penalty = 2.0 * 0.04762 ≈ 0.09524
+        # total = -0.05 - 0.09524 ≈ -0.14524
+        assert reward < -0.05  # strictly worse than just the net worth drop
+
+    def test_recovery_not_penalized(self):
+        """Recovery (drawdown shrinking) should not incur penalty."""
+        scheme = rewards.MaxDrawdownPenalty(penalty_weight=2.0)
+        p = self._make_portfolio_with_net_worth(10000.0)
+
+        scheme.get_reward(p)  # init
+
+        # Drop
+        p._net_worth = 9000.0
+        scheme.get_reward(p)
+
+        # Partial recovery — drawdown shrinks
+        p._net_worth = 9500.0
+        reward = scheme.get_reward(p)
+
+        # base reward = (9500 - 9000) / 10000 = 0.05
+        # drawdown shrinks from ~0.10 to ~0.05 → no penalty (drawdown_increase = 0)
+        assert reward == pytest.approx(0.05, abs=1e-6)
+
+    def test_reset(self):
+        """Reset should clear all state."""
+        scheme = rewards.MaxDrawdownPenalty()
+        p = self._make_portfolio_with_net_worth(10000.0)
+
+        scheme.get_reward(p)
+        p._net_worth = 10500.0
+        scheme.get_reward(p)
+
+        scheme.reset()
+        assert scheme._equity_peak == 0.0
+        assert scheme._prev_net_worth == 0.0
+        assert scheme._prev_drawdown == 0.0
+        assert scheme._initial_net_worth == 0.0
+
+    def test_registry(self):
+        """MaxDrawdownPenalty should be in the registry."""
+        assert 'max-drawdown-penalty' in rewards._registry
+        assert rewards._registry['max-drawdown-penalty'] == rewards.MaxDrawdownPenalty

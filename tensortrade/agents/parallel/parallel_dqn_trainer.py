@@ -13,28 +13,31 @@
 # limitations under the License
 
 
-from deprecated import deprecated
-import numpy as np
-
-from typing import Callable
+from collections.abc import Callable
 from multiprocessing import Process, Queue
 
+import numpy as np
+from deprecated import deprecated
 
-@deprecated(version='1.0.4', reason="Builtin agents are being deprecated in favor of external implementations (ie: Ray)")
+
+@deprecated(
+    version="1.0.4", reason="Builtin agents are being deprecated in favor of external implementations (ie: Ray)"
+)
 class ParallelDQNTrainer(Process):
-
-    def __init__(self,
-                 agent: 'ParallelDQNAgent',
-                 create_env: Callable[[None], 'TrainingEnvironment'],
-                 memory_queue: Queue,
-                 model_update_queue: Queue,
-                 done_queue: Queue,
-                 n_steps: int,
-                 n_episodes: int,
-                 eps_end: int = 0.05,
-                 eps_start: int = 0.99,
-                 eps_decay_steps: int = 2000,
-                 update_target_every: int = 2):
+    def __init__(
+        self,
+        agent: "ParallelDQNAgent",
+        create_env: Callable[[None], "TrainingEnvironment"],
+        memory_queue: Queue,
+        model_update_queue: Queue,
+        done_queue: Queue,
+        n_steps: int,
+        n_episodes: int,
+        eps_end: int = 0.05,
+        eps_start: int = 0.99,
+        eps_decay_steps: int = 2000,
+        update_target_every: int = 2,
+    ):
         super().__init__()
 
         self.agent = agent
@@ -67,13 +70,10 @@ class ParallelDQNTrainer(Process):
             state = self.env.reset()
             done = False
 
-            print('====      EPISODE ID ({}/{}): {}      ===='.format(episode + 1,
-                                                                      self.n_episodes,
-                                                                      self.env.episode_id))
+            print(f"====      EPISODE ID ({episode + 1}/{self.n_episodes}): {self.env.episode_id}      ====")
 
             while not done:
-                threshold = self.eps_end + (self.eps_start - self.eps_end) * \
-                    np.exp(-steps_done / self.eps_decay_steps)
+                threshold = self.eps_end + (self.eps_start - self.eps_end) * np.exp(-steps_done / self.eps_decay_steps)
                 action = self.agent.get_action(state, threshold=threshold)
                 next_state, reward, done, _ = self.env.step(action)
 

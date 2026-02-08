@@ -120,9 +120,7 @@ class TrainingBridge:
                     try:
                         while not self._should_stop.is_set():
                             try:
-                                msg = await asyncio.get_event_loop().run_in_executor(
-                                    None, self._queue.get, True, 0.5
-                                )
+                                msg = await asyncio.get_event_loop().run_in_executor(None, self._queue.get, True, 0.5)
                             except queue.Empty:
                                 continue
 

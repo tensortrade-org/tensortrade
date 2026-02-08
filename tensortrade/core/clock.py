@@ -1,7 +1,7 @@
 from datetime import datetime
 
 
-class Clock(object):
+class Clock:
     """A class to track the time for a process.
 
     Attributes

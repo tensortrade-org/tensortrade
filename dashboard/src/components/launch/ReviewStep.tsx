@@ -69,7 +69,7 @@ export function ReviewStep() {
 	useEffect(() => {
 		if (launchedExperimentId) {
 			redirectTimerRef.current = setTimeout(() => {
-				router.push("/");
+				router.push("/training");
 			}, 3000);
 		}
 		return () => {
@@ -135,7 +135,7 @@ export function ReviewStep() {
 				<div className="flex gap-3">
 					<button
 						type="button"
-						onClick={() => router.push("/")}
+						onClick={() => router.push("/training")}
 						className="rounded-md bg-[var(--accent-blue)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--accent-blue)]/80"
 					>
 						View Dashboard Now

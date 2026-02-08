@@ -1,9 +1,8 @@
-
 import numpy as np
 
+from tensortrade.feed.api.float import Float
 from tensortrade.feed.core.base import Stream
 from tensortrade.feed.core.operators import BinOp
-from tensortrade.feed.api.float import Float
 
 
 @Float.register(["clamp_min"])

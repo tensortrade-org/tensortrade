@@ -188,6 +188,7 @@ export interface InferenceStatus {
 	source?: "inference";
 	episode_summary?: EpisodeSummary;
 	error?: string;
+	dataset_name?: string;
 }
 
 export interface EpisodeSummary {
@@ -223,8 +224,26 @@ export interface TrainingConfig {
 	num_rollout_workers: number;
 	rollout_fragment_length: number;
 	model: ModelConfig;
-	action_scheme: "BSH" | "SimpleOrders" | "ManagedRiskOrders";
-	reward_scheme: "SimpleProfit" | "RiskAdjustedReturns" | "PBR" | "AdvancedPBR";
+	action_scheme:
+		| "BSH"
+		| "TrailingStopBSH"
+		| "BracketBSH"
+		| "DrawdownBudgetBSH"
+		| "CooldownBSH"
+		| "HoldMinimumBSH"
+		| "ConfirmationBSH"
+		| "ScaledEntryBSH"
+		| "PartialTakeProfitBSH"
+		| "VolatilitySizedBSH"
+		| "SimpleOrders"
+		| "ManagedRiskOrders";
+	reward_scheme:
+		| "SimpleProfit"
+		| "RiskAdjustedReturns"
+		| "PBR"
+		| "AdvancedPBR"
+		| "FractionalPBR"
+		| "MaxDrawdownPenalty";
 	reward_params: Record<string, number>;
 	commission: number;
 	initial_cash: number;

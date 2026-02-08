@@ -36,6 +36,13 @@ const LINE_COLORS = [
 	"#f97316",
 ];
 
+const RIGHT_AXIS_PATTERNS = ["pnl", "net_worth"];
+
+function isRightAxisMetric(key: string): boolean {
+	const lower = key.toLowerCase();
+	return RIGHT_AXIS_PATTERNS.some((p) => lower.includes(p));
+}
+
 function ChartTooltip({ active, payload, label }: CustomTooltipProps) {
 	if (!active || !payload || payload.length === 0) return null;
 
@@ -68,7 +75,20 @@ export function MetricsLineChart({ data, metricKeys }: MetricsLineChartProps) {
 		return point;
 	});
 
-	const useDualAxis = metricKeys.length === 2;
+	const leftKeys = metricKeys.filter((k) => !isRightAxisMetric(k));
+	const rightKeys = metricKeys.filter((k) => isRightAxisMetric(k));
+	const useDualAxis = leftKeys.length > 0 && rightKeys.length > 0;
+
+	// Assign colors: left-axis metrics first, then right-axis
+	const orderedKeys = [...leftKeys, ...rightKeys];
+	const colorMap = new Map<string, string>();
+	for (let i = 0; i < orderedKeys.length; i++) {
+		colorMap.set(orderedKeys[i], LINE_COLORS[i % LINE_COLORS.length]);
+	}
+
+	// Pick representative colors for axis labels
+	const leftAxisColor = colorMap.get(leftKeys[0]) ?? LINE_COLORS[0];
+	const rightAxisColor = colorMap.get(rightKeys[0]) ?? LINE_COLORS[1];
 
 	return (
 		<ResponsiveContainer width="100%" height="100%">
@@ -85,8 +105,8 @@ export function MetricsLineChart({ data, metricKeys }: MetricsLineChartProps) {
 				/>
 				<YAxis
 					yAxisId="left"
-					stroke={LINE_COLORS[0]}
-					tick={{ fill: LINE_COLORS[0], fontSize: 11 }}
+					stroke={leftAxisColor}
+					tick={{ fill: leftAxisColor, fontSize: 11 }}
 					tickLine={{ stroke: "#2a2e45" }}
 					axisLine={{ stroke: "#2a2e45" }}
 				/>
@@ -94,24 +114,24 @@ export function MetricsLineChart({ data, metricKeys }: MetricsLineChartProps) {
 					<YAxis
 						yAxisId="right"
 						orientation="right"
-						stroke={LINE_COLORS[1]}
-						tick={{ fill: LINE_COLORS[1], fontSize: 11 }}
+						stroke={rightAxisColor}
+						tick={{ fill: rightAxisColor, fontSize: 11 }}
 						tickLine={{ stroke: "#2a2e45" }}
 						axisLine={{ stroke: "#2a2e45" }}
 					/>
 				)}
 				<Tooltip content={<ChartTooltip />} />
 				<Legend wrapperStyle={{ color: "#8b8fa3", fontSize: 11 }} />
-				{metricKeys.map((key, idx) => (
+				{metricKeys.map((key) => (
 					<Line
 						key={key}
 						type="monotone"
 						dataKey={key}
-						yAxisId={useDualAxis && idx === 1 ? "right" : "left"}
-						stroke={LINE_COLORS[idx % LINE_COLORS.length]}
+						yAxisId={useDualAxis && isRightAxisMetric(key) ? "right" : "left"}
+						stroke={colorMap.get(key) ?? LINE_COLORS[0]}
 						strokeWidth={2}
 						dot={false}
-						activeDot={{ r: 4, fill: LINE_COLORS[idx % LINE_COLORS.length] }}
+						activeDot={{ r: 4, fill: colorMap.get(key) ?? LINE_COLORS[0] }}
 					/>
 				))}
 			</LineChart>

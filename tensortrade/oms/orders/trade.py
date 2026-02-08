@@ -18,7 +18,6 @@ from tensortrade.core import TimedIdentifiable
 
 
 class TradeType(Enum):
-
     LIMIT: str = "limit"
     MARKET: str = "market"
 
@@ -27,7 +26,6 @@ class TradeType(Enum):
 
 
 class TradeSide(Enum):
-
     BUY: str = "buy"
     SELL: str = "sell"
 
@@ -41,15 +39,17 @@ class TradeSide(Enum):
 class Trade(TimedIdentifiable):
     """A trade object for use within trading environments."""
 
-    def __init__(self,
-                 order_id: str,
-                 step: int,
-                 exchange_pair: 'ExchangePair',
-                 side: TradeSide,
-                 trade_type: TradeType,
-                 quantity: 'Quantity',
-                 price: float,
-                 commission: 'Quantity'):
+    def __init__(
+        self,
+        order_id: str,
+        step: int,
+        exchange_pair: "ExchangePair",
+        side: TradeSide,
+        trade_type: TradeType,
+        quantity: "Quantity",
+        price: float,
+        commission: "Quantity",
+    ):
         """
         Arguments:
             order_id: The id of the order that created the trade.
@@ -76,11 +76,11 @@ class Trade(TimedIdentifiable):
         self.commission = commission
 
     @property
-    def base_instrument(self) -> 'Instrument':
+    def base_instrument(self) -> "Instrument":
         return self.exchange_pair.pair.base
 
     @property
-    def quote_instrument(self) -> 'Instrument':
+    def quote_instrument(self) -> "Instrument":
         return self.exchange_pair.pair.quote
 
     @property
@@ -96,11 +96,11 @@ class Trade(TimedIdentifiable):
         self._price = price
 
     @property
-    def commission(self) -> 'Quantity':
+    def commission(self) -> "Quantity":
         return self._commission
 
     @commission.setter
-    def commission(self, commission: 'Quantity'):
+    def commission(self, commission: "Quantity"):
         self._commission = commission
 
     @property
@@ -120,40 +120,42 @@ class Trade(TimedIdentifiable):
         return self.type == TradeType.MARKET
 
     def to_dict(self):
-        return {'id': self.id,
-                'order_id': self.order_id,
-                'step': self.step,
-                'exchange_pair': self.exchange_pair,
-                'base_symbol': self.exchange_pair.pair.base.symbol,
-                'quote_symbol': self.exchange_pair.pair.quote.symbol,
-                'side': self.side,
-                'type': self.type,
-                'size': self.size,
-                'quantity': self.quantity,
-                'price': self.price,
-                'commission': self.commission,
-                "created_at": self.created_at
-                }
+        return {
+            "id": self.id,
+            "order_id": self.order_id,
+            "step": self.step,
+            "exchange_pair": self.exchange_pair,
+            "base_symbol": self.exchange_pair.pair.base.symbol,
+            "quote_symbol": self.exchange_pair.pair.quote.symbol,
+            "side": self.side,
+            "type": self.type,
+            "size": self.size,
+            "quantity": self.quantity,
+            "price": self.price,
+            "commission": self.commission,
+            "created_at": self.created_at,
+        }
 
     def to_json(self):
-        return {'id': str(self.id),
-                'order_id': str(self.order_id),
-                'step': int(self.step),
-                'exchange_pair': str(self.exchange_pair),
-                'base_symbol': str(self.exchange_pair.pair.base.symbol),
-                'quote_symbol': str(self.exchange_pair.pair.quote.symbol),
-                'side': str(self.side),
-                'type': str(self.type),
-                'size': float(self.size),
-                'quantity': str(self.quantity),
-                'price': float(self.price),
-                'commission': str(self.commission),
-                "created_at": str(self.created_at)
-                }
+        return {
+            "id": str(self.id),
+            "order_id": str(self.order_id),
+            "step": int(self.step),
+            "exchange_pair": str(self.exchange_pair),
+            "base_symbol": str(self.exchange_pair.pair.base.symbol),
+            "quote_symbol": str(self.exchange_pair.pair.quote.symbol),
+            "side": str(self.side),
+            "type": str(self.type),
+            "size": float(self.size),
+            "quantity": str(self.quantity),
+            "price": float(self.price),
+            "commission": str(self.commission),
+            "created_at": str(self.created_at),
+        }
 
     def __str__(self):
-        data = ['{}={}'.format(k, v) for k, v in self.to_dict().items()]
-        return '<{}: {}>'.format(self.__class__.__name__, ', '.join(data))
+        data = [f"{k}={v}" for k, v in self.to_dict().items()]
+        return "<{}: {}>".format(self.__class__.__name__, ", ".join(data))
 
     def __repr__(self):
         return str(self)

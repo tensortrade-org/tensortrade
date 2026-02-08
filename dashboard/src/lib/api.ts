@@ -170,16 +170,22 @@ export async function getStudyCurves(name: string): Promise<StudyCurvesResponse>
 interface InferenceRunRequest {
 	experiment_id: string;
 	use_random_agent?: boolean;
+	dataset_id?: string;
 }
 
 export async function startInference(
 	experimentId: string,
 	useRandomAgent = true,
+	datasetId?: string,
 ): Promise<ActionResponse> {
-	return postJSON<ActionResponse>("/inference/run", {
+	const body: InferenceRunRequest = {
 		experiment_id: experimentId,
 		use_random_agent: useRandomAgent,
-	} satisfies InferenceRunRequest);
+	};
+	if (datasetId) {
+		body.dataset_id = datasetId;
+	}
+	return postJSON<ActionResponse>("/inference/run", body as unknown as Record<string, unknown>);
 }
 
 // --- Hyperparameter Packs ---

@@ -6,7 +6,6 @@ import ssl
 
 import pandas as pd
 
-
 ssl._create_default_https_context = ssl._create_unverified_context
 
 
@@ -29,12 +28,9 @@ class CryptoDataDownload:
     def __init__(self) -> None:
         self.url = "https://www.cryptodatadownload.com/cdd/"
 
-    def fetch_default(self,
-                      exchange_name: str,
-                      base_symbol: str,
-                      quote_symbol: str,
-                      timeframe: str,
-                      include_all_volumes: bool = False) -> pd.DataFrame:
+    def fetch_default(
+        self, exchange_name: str, base_symbol: str, quote_symbol: str, timeframe: str, include_all_volumes: bool = False
+    ) -> pd.DataFrame:
         """Fetches data from all exchanges that match the evaluation structure.
 
         Parameters
@@ -57,10 +53,10 @@ class CryptoDataDownload:
             cryptocurrency pair.
         """
 
-        filename = "{}_{}{}_{}.csv".format(exchange_name, quote_symbol, base_symbol, timeframe)
-        base_vc = "Volume {}".format(base_symbol)
+        filename = f"{exchange_name}_{quote_symbol}{base_symbol}_{timeframe}.csv"
+        base_vc = f"Volume {base_symbol}"
         new_base_vc = "volume_base"
-        quote_vc = "Volume {}".format(quote_symbol)
+        quote_vc = f"Volume {quote_symbol}"
         new_quote_vc = "volume_quote"
 
         df = pd.read_csv(self.url + filename, skiprows=1)
@@ -69,9 +65,7 @@ class CryptoDataDownload:
         df = df.rename({base_vc: new_base_vc, quote_vc: new_quote_vc, "Date": "date"}, axis=1)
 
         df["unix"] = df["unix"].astype(int)
-        df["unix"] = df["unix"].apply(
-            lambda x: int(x / 1000) if len(str(x)) == 13 else x
-        )
+        df["unix"] = df["unix"].apply(lambda x: int(x / 1000) if len(str(x)) == 13 else x)
         df["date"] = pd.to_datetime(df["unix"], unit="s")
 
         df = df.set_index("date")
@@ -83,10 +77,7 @@ class CryptoDataDownload:
             return df
         return df
 
-    def fetch_gemini(self,
-                     base_symbol: str,
-                     quote_symbol: str,
-                     timeframe: str) -> pd.DataFrame:
+    def fetch_gemini(self, base_symbol: str, quote_symbol: str, timeframe: str) -> pd.DataFrame:
         """
         Fetches data from the gemini exchange.
 
@@ -116,12 +107,9 @@ class CryptoDataDownload:
         df = df.reset_index()
         return df
 
-    def fetch(self,
-              exchange_name: str,
-              base_symbol: str,
-              quote_symbol: str,
-              timeframe: str,
-              include_all_volumes: bool = False) -> pd.DataFrame:
+    def fetch(
+        self, exchange_name: str, base_symbol: str, quote_symbol: str, timeframe: str, include_all_volumes: bool = False
+    ) -> pd.DataFrame:
         """Fetches data for different exchanges and cryptocurrency pairs.
 
         Parameters
@@ -145,8 +133,6 @@ class CryptoDataDownload:
         """
         if exchange_name.lower() == "gemini":
             return self.fetch_gemini(base_symbol, quote_symbol, timeframe)
-        return self.fetch_default(exchange_name,
-                                  base_symbol,
-                                  quote_symbol,
-                                  timeframe,
-                                  include_all_volumes=include_all_volumes)
+        return self.fetch_default(
+            exchange_name, base_symbol, quote_symbol, timeframe, include_all_volumes=include_all_volumes
+        )

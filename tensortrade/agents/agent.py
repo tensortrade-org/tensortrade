@@ -13,18 +13,18 @@
 # limitations under the License
 
 
-from deprecated import deprecated
+from abc import ABCMeta, abstractmethod
 
 import numpy as np
-
-from abc import ABCMeta, abstractmethod
+from deprecated import deprecated
 
 from tensortrade.core import Identifiable
 
 
-@deprecated(version='1.0.4', reason="Builtin agents are being deprecated in favor of external implementations (ie: Ray)")
+@deprecated(
+    version="1.0.4", reason="Builtin agents are being deprecated in favor of external implementations (ie: Ray)"
+)
 class Agent(Identifiable, metaclass=ABCMeta):
-
     @abstractmethod
     def restore(self, path: str, **kwargs):
         """Restore the agent from the file specified in `path`."""
@@ -41,12 +41,14 @@ class Agent(Identifiable, metaclass=ABCMeta):
         raise NotImplementedError()
 
     @abstractmethod
-    def train(self,
-              n_steps: int = None,
-              n_episodes: int = 10000,
-              save_every: int = None,
-              save_path: str = None,
-              callback: callable = None,
-              **kwargs) -> float:
+    def train(
+        self,
+        n_steps: int = None,
+        n_episodes: int = 10000,
+        save_every: int = None,
+        save_path: str = None,
+        callback: callable = None,
+        **kwargs,
+    ) -> float:
         """Train the agent in the environment and return the mean reward."""
         raise NotImplementedError()

@@ -1,4 +1,3 @@
-
 import numpy as np
 
 from tensortrade.feed.core import DataFeed
@@ -14,7 +13,7 @@ def assert_op(streams, expected):
         d = feed.next()
 
         v = None
-        for k in d.keys():
+        for k in d:
             if v is None:
                 v = d[k]
             else:

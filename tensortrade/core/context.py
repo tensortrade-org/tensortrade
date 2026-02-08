@@ -1,11 +1,9 @@
-import threading
 import json
-import yaml
-
+import threading
 from collections import UserDict
-from typing import List
 
 import numpy as np
+import yaml
 
 from . import registry
 
@@ -48,23 +46,18 @@ class TradingContext(UserDict):
         super().__init__(**config)
 
         r = registry.registry()
-        registered_names = list(np.unique([r[i] for i in r.keys()]))
+        registered_names = list(np.unique([r[i] for i in r]))
 
         for name in registered_names:
             if name not in registry.MAJOR_COMPONENTS:
                 setattr(self, name, config.get(name, {}))
 
-        config_items = {k: config[k]
-                        for k in config.keys()
-                        if k not in registered_names}
+        config_items = {k: config[k] for k in config if k not in registered_names}
 
         self._config = config
-        self._shared = config.get('shared', {})
+        self._shared = config.get("shared", {})
 
-        self._shared = {
-            **self._shared,
-            **config_items
-        }
+        self._shared = {**self._shared, **config_items}
 
     @property
     def shared(self) -> dict:
@@ -78,7 +71,7 @@ class TradingContext(UserDict):
         """
         return self._shared
 
-    def __enter__(self) -> 'TradingContext':
+    def __enter__(self) -> "TradingContext":
         """Adds a new `TradingContext` to the context stack.
 
         This method is used for a `with` statement and adds a `TradingContext`
@@ -108,7 +101,7 @@ class TradingContext(UserDict):
         type(self).get_contexts().pop()
 
     @classmethod
-    def get_contexts(cls) -> List['TradingContext']:
+    def get_contexts(cls) -> list["TradingContext"]:
         """Gets the stack of trading contexts.
 
         Returns
@@ -116,12 +109,12 @@ class TradingContext(UserDict):
         List['TradingContext']
             The stack of trading contexts.
         """
-        if not hasattr(cls.contexts, 'stack'):
+        if not hasattr(cls.contexts, "stack"):
             cls.contexts.stack = [TradingContext({})]
         return cls.contexts.stack
 
     @classmethod
-    def get_context(cls) -> 'TradingContext':
+    def get_context(cls) -> "TradingContext":
         """Gets the first context on the stack.
 
         Returns
@@ -132,7 +125,7 @@ class TradingContext(UserDict):
         return cls.get_contexts()[-1]
 
     @classmethod
-    def from_json(cls, path: str) -> 'TradingContext':
+    def from_json(cls, path: str) -> "TradingContext":
         """Creates a `TradingContext` from a json file.
 
         Parameters
@@ -150,7 +143,7 @@ class TradingContext(UserDict):
         return TradingContext(config)
 
     @classmethod
-    def from_yaml(cls, path: str) -> 'TradingContext':
+    def from_yaml(cls, path: str) -> "TradingContext":
         """Creates a `TradingContext` from a yaml file.
 
         Parameters
@@ -174,9 +167,9 @@ class Context(UserDict):
     """
 
     def __init__(self, **kwargs):
-        super(Context, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.__dict__ = {**self.__dict__, **self.data}
 
     def __str__(self):
-        data = ['{}={}'.format(k, getattr(self, k)) for k in self.__slots__]
-        return '<{}: {}>'.format(self.__class__.__name__, ', '.join(data))
+        data = [f"{k}={getattr(self, k)}" for k in self.__slots__]
+        return "<{}: {}>".format(self.__class__.__name__, ", ".join(data))

@@ -1,11 +1,9 @@
-
-from typing import List, Callable
+from collections.abc import Callable
 
 
 class DataTypeMixin:
-
     @classmethod
-    def register_method(cls, func: "Callable", names: "List[str]"):
+    def register_method(cls, func: "Callable", names: "list[str]"):
         """Injects methods into a specific stream instance.
 
         Parameters
@@ -15,6 +13,7 @@ class DataTypeMixin:
         names : `List[str]`
             The names to be given to the function.
         """
+
         def method(self, *args, **kwargs):
             args = (self,) + args
             return func(*args, **kwargs)

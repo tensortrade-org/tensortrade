@@ -1,14 +1,8 @@
 "use client";
 
+import { ACTION_GROUPS, ACTION_SCHEMES, REWARD_SCHEMES, isCompatible } from "@/lib/scheme-compat";
 import type { TrainingConfig } from "@/lib/types";
 import { useLaunchStore } from "@/stores/launchStore";
-
-interface SelectFieldConfig {
-	key: keyof TrainingConfig;
-	label: string;
-	options: string[];
-	description: string;
-}
 
 interface NumberFieldConfig {
 	key: keyof TrainingConfig;
@@ -18,24 +12,6 @@ interface NumberFieldConfig {
 	step: number;
 	description: string;
 }
-
-const ACTION_SCHEMES: string[] = ["BSH", "SimpleOrders", "ManagedRiskOrders"];
-const REWARD_SCHEMES: string[] = ["SimpleProfit", "RiskAdjustedReturns", "PBR", "AdvancedPBR"];
-
-const SELECT_FIELDS: SelectFieldConfig[] = [
-	{
-		key: "action_scheme",
-		label: "Action Scheme",
-		options: ACTION_SCHEMES,
-		description: "How the agent interacts with the market",
-	},
-	{
-		key: "reward_scheme",
-		label: "Reward Scheme",
-		options: REWARD_SCHEMES,
-		description: "How the agent is rewarded for its actions",
-	},
-];
 
 const NUMBER_FIELDS: NumberFieldConfig[] = [
 	{
@@ -76,6 +52,10 @@ export function EnvironmentStep() {
 	const overrides = useLaunchStore((s) => s.overrides);
 	const setOverride = useLaunchStore((s) => s.setOverride);
 
+	const actionScheme = overrides.action_scheme as string | undefined;
+	const rewardScheme = overrides.reward_scheme as string | undefined;
+	const showWarning = actionScheme && rewardScheme && !isCompatible(actionScheme, rewardScheme);
+
 	return (
 		<div className="space-y-6">
 			<p className="text-sm text-[var(--text-secondary)]">
@@ -84,38 +64,77 @@ export function EnvironmentStep() {
 			</p>
 
 			<div className="grid grid-cols-2 gap-6">
-				{SELECT_FIELDS.map((field) => {
-					const value = overrides[field.key] as string | undefined;
-					return (
-						<div key={field.key}>
-							<label
-								htmlFor={`env-${field.key}`}
-								className="mb-1 block text-sm font-medium text-[var(--text-primary)]"
-							>
-								{field.label}
-							</label>
-							<p className="mb-2 text-xs text-[var(--text-secondary)]">{field.description}</p>
-							<select
-								id={`env-${field.key}`}
-								value={value ?? ""}
-								onChange={(e) => {
-									const val = e.target.value;
-									if (val) {
-										setOverride(field.key, val as TrainingConfig[typeof field.key] & string);
-									}
-								}}
-								className="w-full rounded-md border border-[var(--border-color)] bg-[var(--bg-secondary)] px-3 py-2 text-sm text-[var(--text-primary)] focus:border-[var(--accent-blue)] focus:outline-none"
-							>
-								<option value="">-- Use pack default --</option>
-								{field.options.map((opt) => (
-									<option key={opt} value={opt}>
-										{opt}
+				{/* Action Scheme */}
+				<div>
+					<label
+						htmlFor="env-action_scheme"
+						className="mb-1 block text-sm font-medium text-[var(--text-primary)]"
+					>
+						Action Scheme
+					</label>
+					<p className="mb-2 text-xs text-[var(--text-secondary)]">
+						How the agent interacts with the market
+					</p>
+					<select
+						id="env-action_scheme"
+						value={actionScheme ?? ""}
+						onChange={(e) => {
+							const val = e.target.value;
+							if (val) {
+								setOverride("action_scheme", val as TrainingConfig["action_scheme"]);
+							}
+						}}
+						className="w-full rounded-md border border-[var(--border-color)] bg-[var(--bg-secondary)] px-3 py-2 text-sm text-[var(--text-primary)] focus:border-[var(--accent-blue)] focus:outline-none"
+					>
+						<option value="">-- Use pack default --</option>
+						{ACTION_GROUPS.map((group) => (
+							<optgroup key={group} label={group}>
+								{ACTION_SCHEMES.filter((a) => a.group === group).map((a) => (
+									<option key={a.value} value={a.value}>
+										{a.label}
 									</option>
 								))}
-							</select>
-						</div>
-					);
-				})}
+							</optgroup>
+						))}
+					</select>
+				</div>
+
+				{/* Reward Scheme */}
+				<div>
+					<label
+						htmlFor="env-reward_scheme"
+						className="mb-1 block text-sm font-medium text-[var(--text-primary)]"
+					>
+						Reward Scheme
+					</label>
+					<p className="mb-2 text-xs text-[var(--text-secondary)]">
+						How the agent is rewarded for its actions
+					</p>
+					<select
+						id="env-reward_scheme"
+						value={rewardScheme ?? ""}
+						onChange={(e) => {
+							const val = e.target.value;
+							if (val) {
+								setOverride("reward_scheme", val as TrainingConfig["reward_scheme"]);
+							}
+						}}
+						className="w-full rounded-md border border-[var(--border-color)] bg-[var(--bg-secondary)] px-3 py-2 text-sm text-[var(--text-primary)] focus:border-[var(--accent-blue)] focus:outline-none"
+					>
+						<option value="">-- Use pack default --</option>
+						{REWARD_SCHEMES.map((r) => (
+							<option key={r.value} value={r.value}>
+								{r.label}
+							</option>
+						))}
+					</select>
+					{showWarning && (
+						<p className="text-xs text-amber-500 mt-1">
+							{rewardScheme} requires Discrete(3) BSH-style actions. {actionScheme} is not
+							compatible — use SimpleProfit or RiskAdjustedReturns.
+						</p>
+					)}
+				</div>
 			</div>
 
 			<div className="grid grid-cols-2 gap-6">

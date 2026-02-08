@@ -1,14 +1,14 @@
-
-import pytest
 import unittest.mock as mock
 
+import pytest
+
 from tensortrade.core.base import Clock
-from tensortrade.oms.wallets import Wallet, Portfolio
-from tensortrade.oms.instruments import USD, BTC, ETH, XRP, BCH
+from tensortrade.oms.instruments import BCH, BTC, ETH, USD, XRP
+from tensortrade.oms.wallets import Portfolio, Wallet
 
 
 @pytest.fixture
-@mock.patch('tensortrade.exchanges.Exchange')
+@mock.patch("tensortrade.exchanges.Exchange")
 def exchange(mock_exchange_class):
 
     exchange = mock_exchange_class.return_value
@@ -19,17 +19,9 @@ def exchange(mock_exchange_class):
 
     def quote_price(pair):
         if exchange.clock.step == 0:
-            d = {
-                ("USD", "BTC"): 7117.00,
-                ("USD", "ETH"): 143.00,
-                ("USD", "XRP"): 0.22
-            }
+            d = {("USD", "BTC"): 7117.00, ("USD", "ETH"): 143.00, ("USD", "XRP"): 0.22}
             return d[(pair.base.symbol, pair.quote.symbol)]
-        d = {
-            ("USD", "BTC"): 6750.00,
-            ("USD", "ETH"): 135.00,
-            ("USD", "XRP"): 0.30
-        }
+        d = {("USD", "BTC"): 6750.00, ("USD", "ETH"): 135.00, ("USD", "XRP"): 0.30}
         return d[(pair.base.symbol, pair.quote.symbol)]
 
     exchange.quote_price = mock.Mock(side_effect=quote_price)
@@ -60,20 +52,10 @@ def wallet_xrp(exchange):
 @pytest.fixture
 def portfolio(wallet_usd, wallet_btc, wallet_eth, wallet_xrp, exchange):
 
-    portfolio = Portfolio(USD, wallets=[
-        wallet_usd,
-        wallet_btc,
-        wallet_eth,
-        wallet_xrp
-    ])
+    portfolio = Portfolio(USD, wallets=[wallet_usd, wallet_btc, wallet_eth, wallet_xrp])
 
-    with mock.patch.object(Portfolio, 'clock', return_value=exchange.clock) as clock:
-        portfolio = Portfolio(USD, wallets=[
-            wallet_usd,
-            wallet_btc,
-            wallet_eth,
-            wallet_xrp
-        ])
+    with mock.patch.object(Portfolio, "clock", return_value=exchange.clock) as _clock:
+        portfolio = Portfolio(USD, wallets=[wallet_usd, wallet_btc, wallet_eth, wallet_xrp])
 
     return portfolio
 
@@ -81,14 +63,8 @@ def portfolio(wallet_usd, wallet_btc, wallet_eth, wallet_xrp, exchange):
 @pytest.fixture
 def portfolio_locked(portfolio, wallet_usd, wallet_btc, wallet_eth, wallet_xrp):
     def allocate(wallet, amount, identifier):
-        wallet.withdraw(
-            quantity=amount,
-            reason="test"
-        )
-        wallet.deposit(
-            quantity=amount.lock_for(identifier),
-            reason="test"
-        )
+        wallet.withdraw(quantity=amount, reason="test")
+        wallet.deposit(quantity=amount.lock_for(identifier), reason="test")
         return wallet
 
     wallet_usd = allocate(wallet_usd, 50 * USD, "1")
@@ -115,10 +91,7 @@ def test_init_empty():
 
 def test_init_from_wallets(exchange):
 
-    portfolio = Portfolio(USD, wallets=[
-        Wallet(exchange, 10000 * USD),
-        Wallet(exchange, 0 * BTC)
-    ])
+    portfolio = Portfolio(USD, wallets=[Wallet(exchange, 10000 * USD), Wallet(exchange, 0 * BTC)])
 
     assert portfolio.base_instrument == USD
     assert portfolio.base_balance == 10000 * USD
@@ -128,10 +101,7 @@ def test_init_from_wallets(exchange):
 
 def test_init_from_wallet_tuples(exchange):
 
-    portfolio = Portfolio(USD, wallets=[
-        (exchange, USD, 10000),
-        (exchange, BTC, 0)
-    ])
+    portfolio = Portfolio(USD, wallets=[(exchange, USD, 10000), (exchange, BTC, 0)])
 
     assert portfolio.base_instrument == USD
     assert portfolio.base_balance == 10000 * USD

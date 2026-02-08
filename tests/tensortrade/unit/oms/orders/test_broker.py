@@ -1,16 +1,15 @@
-
-import pytest
 import unittest.mock as mock
-
 from decimal import Decimal
 
-from tensortrade.oms.orders import Broker, OrderStatus, Order, OrderSpec, TradeSide, TradeType
+import pytest
+
+from tensortrade.oms.instruments import BTC, USD, ExchangePair, Quantity
+from tensortrade.oms.orders import Broker, Order, OrderSpec, OrderStatus, TradeSide, TradeType
 from tensortrade.oms.orders.criteria import Stop
-from tensortrade.oms.wallets import Wallet, Portfolio
-from tensortrade.oms.instruments import USD, BTC, Quantity, ExchangePair
+from tensortrade.oms.wallets import Portfolio, Wallet
 
 
-@mock.patch('tensortrade.exchanges.Exchange')
+@mock.patch("tensortrade.exchanges.Exchange")
 def test_init(mock_exchange_class):
 
     exchange = mock_exchange_class.return_value
@@ -23,11 +22,7 @@ def test_init(mock_exchange_class):
     assert broker.executed == {}
     assert broker.trades == {}
 
-    exchanges = [
-        mock_exchange_class.return_value,
-        mock_exchange_class.return_value,
-        mock_exchange_class.return_value
-    ]
+    exchanges = [mock_exchange_class.return_value, mock_exchange_class.return_value, mock_exchange_class.return_value]
     broker = Broker()
     broker.exchanges = exchanges
     assert broker
@@ -37,10 +32,9 @@ def test_init(mock_exchange_class):
     assert broker.trades == {}
 
 
-@mock.patch('tensortrade.orders.Order')
-@mock.patch('tensortrade.exchanges.Exchange')
-def test_submit(mock_order_class,
-                mock_exchange_class):
+@mock.patch("tensortrade.orders.Order")
+@mock.patch("tensortrade.exchanges.Exchange")
+def test_submit(mock_order_class, mock_exchange_class):
 
     exchange = mock_exchange_class.return_value
     broker = Broker()
@@ -53,10 +47,9 @@ def test_submit(mock_order_class,
     assert order in broker.unexecuted
 
 
-@mock.patch('tensortrade.orders.Order')
-@mock.patch('tensortrade.exchanges.Exchange')
-def test_cancel_unexecuted_order(mock_order_class,
-                                 mock_exchange_class):
+@mock.patch("tensortrade.orders.Order")
+@mock.patch("tensortrade.exchanges.Exchange")
+def test_cancel_unexecuted_order(mock_order_class, mock_exchange_class):
 
     exchange = mock_exchange_class.return_value
     broker = Broker()
@@ -74,10 +67,9 @@ def test_cancel_unexecuted_order(mock_order_class,
     order.cancel.assert_called_once_with()
 
 
-@mock.patch('tensortrade.orders.Order')
-@mock.patch('tensortrade.exchanges.Exchange')
-def test_cancel_executed_order(mock_order_class,
-                               mock_exchange_class):
+@mock.patch("tensortrade.orders.Order")
+@mock.patch("tensortrade.exchanges.Exchange")
+def test_cancel_executed_order(mock_order_class, mock_exchange_class):
 
     exchange = mock_exchange_class.return_value
     exchange.options.max_trade_size = 1e6
@@ -95,10 +87,9 @@ def test_cancel_executed_order(mock_order_class,
         broker.cancel(order)
 
 
-@mock.patch('tensortrade.orders.Order')
-@mock.patch('tensortrade.exchanges.Exchange')
-def test_update_on_single_exchange_with_single_order(mock_order_class,
-                                                     mock_exchange_class):
+@mock.patch("tensortrade.orders.Order")
+@mock.patch("tensortrade.exchanges.Exchange")
+def test_update_on_single_exchange_with_single_order(mock_order_class, mock_exchange_class):
 
     exchange = mock_exchange_class.return_value
     broker = Broker()
@@ -120,10 +111,9 @@ def test_update_on_single_exchange_with_single_order(mock_order_class,
     order.attach.assert_called_once_with(broker)
 
 
-@mock.patch('tensortrade.exchanges.Exchange')
-@mock.patch('tensortrade.orders.Trade')
-def test_on_fill(mock_trade_class,
-                 mock_exchange_class):
+@mock.patch("tensortrade.exchanges.Exchange")
+@mock.patch("tensortrade.orders.Trade")
+def test_on_fill(mock_trade_class, mock_exchange_class):
 
     exchange = mock_exchange_class.return_value
     exchange.options.max_trade_size = 1e6
@@ -137,13 +127,15 @@ def test_on_fill(mock_trade_class,
     wallets = [Wallet(exchange, 10000 * USD), Wallet(exchange, 0 * BTC)]
     portfolio = Portfolio(USD, wallets)
 
-    order = Order(step=0,
-                  exchange_pair=ExchangePair(exchange, USD / BTC),
-                  side=TradeSide.BUY,
-                  trade_type=TradeType.MARKET,
-                  quantity=5200.00 * USD,
-                  portfolio=portfolio,
-                  price=7000.00)
+    order = Order(
+        step=0,
+        exchange_pair=ExchangePair(exchange, USD / BTC),
+        side=TradeSide.BUY,
+        trade_type=TradeType.MARKET,
+        quantity=5200.00 * USD,
+        portfolio=portfolio,
+        price=7000.00,
+    )
 
     order.attach(broker)
 
@@ -165,10 +157,9 @@ def test_on_fill(mock_trade_class,
     assert trade in broker.trades[order.id]
 
 
-@mock.patch('tensortrade.exchanges.Exchange')
-@mock.patch('tensortrade.orders.Trade')
-def test_on_fill_with_complex_order(mock_trade_class,
-                                    mock_exchange_class):
+@mock.patch("tensortrade.exchanges.Exchange")
+@mock.patch("tensortrade.orders.Trade")
+def test_on_fill_with_complex_order(mock_trade_class, mock_exchange_class):
 
     exchange = mock_exchange_class.return_value
     exchange.options.max_trade_size = 1e6
@@ -184,20 +175,24 @@ def test_on_fill_with_complex_order(mock_trade_class,
 
     side = TradeSide.BUY
 
-    order = Order(step=0,
-                  exchange_pair=ExchangePair(exchange, USD / BTC),
-                  side=TradeSide.BUY,
-                  trade_type=TradeType.MARKET,
-                  quantity=5200.00 * USD,
-                  portfolio=portfolio,
-                  price=Decimal(7000.00))
+    order = Order(
+        step=0,
+        exchange_pair=ExchangePair(exchange, USD / BTC),
+        side=TradeSide.BUY,
+        trade_type=TradeType.MARKET,
+        quantity=5200.00 * USD,
+        portfolio=portfolio,
+        price=Decimal(7000.00),
+    )
 
     risk_criteria = Stop("down", 0.03) ^ Stop("up", 0.02)
 
-    risk_management = OrderSpec(side=TradeSide.SELL if side == TradeSide.BUY else TradeSide.BUY,
-                                trade_type=TradeType.MARKET,
-                                exchange_pair=ExchangePair(exchange, USD / BTC),
-                                criteria=risk_criteria)
+    risk_management = OrderSpec(
+        side=TradeSide.SELL if side == TradeSide.BUY else TradeSide.BUY,
+        trade_type=TradeType.MARKET,
+        exchange_pair=ExchangePair(exchange, USD / BTC),
+        criteria=risk_criteria,
+    )
 
     order.add_order_spec(risk_management)
 
@@ -226,16 +221,10 @@ def test_on_fill_with_complex_order(mock_trade_class,
     base_size = trade.size + trade.commission.size
     quote_size = (order.price / trade.price) * (trade.size / trade.price)
 
-    base_wallet.withdraw(
-        quantity=Quantity(USD, size=base_size, path_id=order.path_id),
-        reason="test"
-    )
-    quote_wallet.deposit(
-        quantity=Quantity(BTC, size=quote_size, path_id=order.path_id),
-        reason="test"
-    )
+    base_wallet.withdraw(quantity=Quantity(USD, size=base_size, path_id=order.path_id), reason="test")
+    quote_wallet.deposit(quantity=Quantity(BTC, size=quote_size, path_id=order.path_id), reason="test")
 
-    assert trade.order_id in broker.executed.keys()
+    assert trade.order_id in broker.executed
     assert trade not in broker.trades
     assert broker.unexecuted == []
 
@@ -246,7 +235,7 @@ def test_on_fill_with_complex_order(mock_trade_class,
     assert broker.unexecuted != []
 
 
-@mock.patch('tensortrade.exchanges.Exchange')
+@mock.patch("tensortrade.exchanges.Exchange")
 def test_reset(mock_exchange_class):
 
     exchange = mock_exchange_class.return_value
@@ -256,8 +245,8 @@ def test_reset(mock_exchange_class):
     broker.exchanges = [exchange]
 
     broker._unexecuted = [78, 98, 100]
-    broker._executed = {'a': 1, 'b': 2}
-    broker._trades = {'a': 2, 'b': 3}
+    broker._executed = {"a": 1, "b": 2}
+    broker._trades = {"a": 2, "b": 3}
 
     broker.reset()
 

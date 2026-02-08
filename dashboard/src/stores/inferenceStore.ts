@@ -4,6 +4,7 @@ import { create } from "zustand";
 interface InferenceState {
 	status: InferenceStatus["state"];
 	experimentId: string | null;
+	datasetName: string | null;
 	steps: StepUpdate[];
 	trades: TradeEvent[];
 	episodeSummary: EpisodeSummary | null;
@@ -21,6 +22,7 @@ const initialState: Pick<
 	InferenceState,
 	| "status"
 	| "experimentId"
+	| "datasetName"
 	| "steps"
 	| "trades"
 	| "episodeSummary"
@@ -30,6 +32,7 @@ const initialState: Pick<
 > = {
 	status: "idle",
 	experimentId: null,
+	datasetName: null,
 	steps: [],
 	trades: [],
 	episodeSummary: null,
@@ -45,6 +48,7 @@ export const useInferenceStore = create<InferenceState>((set) => ({
 		set({
 			status: msg.state,
 			experimentId: msg.experiment_id,
+			datasetName: msg.dataset_name ?? null,
 			totalSteps: msg.total_steps,
 			currentStep: msg.current_step,
 			episodeSummary: msg.episode_summary ?? null,

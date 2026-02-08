@@ -1,6 +1,4 @@
-
-
-from tensortrade.feed import Stream, DataFeed
+from tensortrade.feed import DataFeed, Stream
 
 
 def test_generic():

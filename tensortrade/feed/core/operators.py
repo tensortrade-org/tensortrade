@@ -1,11 +1,9 @@
-
-from typing import Callable, TypeVar
-
+from collections.abc import Callable
+from typing import TypeVar
 
 import numpy as np
 
 from tensortrade.feed.core.base import Stream, T
-
 
 K = TypeVar("K")
 
@@ -22,9 +20,7 @@ class Apply(Stream[K]):
         The data type of the values after function is applied.
     """
 
-    def __init__(self,
-                 func: Callable[[T], K],
-                 dtype: str = None) -> None:
+    def __init__(self, func: Callable[[T], K], dtype: str = None) -> None:
         super().__init__(dtype=dtype)
         self.func = func
 
@@ -49,9 +45,7 @@ class Lag(Stream[T]):
 
     generic_name = "lag"
 
-    def __init__(self,
-                 lag: int = 1,
-                 dtype: str = None) -> None:
+    def __init__(self, lag: int = 1, dtype: str = None) -> None:
         super().__init__(dtype=dtype)
         self.lag = lag
         self.runs = 0
@@ -86,9 +80,7 @@ class Accumulator(Stream[T]):
         The data type of accumulated value.
     """
 
-    def __init__(self,
-                 func: "Callable[[T, T], T]",
-                 dtype: str = None) -> None:
+    def __init__(self, func: "Callable[[T, T], T]", dtype: str = None) -> None:
         super().__init__(dtype)
         self.func = func
         self.past = None
@@ -161,9 +153,7 @@ class BinOp(Stream[T]):
 
     generic_name = "bin_op"
 
-    def __init__(self,
-                 op: Callable[[T, T], T],
-                 dtype: str = None) -> None:
+    def __init__(self, op: Callable[[T, T], T], dtype: str = None) -> None:
         super().__init__(dtype=dtype)
         self.op = op
 

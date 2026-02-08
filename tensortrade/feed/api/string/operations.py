@@ -2,8 +2,8 @@
 operations.py contain functions for streaming string operations.
 """
 
-from tensortrade.feed.core.base import Stream
 from tensortrade.feed.api.string import String
+from tensortrade.feed.core.base import Stream
 
 
 @String.register(["capitalize"])

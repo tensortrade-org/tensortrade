@@ -6,11 +6,12 @@ import { Card, CardHeader } from "@/components/common/Card";
 import { LoadingState } from "@/components/common/Spinner";
 import { MetricCards } from "@/components/experiments/MetricCards";
 import { TradingBehaviorCard } from "@/components/experiments/TradingBehaviorCard";
+import { InsightCard } from "@/components/insights/InsightCard";
 import { InsightRequest } from "@/components/insights/InsightRequest";
 import { useApi } from "@/hooks/useApi";
 import { getExperiment } from "@/lib/api";
 import { formatDate } from "@/lib/formatters";
-import type { ExperimentDetail } from "@/lib/types";
+import type { ExperimentDetail, InsightReport } from "@/lib/types";
 import { useParams } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 
@@ -19,6 +20,7 @@ export default function ExperimentDetailPage() {
 	const experimentId = params.id as string;
 
 	const [showInsightRequest, setShowInsightRequest] = useState(false);
+	const [insightReport, setInsightReport] = useState<InsightReport | null>(null);
 
 	const experimentFetcher = useCallback(() => getExperiment(experimentId), [experimentId]);
 
@@ -34,7 +36,8 @@ export default function ExperimentDetailPage() {
 		return Object.keys(firstMetrics);
 	}, [detail?.iterations]);
 
-	const handleInsightComplete = useCallback(() => {
+	const handleInsightComplete = useCallback((report: InsightReport) => {
+		setInsightReport(report);
 		setShowInsightRequest(false);
 	}, []);
 
@@ -104,6 +107,9 @@ export default function ExperimentDetailPage() {
 					<InsightRequest experimentIds={[experimentId]} onComplete={handleInsightComplete} />
 				</Card>
 			)}
+
+			{/* Insight Result */}
+			{insightReport && <InsightCard insight={insightReport} />}
 
 			{/* Final Metrics */}
 			<MetricCards metrics={experiment.final_metrics} />

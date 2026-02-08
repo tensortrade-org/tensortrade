@@ -2,25 +2,16 @@
 operators.py contains function for generic stream operators.
 """
 
-from typing import Callable
+from collections.abc import Callable
 
 from tensortrade.feed.core.base import Stream, T
-from tensortrade.feed.core.operators import (
-    Apply,
-    Lag,
-    Freeze,
-    Accumulator,
-    Copy,
-    TypeVar
-)
+from tensortrade.feed.core.operators import Accumulator, Apply, Copy, Freeze, Lag, TypeVar
 
 K = TypeVar("K")
 
 
 @Stream.register_generic_method(["apply"])
-def apply(s: "Stream[T]",
-          func: Callable[[T], K],
-          dtype: str = None) -> "Stream[K]":
+def apply(s: "Stream[T]", func: Callable[[T], K], dtype: str = None) -> "Stream[K]":
     """Creates an apply stream.
 
     Parameters

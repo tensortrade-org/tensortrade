@@ -1,8 +1,6 @@
 """Tests for the TensorBoard logger."""
 
-import os
-import pytest
-from unittest.mock import MagicMock, patch, call
+from unittest.mock import MagicMock, patch
 
 
 class TestTensorBoardConfig:
@@ -26,8 +24,8 @@ class TestTradingTensorBoardLogger:
     @patch("torch.utils.tensorboard.SummaryWriter")
     def test_log_training_result(self, mock_writer_cls, mock_layout, tmp_path):
         from tensortrade.training.tensorboard import (
-            TradingTensorBoardLogger,
             TensorBoardConfig,
+            TradingTensorBoardLogger,
         )
 
         mock_writer = MagicMock()
@@ -73,8 +71,8 @@ class TestTradingTensorBoardLogger:
     @patch("torch.utils.tensorboard.SummaryWriter")
     def test_log_evaluation(self, mock_writer_cls, mock_layout, tmp_path):
         from tensortrade.training.tensorboard import (
-            TradingTensorBoardLogger,
             TensorBoardConfig,
+            TradingTensorBoardLogger,
         )
 
         mock_writer = MagicMock()
@@ -100,8 +98,8 @@ class TestTradingTensorBoardLogger:
     @patch("torch.utils.tensorboard.SummaryWriter")
     def test_flush_and_close(self, mock_writer_cls, mock_layout, tmp_path):
         from tensortrade.training.tensorboard import (
-            TradingTensorBoardLogger,
             TensorBoardConfig,
+            TradingTensorBoardLogger,
         )
 
         mock_writer = MagicMock()
@@ -120,8 +118,8 @@ class TestTradingTensorBoardLogger:
     @patch("torch.utils.tensorboard.SummaryWriter")
     def test_handles_empty_result(self, mock_writer_cls, mock_layout, tmp_path):
         from tensortrade.training.tensorboard import (
-            TradingTensorBoardLogger,
             TensorBoardConfig,
+            TradingTensorBoardLogger,
         )
 
         mock_writer = MagicMock()
