@@ -27,7 +27,7 @@ import type {
 	ParamImportance as ParamImportanceType,
 	StudyCurvesResponse,
 } from "@/lib/types";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Markdown from "react-markdown";
 
@@ -45,10 +45,12 @@ function BestTrialsTable({
 	trials,
 	highlightedTrial,
 	onTrialClick,
+	onRunInference,
 }: {
 	trials: OptunaTrialRecord[];
 	highlightedTrial: number | null;
 	onTrialClick: (trialNumber: number) => void;
+	onRunInference: (experimentId: string) => void;
 }) {
 	const bestTrials = useMemo(() => {
 		const completed = trials.filter((t) => t.state === "complete" && t.value !== null);
@@ -72,7 +74,8 @@ function BestTrialsTable({
 						<th className="pb-2 pr-4 font-medium text-right">Val P&amp;L</th>
 						<th className="pb-2 pr-4 font-medium text-right">Duration</th>
 						<th className="pb-2 pr-4 font-medium">State</th>
-						<th className="pb-2 font-medium">Parameters</th>
+						<th className="pb-2 pr-4 font-medium">Parameters</th>
+						<th className="pb-2 font-medium" />
 					</tr>
 				</thead>
 				<tbody>
@@ -103,7 +106,7 @@ function BestTrialsTable({
 								<td className="py-2 pr-4">
 									<Badge label={trial.state} variant={stateInfo.variant} />
 								</td>
-								<td className="py-2">
+								<td className="py-2 pr-4">
 									<code className="text-xs text-[var(--text-secondary)]">
 										{Object.entries(trial.params)
 											.map(([k, v]) => {
@@ -112,6 +115,20 @@ function BestTrialsTable({
 											})
 											.join(", ")}
 									</code>
+								</td>
+								<td className="py-2">
+									{trial.experiment_id && (
+										<button
+											type="button"
+											onClick={(e) => {
+												e.stopPropagation();
+												onRunInference(trial.experiment_id as string);
+											}}
+											className="rounded bg-[var(--accent-blue)] px-2 py-1 text-xs font-medium text-white hover:bg-[var(--accent-blue)]/80 transition-colors whitespace-nowrap"
+										>
+											Run Inference
+										</button>
+									)}
 								</td>
 							</tr>
 						);
@@ -124,6 +141,7 @@ function BestTrialsTable({
 
 export default function OptunaStudyDetailPage() {
 	const params = useParams();
+	const router = useRouter();
 	const studyName = decodeURIComponent(params.name as string);
 
 	const [showInsight, setShowInsight] = useState(false);
@@ -524,6 +542,9 @@ export default function OptunaStudyDetailPage() {
 					trials={study.trials}
 					highlightedTrial={highlightedTrial}
 					onTrialClick={handleTrialClick}
+					onRunInference={(experimentId) => {
+						router.push(`/live?experiment_id=${encodeURIComponent(experimentId)}`);
+					}}
 				/>
 			</Card>
 		</div>

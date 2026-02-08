@@ -12,7 +12,8 @@ import { InferenceControls } from "@/components/inference/InferenceControls";
 import { startInference } from "@/lib/api";
 import { formatCurrency, formatNumber } from "@/lib/formatters";
 import { useInferenceStore } from "@/stores/inferenceStore";
-import { useCallback, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 const ACTION_LABELS: Record<number, string> = {
 	0: "Hold",
@@ -21,8 +22,17 @@ const ACTION_LABELS: Record<number, string> = {
 };
 
 export default function InferencePlaybackPage() {
+	const searchParams = useSearchParams();
 	const [selectedExperiment, setSelectedExperiment] = useState<string | null>(null);
 	const [selectedDataset, setSelectedDataset] = useState("");
+
+	// Auto-select experiment from URL query param (e.g. from Optuna "Run Inference")
+	useEffect(() => {
+		const expId = searchParams.get("experiment_id");
+		if (expId && !selectedExperiment) {
+			setSelectedExperiment(expId);
+		}
+	}, [searchParams, selectedExperiment]);
 
 	const status = useInferenceStore((s) => s.status);
 	const steps = useInferenceStore((s) => s.steps);

@@ -15,8 +15,8 @@ import pandas as pd
 
 import tensortrade.env.default as default
 from tensortrade.data.cdd import CryptoDataDownload
-from tensortrade.env.default.actions import BSH
-from tensortrade.env.default.rewards import PBR
+from tensortrade.env.default import actions as tt_actions
+from tensortrade.env.default import rewards as tt_rewards
 from tensortrade.feed.core import DataFeed, Stream
 from tensortrade.oms.exchanges import Exchange, ExchangeOptions
 from tensortrade.oms.instruments import BTC, USD
@@ -126,17 +126,17 @@ class InferenceRunner:
                     v = 0.0
                     ts = step
 
-                # Track action distribution
+                # Track action distribution (works for BSH and ScaledEntryBSH)
                 if action == 0:
                     hold_count += 1
                 elif action == 1:
                     buy_count += 1
-                elif action == 2:
-                    sell_count += 1
+                else:
+                    sell_count += 1  # action 2 (BSH sell) or 2/3 (ScaledEntry sell)
 
                 # Detect trades by net worth change threshold
                 nw_change = abs(net_worth - prev_net_worth)
-                if action in (1, 2) and nw_change > 0.01:
+                if action >= 1 and nw_change > 0.01:
                     total_trades += 1
                     side = "buy" if action == 1 else "sell"
                     await self.manager.broadcast_to_dashboards(
@@ -292,8 +292,30 @@ class InferenceRunner:
         feed = DataFeed(features)
         feed.compile()
 
-        reward_scheme = PBR(price=price, commission=commission)
-        action_scheme = BSH(cash=cash, asset=asset).attach(reward_scheme)
+        # Dispatch reward scheme from config
+        reward_name = training_config.get("reward_scheme", config.get("reward_scheme", "PBR"))
+        reward_params = training_config.get("reward_params", config.get("reward_params", {}))
+        if reward_name == "PBR":
+            reward_scheme = tt_rewards.PBR(price=price, commission=commission)
+        elif reward_name == "AdvancedPBR":
+            reward_scheme = tt_rewards.AdvancedPBR(price=price, commission=commission, **reward_params)
+        elif reward_name == "FractionalPBR":
+            reward_scheme = tt_rewards.FractionalPBR(price=price, commission=commission)
+        elif reward_name == "RiskAdjustedReturns":
+            reward_scheme = tt_rewards.RiskAdjustedReturns(**reward_params)
+        elif reward_name == "MaxDrawdownPenalty":
+            reward_scheme = tt_rewards.MaxDrawdownPenalty(**reward_params)
+        elif reward_name == "AdaptiveProfitSeeker":
+            reward_scheme = tt_rewards.AdaptiveProfitSeeker(price=price, commission=commission, **reward_params)
+        else:
+            reward_scheme = tt_rewards.SimpleProfit(**reward_params)
+
+        # Dispatch action scheme from config
+        action_name = training_config.get("action_scheme", config.get("action_scheme", "BSH"))
+        action_cls = getattr(tt_actions, action_name, tt_actions.BSH)
+        action_scheme = action_cls(cash=cash, asset=asset)
+        if hasattr(reward_scheme, "on_action"):
+            action_scheme.attach(reward_scheme)
 
         env = default.create(
             feed=feed,

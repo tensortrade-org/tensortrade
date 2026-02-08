@@ -132,18 +132,22 @@ export function CandlestickChart({ steps, trades }: CandlestickChartProps) {
 			candleSeriesRef.current.setData(candleData);
 			volumeSeriesRef.current.setData(volumeData);
 		} else {
-			// Incremental — only update new steps
+			// Incremental — only update new steps (time must be strictly increasing)
+			let lastTime = prevCount > 0 ? (timeFor(steps[prevCount - 1]) as number) : -1;
 			for (let i = prevCount; i < steps.length; i++) {
 				const s = steps[i];
+				const t = timeFor(s) as number;
+				if (t <= lastTime) continue; // skip non-monotonic timestamps
+				lastTime = t;
 				candleSeriesRef.current.update({
-					time: timeFor(s),
+					time: t as Time,
 					open: s.open,
 					high: s.high,
 					low: s.low,
 					close: s.close,
 				});
 				volumeSeriesRef.current.update({
-					time: timeFor(s),
+					time: t as Time,
 					value: s.volume,
 				});
 			}
