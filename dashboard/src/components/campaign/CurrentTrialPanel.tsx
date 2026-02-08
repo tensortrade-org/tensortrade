@@ -1,18 +1,29 @@
 "use client";
 
+type ParamValue = number | string | boolean | null | undefined;
+
 interface CurrentTrialPanelProps {
 	trialNumber: number | null;
-	params: Record<string, number | string>;
+	params: Record<string, ParamValue>;
 	latestMetrics: Record<string, number>;
 	iteration: number;
 	totalIterations: number;
 }
 
-function formatParamValue(value: number | string): string {
+function formatParamValue(value: ParamValue): string {
+	if (value == null) return "—";
+	if (typeof value === "boolean") return value ? "true" : "false";
 	if (typeof value === "string") return value;
+	if (typeof value !== "number" || Number.isNaN(value)) return String(value);
 	if (Number.isInteger(value)) return String(value);
 	if (Math.abs(value) < 0.01) return value.toExponential(2);
 	return value.toFixed(4);
+}
+
+function formatMetricValue(value: unknown): string {
+	if (typeof value !== "number" || Number.isNaN(value)) return String(value ?? "—");
+	if (Math.abs(value) > 100) return value.toFixed(0);
+	return value.toFixed(2);
 }
 
 export function CurrentTrialPanel({
@@ -66,7 +77,7 @@ export function CurrentTrialPanel({
 							<div key={key} className="flex justify-between text-xs">
 								<span className="text-[var(--text-secondary)] truncate mr-1">{key}</span>
 								<span className="font-mono text-[var(--text-primary)]">
-									{Math.abs(val) > 100 ? val.toFixed(0) : val.toFixed(2)}
+									{formatMetricValue(val)}
 								</span>
 							</div>
 						))}

@@ -10,7 +10,19 @@ interface SourceConfigRecord {
 	[key: string]: string | number | boolean;
 }
 
-const EXCHANGES = ["Binance", "Bitfinex", "Coinbase", "Kraken", "Bybit", "OKX"] as const;
+interface ExchangeOption {
+	value: string;
+	label: string;
+	note?: string;
+}
+
+const EXCHANGES: readonly ExchangeOption[] = [
+	{ value: "Bitfinex", label: "Bitfinex" },
+	{ value: "Bitstamp", label: "Bitstamp" },
+	{ value: "Binance", label: "Binance", note: "Uses USDT pairs" },
+	{ value: "Gemini", label: "Gemini" },
+] as const;
+
 const TIMEFRAMES = ["1m", "5m", "15m", "1h", "4h", "1d", "1w"] as const;
 
 const inputClass =
@@ -21,6 +33,8 @@ function CryptoDownloadForm({
 	config,
 	onChange,
 }: { config: SourceConfigRecord; onChange: (config: SourceConfigRecord) => void }) {
+	const selectedExchange = EXCHANGES.find((ex) => ex.value === config.exchange) ?? EXCHANGES[0];
+
 	return (
 		<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
 			<div className="flex flex-col gap-1">
@@ -29,16 +43,20 @@ function CryptoDownloadForm({
 				</label>
 				<select
 					id="exchange"
-					value={String(config.exchange ?? "Binance")}
+					value={String(config.exchange ?? "Bitfinex")}
 					onChange={(e) => onChange({ ...config, exchange: e.target.value })}
 					className={inputClass}
 				>
 					{EXCHANGES.map((ex) => (
-						<option key={ex} value={ex}>
-							{ex}
+						<option key={ex.value} value={ex.value}>
+							{ex.label}
+							{ex.note ? ` (${ex.note})` : ""}
 						</option>
 					))}
 				</select>
+				{selectedExchange.note && (
+					<p className="text-xs text-[var(--text-secondary)]">{selectedExchange.note}</p>
+				)}
 			</div>
 
 			<div className="flex flex-col gap-1">
@@ -67,7 +85,7 @@ function CryptoDownloadForm({
 					id="base"
 					type="text"
 					value={String(config.base ?? "BTC")}
-					onChange={(e) => onChange({ ...config, base: e.target.value })}
+					onChange={(e) => onChange({ ...config, base: e.target.value.toUpperCase() })}
 					placeholder="BTC"
 					className={inputClass}
 				/>
@@ -81,7 +99,7 @@ function CryptoDownloadForm({
 					id="quote"
 					type="text"
 					value={String(config.quote ?? "USD")}
-					onChange={(e) => onChange({ ...config, quote: e.target.value })}
+					onChange={(e) => onChange({ ...config, quote: e.target.value.toUpperCase() })}
 					placeholder="USD"
 					className={inputClass}
 				/>

@@ -221,7 +221,7 @@ def main():
     # Fetch data
     print("\nFetching BTC/USD data...")
     cdd = CryptoDataDownload()
-    data = cdd.fetch("Bitfinex", "USD", "BTC", "1h")
+    data = cdd.fetch("Bitfinex", "BTC", "USD", "1h")
     data = data[['date', 'open', 'high', 'low', 'close', 'volume']]
     data['date'] = pd.to_datetime(data['date'])
     data.sort_values('date', inplace=True)

@@ -134,7 +134,7 @@ def main():
     # Fetch longer historical data for extended training
     print("\nFetching BTC/USD historical data...")
     cdd = CryptoDataDownload()
-    data = cdd.fetch("Bitfinex", "USD", "BTC", "1h")
+    data = cdd.fetch("Bitfinex", "BTC", "USD", "1h")
     data = data[['date', 'open', 'high', 'low', 'close', 'volume']]
     data['date'] = pd.to_datetime(data['date'])
     data.sort_values(by='date', ascending=True, inplace=True)

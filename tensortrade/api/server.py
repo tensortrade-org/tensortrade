@@ -588,8 +588,8 @@ def _register_routes(app: FastAPI) -> None:
                 cdd = CryptoDataDownload()
                 data = cdd.fetch(
                     ds.source_config.get("exchange", "Bitfinex"),
-                    ds.source_config.get("base", "USD"),
-                    ds.source_config.get("quote", "BTC"),
+                    ds.source_config.get("base", "BTC"),
+                    ds.source_config.get("quote", "USD"),
                     ds.source_config.get("timeframe", "1h"),
                 )
                 data = data[["date", "open", "high", "low", "close", "volume"]]

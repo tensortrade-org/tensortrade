@@ -344,8 +344,8 @@ class InferenceRunner:
             cdd = CryptoDataDownload()
             data = cdd.fetch(
                 source_config.get("exchange", "Bitfinex"),
-                source_config.get("base", "USD"),
-                source_config.get("quote", "BTC"),
+                source_config.get("base", "BTC"),
+                source_config.get("quote", "USD"),
                 source_config.get("timeframe", "1h"),
             )
             data = data[["date", "open", "high", "low", "close", "volume"]]

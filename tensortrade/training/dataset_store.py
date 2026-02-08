@@ -36,8 +36,8 @@ SEED_DATASETS: list[dict[str, object]] = [
         "source_type": "crypto_download",
         "source_config": {
             "exchange": "Bitfinex",
-            "base": "USD",
-            "quote": "BTC",
+            "base": "BTC",
+            "quote": "USD",
             "timeframe": "1h",
         },
         "features": [
@@ -57,8 +57,8 @@ SEED_DATASETS: list[dict[str, object]] = [
         "source_type": "crypto_download",
         "source_config": {
             "exchange": "Bitfinex",
-            "base": "USD",
-            "quote": "BTC",
+            "base": "BTC",
+            "quote": "USD",
             "timeframe": "1h",
         },
         "features": [
@@ -104,6 +104,7 @@ class DatasetStore:
         self._conn.execute("PRAGMA foreign_keys=ON")
         self._create_tables()
         self._seed_defaults()
+        self._migrate_base_quote_swap()
 
     def _create_tables(self) -> None:
         self._conn.executescript("""
@@ -148,6 +149,31 @@ class DatasetStore:
                 ),
             )
         self._conn.commit()
+
+    def _migrate_base_quote_swap(self) -> None:
+        """Fix datasets stored with old inverted base/quote convention.
+
+        Old convention: base=USD, quote=BTC (CDD internal naming)
+        New convention: base=BTC, quote=USD (standard crypto convention)
+        """
+        fiat = {"USD", "USDT", "EUR", "GBP"}
+        rows = self._conn.execute(
+            "SELECT id, source_config FROM dataset_configs WHERE source_type = 'crypto_download'"
+        ).fetchall()
+        updated = 0
+        for row in rows:
+            config = json.loads(row["source_config"])
+            base = config.get("base", "")
+            quote = config.get("quote", "")
+            if base in fiat and quote not in fiat:
+                config["base"], config["quote"] = config["quote"], config["base"]
+                self._conn.execute(
+                    "UPDATE dataset_configs SET source_config = ? WHERE id = ?",
+                    (json.dumps(config), row["id"]),
+                )
+                updated += 1
+        if updated:
+            self._conn.commit()
 
     def create_config(
         self,

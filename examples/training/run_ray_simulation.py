@@ -40,7 +40,7 @@ def prepare_data():
 
     print("Fetching crypto data...")
     cdd = CryptoDataDownload()
-    data = cdd.fetch("Bitfinex", "USD", "BTC", "1h")
+    data = cdd.fetch("Bitfinex", "BTC", "USD", "1h")
     data = data[['date', 'open', 'high', 'low', 'close', 'volume']]
     data['volume'] = np.int64(data['volume'])
     data['date'] = pd.to_datetime(data['date'])
