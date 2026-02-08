@@ -80,6 +80,7 @@ export const REWARD_SCHEMES: RewardSchemeInfo[] = [
 	{ value: "AdvancedPBR", label: "Advanced PBR", requiresBshSemantics: true },
 	{ value: "FractionalPBR", label: "Fractional PBR", requiresBshSemantics: false },
 	{ value: "MaxDrawdownPenalty", label: "Max Drawdown Penalty", requiresBshSemantics: false },
+	{ value: "AdaptiveProfitSeeker", label: "Adaptive Profit Seeker", requiresBshSemantics: false },
 ];
 
 const ACTION_MAP = new Map(ACTION_SCHEMES.map((a) => [a.value, a]));

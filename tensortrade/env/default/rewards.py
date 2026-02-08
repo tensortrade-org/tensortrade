@@ -49,6 +49,18 @@ class SimpleProfit(TensorTradeRewardScheme):
 
     def __init__(self, window_size: int = 1):
         self._window_size = self.default('window_size', window_size)
+        self.buy_count = 0
+        self.sell_count = 0
+        self.hold_count = 0
+
+    def on_action(self, action: int) -> None:
+        """Track action for stats."""
+        if action == 1:
+            self.buy_count += 1
+        elif action == 2:
+            self.sell_count += 1
+        else:
+            self.hold_count += 1
 
     def get_reward(self, portfolio: 'Portfolio') -> float:
         """Rewards the agent for incremental increases in net worth over a
@@ -70,6 +82,20 @@ class SimpleProfit(TensorTradeRewardScheme):
             return net_worths[-1] / net_worths[-min(len(net_worths), self._window_size + 1)] - 1.0
         else:
             return 0.0
+
+    def get_stats(self) -> dict:
+        """Returns trading statistics for analysis."""
+        return {
+            "trade_count": self.buy_count + self.sell_count,
+            "buy_count": self.buy_count,
+            "sell_count": self.sell_count,
+            "hold_count": self.hold_count,
+        }
+
+    def reset(self) -> None:
+        self.buy_count = 0
+        self.sell_count = 0
+        self.hold_count = 0
 
 
 class RiskAdjustedReturns(TensorTradeRewardScheme):
@@ -106,6 +132,32 @@ class RiskAdjustedReturns(TensorTradeRewardScheme):
         self._risk_free_rate = self.default('risk_free_rate', risk_free_rate)
         self._target_returns = self.default('target_returns', target_returns)
         self._window_size = self.default('window_size', window_size)
+        self.buy_count = 0
+        self.sell_count = 0
+        self.hold_count = 0
+
+    def on_action(self, action: int) -> None:
+        """Track action for stats."""
+        if action == 1:
+            self.buy_count += 1
+        elif action == 2:
+            self.sell_count += 1
+        else:
+            self.hold_count += 1
+
+    def get_stats(self) -> dict:
+        """Returns trading statistics for analysis."""
+        return {
+            "trade_count": self.buy_count + self.sell_count,
+            "buy_count": self.buy_count,
+            "sell_count": self.sell_count,
+            "hold_count": self.hold_count,
+        }
+
+    def reset(self) -> None:
+        self.buy_count = 0
+        self.sell_count = 0
+        self.hold_count = 0
 
     def _sharpe_ratio(self, returns: 'pd.Series') -> float:
         """Computes the sharpe ratio for a given series of a returns.
@@ -517,6 +569,27 @@ class MaxDrawdownPenalty(TensorTradeRewardScheme):
         self._prev_net_worth = 0.0
         self._prev_drawdown = 0.0
         self._initial_net_worth = 0.0
+        self.buy_count = 0
+        self.sell_count = 0
+        self.hold_count = 0
+
+    def on_action(self, action: int) -> None:
+        """Track action for stats."""
+        if action == 1:
+            self.buy_count += 1
+        elif action == 2:
+            self.sell_count += 1
+        else:
+            self.hold_count += 1
+
+    def get_stats(self) -> dict:
+        """Returns trading statistics for analysis."""
+        return {
+            "trade_count": self.buy_count + self.sell_count,
+            "buy_count": self.buy_count,
+            "sell_count": self.sell_count,
+            "hold_count": self.hold_count,
+        }
 
     def get_reward(self, portfolio: 'Portfolio') -> float:
         net_worth = portfolio.net_worth or 0.0
@@ -556,6 +629,129 @@ class MaxDrawdownPenalty(TensorTradeRewardScheme):
         self._prev_net_worth = 0.0
         self._prev_drawdown = 0.0
         self._initial_net_worth = 0.0
+        self.buy_count = 0
+        self.sell_count = 0
+        self.hold_count = 0
+
+
+class AdaptiveProfitSeeker(TensorTradeRewardScheme):
+    """Sophisticated reward that strongly incentivizes profitable trading.
+
+    Compatible with ALL action schemes including ScaledEntryBSH.
+
+    Design principle: growth signal DOMINATES all other components so the
+    agent never learns that "do nothing" is optimal. Auxiliary signals
+    provide shaping but can never outweigh actual profit.
+
+    Components (in priority order):
+    1. Net worth growth (dominant signal, weight=1.0, raw percentage)
+    2. Market participation bonus: positive reward for having a position
+    3. Momentum bonus: extra for being right about direction
+    4. Mild drawdown penalty: only kicks in on large drawdown deepening
+
+    Parameters
+    ----------
+    price : `Stream`
+        The price stream.
+    participation_bonus : float
+        Per-step bonus for being in the market. Default 0.0002.
+    momentum_weight : float
+        Weight for directional momentum bonus. Default 2.0.
+    drawdown_weight : float
+        Penalty weight for drawdown deepening. Default 0.5.
+    commission : float
+        Commission rate for trade cost. Default 0.0001.
+    """
+
+    registered_name = "adaptive-profit-seeker"
+
+    def __init__(
+        self,
+        price: 'Stream',
+        participation_bonus: float = 0.0002,
+        momentum_weight: float = 2.0,
+        drawdown_weight: float = 0.5,
+        commission: float = 0.0001,
+    ) -> None:
+        super().__init__()
+        self.participation_bonus = participation_bonus
+        self.momentum_weight = momentum_weight
+        self.drawdown_weight = drawdown_weight
+        self.commission = commission
+
+        current_price = Stream.sensor(price, lambda p: p.value, dtype="float")
+        price_return = current_price.pct_change().fillna(0).rename("price_return")
+        self.feed = DataFeed([price_return, current_price.rename("current_price")])
+        self.feed.compile()
+
+        self._prev_net_worth = 0.0
+        self._equity_peak = 0.0
+        self._prev_drawdown = 0.0
+        self._prev_position_frac = 0.0
+
+        self.buy_count = 0
+        self.sell_count = 0
+        self.hold_count = 0
+
+    def on_action(self, action: int) -> None:
+        """Track action for stats."""
+        if action == 1:
+            self.buy_count += 1
+        elif action == 2:
+            self.sell_count += 1
+        else:
+            self.hold_count += 1
+
+    def get_reward(self, portfolio: 'Portfolio') -> float:
+        self.feed.next()  # advance price feed
+
+        net_worth = portfolio.net_worth or 0.0
+
+        # Initialize on first call
+        if self._prev_net_worth == 0.0:
+            self._prev_net_worth = net_worth
+            self._equity_peak = net_worth
+            return 0.0
+
+        # Position fraction from portfolio
+        base_balance = portfolio.base_balance.as_float()
+        position_frac = max(0.0, min(1.0, 1.0 - base_balance / net_worth)) if net_worth > 0 else 0.0
+
+        # === CORE: SimpleProfit (this is what actually works) ===
+        nw_return = (net_worth / self._prev_net_worth - 1.0) if self._prev_net_worth > 0 else 0.0
+
+        # === ONLY ADDITION: tiny participation bonus ===
+        # Breaks the tie between "do nothing" and "trade" when growth is ~0.
+        # Must be tiny enough to never outweigh actual losses.
+        participation = self.participation_bonus * position_frac
+
+        reward = nw_return + participation
+
+        # Update state
+        self._prev_net_worth = net_worth
+        self._prev_position_frac = position_frac
+
+        return reward
+
+    def get_stats(self) -> dict:
+        """Returns trading statistics for analysis."""
+        return {
+            "trade_count": self.buy_count + self.sell_count,
+            "buy_count": self.buy_count,
+            "sell_count": self.sell_count,
+            "hold_count": self.hold_count,
+        }
+
+    def reset(self) -> None:
+        self._prev_net_worth = 0.0
+        self._equity_peak = 0.0
+        self._prev_drawdown = 0.0
+        self._prev_position_frac = 0.0
+        self._step_count = 0
+        self.buy_count = 0
+        self.sell_count = 0
+        self.hold_count = 0
+        self.feed.reset()
 
 
 _registry = {
@@ -565,6 +761,7 @@ _registry = {
     'advanced-pbr': AdvancedPBR,
     'fractional-pbr': FractionalPBR,
     'max-drawdown-penalty': MaxDrawdownPenalty,
+    'adaptive-profit-seeker': AdaptiveProfitSeeker,
 }
 
 

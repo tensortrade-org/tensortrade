@@ -245,7 +245,8 @@ export interface TrainingConfig {
 		| "PBR"
 		| "AdvancedPBR"
 		| "FractionalPBR"
-		| "MaxDrawdownPenalty";
+		| "MaxDrawdownPenalty"
+		| "AdaptiveProfitSeeker";
 	reward_params: Record<string, number>;
 	commission: number;
 	initial_cash: number;
