@@ -3,6 +3,7 @@
 export interface StepUpdate {
 	type: "step_update";
 	step: number;
+	timestamp?: number;
 	price: number;
 	open: number;
 	high: number;
@@ -18,6 +19,7 @@ export interface StepUpdate {
 export interface TradeEvent {
 	type: "trade";
 	step: number;
+	timestamp?: number;
 	side: "buy" | "sell";
 	price: number;
 	size: number;

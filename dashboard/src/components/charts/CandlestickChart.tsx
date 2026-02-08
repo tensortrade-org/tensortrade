@@ -50,7 +50,7 @@ export function CandlestickChart({ steps, trades }: CandlestickChartProps) {
 			},
 			timeScale: {
 				borderColor: "#2a2e45",
-				timeVisible: false,
+				timeVisible: true,
 			},
 			width: containerRef.current.clientWidth,
 			height: containerRef.current.clientHeight,
@@ -112,19 +112,21 @@ export function CandlestickChart({ steps, trades }: CandlestickChartProps) {
 			return;
 		}
 
+		const timeFor = (s: { step: number; timestamp?: number }) => (s.timestamp ?? s.step) as Time;
+
 		const prevCount = prevStepCountRef.current;
 
 		if (prevCount === 0) {
 			// First data or reset — full setData
 			const candleData: CandlestickData<Time>[] = steps.map((s) => ({
-				time: s.step as Time,
+				time: timeFor(s),
 				open: s.open,
 				high: s.high,
 				low: s.low,
 				close: s.close,
 			}));
 			const volumeData = steps.map((s) => ({
-				time: s.step as Time,
+				time: timeFor(s),
 				value: s.volume,
 			}));
 			candleSeriesRef.current.setData(candleData);
@@ -134,14 +136,14 @@ export function CandlestickChart({ steps, trades }: CandlestickChartProps) {
 			for (let i = prevCount; i < steps.length; i++) {
 				const s = steps[i];
 				candleSeriesRef.current.update({
-					time: s.step as Time,
+					time: timeFor(s),
 					open: s.open,
 					high: s.high,
 					low: s.low,
 					close: s.close,
 				});
 				volumeSeriesRef.current.update({
-					time: s.step as Time,
+					time: timeFor(s),
 					value: s.volume,
 				});
 			}
@@ -153,7 +155,7 @@ export function CandlestickChart({ steps, trades }: CandlestickChartProps) {
 		if (trades.length > 0) {
 			const markers: SeriesMarker<Time>[] = trades
 				.map((t) => ({
-					time: t.step as Time,
+					time: (t.timestamp ?? t.step) as Time,
 					position: (t.side === "buy" ? "belowBar" : "aboveBar") as "belowBar" | "aboveBar",
 					color: t.side === "buy" ? "#22c55e" : "#ef4444",
 					shape: (t.side === "buy" ? "arrowUp" : "arrowDown") as "arrowUp" | "arrowDown",
@@ -165,11 +167,13 @@ export function CandlestickChart({ steps, trades }: CandlestickChartProps) {
 		}
 
 		// Rolling window: show last VISIBLE_WINDOW candles, scrolling right
-		const lastStep = steps[steps.length - 1].step;
-		const rangeFrom = Math.max(1, lastStep - VISIBLE_WINDOW + 1);
+		const last = steps[steps.length - 1];
+		const lastTime = timeFor(last) as number;
+		const firstVisible = steps[Math.max(0, steps.length - VISIBLE_WINDOW)];
+		const fromTime = timeFor(firstVisible) as number;
 		chartRef.current.timeScale().setVisibleRange({
-			from: rangeFrom as Time,
-			to: (lastStep + 2) as Time,
+			from: fromTime as Time,
+			to: (lastTime + 2) as Time,
 		});
 	}, [steps, trades]);
 

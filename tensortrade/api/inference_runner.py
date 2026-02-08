@@ -120,9 +120,11 @@ class InferenceRunner:
                     lo = float(row.get("low", 0))
                     c = float(row.get("close", 0))
                     v = float(row.get("volume", 0))
+                    ts = int(pd.Timestamp(row["date"]).timestamp()) if "date" in row.index else step
                 else:
                     o = h = lo = c = net_worth
                     v = 0.0
+                    ts = step
 
                 # Track action distribution
                 if action == 0:
@@ -141,6 +143,7 @@ class InferenceRunner:
                         {
                             "type": "trade",
                             "step": step,
+                            "timestamp": ts,
                             "side": side,
                             "price": c,
                             "size": 1.0,
@@ -153,6 +156,7 @@ class InferenceRunner:
                     {
                         "type": "step_update",
                         "step": step,
+                        "timestamp": ts,
                         "price": c,
                         "open": o,
                         "high": h,
@@ -262,8 +266,8 @@ class InferenceRunner:
         # Use last 1000 candles for inference
         data = data.tail(1000).reset_index(drop=True)
 
-        # Keep OHLCV for step broadcasts
-        ohlcv_cols = ["open", "high", "low", "close", "volume"]
+        # Keep OHLCV + date for step broadcasts
+        ohlcv_cols = ["date", "open", "high", "low", "close", "volume"]
         ohlcv_data = data[[c for c in ohlcv_cols if c in data.columns]].copy()
 
         # Build environment
