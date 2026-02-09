@@ -464,6 +464,16 @@ class InferenceRunner:
             data["date"] = pd.to_datetime(data["date"])
             data.sort_values("date", inplace=True)
             data.reset_index(drop=True, inplace=True)
+        elif source_type == "alpaca_crypto":
+            from tensortrade.data.alpaca_crypto import AlpacaCryptoData
+
+            alpaca = AlpacaCryptoData()
+            data = alpaca.fetch(
+                symbol=source_config.get("symbol", "BTC/USD"),
+                timeframe=source_config.get("timeframe", "1h"),
+                start_date=source_config.get("start_date", ""),
+                end_date=source_config.get("end_date", ""),
+            )
         elif source_type == "synthetic":
             from tensortrade.stochastic.processes.gbm import gbm
 

@@ -71,6 +71,25 @@ SEED_DATASETS: list[dict[str, object]] = [
         "split_config": {"train_pct": 0.7, "val_pct": 0.15, "test_pct": 0.15},
     },
     {
+        "name": "BTC/USD Hourly (Alpaca)",
+        "description": "Hourly BTC/USD data from Alpaca Markets with full feature set.",
+        "source_type": "alpaca_crypto",
+        "source_config": {
+            "symbol": "BTC/USD",
+            "timeframe": "1h",
+        },
+        "features": [
+            {"type": "returns", "periods": [1, 4, 12, 24, 48], "normalize": "tanh"},
+            {"type": "rsi", "period": 14, "normalize": True},
+            {"type": "sma_trend", "fast": 20, "slow": 50, "normalize": "tanh"},
+            {"type": "trend_strength", "fast": 20, "slow": 50},
+            {"type": "volatility", "period": 24, "rolling_norm_period": 72},
+            {"type": "volume_ratio", "period": 20},
+            {"type": "bollinger_position", "period": 20, "std_dev": 2},
+        ],
+        "split_config": {"train_pct": 0.7, "val_pct": 0.15, "test_pct": 0.15},
+    },
+    {
         "name": "Synthetic GBM",
         "description": "Synthetic Geometric Brownian Motion data for testing.",
         "source_type": "synthetic",
@@ -349,6 +368,19 @@ class DatasetStore:
                     "close": prices,
                     "volume": base_volume * (1 + rng.normal(0, 0.3, n)),
                 }
+            )
+            return df
+
+        if config.source_type == "alpaca_crypto":
+            from tensortrade.data.alpaca_crypto import AlpacaCryptoData
+
+            sc = config.source_config
+            alpaca = AlpacaCryptoData()
+            df = alpaca.fetch(
+                symbol=str(sc.get("symbol", "BTC/USD")),
+                timeframe=str(sc.get("timeframe", "1h")),
+                start_date=str(sc.get("start_date", "")),
+                end_date=str(sc.get("end_date", "")),
             )
             return df
 

@@ -44,6 +44,9 @@ export function DataPreview() {
 		setPreview(null);
 		try {
 			const result = await getDatasetPreview(selectedDatasetId);
+			if ("error" in result) {
+				throw new Error(String((result as Record<string, unknown>).error));
+			}
 			setPreview(result);
 		} catch (err) {
 			setError(err instanceof Error ? err : new Error(String(err)));

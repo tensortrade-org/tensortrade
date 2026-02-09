@@ -293,7 +293,7 @@ export interface DatasetConfig {
 	id: string;
 	name: string;
 	description: string;
-	source_type: "csv_upload" | "crypto_download" | "synthetic";
+	source_type: "csv_upload" | "crypto_download" | "synthetic" | "alpaca_crypto";
 	source_config: Record<string, string | number | boolean>;
 	features: FeatureSpec[];
 	split_config: SplitConfig;

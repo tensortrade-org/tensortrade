@@ -218,8 +218,117 @@ function CsvUploadForm({
 	);
 }
 
+interface AlpacaSymbolOption {
+	value: string;
+	label: string;
+}
+
+const ALPACA_SYMBOLS: readonly AlpacaSymbolOption[] = [
+	{ value: "BTC/USD", label: "BTC/USD" },
+	{ value: "ETH/USD", label: "ETH/USD" },
+	{ value: "SOL/USD", label: "SOL/USD" },
+	{ value: "DOGE/USD", label: "DOGE/USD" },
+	{ value: "AVAX/USD", label: "AVAX/USD" },
+	{ value: "LINK/USD", label: "LINK/USD" },
+] as const;
+
+const ALPACA_TIMEFRAMES = ["1m", "5m", "15m", "1h", "4h", "1d", "1w"] as const;
+
+function AlpacaCryptoForm({
+	config,
+	onChange,
+}: { config: SourceConfigRecord; onChange: (config: SourceConfigRecord) => void }) {
+	const symbolValue = String(config.symbol ?? "BTC/USD");
+	const isCustomSymbol = !ALPACA_SYMBOLS.some((s) => s.value === symbolValue);
+
+	return (
+		<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+			<div className="flex flex-col gap-1">
+				<label htmlFor="alpaca_symbol" className={labelClass}>
+					Symbol
+				</label>
+				<select
+					id="alpaca_symbol"
+					value={isCustomSymbol ? "__custom__" : symbolValue}
+					onChange={(e) => {
+						if (e.target.value === "__custom__") {
+							onChange({ ...config, symbol: "" });
+						} else {
+							onChange({ ...config, symbol: e.target.value });
+						}
+					}}
+					className={inputClass}
+				>
+					{ALPACA_SYMBOLS.map((s) => (
+						<option key={s.value} value={s.value}>
+							{s.label}
+						</option>
+					))}
+					<option value="__custom__">Custom...</option>
+				</select>
+				{(isCustomSymbol || symbolValue === "") && (
+					<input
+						type="text"
+						value={symbolValue}
+						onChange={(e) => onChange({ ...config, symbol: e.target.value.toUpperCase() })}
+						placeholder="e.g. MATIC/USD"
+						className={`${inputClass} mt-1`}
+					/>
+				)}
+			</div>
+
+			<div className="flex flex-col gap-1">
+				<label htmlFor="alpaca_timeframe" className={labelClass}>
+					Timeframe
+				</label>
+				<select
+					id="alpaca_timeframe"
+					value={String(config.timeframe ?? "1h")}
+					onChange={(e) => onChange({ ...config, timeframe: e.target.value })}
+					className={inputClass}
+				>
+					{ALPACA_TIMEFRAMES.map((tf) => (
+						<option key={tf} value={tf}>
+							{tf}
+						</option>
+					))}
+				</select>
+			</div>
+
+			<div className="flex flex-col gap-1">
+				<label htmlFor="alpaca_start_date" className={labelClass}>
+					Start Date
+				</label>
+				<input
+					id="alpaca_start_date"
+					type="date"
+					value={String(config.start_date ?? "")}
+					onChange={(e) => onChange({ ...config, start_date: e.target.value })}
+					className={inputClass}
+				/>
+				<p className="text-xs text-[var(--text-secondary)]">Leave empty for 2 years of history</p>
+			</div>
+
+			<div className="flex flex-col gap-1">
+				<label htmlFor="alpaca_end_date" className={labelClass}>
+					End Date
+				</label>
+				<input
+					id="alpaca_end_date"
+					type="date"
+					value={String(config.end_date ?? "")}
+					onChange={(e) => onChange({ ...config, end_date: e.target.value })}
+					className={inputClass}
+				/>
+				<p className="text-xs text-[var(--text-secondary)]">Leave empty for latest data</p>
+			</div>
+		</div>
+	);
+}
+
 const SOURCE_TYPE_LABELS: Record<SourceType, string> = {
 	crypto_download: "Crypto Download",
+	alpaca_crypto: "Alpaca Crypto",
 	synthetic: "Synthetic Data",
 	csv_upload: "CSV Upload",
 };
@@ -246,7 +355,7 @@ export function SourceConfig() {
 		[updateEditingField],
 	);
 
-	const sourceTypes: SourceType[] = ["crypto_download", "synthetic", "csv_upload"];
+	const sourceTypes: SourceType[] = ["crypto_download", "alpaca_crypto", "synthetic", "csv_upload"];
 
 	return (
 		<div className="space-y-4">
@@ -272,6 +381,9 @@ export function SourceConfig() {
 			<div className="rounded-lg border border-[var(--border-color)] bg-[var(--bg-card)] p-4">
 				{sourceType === "crypto_download" && (
 					<CryptoDownloadForm config={sourceConfig} onChange={handleConfigChange} />
+				)}
+				{sourceType === "alpaca_crypto" && (
+					<AlpacaCryptoForm config={sourceConfig} onChange={handleConfigChange} />
 				)}
 				{sourceType === "synthetic" && (
 					<SyntheticForm config={sourceConfig} onChange={handleConfigChange} />

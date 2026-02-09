@@ -84,6 +84,9 @@ setup(
         'optuna': [
             'optuna>=4.0.0',
         ],
+        'alpaca': [
+            'alpaca-py>=0.35.0',
+        ],
     },
     classifiers=[
         'Development Status :: 5 - Production/Stable',

@@ -594,6 +594,16 @@ def _register_routes(app: FastAPI) -> None:
                     ds.source_config.get("timeframe", "1h"),
                 )
                 data = data[["date", "open", "high", "low", "close", "volume"]]
+            elif ds.source_type == "alpaca_crypto":
+                from tensortrade.data.alpaca_crypto import AlpacaCryptoData
+
+                alpaca = AlpacaCryptoData()
+                data = alpaca.fetch(
+                    symbol=ds.source_config.get("symbol", "BTC/USD"),
+                    timeframe=ds.source_config.get("timeframe", "1h"),
+                    start_date=ds.source_config.get("start_date", ""),
+                    end_date=ds.source_config.get("end_date", ""),
+                )
             elif ds.source_type == "synthetic":
                 from tensortrade.stochastic.processes.gbm import gbm
 
