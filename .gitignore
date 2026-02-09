@@ -40,7 +40,6 @@ venv/
 tensortrade-env/
 .env
 .env/
-env/
 
 # Dev server runtime
 .dev-pids/
