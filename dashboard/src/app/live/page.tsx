@@ -10,9 +10,9 @@ import { EpisodeSummaryCard } from "@/components/inference/EpisodeSummaryCard";
 import { ExperimentSelector } from "@/components/inference/ExperimentSelector";
 import { InferenceControls } from "@/components/inference/InferenceControls";
 import { TradeList } from "@/components/inference/TradeList";
-import { getExperiment, startInference } from "@/lib/api";
+import { createHyperparamPack, getExperiment, startInference } from "@/lib/api";
 import { formatCurrency, formatDate, formatNumber, formatPercent } from "@/lib/formatters";
-import type { ExperimentDetail } from "@/lib/types";
+import type { ExperimentDetail, TrainingConfig } from "@/lib/types";
 import { useInferenceStore } from "@/stores/inferenceStore";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -307,13 +307,16 @@ export default function InferencePlaybackPage() {
 			{episodeSummary && <EpisodeSummaryCard summary={episodeSummary} />}
 
 			{/* Experiment Config */}
-			{experimentDetail && <ExperimentConfigPanel detail={experimentDetail} />}
+			{experimentDetail && (
+				<ExperimentConfigPanel detail={experimentDetail} showSave={status === "completed"} />
+			)}
 		</div>
 	);
 }
 
 interface ConfigPanelProps {
 	detail: ExperimentDetail;
+	showSave: boolean;
 }
 
 interface ConfigRecord {
@@ -358,10 +361,12 @@ function ConfigSection({ title, entries }: { title: string; entries: [string, un
 	);
 }
 
-function ExperimentConfigPanel({ detail }: ConfigPanelProps) {
+function ExperimentConfigPanel({ detail, showSave }: ConfigPanelProps) {
 	const { experiment } = detail;
 	const config = experiment.config as ConfigRecord;
 	const tc = config.training_config ?? {};
+	const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
+	const [packName, setPackName] = useState(`${experiment.name} (inference)`);
 
 	// Separate model from the rest of training config
 	const { model, ...tcRest } = tc as Record<string, unknown> & { model?: Record<string, unknown> };
@@ -389,9 +394,56 @@ function ExperimentConfigPanel({ detail }: ConfigPanelProps) {
 	]);
 	const splitEntries = config.split_config ? Object.entries(config.split_config) : [];
 
+	const handleSavePack = async () => {
+		const trainingConfig = config.training_config;
+		if (!trainingConfig || !packName.trim()) return;
+		setSaveState("saving");
+		try {
+			await createHyperparamPack({
+				name: packName.trim(),
+				description: `Saved from inference run of ${experiment.name}`,
+				config: trainingConfig as TrainingConfig,
+			});
+			setSaveState("saved");
+		} catch {
+			setSaveState("error");
+		}
+	};
+
 	return (
 		<Card>
-			<CardHeader title="Experiment Configuration" />
+			<div className="flex items-center justify-between">
+				<CardHeader title="Experiment Configuration" />
+				{showSave && config.training_config && (
+					<div className="mr-1 flex items-center gap-2">
+						<input
+							type="text"
+							value={packName}
+							onChange={(e) => {
+								setPackName(e.target.value);
+								if (saveState === "saved") setSaveState("idle");
+							}}
+							disabled={saveState === "saving"}
+							placeholder="HP pack name"
+							className="w-56 rounded-md border border-[var(--border-primary)] bg-[var(--bg-primary)] px-2 py-1.5 text-xs text-[var(--text-primary)] disabled:opacity-50"
+						/>
+						<button
+							type="button"
+							onClick={handleSavePack}
+							disabled={saveState === "saving" || saveState === "saved" || !packName.trim()}
+							className="whitespace-nowrap rounded-md bg-[var(--accent-green)] px-3 py-1.5 text-xs font-medium text-white hover:opacity-90 disabled:opacity-50"
+						>
+							{saveState === "saving"
+								? "Saving..."
+								: saveState === "saved"
+									? "Saved"
+									: saveState === "error"
+										? "Failed — Retry"
+										: "Save as HP Pack"}
+						</button>
+					</div>
+				)}
+			</div>
 			<div className="space-y-4">
 				<ConfigSection title="Experiment" entries={metaEntries} />
 				<ConfigSection title="Training" entries={tcEntries} />
