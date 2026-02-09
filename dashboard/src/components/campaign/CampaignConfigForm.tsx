@@ -231,7 +231,11 @@ export function CampaignConfigForm({ onLaunched }: CampaignConfigFormProps) {
 	}, [rewardParamSettings]);
 
 	const updateRewardParam = useCallback(
-		<K extends keyof RewardParamSetting>(key: RewardParamKey, field: K, value: RewardParamSetting[K]) => {
+		<K extends keyof RewardParamSetting>(
+			key: RewardParamKey,
+			field: K,
+			value: RewardParamSetting[K],
+		) => {
 			setRewardParamSettings((prev) => ({
 				...prev,
 				[key]: {

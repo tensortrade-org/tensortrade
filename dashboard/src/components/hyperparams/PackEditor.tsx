@@ -255,7 +255,16 @@ export function PackEditor() {
 		} finally {
 			setSaving(false);
 		}
-	}, [pack, isNewPack, showStatus, refreshPacks, selectPack, packs, setPacks, normalizeConfigForSave]);
+	}, [
+		pack,
+		isNewPack,
+		showStatus,
+		refreshPacks,
+		selectPack,
+		packs,
+		setPacks,
+		normalizeConfigForSave,
+	]);
 
 	const handleSaveAs = useCallback(async () => {
 		if (!pack) return;
