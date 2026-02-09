@@ -337,17 +337,20 @@ class InferenceRunner:
             end_date: Optional end date (YYYY-MM-DD) to filter data.
         """
         # Resolve dataset settings: override or experiment-embedded
+        # When overriding dataset, use the override's source data but always
+        # use the experiment's feature spec (the model expects those features).
+        trained_features = config.get("features", [])
         if dataset_id:
             ds = self.dataset_store.get_config(dataset_id)
             if ds is None:
                 raise ValueError(f"Dataset not found: {dataset_id}")
             source_type = ds.source_type
             source_config = ds.source_config
-            features_spec = ds.features
+            features_spec = trained_features if trained_features else ds.features
         else:
             source_type = config.get("source_type", "crypto_download")
             source_config = config.get("source_config", {})
-            features_spec = config.get("features", [])
+            features_spec = trained_features
 
         # Load data based on source type
         data = self._load_data(source_type, source_config)
