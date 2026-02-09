@@ -1034,6 +1034,15 @@ def _register_routes(app: FastAPI) -> None:
                     "drawdown_pct": raw.get("max_drawdown_pct", 0),
                 }
             )
+            # Send bar history and trade history so refreshed clients
+            # can restore the chart immediately.
+            if trader.is_running:
+                bars = trader.get_initial_bars()
+                if bars:
+                    await ws.send_json({"type": "live_bars_history", "bars": bars})
+                trades = trader.get_session_trades()
+                if trades:
+                    await ws.send_json({"type": "live_trades_history", "trades": trades})
             while True:
                 # Keep connection alive — ignore incoming messages
                 await ws.receive_text()

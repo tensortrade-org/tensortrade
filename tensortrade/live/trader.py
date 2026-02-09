@@ -226,6 +226,46 @@ class LiveTrader:
         await self._broadcast_status("stopped")
         logger.info("LiveTrader stopped for session %s", self._session_id)
 
+    def get_initial_bars(self) -> list[dict[str, object]]:
+        """Return buffered bars as a list of LiveBar-shaped dicts."""
+        if self._stream is None:
+            return []
+        buf = self._stream.buffer
+        if buf.empty:
+            return []
+        result: list[dict[str, object]] = []
+        for _, row in buf.iterrows():
+            ts = int(pd.Timestamp(row["date"]).timestamp()) if "date" in row.index else 0
+            result.append({
+                "timestamp": ts,
+                "open": float(row.get("open", 0)),
+                "high": float(row.get("high", 0)),
+                "low": float(row.get("low", 0)),
+                "close": float(row.get("close", 0)),
+                "volume": float(row.get("volume", 0)),
+            })
+        return result
+
+    def get_session_trades(self) -> list[dict[str, object]]:
+        """Return persisted trades for the current session."""
+        if not self._store or not self._session_id:
+            return []
+        trades = self._store.get_session_trades(self._session_id)
+        result: list[dict[str, object]] = []
+        for t in trades:
+            ts = int(pd.Timestamp(t.timestamp).timestamp()) if t.timestamp else 0
+            result.append({
+                "step": t.step,
+                "timestamp": ts,
+                "side": t.side,
+                "symbol": t.symbol,
+                "price": t.price,
+                "size": t.size,
+                "commission": t.commission,
+                "alpaca_order_id": t.alpaca_order_id,
+            })
+        return result
+
     def get_status(self) -> dict[str, object]:
         """Return a snapshot of current trading state."""
         config = self._config
@@ -250,12 +290,31 @@ class LiveTrader:
     # Main loop
     # ------------------------------------------------------------------
 
+    async def _broadcast_bars_history(self) -> None:
+        """Send all buffered bars as a single history message."""
+        if self._manager is None or self._stream is None:
+            return
+        bars = self.get_initial_bars()
+        if bars:
+            await self._manager.broadcast_to_dashboards(
+                {"type": "live_bars_history", "bars": bars}
+            )
+            logger.info("Broadcast %d initial bars to dashboard", len(bars))
+
     async def _run(self) -> None:
         """Main coroutine: start stream, then process bars from queue."""
         try:
             assert self._stream is not None
             # Start stream in background (pre-fills buffer, then connects WS)
             stream_task = asyncio.create_task(self._stream.start())
+
+            # Wait for the prefill to complete (it's synchronous inside start())
+            # then broadcast the historical bars so the chart isn't blank.
+            for _ in range(60):
+                await asyncio.sleep(0.5)
+                if self._stream.latest_price > 0:
+                    break
+            await self._broadcast_bars_history()
 
             # Process bars from the queue
             while self._running:
@@ -639,6 +698,7 @@ class LiveTrader:
             {
                 "type": "live_trade",
                 "step": self._step,
+                "timestamp": int(time.time()),
                 "side": side,
                 "price": price,
                 "size": size,

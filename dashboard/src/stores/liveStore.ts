@@ -36,7 +36,9 @@ interface LiveStore {
 	setStarting: () => void;
 	setStatus: (msg: LiveStatusMessage) => void;
 	addBar: (bar: LiveBar) => void;
+	setBars: (bars: LiveBar[]) => void;
 	addTrade: (trade: LiveTradeEvent) => void;
+	setTrades: (trades: LiveTradeEvent[]) => void;
 	addAction: (action: LiveActionEvent) => void;
 	updatePortfolio: (msg: LivePortfolioMessage) => void;
 	setError: (error: string) => void;
@@ -104,6 +106,8 @@ export const useLiveStore = create<LiveStore>((set) => ({
 			return { bars, totalBars: state.totalBars + 1 };
 		}),
 
+	setBars: (bars: LiveBar[]) => set({ bars }),
+
 	addTrade: (trade: LiveTradeEvent) =>
 		set((state) => ({
 			trades:
@@ -112,6 +116,8 @@ export const useLiveStore = create<LiveStore>((set) => ({
 					: [...state.trades, trade],
 			totalTrades: state.totalTrades + 1,
 		})),
+
+	setTrades: (trades: LiveTradeEvent[]) => set({ trades }),
 
 	addAction: (action: LiveActionEvent) =>
 		set((state) => ({

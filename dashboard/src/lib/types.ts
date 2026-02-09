@@ -564,6 +564,16 @@ export interface LivePortfolioMessage {
 	drawdown_pct: number;
 }
 
+export interface LiveBarsHistoryMessage {
+	type: "live_bars_history";
+	bars: Omit<LiveBar, "type" | "step">[];
+}
+
+export interface LiveTradesHistoryMessage {
+	type: "live_trades_history";
+	trades: Omit<LiveTradeEvent, "type">[];
+}
+
 export interface LiveTradingStartRequest {
 	experiment_id: string;
 	symbol: string;
@@ -592,6 +602,8 @@ export type WebSocketMessage =
 	| LiveActionEvent
 	| LiveTradeEvent
 	| LivePortfolioMessage
+	| LiveBarsHistoryMessage
+	| LiveTradesHistoryMessage
 	| { type: "training_disconnected" }
 	| { type: "experiment_start"; experiment_id: string; name: string }
 	| { type: "experiment_end"; experiment_id: string; status: string };

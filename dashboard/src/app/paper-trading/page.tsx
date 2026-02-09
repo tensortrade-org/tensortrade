@@ -9,10 +9,12 @@ import type {
 	ExperimentSummary,
 	LiveActionEvent,
 	LiveBar,
+	LiveBarsHistoryMessage,
 	LivePortfolioMessage,
 	LiveSession,
 	LiveStatusMessage,
 	LiveTradeEvent,
+	LiveTradesHistoryMessage,
 	WebSocketMessage,
 } from "@/lib/types";
 import { useLiveStore } from "@/stores/liveStore";
@@ -71,6 +73,27 @@ function useLiveWebSocket() {
 						case "live_portfolio":
 							s.updatePortfolio(msg as LivePortfolioMessage);
 							break;
+						case "live_bars_history": {
+							const barsMsg = msg as LiveBarsHistoryMessage;
+							s.setBars(
+								barsMsg.bars.map((b, i) => ({
+									...b,
+									type: "live_bar" as const,
+									step: i,
+								})),
+							);
+							break;
+						}
+						case "live_trades_history": {
+							const tradesMsg = msg as LiveTradesHistoryMessage;
+							s.setTrades(
+								tradesMsg.trades.map((t) => ({
+									...t,
+									type: "live_trade" as const,
+								})),
+							);
+							break;
+						}
 					}
 				} catch {
 					// skip malformed messages
@@ -114,6 +137,7 @@ const LiveCandlestickChart = memo(function LiveCandlestickChart({
 	const volumeSeriesRef = useRef<ReturnType<
 		NonNullable<typeof chartRef.current>["addLineSeries"]
 	> | null>(null);
+	const [chartReady, setChartReady] = useState(false);
 
 	useEffect(() => {
 		if (!containerRef.current) return;
@@ -173,6 +197,8 @@ const LiveCandlestickChart = memo(function LiveCandlestickChart({
 				scaleMargins: { top: 0.8, bottom: 0 },
 				visible: false,
 			});
+
+			setChartReady(true);
 
 			const handleResize = () => {
 				if (containerRef.current && chartRef.current) {
@@ -253,22 +279,25 @@ const LiveCandlestickChart = memo(function LiveCandlestickChart({
 		// Only update markers when trades change
 		if (trades.length > prevTradeCountRef.current) {
 			type SeriesMarker = import("lightweight-charts").SeriesMarker<Time>;
-			const markers: SeriesMarker[] = trades
-				.map((t) => ({
-					time: t.timestamp as Time,
-					position: (t.side === "buy" ? "belowBar" : "aboveBar") as "belowBar" | "aboveBar",
-					color: t.side === "buy" ? "#22c55e" : "#ef4444",
-					shape: (t.side === "buy" ? "arrowUp" : "arrowDown") as "arrowUp" | "arrowDown",
-					text: `${t.side.toUpperCase()} @ ${t.price.toFixed(2)}`,
-				}))
-				.sort((a, b) => (a.time as number) - (b.time as number));
-			candleSeriesRef.current.setMarkers(markers);
+			const validTrades = trades.filter((t) => t.timestamp != null);
+			if (validTrades.length > 0) {
+				const markers: SeriesMarker[] = validTrades
+					.map((t) => ({
+						time: t.timestamp as Time,
+						position: (t.side === "buy" ? "belowBar" : "aboveBar") as "belowBar" | "aboveBar",
+						color: t.side === "buy" ? "#22c55e" : "#ef4444",
+						shape: (t.side === "buy" ? "arrowUp" : "arrowDown") as "arrowUp" | "arrowDown",
+						text: `${t.side.toUpperCase()} @ ${t.price.toFixed(2)}`,
+					}))
+					.sort((a, b) => (a.time as number) - (b.time as number));
+				candleSeriesRef.current.setMarkers(markers);
+			}
 		}
 		prevTradeCountRef.current = trades.length;
 
 		// Auto-scroll to latest bar
 		chartRef.current.timeScale().scrollToPosition(2, false);
-	}, [bars, trades]);
+	}, [bars, trades, chartReady]);
 
 	return (
 		<div className="relative h-full w-full">
