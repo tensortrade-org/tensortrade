@@ -128,7 +128,9 @@ class LiveTrader:
         # --- Load policy (blocking, run in executor) ---
         loop = asyncio.get_event_loop()
         self._policy = await loop.run_in_executor(
-            None, self._load_policy, config.checkpoint_path,
+            None,
+            self._load_policy,
+            config.checkpoint_path,
         )
 
         # --- Feature columns ---
@@ -218,6 +220,7 @@ class LiveTrader:
             except Exception:
                 logger.debug("Failed to stop policy cleanly", exc_info=True)
         from tensortrade.ray_manager import ray_manager
+
         ray_manager.release("live_trading")
 
         await self._broadcast_status("stopped")
@@ -235,9 +238,7 @@ class LiveTrader:
             "equity": self._current_equity,
             "initial_equity": self._initial_equity,
             "pnl": self._pnl,
-            "pnl_pct": (self._pnl / self._initial_equity * 100)
-            if self._initial_equity > 0
-            else 0.0,
+            "pnl_pct": (self._pnl / self._initial_equity * 100) if self._initial_equity > 0 else 0.0,
             "position": self._position,
             "position_qty": self._position_qty,
             "total_trades": self._total_trades,
@@ -260,7 +261,8 @@ class LiveTrader:
             while self._running:
                 try:
                     buffer = await asyncio.wait_for(
-                        self._bar_queue.get(), timeout=5.0,
+                        self._bar_queue.get(),
+                        timeout=5.0,
                     )
                 except TimeoutError:
                     # No bar received — check if still running
@@ -314,7 +316,8 @@ class LiveTrader:
         # --- Compute features on rolling buffer ---
         if config.feature_specs:
             featured = self._feature_engine.compute(
-                buffer.copy(), config.feature_specs,  # type: ignore[arg-type]
+                buffer.copy(),
+                config.feature_specs,  # type: ignore[arg-type]
             )
         else:
             featured = buffer.copy()
@@ -327,7 +330,9 @@ class LiveTrader:
 
         # --- Run inference ---
         action = await asyncio.get_event_loop().run_in_executor(
-            None, self._compute_action, obs,
+            None,
+            self._compute_action,
+            obs,
         )
         action_label = _ACTION_LABELS.get(action, "hold")
 
@@ -378,7 +383,9 @@ class LiveTrader:
             )
 
     def _build_observation(
-        self, featured: pd.DataFrame, window_size: int,
+        self,
+        featured: pd.DataFrame,
+        window_size: int,
     ) -> np.ndarray | None:
         """Build a flat observation vector from the last window_size rows."""
         if len(featured) < window_size:
@@ -438,7 +445,8 @@ class LiveTrader:
                 self._total_trades += 1
                 if self._account_sync:
                     self._account_sync.set_local_position(
-                        config.symbol, fill.filled_qty,
+                        config.symbol,
+                        fill.filled_qty,
                     )
                 trade_id = self._store.log_live_trade(
                     session_id=self._session_id,
@@ -451,8 +459,11 @@ class LiveTrader:
                     alpaca_order_id=fill.order_id,
                 )
                 await self._broadcast_trade(
-                    "buy", fill.filled_avg_price, fill.filled_qty,
-                    fill.order_id, fill.commission,
+                    "buy",
+                    fill.filled_avg_price,
+                    fill.filled_qty,
+                    fill.order_id,
+                    fill.commission,
                 )
                 return {"trade_id": trade_id, "fill": fill}
 
@@ -487,8 +498,11 @@ class LiveTrader:
                     alpaca_order_id=fill.order_id,
                 )
                 await self._broadcast_trade(
-                    "sell", fill.filled_avg_price, fill.filled_qty,
-                    fill.order_id, fill.commission,
+                    "sell",
+                    fill.filled_avg_price,
+                    fill.filled_qty,
+                    fill.order_id,
+                    fill.commission,
                 )
                 return {"trade_id": trade_id, "fill": fill}
 
@@ -554,60 +568,61 @@ class LiveTrader:
     async def _broadcast_status(self, state: str) -> None:
         if self._manager is None:
             return
-        pnl_pct = (
-            (self._pnl / self._initial_equity * 100)
-            if self._initial_equity > 0
-            else 0.0
+        pnl_pct = (self._pnl / self._initial_equity * 100) if self._initial_equity > 0 else 0.0
+        await self._manager.broadcast_to_dashboards(
+            {
+                "type": "live_status",
+                "state": state,
+                "session_id": self._session_id,
+                "symbol": self._config.symbol if self._config else "",
+                "equity": self._current_equity,
+                "pnl": self._pnl,
+                "pnl_pct": pnl_pct,
+                "position": "asset" if self._position == 1 else "cash",
+                "total_bars": self._step,
+                "total_trades": self._total_trades,
+                "drawdown_pct": self._max_drawdown_pct,
+                "source": "live",
+            }
         )
-        await self._manager.broadcast_to_dashboards({
-            "type": "live_status",
-            "state": state,
-            "session_id": self._session_id,
-            "symbol": self._config.symbol if self._config else "",
-            "equity": self._current_equity,
-            "pnl": self._pnl,
-            "pnl_pct": pnl_pct,
-            "position": "asset" if self._position == 1 else "cash",
-            "total_bars": self._step,
-            "total_trades": self._total_trades,
-            "drawdown_pct": self._max_drawdown_pct,
-            "source": "live",
-        })
 
     async def _broadcast_bar(self, row: pd.Series) -> None:
         if self._manager is None:
             return
-        ts = (
-            int(pd.Timestamp(row["date"]).timestamp())
-            if "date" in row.index
-            else self._step
+        ts = int(pd.Timestamp(row["date"]).timestamp()) if "date" in row.index else self._step
+        await self._manager.broadcast_to_dashboards(
+            {
+                "type": "live_bar",
+                "step": self._step,
+                "timestamp": ts,
+                "open": float(row.get("open", 0)),
+                "high": float(row.get("high", 0)),
+                "low": float(row.get("low", 0)),
+                "close": float(row.get("close", 0)),
+                "volume": float(row.get("volume", 0)),
+                "source": "live",
+            }
         )
-        await self._manager.broadcast_to_dashboards({
-            "type": "live_bar",
-            "step": self._step,
-            "timestamp": ts,
-            "open": float(row.get("open", 0)),
-            "high": float(row.get("high", 0)),
-            "low": float(row.get("low", 0)),
-            "close": float(row.get("close", 0)),
-            "volume": float(row.get("volume", 0)),
-            "source": "live",
-        })
 
     async def _broadcast_action(
-        self, action: int, label: str, price: float,
+        self,
+        action: int,
+        label: str,
+        price: float,
     ) -> None:
         if self._manager is None:
             return
-        await self._manager.broadcast_to_dashboards({
-            "type": "live_action",
-            "step": self._step,
-            "action": action,
-            "action_label": label,
-            "price": price,
-            "position": self._position,  # 0=cash, 1=asset
-            "timestamp": int(time.time()),
-        })
+        await self._manager.broadcast_to_dashboards(
+            {
+                "type": "live_action",
+                "step": self._step,
+                "action": action,
+                "action_label": label,
+                "price": price,
+                "position": self._position,  # 0=cash, 1=asset
+                "timestamp": int(time.time()),
+            }
+        )
 
     async def _broadcast_trade(
         self,
@@ -619,35 +634,35 @@ class LiveTrader:
     ) -> None:
         if self._manager is None:
             return
-        await self._manager.broadcast_to_dashboards({
-            "type": "live_trade",
-            "step": self._step,
-            "side": side,
-            "price": price,
-            "size": size,
-            "alpaca_order_id": alpaca_order_id,
-            "commission": commission,
-            "source": "live",
-        })
+        await self._manager.broadcast_to_dashboards(
+            {
+                "type": "live_trade",
+                "step": self._step,
+                "side": side,
+                "price": price,
+                "size": size,
+                "alpaca_order_id": alpaca_order_id,
+                "commission": commission,
+                "source": "live",
+            }
+        )
 
     async def _broadcast_portfolio(self) -> None:
         if self._manager is None:
             return
-        pnl_pct = (
-            (self._pnl / self._initial_equity * 100)
-            if self._initial_equity > 0
-            else 0.0
+        pnl_pct = (self._pnl / self._initial_equity * 100) if self._initial_equity > 0 else 0.0
+        await self._manager.broadcast_to_dashboards(
+            {
+                "type": "live_portfolio",
+                "equity": self._current_equity,
+                "cash": self._current_equity - (self._position_qty * self._last_price),
+                "position_value": self._position_qty * self._last_price,
+                "pnl": self._pnl,
+                "pnl_pct": pnl_pct,
+                "drawdown_pct": self._max_drawdown_pct,
+                "source": "live",
+            }
         )
-        await self._manager.broadcast_to_dashboards({
-            "type": "live_portfolio",
-            "equity": self._current_equity,
-            "cash": self._current_equity - (self._position_qty * self._last_price),
-            "position_value": self._position_qty * self._last_price,
-            "pnl": self._pnl,
-            "pnl_pct": pnl_pct,
-            "drawdown_pct": self._max_drawdown_pct,
-            "source": "live",
-        })
 
 
 def _coerce_action(action_value: object) -> int:

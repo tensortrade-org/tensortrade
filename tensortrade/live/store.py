@@ -154,9 +154,7 @@ class LiveTradingStore:
 
     def get_session(self, session_id: str) -> LiveSession | None:
         """Retrieve a single live session by ID."""
-        row = self._conn.execute(
-            "SELECT * FROM live_sessions WHERE id = ?", (session_id,)
-        ).fetchone()
+        row = self._conn.execute("SELECT * FROM live_sessions WHERE id = ?", (session_id,)).fetchone()
         if row is None:
             return None
         return self._row_to_session(row)

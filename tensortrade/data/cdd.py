@@ -92,10 +92,7 @@ class CryptoDataDownload:
         info = SUPPORTED_EXCHANGES.get(exchange)
         if info is None:
             supported = ", ".join(sorted(SUPPORTED_EXCHANGES.keys()))
-            raise CryptoDataDownloadError(
-                f"Exchange '{exchange_name}' is not supported. "
-                f"Supported: {supported}"
-            )
+            raise CryptoDataDownloadError(f"Exchange '{exchange_name}' is not supported. Supported: {supported}")
 
         # Binance uses USDT, auto-convert USD -> USDT
         actual_quote = quote
@@ -142,13 +139,9 @@ class CryptoDataDownload:
                     f"Check that this exchange/pair/timeframe combination "
                     f"exists on cryptodatadownload.com"
                 ) from e
-            raise CryptoDataDownloadError(
-                f"HTTP error {e.code} fetching {url}"
-            ) from e
+            raise CryptoDataDownloadError(f"HTTP error {e.code} fetching {url}") from e
         except urllib.error.URLError as e:
-            raise CryptoDataDownloadError(
-                f"Network error fetching data: {e.reason}"
-            ) from e
+            raise CryptoDataDownloadError(f"Network error fetching data: {e.reason}") from e
 
         # Skip first line (site header)
         lines = raw.split("\n", 1)
@@ -159,18 +152,14 @@ class CryptoDataDownload:
             raise CryptoDataDownloadError(f"Empty dataset returned from {url}")
         return df
 
-    def _fetch_standard(
-        self, exchange: str, base: str, quote: str, timeframe: str
-    ) -> pd.DataFrame:
+    def _fetch_standard(self, exchange: str, base: str, quote: str, timeframe: str) -> pd.DataFrame:
         """Fetch from exchanges with standard CSV format (Bitfinex, Bitstamp, Binance)."""
         pair = f"{base}{quote}"
         url = self._build_url(exchange, pair, timeframe)
         logger.info("Fetching %s %s %s from CDD", exchange, pair, timeframe)
         return self._download_csv(url)
 
-    def _fetch_gemini(
-        self, base: str, quote: str, timeframe: str
-    ) -> pd.DataFrame:
+    def _fetch_gemini(self, base: str, quote: str, timeframe: str) -> pd.DataFrame:
         """Fetch from Gemini (uses lowercase prefix, different timeframe naming)."""
         tf = timeframe
         if tf.endswith("h"):
@@ -211,6 +200,7 @@ class CryptoDataDownload:
             df[unix_col] = pd.to_numeric(df[unix_col], errors="coerce")
             df = df.dropna(subset=[unix_col])
             df[unix_col] = df[unix_col].astype(np.int64)
+
             # Normalize to seconds: handle microseconds (>1e15), milliseconds (>1e12)
             def _to_seconds(x: int) -> int:
                 if x > 1e15:
@@ -252,8 +242,7 @@ class CryptoDataDownload:
         missing = [c for c in required if c not in df.columns]
         if missing:
             raise CryptoDataDownloadError(
-                f"Missing required columns after normalization: {missing}. "
-                f"Got columns: {list(df.columns)}"
+                f"Missing required columns after normalization: {missing}. Got columns: {list(df.columns)}"
             )
 
         # Select output columns
@@ -310,7 +299,10 @@ class CryptoDataDownload:
                 pct = len(gaps) / len(df) * 100
                 logger.info(
                     "Detected %d gaps (%.1f%% of %d candles) in %s data",
-                    len(gaps), pct, len(df), timeframe,
+                    len(gaps),
+                    pct,
+                    len(df),
+                    timeframe,
                 )
 
         # Drop any remaining inf values

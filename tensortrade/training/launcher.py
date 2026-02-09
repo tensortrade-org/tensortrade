@@ -255,7 +255,10 @@ class TrainingLauncher:
             raise ValueError(f"Dataset config not found: {dataset_id}")
 
         script_path = self._generate_campaign_script(
-            study_name, dataset, n_trials, iterations_per_trial,
+            study_name,
+            dataset,
+            n_trials,
+            iterations_per_trial,
             action_schemes=action_schemes,
             reward_schemes=reward_schemes,
             search_space=search_space,
@@ -392,7 +395,7 @@ class TrainingLauncher:
             '            episode.custom_metrics["sell_count"] = stats.get("sell_count", 0)',
             '            episode.custom_metrics["hold_count"] = stats.get("hold_count", 0)',
             '            total_actions = stats.get("trade_count", 0) + stats.get("hold_count", 0)',
-            '            if total_actions > 0:',
+            "            if total_actions > 0:",
             '                episode.custom_metrics["hold_ratio"] = stats.get("hold_count", 0) / total_actions',
             '                episode.custom_metrics["trade_ratio"] = stats.get("trade_count", 0) / total_actions',
             "            else:",
@@ -708,14 +711,27 @@ class TrainingLauncher:
     _BSH_ONLY_REWARDS = {"PBR", "AdvancedPBR"}
 
     _ALL_ACTION_SCHEMES = [
-        "BSH", "TrailingStopBSH", "BracketBSH", "DrawdownBudgetBSH",
-        "CooldownBSH", "HoldMinimumBSH", "ConfirmationBSH",
-        "ScaledEntryBSH", "PartialTakeProfitBSH", "VolatilitySizedBSH",
-        "SimpleOrders", "ManagedRiskOrders",
+        "BSH",
+        "TrailingStopBSH",
+        "BracketBSH",
+        "DrawdownBudgetBSH",
+        "CooldownBSH",
+        "HoldMinimumBSH",
+        "ConfirmationBSH",
+        "ScaledEntryBSH",
+        "PartialTakeProfitBSH",
+        "VolatilitySizedBSH",
+        "SimpleOrders",
+        "ManagedRiskOrders",
     ]
     _ALL_REWARD_SCHEMES = [
-        "SimpleProfit", "RiskAdjustedReturns", "PBR", "AdvancedPBR",
-        "FractionalPBR", "MaxDrawdownPenalty", "AdaptiveProfitSeeker",
+        "SimpleProfit",
+        "RiskAdjustedReturns",
+        "PBR",
+        "AdvancedPBR",
+        "FractionalPBR",
+        "MaxDrawdownPenalty",
+        "AdaptiveProfitSeeker",
     ]
 
     def _generate_campaign_script(
@@ -829,7 +845,7 @@ class TrainingLauncher:
             '            episode.custom_metrics["sell_count"] = stats.get("sell_count", 0)',
             '            episode.custom_metrics["hold_count"] = stats.get("hold_count", 0)',
             '            total_actions = stats.get("trade_count", 0) + stats.get("hold_count", 0)',
-            '            if total_actions > 0:',
+            "            if total_actions > 0:",
             '                episode.custom_metrics["hold_ratio"] = stats.get("hold_count", 0) / total_actions',
             '                episode.custom_metrics["trade_ratio"] = stats.get("trade_count", 0) / total_actions',
             "            else:",
@@ -1112,7 +1128,7 @@ class TrainingLauncher:
             "        # Add individual scheme keys for inference runner compatibility",
             '        params["action_scheme"] = action_scheme_name',
             '        params["reward_scheme"] = reward_scheme_name',
-            '        reward_params = {}',
+            "        reward_params = {}",
             '        if reward_scheme_name in ("PBR", "AdvancedPBR"):',
             '            reward_params["trade_penalty_multiplier"] = sample_param(trial, "trade_penalty_multiplier")',
             '            reward_params["churn_penalty_multiplier"] = sample_param(trial, "churn_penalty_multiplier")',

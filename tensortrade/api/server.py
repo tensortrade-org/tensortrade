@@ -170,6 +170,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         await _live_trader.stop()
     # Force-shutdown Ray if any consumers leaked
     from tensortrade.ray_manager import ray_manager
+
     ray_manager.force_shutdown()
     if _live_store:
         _live_store.close()
@@ -782,6 +783,7 @@ def _register_routes(app: FastAPI) -> None:
     @app.get("/api/status")
     async def get_status() -> dict:
         from tensortrade.ray_manager import ray_manager
+
         status = _manager.get_status()
         status["ray"] = {
             "active": ray_manager.is_active,
@@ -878,7 +880,8 @@ def _register_routes(app: FastAPI) -> None:
             experiment_id=experiment_id,
             feature_specs=config.get("features", []),
             window_size=training_config.get(
-                "window_size", config.get("window_size", 10),
+                "window_size",
+                config.get("window_size", 10),
             ),
             max_position_size_usd=body.get("max_position_size_usd", 10_000.0),
             max_drawdown_pct=body.get("max_drawdown_pct", 20.0),
@@ -984,7 +987,9 @@ def _register_routes(app: FastAPI) -> None:
         """Get trades for a specific live session."""
         live_store = _get_live_store()
         trades = live_store.get_session_trades(
-            session_id, limit=limit, offset=offset,
+            session_id,
+            limit=limit,
+            offset=offset,
         )
         return [
             {
@@ -1014,19 +1019,21 @@ def _register_routes(app: FastAPI) -> None:
             raw = trader.get_status()
             state = "running" if raw.get("running") else "idle"
             position = "asset" if raw.get("position") == 1 else "cash"
-            await ws.send_json({
-                "type": "live_status",
-                "state": state,
-                "session_id": raw.get("session_id") or None,
-                "symbol": raw.get("symbol", ""),
-                "equity": raw.get("equity", 0),
-                "pnl": raw.get("pnl", 0),
-                "pnl_pct": raw.get("pnl_pct", 0),
-                "position": position,
-                "total_bars": raw.get("total_bars", 0),
-                "total_trades": raw.get("total_trades", 0),
-                "drawdown_pct": raw.get("max_drawdown_pct", 0),
-            })
+            await ws.send_json(
+                {
+                    "type": "live_status",
+                    "state": state,
+                    "session_id": raw.get("session_id") or None,
+                    "symbol": raw.get("symbol", ""),
+                    "equity": raw.get("equity", 0),
+                    "pnl": raw.get("pnl", 0),
+                    "pnl_pct": raw.get("pnl_pct", 0),
+                    "position": position,
+                    "total_bars": raw.get("total_bars", 0),
+                    "total_trades": raw.get("total_trades", 0),
+                    "drawdown_pct": raw.get("max_drawdown_pct", 0),
+                }
+            )
             while True:
                 # Keep connection alive — ignore incoming messages
                 await ws.receive_text()

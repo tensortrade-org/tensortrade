@@ -79,10 +79,7 @@ class AlpacaCryptoData:
             from alpaca.data.historical.crypto import CryptoBarsRequest, CryptoHistoricalDataClient
             from alpaca.data.timeframe import TimeFrame, TimeFrameUnit
         except ImportError as e:
-            raise AlpacaCryptoError(
-                "alpaca-py is not installed. Install with: "
-                "uv pip install -e '.[alpaca]'"
-            ) from e
+            raise AlpacaCryptoError("alpaca-py is not installed. Install with: uv pip install -e '.[alpaca]'") from e
 
         # Build timeframe
         tf = self._build_timeframe(timeframe, TimeFrame, TimeFrameUnit)
@@ -143,9 +140,7 @@ class AlpacaCryptoData:
         }
         if timeframe not in mapping:
             supported = ", ".join(sorted(mapping.keys()))
-            raise AlpacaCryptoError(
-                f"Unsupported timeframe: {timeframe}. Supported: {supported}"
-            )
+            raise AlpacaCryptoError(f"Unsupported timeframe: {timeframe}. Supported: {supported}")
         amount, unit_name = mapping[timeframe]
         unit = getattr(unit_class, unit_name)
         return tf_class(amount, unit)
@@ -177,9 +172,7 @@ class AlpacaCryptoData:
         }
         for col in ohlcv_map:
             if col not in df.columns:
-                raise AlpacaCryptoError(
-                    f"Missing column '{col}' in Alpaca response for {symbol}"
-                )
+                raise AlpacaCryptoError(f"Missing column '{col}' in Alpaca response for {symbol}")
 
         df = df[["date", "open", "high", "low", "close", "volume"]].copy()
 
@@ -228,7 +221,10 @@ class AlpacaCryptoData:
                 pct = len(gaps) / len(df) * 100
                 logger.info(
                     "Detected %d gaps (%.1f%% of %d candles) in %s data",
-                    len(gaps), pct, len(df), timeframe,
+                    len(gaps),
+                    pct,
+                    len(df),
+                    timeframe,
                 )
 
         # Drop inf values

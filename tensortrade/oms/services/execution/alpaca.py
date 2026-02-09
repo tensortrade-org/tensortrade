@@ -50,8 +50,7 @@ class AlpacaExecutionService:
             from alpaca.trading.client import TradingClient
         except ImportError as exc:
             raise ImportError(
-                "alpaca-py is required for live execution. "
-                "Install with: uv pip install alpaca-py"
+                "alpaca-py is required for live execution. Install with: uv pip install alpaca-py"
             ) from exc
 
         self._client = TradingClient(api_key, secret_key, paper=paper)

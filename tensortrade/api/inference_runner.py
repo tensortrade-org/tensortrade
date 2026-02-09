@@ -75,14 +75,22 @@ class InferenceRunner:
             config = exp.config
 
             policy_algo, ray_started_here = await asyncio.get_event_loop().run_in_executor(
-                None, self._load_trained_algo, exp,
+                None,
+                self._load_trained_algo,
+                exp,
             )
 
             # Resolve dataset config: override or from experiment
             dataset_name = self._resolve_dataset_name(config, dataset_id)
 
             env, ohlcv, asset_wallet = await asyncio.get_event_loop().run_in_executor(
-                None, self._create_env, config, dataset_id, start_date, end_date, test_only,
+                None,
+                self._create_env,
+                config,
+                dataset_id,
+                start_date,
+                end_date,
+                test_only,
             )
 
             # The env's window_size consumes initial rows, so the first
@@ -234,6 +242,7 @@ class InferenceRunner:
                 except Exception:
                     logger.debug("Failed to stop inference policy cleanly", exc_info=True)
             from tensortrade.ray_manager import ray_manager
+
             ray_manager.release("inference")
 
     async def _send_error(self, experiment_id: str, message: str) -> None:
@@ -250,7 +259,9 @@ class InferenceRunner:
         )
 
     def _resolve_dataset_name(
-        self, config: dict, dataset_id: str | None,
+        self,
+        config: dict,
+        dataset_id: str | None,
     ) -> str:
         """Get a human-readable dataset name for display."""
         if dataset_id:
@@ -399,9 +410,7 @@ class InferenceRunner:
         asset = Wallet(exchange, 0 * BTC)
         portfolio = Portfolio(USD, [cash, asset])
 
-        features = [
-            Stream.source(list(data[c]), dtype="float").rename(c) for c in feature_cols if c in data.columns
-        ]
+        features = [Stream.source(list(data[c]), dtype="float").rename(c) for c in feature_cols if c in data.columns]
         feed = DataFeed(features)
         feed.compile()
 
