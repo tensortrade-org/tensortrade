@@ -72,6 +72,7 @@ test = [
     "pytest-sugar>=1.0.0",
     "pytest-cov>=4.1.0",
     "pytest-html>=4.1.0",
+    "httpx>=0.27.0",
 ]
 lint = [
     "ruff>=0.3.0",
