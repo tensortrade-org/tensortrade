@@ -183,10 +183,21 @@ class TestStatusEndpoint:
 
 class TestTrainingControls:
     def test_stop_training(self, client):
-        resp = client.post("/api/training/stop")
-        assert resp.status_code == 200
-        data = resp.json()
-        assert data["status"] == "stop_sent"
+        import tensortrade.api.server as server_module
+        from unittest.mock import MagicMock
+
+        mock_launcher = MagicMock()
+        mock_launcher.stop_all.return_value = 1
+        original_launcher = server_module._launcher
+        server_module._launcher = mock_launcher
+        try:
+            resp = client.post("/api/training/stop")
+            assert resp.status_code == 200
+            data = resp.json()
+            assert data["status"] == "stop_sent"
+            mock_launcher.stop_all.assert_called_once()
+        finally:
+            server_module._launcher = original_launcher
 
     def test_pause_training(self, client):
         resp = client.post("/api/training/pause")

@@ -301,15 +301,16 @@ def _register_routes(app: FastAPI) -> None:
         from tensortrade.api.inference_runner import InferenceRunner
 
         experiment_id = body.get("experiment_id")
-        use_random_agent = body.get("use_random_agent", True)
         dataset_id = body.get("dataset_id")
+        start_date = body.get("start_date")
+        end_date = body.get("end_date")
         if not experiment_id:
             return {"error": "experiment_id is required"}
 
         store = _get_store()
         ds_store = _get_ds_store()
         runner = InferenceRunner(store, _manager, ds_store)
-        asyncio.create_task(runner.run_episode(experiment_id, use_random_agent, dataset_id))
+        asyncio.create_task(runner.run_episode(experiment_id, dataset_id, start_date, end_date))
         return {"status": "started"}
 
     # --- REST: Insights ---
@@ -682,6 +683,7 @@ def _register_routes(app: FastAPI) -> None:
                 iterations_per_trial=body.get("iterations_per_trial", 40),
                 action_schemes=body.get("action_schemes"),
                 reward_schemes=body.get("reward_schemes"),
+                search_space=body.get("search_space"),
             )
             return {"study_name": campaign_id, "status": "launched"}
         except (ValueError, RuntimeError) as e:
@@ -713,8 +715,17 @@ def _register_routes(app: FastAPI) -> None:
 
     @app.post("/api/training/stop")
     async def stop_training() -> dict:
+        launcher = _get_launcher()
+        stopped_runs = launcher.stop_all()
+        _manager._is_training = False
+        _manager._is_paused = False
         await _manager.send_control_to_training("stop")
-        return {"status": "stop_sent"}
+        if stopped_runs > 0:
+            _manager._current_experiment_id = None
+            message = f"Stopped {stopped_runs} active run(s) and terminated Ray."
+        else:
+            message = "No active launched run found; sent stop command and cleaned Ray."
+        return {"status": "stop_sent", "message": message}
 
     @app.post("/api/training/pause")
     async def pause_training() -> dict:

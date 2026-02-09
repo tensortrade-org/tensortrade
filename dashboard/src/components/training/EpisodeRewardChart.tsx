@@ -15,11 +15,24 @@ import {
 interface RewardDataPoint {
 	episode: number;
 	reward: number;
+	reward_avg: number;
+}
+
+const MAX_REWARD_POINTS = 500;
+
+function downsampleData(data: RewardDataPoint[], maxPoints = MAX_REWARD_POINTS): RewardDataPoint[] {
+	if (data.length <= maxPoints) return data;
+	const stride = Math.ceil(data.length / maxPoints);
+	const sampled = data.filter((point) => point.episode % stride === 0);
+	if (sampled[sampled.length - 1]?.episode !== data[data.length - 1]?.episode) {
+		sampled.push(data[data.length - 1]);
+	}
+	return sampled.length > 0 ? sampled : data.filter((_, idx) => idx % stride === 0);
 }
 
 interface CustomTooltipProps {
 	active?: boolean;
-	payload?: ReadonlyArray<{ value: number }>;
+	payload?: ReadonlyArray<{ name: string; value: number; color: string }>;
 	label?: number;
 }
 
@@ -28,7 +41,11 @@ function RewardTooltip({ active, payload, label }: CustomTooltipProps) {
 	return (
 		<div className="rounded-md border border-[var(--border-color)] bg-[var(--bg-card)] px-3 py-2 text-xs shadow-lg">
 			<p className="text-[var(--text-secondary)]">Episode {label}</p>
-			<p className="font-medium text-[var(--accent-blue)]">Reward: {payload[0].value.toFixed(2)}</p>
+			{payload.map((entry) => (
+				<p key={entry.name} className="font-medium" style={{ color: entry.color }}>
+					{entry.name === "reward" ? "Reward" : "Reward MA(5)"}: {entry.value.toFixed(2)}
+				</p>
+			))}
 		</div>
 	);
 }
@@ -36,10 +53,22 @@ function RewardTooltip({ active, payload, label }: CustomTooltipProps) {
 export function EpisodeRewardChart() {
 	const episodes = useTrainingStore((s) => s.episodes);
 
-	const data: RewardDataPoint[] = episodes.map((ep) => ({
-		episode: ep.episode,
-		reward: ep.reward_total,
-	}));
+	let rolling = 0;
+	const fullData: RewardDataPoint[] = episodes.map((ep, idx) => {
+		rolling += ep.reward_total;
+		if (idx >= 5) {
+			rolling -= episodes[idx - 5].reward_total;
+		}
+		const windowLen = idx < 5 ? idx + 1 : 5;
+		return {
+			episode: ep.episode,
+			reward: ep.reward_total,
+			reward_avg: rolling / windowLen,
+		};
+	});
+	const data = downsampleData(fullData);
+	const enableAnimation = data.length <= 600;
+	const animationDuration = enableAnimation ? 180 : 0;
 
 	return (
 		<Card>
@@ -76,7 +105,18 @@ export function EpisodeRewardChart() {
 							stroke="var(--accent-blue)"
 							strokeWidth={2}
 							dot={false}
-							animationDuration={300}
+							isAnimationActive={enableAnimation}
+							animationDuration={animationDuration}
+						/>
+						<Line
+							type="monotone"
+							dataKey="reward_avg"
+							stroke="var(--accent-amber)"
+							strokeWidth={1.5}
+							strokeDasharray="4 4"
+							dot={false}
+							isAnimationActive={enableAnimation}
+							animationDuration={animationDuration}
 						/>
 					</LineChart>
 				</ResponsiveContainer>

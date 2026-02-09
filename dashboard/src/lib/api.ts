@@ -169,21 +169,28 @@ export async function getStudyCurves(name: string): Promise<StudyCurvesResponse>
 
 interface InferenceRunRequest {
 	experiment_id: string;
-	use_random_agent?: boolean;
 	dataset_id?: string;
+	start_date?: string;
+	end_date?: string;
 }
 
 export async function startInference(
 	experimentId: string,
-	useRandomAgent = true,
 	datasetId?: string,
+	startDate?: string,
+	endDate?: string,
 ): Promise<ActionResponse> {
 	const body: InferenceRunRequest = {
 		experiment_id: experimentId,
-		use_random_agent: useRandomAgent,
 	};
 	if (datasetId) {
 		body.dataset_id = datasetId;
+	}
+	if (startDate) {
+		body.start_date = startDate;
+	}
+	if (endDate) {
+		body.end_date = endDate;
 	}
 	return postJSON<ActionResponse>("/inference/run", body as unknown as Record<string, unknown>);
 }

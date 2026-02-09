@@ -13,6 +13,7 @@ import os
 import signal
 import subprocess
 import sys
+import time
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
@@ -165,15 +166,64 @@ class TrainingLauncher:
             return False
 
         if running.process is not None:
-            try:
-                os.killpg(os.getpgid(running.process.pid), signal.SIGTERM)
-            except (ProcessLookupError, PermissionError):
-                pass
+            self._terminate_process_group(running.process)
 
         self._experiment_store.complete_experiment(experiment_id, status="failed", final_metrics={"cancelled": True})
         del self._running[experiment_id]
+        self._stop_ray_runtime()
         logger.info("Cancelled training %s", experiment_id)
         return True
+
+    def stop_all(self) -> int:
+        """Stop all active launched runs and tear down Ray runtime.
+
+        Returns the number of active runs that were requested to stop.
+        """
+        self._cleanup_finished()
+        active_ids = list(self._running.keys())
+        for exp_id in active_ids:
+            self.cancel(exp_id)
+        if not active_ids:
+            # Even with no tracked run, try cleaning up orphaned Ray workers.
+            self._stop_ray_runtime()
+        return len(active_ids)
+
+    @staticmethod
+    def _terminate_process_group(process: subprocess.Popen, timeout_seconds: float = 5.0) -> None:
+        """Terminate a process group, escalating to SIGKILL if needed."""
+        try:
+            pid = process.pid
+            if pid is None:
+                return
+            pgid = os.getpgid(pid)
+            os.killpg(pgid, signal.SIGTERM)
+        except (ProcessLookupError, PermissionError, OSError):
+            return
+
+        deadline = time.time() + timeout_seconds
+        while time.time() < deadline:
+            if process.poll() is not None:
+                return
+            time.sleep(0.1)
+
+        try:
+            os.killpg(pgid, signal.SIGKILL)
+        except (ProcessLookupError, PermissionError, OSError):
+            pass
+
+    @staticmethod
+    def _stop_ray_runtime() -> None:
+        """Best-effort stop of Ray runtime to avoid orphan workers."""
+        try:
+            subprocess.run(
+                [sys.executable, "-m", "ray", "stop", "--force"],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                check=False,
+                timeout=15,
+            )
+        except Exception:
+            logger.debug("Failed to force-stop Ray runtime", exc_info=True)
 
     def launch_campaign(
         self,
@@ -184,6 +234,7 @@ class TrainingLauncher:
         tags: list[str] | None = None,
         action_schemes: list[str] | None = None,
         reward_schemes: list[str] | None = None,
+        search_space: dict | None = None,
     ) -> str:
         """Launch an Optuna HP campaign as a subprocess.
 
@@ -202,6 +253,7 @@ class TrainingLauncher:
             study_name, dataset, n_trials, iterations_per_trial,
             action_schemes=action_schemes,
             reward_schemes=reward_schemes,
+            search_space=search_space,
         )
 
         log_dir = os.path.expanduser("~/.tensortrade/launch_scripts")
@@ -332,6 +384,18 @@ class TrainingLauncher:
             '            episode.custom_metrics["buy_count"] = stats.get("buy_count", 0)',
             '            episode.custom_metrics["sell_count"] = stats.get("sell_count", 0)',
             '            episode.custom_metrics["hold_count"] = stats.get("hold_count", 0)',
+            '            total_actions = stats.get("trade_count", 0) + stats.get("hold_count", 0)',
+            '            if total_actions > 0:',
+            '                episode.custom_metrics["hold_ratio"] = stats.get("hold_count", 0) / total_actions',
+            '                episode.custom_metrics["trade_ratio"] = stats.get("trade_count", 0) / total_actions',
+            "            else:",
+            '                episode.custom_metrics["hold_ratio"] = 0.0',
+            '                episode.custom_metrics["trade_ratio"] = 0.0',
+            '            bs_total = stats.get("buy_count", 0) + stats.get("sell_count", 0)',
+            '            episode.custom_metrics["buy_sell_imbalance"] = ((stats.get("buy_count", 0) - stats.get("sell_count", 0)) / bs_total) if bs_total > 0 else 0.0',
+            '            pnl = episode.custom_metrics.get("pnl", 0.0)',
+            '            trades = stats.get("trade_count", 0)',
+            '            episode.custom_metrics["pnl_per_trade"] = (pnl / trades) if trades > 0 else 0.0',
             "",
             "",
             "def load_data():",
@@ -387,10 +451,13 @@ class TrainingLauncher:
             "    # Reward scheme dispatch",
             '    reward_name = CONFIG.get("reward_scheme", "PBR")',
             '    reward_params = CONFIG.get("reward_params", {})',
+            '    anti_churn_defaults = {"trade_penalty_multiplier": 1.1, "churn_penalty_multiplier": 1.0, "churn_window": 6, "reward_clip": 200.0}',
             '    if reward_name == "PBR":',
-            "        reward_scheme = tt_rewards.PBR(price=price, commission=commission)",
+            "        pbr_params = {**anti_churn_defaults, **reward_params}",
+            "        reward_scheme = tt_rewards.PBR(price=price, commission=commission, **pbr_params)",
             '    elif reward_name == "AdvancedPBR":',
-            "        reward_scheme = tt_rewards.AdvancedPBR(price=price, commission=commission, **reward_params)",
+            "        advanced_params = {**anti_churn_defaults, **reward_params}",
+            "        reward_scheme = tt_rewards.AdvancedPBR(price=price, commission=commission, **advanced_params)",
             '    elif reward_name == "FractionalPBR":',
             "        reward_scheme = tt_rewards.FractionalPBR(price=price, commission=commission)",
             '    elif reward_name == "RiskAdjustedReturns":',
@@ -521,6 +588,10 @@ class TrainingLauncher:
             '            "hold_count_mean": safe_float(custom.get("hold_count_mean")),',
             '            "buy_count_mean": safe_float(custom.get("buy_count_mean")),',
             '            "sell_count_mean": safe_float(custom.get("sell_count_mean")),',
+            '            "hold_ratio_mean": safe_float(custom.get("hold_ratio_mean")),',
+            '            "trade_ratio_mean": safe_float(custom.get("trade_ratio_mean")),',
+            '            "pnl_per_trade_mean": safe_float(custom.get("pnl_per_trade_mean")),',
+            '            "buy_sell_imbalance_mean": safe_float(custom.get("buy_sell_imbalance_mean")),',
             "        }",
             "",
             "        store.log_iteration(EXPERIMENT_ID, i + 1, metrics)",
@@ -554,6 +625,10 @@ class TrainingLauncher:
             '                    "hold_count": metrics["hold_count_mean"],',
             '                    "buy_count": metrics.get("buy_count_mean", 0),',
             '                    "sell_count": metrics.get("sell_count_mean", 0),',
+            '                    "hold_ratio": metrics.get("hold_ratio_mean", 0),',
+            '                    "trade_ratio": metrics.get("trade_ratio_mean", 0),',
+            '                    "pnl_per_trade": metrics.get("pnl_per_trade_mean", 0),',
+            '                    "buy_sell_imbalance": metrics.get("buy_sell_imbalance_mean", 0),',
             '                    "action_distribution": {',
             '                        "buy": metrics.get("buy_count_mean", 0),',
             '                        "sell": metrics.get("sell_count_mean", 0),',
@@ -563,6 +638,18 @@ class TrainingLauncher:
             "            except Exception:",
             "                pass",
             "",
+            "    checkpoint_path = None",
+            "    try:",
+            '        checkpoint_dir = os.path.expanduser(f"~/.tensortrade/checkpoints/{EXPERIMENT_ID}")',
+            "        os.makedirs(checkpoint_dir, exist_ok=True)",
+            "        checkpoint_obj = algo.save(checkpoint_dir)",
+            "        if hasattr(checkpoint_obj, 'checkpoint') and hasattr(checkpoint_obj.checkpoint, 'path'):",
+            "            checkpoint_path = str(checkpoint_obj.checkpoint.path)",
+            "        else:",
+            "            checkpoint_path = str(checkpoint_obj)",
+            "    except Exception:",
+            "        checkpoint_path = None",
+            "",
             "    # Finalize",
             "    final_metrics = {",
             '        "pnl": metrics.get("pnl_mean", 0),',
@@ -570,7 +657,12 @@ class TrainingLauncher:
             '        "pnl_pct": metrics.get("pnl_pct_mean", 0),',
             '        "net_worth": metrics.get("net_worth_mean", 0),',
             '        "episode_return_mean": metrics.get("episode_return_mean", 0),',
+            '        "trade_count": metrics.get("trade_count_mean", 0),',
+            '        "hold_ratio": metrics.get("hold_ratio_mean", 0),',
+            '        "trade_ratio": metrics.get("trade_ratio_mean", 0),',
+            '        "pnl_per_trade": metrics.get("pnl_per_trade_mean", 0),',
             '        "total_iterations": num_iterations,',
+            '        "checkpoint_path": checkpoint_path,',
             "    }",
             '    store.complete_experiment(EXPERIMENT_ID, "completed", final_metrics)',
             "",
@@ -619,6 +711,7 @@ class TrainingLauncher:
         iterations_per_trial: int,
         action_schemes: list[str] | None = None,
         reward_schemes: list[str] | None = None,
+        search_space: dict | None = None,
     ) -> str:
         """Generate a self-contained Optuna campaign script."""
         from tensortrade.training.dataset_store import DatasetConfig
@@ -638,6 +731,7 @@ class TrainingLauncher:
         split_json = json.dumps(dataset.split_config)
         action_schemes_json = json.dumps(action_list)
         reward_schemes_json = json.dumps(reward_list)
+        search_space_json = json.dumps(search_space or {})
 
         lines = [
             "#!/usr/bin/env python3",
@@ -683,6 +777,7 @@ class TrainingLauncher:
             f"SPLIT_CONFIG = json.loads('{split_json}')",
             f"ACTION_CHOICES = json.loads('{action_schemes_json}')",
             f"REWARD_CHOICES = json.loads('{reward_schemes_json}')",
+            f"SEARCH_SPACE_OVERRIDE = json.loads('{search_space_json}')",
             "",
             "# Compatibility: actions that cannot use PBR/AdvancedPBR",
             'NON_PBR_ACTIONS = {"ScaledEntryBSH", "PartialTakeProfitBSH", "SimpleOrders", "ManagedRiskOrders"}',
@@ -716,6 +811,18 @@ class TrainingLauncher:
             '            episode.custom_metrics["buy_count"] = stats.get("buy_count", 0)',
             '            episode.custom_metrics["sell_count"] = stats.get("sell_count", 0)',
             '            episode.custom_metrics["hold_count"] = stats.get("hold_count", 0)',
+            '            total_actions = stats.get("trade_count", 0) + stats.get("hold_count", 0)',
+            '            if total_actions > 0:',
+            '                episode.custom_metrics["hold_ratio"] = stats.get("hold_count", 0) / total_actions',
+            '                episode.custom_metrics["trade_ratio"] = stats.get("trade_count", 0) / total_actions',
+            "            else:",
+            '                episode.custom_metrics["hold_ratio"] = 0.0',
+            '                episode.custom_metrics["trade_ratio"] = 0.0',
+            '            bs_total = stats.get("buy_count", 0) + stats.get("sell_count", 0)',
+            '            episode.custom_metrics["buy_sell_imbalance"] = ((stats.get("buy_count", 0) - stats.get("sell_count", 0)) / bs_total) if bs_total > 0 else 0.0',
+            '            pnl = episode.custom_metrics.get("pnl", 0.0)',
+            '            trades = stats.get("trade_count", 0)',
+            '            episode.custom_metrics["pnl_per_trade"] = (pnl / trades) if trades > 0 else 0.0',
             "",
             "",
             "def safe_float(v, default=0.0):",
@@ -781,10 +888,13 @@ class TrainingLauncher:
             "    # Reward scheme dispatch",
             '    reward_name = env_config.get("reward_scheme", "PBR")',
             '    reward_params = env_config.get("reward_params", {})',
+            '    anti_churn_defaults = {"trade_penalty_multiplier": 1.1, "churn_penalty_multiplier": 1.0, "churn_window": 6, "reward_clip": 200.0}',
             '    if reward_name == "PBR":',
-            "        reward_scheme = tt_rewards.PBR(price=price, commission=commission)",
+            "        pbr_params = {**anti_churn_defaults, **reward_params}",
+            "        reward_scheme = tt_rewards.PBR(price=price, commission=commission, **pbr_params)",
             '    elif reward_name == "AdvancedPBR":',
-            "        reward_scheme = tt_rewards.AdvancedPBR(price=price, commission=commission, **reward_params)",
+            "        advanced_params = {**anti_churn_defaults, **reward_params}",
+            "        reward_scheme = tt_rewards.AdvancedPBR(price=price, commission=commission, **advanced_params)",
             '    elif reward_name == "FractionalPBR":',
             "        reward_scheme = tt_rewards.FractionalPBR(price=price, commission=commission)",
             '    elif reward_name == "RiskAdjustedReturns":',
@@ -829,6 +939,7 @@ class TrainingLauncher:
             '        "commission": config["commission"],',
             '        "action_scheme": config.get("action_scheme", "BSH"),',
             '        "reward_scheme": config.get("reward_scheme", "PBR"),',
+            '        "reward_params": config.get("reward_params", {}),',
             '        "initial_cash": 10000,',
             "    }",
             "    pnls = []",
@@ -888,7 +999,14 @@ class TrainingLauncher:
             '        "commission": {"type": "float", "low": 0.0001, "high": 0.001, "log": True},',
             '        "sgd_iters": {"type": "int", "low": 3, "high": 15},',
             '        "batch_size": {"type": "categorical", "choices": [2000, 4000, 8000]},',
+            '        "trade_penalty_multiplier": {"mode": "fixed", "type": "float", "value": 1.1, "low": 0.6, "high": 2.0},',
+            '        "churn_penalty_multiplier": {"mode": "fixed", "type": "float", "value": 1.0, "low": 0.5, "high": 2.0},',
+            '        "churn_window": {"mode": "fixed", "type": "int", "value": 6, "low": 2, "high": 24},',
+            '        "reward_clip": {"mode": "fixed", "type": "float", "value": 200.0, "low": 50.0, "high": 500.0},',
             "    }",
+            "    for key, spec in SEARCH_SPACE_OVERRIDE.items():",
+            "        if isinstance(spec, dict):",
+            "            search_space[key] = spec",
             "",
             "    # Pre-compute all valid action+reward combos (fixed space for Optuna)",
             "    VALID_COMBOS = []",
@@ -928,20 +1046,34 @@ class TrainingLauncher:
             "    pruned_count = 0",
             "    best_value = None",
             "",
+            "    def sample_param(trial, name):",
+            "        spec = search_space.get(name, {})",
+            '        mode = spec.get("mode", "tune") if isinstance(spec, dict) else "tune"',
+            "        if mode == 'fixed':",
+            '            return spec.get("value")',
+            '        ptype = spec.get("type", "float")',
+            "        if ptype == 'float':",
+            '            return trial.suggest_float(name, float(spec["low"]), float(spec["high"]), log=bool(spec.get("log", False)))',
+            "        if ptype == 'int':",
+            '            return trial.suggest_int(name, int(spec["low"]), int(spec["high"]))',
+            "        if ptype == 'categorical':",
+            '            return trial.suggest_categorical(name, spec["choices"])',
+            "        raise ValueError(f'Unsupported param type for {name}: {ptype}')",
+            "",
             "    def objective(trial):",
             "        nonlocal completed_count, pruned_count, best_value",
             "",
             "        # Sample hyperparameters",
-            '        lr = trial.suggest_float("lr", 1e-5, 1e-3, log=True)',
-            '        entropy = trial.suggest_float("entropy", 0.01, 0.2, log=True)',
-            '        gamma = trial.suggest_float("gamma", 0.95, 0.999)',
-            '        clip = trial.suggest_float("clip", 0.05, 0.3)',
-            '        hidden_size = trial.suggest_categorical("hidden_size", [32, 64, 128])',
-            '        window_size = trial.suggest_int("window_size", 5, 20)',
-            '        max_loss = trial.suggest_float("max_loss", 0.2, 0.5)',
-            '        commission = trial.suggest_float("commission", 0.0001, 0.001, log=True)',
-            '        sgd_iters = trial.suggest_int("sgd_iters", 3, 15)',
-            '        batch_size = trial.suggest_categorical("batch_size", [2000, 4000, 8000])',
+            '        lr = sample_param(trial, "lr")',
+            '        entropy = sample_param(trial, "entropy")',
+            '        gamma = sample_param(trial, "gamma")',
+            '        clip = sample_param(trial, "clip")',
+            '        hidden_size = sample_param(trial, "hidden_size")',
+            '        window_size = sample_param(trial, "window_size")',
+            '        max_loss = sample_param(trial, "max_loss")',
+            '        commission = sample_param(trial, "commission")',
+            '        sgd_iters = sample_param(trial, "sgd_iters")',
+            '        batch_size = sample_param(trial, "batch_size")',
             "",
             "        # Sample action+reward combo (single fixed-space categorical)",
             "        if len(VALID_COMBOS) > 1:",
@@ -954,6 +1086,14 @@ class TrainingLauncher:
             "        # Add individual scheme keys for inference runner compatibility",
             '        params["action_scheme"] = action_scheme_name',
             '        params["reward_scheme"] = reward_scheme_name',
+            '        reward_params = {}',
+            '        if reward_scheme_name in ("PBR", "AdvancedPBR"):',
+            '            reward_params["trade_penalty_multiplier"] = sample_param(trial, "trade_penalty_multiplier")',
+            '            reward_params["churn_penalty_multiplier"] = sample_param(trial, "churn_penalty_multiplier")',
+            '            reward_params["churn_window"] = sample_param(trial, "churn_window")',
+            '            reward_params["reward_clip"] = sample_param(trial, "reward_clip")',
+            "            params.update(reward_params)",
+            '        params["reward_params"] = reward_params',
             "",
             "        # Snapshot HP-only params for WebSocket (before dataset fields are added)",
             "        hp_params = dict(params)",
@@ -990,6 +1130,7 @@ class TrainingLauncher:
             '            "random_start_pct": 0.5,',
             '            "action_scheme": action_scheme_name,',
             '            "reward_scheme": reward_scheme_name,',
+            '            "reward_params": reward_params,',
             "        }",
             "",
             "        ppo_config = (",
@@ -1032,6 +1173,12 @@ class TrainingLauncher:
             '                    "net_worth_mean": safe_float(custom.get("final_net_worth_mean")),',
             '                    "trade_count_mean": safe_float(custom.get("trade_count_mean")),',
             '                    "hold_count_mean": safe_float(custom.get("hold_count_mean")),',
+            '                    "buy_count_mean": safe_float(custom.get("buy_count_mean")),',
+            '                    "sell_count_mean": safe_float(custom.get("sell_count_mean")),',
+            '                    "hold_ratio_mean": safe_float(custom.get("hold_ratio_mean")),',
+            '                    "trade_ratio_mean": safe_float(custom.get("trade_ratio_mean")),',
+            '                    "pnl_per_trade_mean": safe_float(custom.get("pnl_per_trade_mean")),',
+            '                    "buy_sell_imbalance_mean": safe_float(custom.get("buy_sell_imbalance_mean")),',
             "                }",
             "",
             "                store.log_iteration(trial_exp_id, i + 1, metrics)",
@@ -1052,6 +1199,7 @@ class TrainingLauncher:
             '                        "commission": commission,',
             '                        "action_scheme": action_scheme_name,',
             '                        "reward_scheme": reward_scheme_name,',
+            '                        "reward_params": reward_params,',
             "                    }",
             "                    val_pnl = evaluate(algo, val_data, feature_cols, eval_cfg, n=5)",
             "                    trial.report(val_pnl, i)",
@@ -1090,6 +1238,7 @@ class TrainingLauncher:
             '                "commission": commission,',
             '                "action_scheme": action_scheme_name,',
             '                "reward_scheme": reward_scheme_name,',
+            '                "reward_params": reward_params,',
             "            }",
             "            val_pnl = evaluate(algo, val_data, feature_cols, final_eval_cfg, n=10)",
             "",
@@ -1118,7 +1267,20 @@ class TrainingLauncher:
             "                duration_seconds=duration,",
             "                experiment_id=trial_exp_id,",
             "            )",
-            '            store.complete_experiment(trial_exp_id, "completed", {"objective_value": val_pnl})',
+            "            # Save checkpoint so inference runner can load the trained policy",
+            "            trial_checkpoint_path = None",
+            "            try:",
+            '                ckpt_dir = os.path.expanduser(f"~/.tensortrade/checkpoints/{trial_exp_id}")',
+            "                os.makedirs(ckpt_dir, exist_ok=True)",
+            "                ckpt_obj = algo.save(ckpt_dir)",
+            "                if hasattr(ckpt_obj, 'checkpoint') and hasattr(ckpt_obj.checkpoint, 'path'):",
+            "                    trial_checkpoint_path = str(ckpt_obj.checkpoint.path)",
+            "                else:",
+            "                    trial_checkpoint_path = str(ckpt_obj)",
+            "            except Exception:",
+            "                trial_checkpoint_path = None",
+            "",
+            '            store.complete_experiment(trial_exp_id, "completed", {"objective_value": val_pnl, "checkpoint_path": trial_checkpoint_path})',
             "",
             "            # Compute and send importance after each completed trial",
             "            try:",

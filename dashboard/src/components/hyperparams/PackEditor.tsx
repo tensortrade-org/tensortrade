@@ -57,6 +57,13 @@ const DEFAULT_CONFIG: TrainingConfig = {
 	num_iterations: 100,
 };
 
+const ANTI_CHURN_REWARD_DEFAULTS = {
+	trade_penalty_multiplier: 1.1,
+	churn_penalty_multiplier: 1.0,
+	churn_window: 6,
+	reward_clip: 200.0,
+} as const;
+
 interface LayerEditorProps {
 	layers: number[];
 	onChange: (layers: number[]) => void;
@@ -156,12 +163,26 @@ export function PackEditor() {
 	const isNewPack = selectedPackId === null;
 	const pack = editingPack;
 	const config = pack?.config ?? DEFAULT_CONFIG;
+	const rewardParams = {
+		...ANTI_CHURN_REWARD_DEFAULTS,
+		...(config.reward_params ?? {}),
+	};
 
 	const updateModel = useCallback(
 		(modelUpdate: Partial<ModelConfig>) => {
 			updateEditingConfig("model", { ...config.model, ...modelUpdate });
 		},
 		[config.model, updateEditingConfig],
+	);
+
+	const updateRewardParam = useCallback(
+		(key: keyof typeof ANTI_CHURN_REWARD_DEFAULTS, value: number) => {
+			updateEditingConfig("reward_params", {
+				...rewardParams,
+				[key]: key === "churn_window" ? Math.round(value) : value,
+			});
+		},
+		[rewardParams, updateEditingConfig],
 	);
 
 	const handleNameChange = useCallback(
@@ -190,15 +211,32 @@ export function PackEditor() {
 		setPacks(freshPacks);
 	}, [setPacks]);
 
+	const normalizeConfigForSave = useCallback((cfg: TrainingConfig): TrainingConfig => {
+		if (cfg.reward_scheme !== "PBR" && cfg.reward_scheme !== "AdvancedPBR") {
+			return {
+				...cfg,
+				reward_params: {},
+			};
+		}
+		return {
+			...cfg,
+			reward_params: {
+				...ANTI_CHURN_REWARD_DEFAULTS,
+				...(cfg.reward_params ?? {}),
+			},
+		};
+	}, []);
+
 	const handleSave = useCallback(async () => {
 		if (!pack) return;
 		setSaving(true);
 		try {
+			const configToSave = normalizeConfigForSave(pack.config);
 			if (isNewPack || !pack.id) {
 				const created = await createHyperparamPack({
 					name: pack.name || "New Pack",
 					description: pack.description,
-					config: pack.config,
+					config: configToSave,
 				});
 				await refreshPacks();
 				selectPack(created.id);
@@ -207,7 +245,7 @@ export function PackEditor() {
 				const updated = await updateHyperparamPack(pack.id, {
 					name: pack.name,
 					description: pack.description,
-					config: pack.config,
+					config: configToSave,
 				});
 				setPacks(packs.map((p) => (p.id === updated.id ? updated : p)));
 				showStatus("Pack saved", "success");
@@ -217,16 +255,17 @@ export function PackEditor() {
 		} finally {
 			setSaving(false);
 		}
-	}, [pack, isNewPack, showStatus, refreshPacks, selectPack, packs, setPacks]);
+	}, [pack, isNewPack, showStatus, refreshPacks, selectPack, packs, setPacks, normalizeConfigForSave]);
 
 	const handleSaveAs = useCallback(async () => {
 		if (!pack) return;
 		setSaving(true);
 		try {
+			const configToSave = normalizeConfigForSave(pack.config);
 			const created = await createHyperparamPack({
 				name: `${pack.name} (copy)`,
 				description: pack.description,
-				config: pack.config,
+				config: configToSave,
 			});
 			await refreshPacks();
 			selectPack(created.id);
@@ -236,7 +275,7 @@ export function PackEditor() {
 		} finally {
 			setSaving(false);
 		}
-	}, [pack, showStatus, refreshPacks, selectPack]);
+	}, [pack, showStatus, refreshPacks, selectPack, normalizeConfigForSave]);
 
 	const handleDuplicate = useCallback(async () => {
 		if (!pack || isNewPack) return;
@@ -499,9 +538,18 @@ export function PackEditor() {
 					label="Reward Scheme"
 					value={config.reward_scheme}
 					options={REWARD_SCHEMES.map((r) => ({ value: r.value, label: r.label }))}
-					onChange={(v) =>
-						updateEditingConfig("reward_scheme", v as TrainingConfig["reward_scheme"])
-					}
+					onChange={(v) => {
+						const rewardScheme = v as TrainingConfig["reward_scheme"];
+						updateEditingConfig("reward_scheme", rewardScheme);
+						if (rewardScheme === "PBR" || rewardScheme === "AdvancedPBR") {
+							updateEditingConfig("reward_params", {
+								...ANTI_CHURN_REWARD_DEFAULTS,
+								...(config.reward_params ?? {}),
+							});
+						} else {
+							updateEditingConfig("reward_params", {});
+						}
+					}}
 					description="Reward calculation scheme"
 				/>
 				{!isCompatible(config.action_scheme, config.reward_scheme) && (
@@ -509,6 +557,65 @@ export function PackEditor() {
 						{config.reward_scheme} requires Discrete(3) BSH-style actions. {config.action_scheme} is
 						not compatible — use SimpleProfit or RiskAdjustedReturns.
 					</p>
+				)}
+				{(config.reward_scheme === "PBR" || config.reward_scheme === "AdvancedPBR") && (
+					<div className="rounded-md border border-[var(--border-color)] bg-[var(--bg-tertiary)] p-3 mt-3 space-y-3">
+						<div className="flex items-center justify-between">
+							<p className="text-xs font-medium text-[var(--text-primary)]">
+								{config.reward_scheme} Reward Parameters
+							</p>
+							<button
+								type="button"
+								onClick={() =>
+									updateEditingConfig("reward_params", { ...ANTI_CHURN_REWARD_DEFAULTS })
+								}
+								className="rounded border border-[var(--border-color)] px-2 py-1 text-xs text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)]"
+							>
+								Reset Defaults
+							</button>
+						</div>
+
+						<ParamSlider
+							label="Trade Penalty Multiplier"
+							value={rewardParams.trade_penalty_multiplier}
+							min={0.1}
+							max={5.0}
+							step={0.1}
+							onChange={(v) => updateRewardParam("trade_penalty_multiplier", v)}
+							description="Base trade-cost penalty applied on each executed trade"
+							format={(v) => v.toFixed(2)}
+						/>
+						<ParamSlider
+							label="Churn Penalty Multiplier"
+							value={rewardParams.churn_penalty_multiplier}
+							min={0.0}
+							max={5.0}
+							step={0.1}
+							onChange={(v) => updateRewardParam("churn_penalty_multiplier", v)}
+							description="Extra penalty for quick flip trades in the churn window"
+							format={(v) => v.toFixed(2)}
+						/>
+						<ParamSlider
+							label="Churn Window"
+							value={rewardParams.churn_window}
+							min={1}
+							max={48}
+							step={1}
+							onChange={(v) => updateRewardParam("churn_window", v)}
+							description="Window size in steps used to detect churn trades"
+							format={(v) => String(Math.round(v))}
+						/>
+						<ParamSlider
+							label="Reward Clip"
+							value={rewardParams.reward_clip}
+							min={1}
+							max={2000}
+							step={1}
+							onChange={(v) => updateRewardParam("reward_clip", v)}
+							description="Clips extreme reward values for stability"
+							format={(v) => String(Math.round(v))}
+						/>
+					</div>
 				)}
 				<ParamSlider
 					label="Commission"

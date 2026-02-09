@@ -36,6 +36,12 @@ export interface TrainingUpdate {
 	net_worth_mean: number;
 	trade_count_mean: number;
 	hold_count_mean: number;
+	buy_count_mean?: number;
+	sell_count_mean?: number;
+	hold_ratio_mean?: number;
+	trade_ratio_mean?: number;
+	pnl_per_trade_mean?: number;
+	buy_sell_imbalance_mean?: number;
 }
 
 export interface EpisodeEvent {
@@ -178,7 +184,8 @@ export interface StudyCurvesResponse {
 
 export interface InferenceRequest {
 	experiment_id: string;
-	use_random_agent?: boolean;
+	start_date?: string;
+	end_date?: string;
 }
 
 export interface InferenceStatus {
@@ -203,6 +210,10 @@ export interface EpisodeSummary {
 	buy_count: number;
 	sell_count: number;
 	hold_count: number;
+	hold_ratio?: number;
+	trade_ratio?: number;
+	pnl_per_trade?: number;
+	max_drawdown_pct?: number;
 }
 
 // --- Hyperparameter Packs ---
@@ -388,6 +399,10 @@ export interface EpisodeMetrics {
 	hold_count: number;
 	buy_count: number;
 	sell_count: number;
+	hold_ratio?: number;
+	trade_ratio?: number;
+	pnl_per_trade?: number;
+	buy_sell_imbalance?: number;
 	action_distribution: Record<string, number>;
 }
 
@@ -502,6 +517,17 @@ export interface CampaignLaunchRequest {
 	iterations_per_trial: number;
 	action_schemes?: string[];
 	reward_schemes?: string[];
+	search_space?: Record<string, CampaignParamSpec>;
+}
+
+export interface CampaignParamSpec {
+	mode?: "tune" | "fixed";
+	type: "float" | "int" | "categorical";
+	low?: number;
+	high?: number;
+	log?: boolean;
+	value?: number | string;
+	choices?: Array<number | string>;
 }
 
 export interface CampaignLaunchResponse {

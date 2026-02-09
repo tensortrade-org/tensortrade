@@ -128,6 +128,101 @@ class TestRiskAdjustedReturns:
         assert sortino_ratio == expected_ratio
 
 
+class TestAdvancedPBR:
+    """Tests for AdvancedPBR reward/metrics accounting semantics."""
+
+    @staticmethod
+    def _make_env(prices=None, **kwargs):
+        import tensortrade.env.default as default
+        from tensortrade.env.default.actions import BSH
+
+        if prices is None:
+            prices = [100.0, 101.0, 102.0, 103.0]
+        price_stream = Stream.source(prices, dtype="float").rename("USD-BTC")
+
+        exchange = Exchange(
+            "exchange",
+            service=execute_order,
+            options=ExchangeOptions(commission=0.0),
+        )(price_stream)
+
+        cash = Wallet(exchange, 10000.0 * USD)
+        asset = Wallet(exchange, 0 * BTC)
+        portfolio = Portfolio(USD, [cash, asset])
+
+        features = [Stream.source(prices, dtype="float").rename("close")]
+        feed = DataFeed(features)
+        feed.compile()
+
+        reward_scheme = rewards.AdvancedPBR(price=price_stream, **kwargs)
+        action_scheme = BSH(cash=cash, asset=asset).attach(reward_scheme)
+        env = default.create(
+            feed=feed,
+            portfolio=portfolio,
+            action_scheme=action_scheme,
+            reward_scheme=reward_scheme,
+            window_size=1,
+            max_allowed_loss=0.99,
+        )
+        env.reset()
+        return env, reward_scheme
+
+    def test_trade_count_and_penalty_only_on_executed_trade(self):
+        env, scheme = self._make_env(
+            pbr_weight=0.0,
+            commission=0.0,
+            trade_penalty=-0.5,
+            hold_bonus=0.0,
+        )
+
+        env.step(1)  # Executed buy (flat -> long)
+        env.step(0)  # Hold
+        _, reward, _, _, _ = env.step(1)  # No-op buy (already long), action_changed=True
+
+        stats = scheme.get_stats()
+        assert stats["trade_count"] == 1
+        assert stats["buy_count"] == 1
+        assert stats["sell_count"] == 0
+        assert stats["hold_count"] == 1
+        # No executed trade on this step => no fixed trade penalty applied.
+        assert reward == pytest.approx(0.0, abs=1e-9)
+
+    def test_hold_count_tracks_hold_actions_even_without_bonus(self):
+        env, scheme = self._make_env(
+            prices=[100.0, 101.0, 102.0, 103.0],
+            pbr_weight=0.0,
+            commission=0.0,
+            trade_penalty=0.0,
+            hold_bonus=1.0,
+            volatility_threshold=0.0,  # Never treated as flat when price moves.
+        )
+
+        env.step(0)
+        _, reward, _, _, _ = env.step(0)
+
+        stats = scheme.get_stats()
+        assert stats["hold_count"] == 2
+        # Hold bonus is not eligible, but hold actions are still counted.
+        assert reward == pytest.approx(0.0, abs=1e-9)
+
+    def test_hold_bonus_not_applied_to_non_hold_noop_actions(self):
+        env, scheme = self._make_env(
+            prices=[100.0, 100.0, 100.0, 100.0, 100.0],
+            pbr_weight=0.0,
+            commission=0.0,
+            trade_penalty=0.0,
+            hold_bonus=0.25,
+            volatility_threshold=1.0,  # Flat market.
+        )
+
+        env.step(1)  # Executed buy
+        _, hold_reward, _, _, _ = env.step(0)  # Hold in flat market => gets hold bonus
+        assert hold_reward == pytest.approx(0.25, abs=1e-9)
+
+        _, reward, _, _, _ = env.step(1)  # No-op buy in flat market (not a hold action)
+        assert reward == pytest.approx(0.0, abs=1e-9)
+
+
 class TestFractionalPBR:
     """Tests for FractionalPBR reward scheme."""
 

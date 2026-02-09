@@ -29,6 +29,7 @@ def stores(tmp_path):
 def mock_launcher():
     launcher = MagicMock()
     launcher.launch.return_value = "test-launched-exp-id"
+    launcher.launch_campaign.return_value = "test-study"
     launcher.list_running.return_value = []
     launcher.cancel.return_value = False
     return launcher
@@ -159,3 +160,40 @@ class TestCancelTraining:
         data = resp.json()
         assert data["status"] == "cancelled"
         mock_launcher.cancel.assert_called_once_with("exp-123")
+
+
+class TestLaunchCampaign:
+    def test_launch_campaign_with_search_space(self, client, mock_launcher):
+        search_space = {
+            "trade_penalty_multiplier": {
+                "mode": "tune",
+                "type": "float",
+                "low": 0.8,
+                "high": 1.8,
+            }
+        }
+        resp = client.post(
+            "/api/campaign/launch",
+            json={
+                "study_name": "alpha_study",
+                "dataset_id": "ds-1",
+                "n_trials": 10,
+                "iterations_per_trial": 20,
+                "action_schemes": ["BSH"],
+                "reward_schemes": ["PBR"],
+                "search_space": search_space,
+            },
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["study_name"] == "test-study"
+        assert data["status"] == "launched"
+        mock_launcher.launch_campaign.assert_called_once_with(
+            study_name="alpha_study",
+            dataset_id="ds-1",
+            n_trials=10,
+            iterations_per_trial=20,
+            action_schemes=["BSH"],
+            reward_schemes=["PBR"],
+            search_space=search_space,
+        )

@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import os
 from typing import TYPE_CHECKING
 
 import pandas as pd
@@ -33,7 +34,7 @@ logger = logging.getLogger(__name__)
 
 
 class InferenceRunner:
-    """Runs a single inference episode and streams results to dashboards."""
+    """Runs a single trained-policy inference episode and streams results."""
 
     def __init__(
         self,
@@ -48,17 +49,21 @@ class InferenceRunner:
     async def run_episode(
         self,
         experiment_id: str,
-        use_random_agent: bool = True,
         dataset_id: str | None = None,
+        start_date: str | None = None,
+        end_date: str | None = None,
     ) -> None:
         """Run one episode and broadcast step/trade updates.
 
         Args:
             experiment_id: The experiment whose config to use.
-            use_random_agent: Whether to use random actions.
             dataset_id: Optional override dataset ID. If provided, load
                 this dataset's config instead of the experiment's embedded one.
+            start_date: Optional start date (YYYY-MM-DD) to filter data.
+            end_date: Optional end date (YYYY-MM-DD) to filter data.
         """
+        policy_algo = None
+        ray_started_here = False
         try:
             exp = self.store.get_experiment(experiment_id)
             if not exp:
@@ -67,11 +72,15 @@ class InferenceRunner:
 
             config = exp.config
 
+            policy_algo, ray_started_here = await asyncio.get_event_loop().run_in_executor(
+                None, self._load_trained_algo, exp,
+            )
+
             # Resolve dataset config: override or from experiment
             dataset_name = self._resolve_dataset_name(config, dataset_id)
 
-            env, ohlcv = await asyncio.get_event_loop().run_in_executor(
-                None, self._create_env, config, dataset_id,
+            env, ohlcv, asset_wallet = await asyncio.get_event_loop().run_in_executor(
+                None, self._create_env, config, dataset_id, start_date, end_date,
             )
 
             # The env's window_size consumes initial rows, so the first
@@ -95,45 +104,37 @@ class InferenceRunner:
             done = truncated = False
             step = 0
 
-            # Pre-compute timestamp extrapolation for when OHLCV data runs out
-            if len(ohlcv) >= 2 and "date" in ohlcv.columns:
-                last_ohlcv_ts = int(pd.Timestamp(ohlcv.iloc[-1]["date"]).timestamp())
-                prev_ohlcv_ts = int(pd.Timestamp(ohlcv.iloc[-2]["date"]).timestamp())
-                ts_interval = max(last_ohlcv_ts - prev_ohlcv_ts, 1)
-            else:
-                last_ohlcv_ts = 0
-                ts_interval = 3600  # default 1h
             initial_net_worth = float(env.portfolio.net_worth)
-            prev_net_worth = initial_net_worth
+            peak_net_worth = initial_net_worth
+            prev_asset_balance = asset_wallet.balance.as_float()
+            max_drawdown_pct = 0.0
             buy_count = 0
             sell_count = 0
             hold_count = 0
             total_trades = 0
 
             while not done and not truncated:
-                if use_random_agent:
-                    action = int(env.action_space.sample())
-                else:
-                    action = int(env.action_space.sample())
+                action = self._coerce_action(policy_algo.compute_single_action(obs, explore=False))
 
                 obs, reward, done, truncated, info = env.step(action)
                 step += 1
                 net_worth = float(env.portfolio.net_worth)
+                peak_net_worth = max(peak_net_worth, net_worth)
+                if peak_net_worth > 0:
+                    drawdown_pct = ((peak_net_worth - net_worth) / peak_net_worth) * 100
+                    max_drawdown_pct = max(max_drawdown_pct, drawdown_pct)
 
                 # Look up OHLCV from the original data by step index
                 data_idx = window_size + step - 1
-                if data_idx < len(ohlcv):
-                    row = ohlcv.iloc[data_idx]
-                    o = float(row.get("open", 0))
-                    h = float(row.get("high", 0))
-                    lo = float(row.get("low", 0))
-                    c = float(row.get("close", 0))
-                    v = float(row.get("volume", 0))
-                    ts = int(pd.Timestamp(row["date"]).timestamp()) if "date" in row.index else step
-                else:
-                    o = h = lo = c = net_worth
-                    v = 0.0
-                    ts = last_ohlcv_ts + (data_idx - len(ohlcv) + 1) * ts_interval
+                if data_idx >= len(ohlcv):
+                    break  # No more real price data — stop cleanly
+                row = ohlcv.iloc[data_idx]
+                o = float(row.get("open", 0))
+                h = float(row.get("high", 0))
+                lo = float(row.get("low", 0))
+                c = float(row.get("close", 0))
+                v = float(row.get("volume", 0))
+                ts = int(pd.Timestamp(row["date"]).timestamp()) if "date" in row.index else step
 
                 # Track action distribution (works for BSH and ScaledEntryBSH)
                 if action == 0:
@@ -143,11 +144,13 @@ class InferenceRunner:
                 else:
                     sell_count += 1  # action 2 (BSH sell) or 2/3 (ScaledEntry sell)
 
-                # Detect trades by net worth change threshold
-                nw_change = abs(net_worth - prev_net_worth)
-                if action >= 1 and nw_change > 0.01:
+                # Detect trades by asset balance change
+                curr_asset_balance = asset_wallet.balance.as_float()
+                balance_change = curr_asset_balance - prev_asset_balance
+                if abs(balance_change) > 1e-10:
                     total_trades += 1
-                    side = "buy" if action == 1 else "sell"
+                    side = "buy" if balance_change > 0 else "sell"
+                    trade_size = abs(balance_change)
                     await self.manager.broadcast_to_dashboards(
                         {
                             "type": "trade",
@@ -155,12 +158,12 @@ class InferenceRunner:
                             "timestamp": ts,
                             "side": side,
                             "price": c,
-                            "size": 1.0,
+                            "size": round(trade_size, 8),
                             "commission": 0.0,
                             "source": "inference",
                         }
                     )
-
+                prev_asset_balance = curr_asset_balance
                 await self.manager.broadcast_to_dashboards(
                     {
                         "type": "step_update",
@@ -179,8 +182,6 @@ class InferenceRunner:
                     }
                 )
 
-                prev_net_worth = net_worth
-
                 # Pacing: yield control and add small delay
                 await asyncio.sleep(0.05)
 
@@ -188,6 +189,10 @@ class InferenceRunner:
             final_net_worth = float(env.portfolio.net_worth)
             pnl = final_net_worth - initial_net_worth
             pnl_pct = (pnl / initial_net_worth) * 100 if initial_net_worth > 0 else 0.0
+            total_actions = buy_count + sell_count + hold_count
+            hold_ratio = (hold_count / total_actions) if total_actions > 0 else 0.0
+            trade_ratio = (total_trades / total_actions) if total_actions > 0 else 0.0
+            pnl_per_trade = (pnl / total_trades) if total_trades > 0 else 0.0
 
             await self.manager.broadcast_to_dashboards(
                 {
@@ -208,6 +213,10 @@ class InferenceRunner:
                         "buy_count": buy_count,
                         "sell_count": sell_count,
                         "hold_count": hold_count,
+                        "hold_ratio": hold_ratio,
+                        "trade_ratio": trade_ratio,
+                        "pnl_per_trade": pnl_per_trade,
+                        "max_drawdown_pct": max_drawdown_pct,
                     },
                 }
             )
@@ -215,6 +224,19 @@ class InferenceRunner:
         except Exception as e:
             logger.exception("Inference run failed")
             await self._send_error(experiment_id, str(e))
+        finally:
+            if policy_algo is not None and hasattr(policy_algo, "stop"):
+                try:
+                    policy_algo.stop()
+                except Exception:
+                    logger.debug("Failed to stop inference policy cleanly", exc_info=True)
+            if ray_started_here:
+                try:
+                    import ray
+                    if ray.is_initialized():
+                        ray.shutdown()
+                except Exception:
+                    logger.debug("Failed to shutdown Ray cleanly after inference", exc_info=True)
 
     async def _send_error(self, experiment_id: str, message: str) -> None:
         await self.manager.broadcast_to_dashboards(
@@ -240,11 +262,79 @@ class InferenceRunner:
             return f"Dataset {dataset_id[:8]}"
         return str(config.get("dataset_name", "Unknown"))
 
-    def _create_env(self, config: dict, dataset_id: str | None = None):
+    @staticmethod
+    def _coerce_action(action_value: object) -> int:
+        """Normalize RLlib action outputs to a plain integer action."""
+        value = action_value
+        if isinstance(value, tuple):
+            value = value[0]
+        if isinstance(value, list):
+            value = value[0] if value else 0
+        if hasattr(value, "item"):
+            try:
+                value = value.item()
+            except Exception:
+                pass
+        return int(value)
+
+    @staticmethod
+    def _get_checkpoint_path(experiment: object) -> str | None:
+        config = getattr(experiment, "config", {}) or {}
+        final_metrics = getattr(experiment, "final_metrics", {}) or {}
+        training_config = config.get("training_config", {}) if isinstance(config, dict) else {}
+
+        candidate_paths = [
+            final_metrics.get("checkpoint_path"),
+            config.get("checkpoint_path") if isinstance(config, dict) else None,
+            training_config.get("checkpoint_path") if isinstance(training_config, dict) else None,
+        ]
+        for path in candidate_paths:
+            if isinstance(path, str) and path.strip():
+                return path
+        return None
+
+    def _load_trained_algo(self, experiment: object):
+        checkpoint_path = self._get_checkpoint_path(experiment)
+        if not checkpoint_path:
+            raise ValueError(
+                "No checkpoint found for this experiment. Re-run training so a checkpoint can be saved.",
+            )
+        if not os.path.exists(checkpoint_path):
+            raise ValueError(f"Checkpoint path does not exist: {checkpoint_path}")
+
+        import ray
+        from ray.rllib.policy.policy import Policy
+
+        ray_started_here = False
+        if not ray.is_initialized():
+            ray.init(ignore_reinit_error=True, log_to_driver=False)
+            ray_started_here = True
+
+        # Load just the policy weights — no env runners or env registration needed.
+        # Policy.from_checkpoint returns a dict of {policy_id: Policy}.
+        policies = Policy.from_checkpoint(checkpoint_path)
+        policy = policies.get("default_policy")
+        if policy is None:
+            raise ValueError(f"No default_policy found in checkpoint: {checkpoint_path}")
+        return policy, ray_started_here
+
+    def _create_env(
+        self,
+        config: dict,
+        dataset_id: str | None = None,
+        start_date: str | None = None,
+        end_date: str | None = None,
+    ):
         """Create a TradingEnv from experiment config using proper dataset loading.
 
         Returns (env, ohlcv_data) where ohlcv_data is the OHLCV DataFrame
         used to build the env, so the caller can look up prices by step.
+
+        Args:
+            config: Experiment config dict.
+            dataset_id: Optional override dataset ID.
+            start_date: Optional start date (YYYY-MM-DD) to filter data.
+            end_date: Optional end date (YYYY-MM-DD) to filter data.
         """
         # Resolve dataset settings: override or experiment-embedded
         if dataset_id:
@@ -272,8 +362,16 @@ class InferenceRunner:
             ohlcv = {"date", "open", "high", "low", "close", "volume"}
             feature_cols = [c for c in data.columns if c not in ohlcv]
 
-        # Use last 1000 candles for inference
-        data = data.tail(1000).reset_index(drop=True)
+        # Filter by date range if specified, otherwise use last 1000 candles
+        if start_date or end_date:
+            if "date" in data.columns:
+                if start_date:
+                    data = data[data["date"] >= pd.Timestamp(start_date)]
+                if end_date:
+                    data = data[data["date"] <= pd.Timestamp(end_date) + pd.Timedelta(days=1)]
+            data = data.reset_index(drop=True)
+        else:
+            data = data.tail(1000).reset_index(drop=True)
 
         # Keep OHLCV + date for step broadcasts
         ohlcv_cols = ["date", "open", "high", "low", "close", "volume"]
@@ -304,10 +402,24 @@ class InferenceRunner:
         # Dispatch reward scheme from config
         reward_name = training_config.get("reward_scheme", config.get("reward_scheme", "PBR"))
         reward_params = training_config.get("reward_params", config.get("reward_params", {}))
+        anti_churn_defaults = {
+            "trade_penalty_multiplier": 1.1,
+            "churn_penalty_multiplier": 1.0,
+            "churn_window": 6,
+            "reward_clip": 200.0,
+        }
         if reward_name == "PBR":
-            reward_scheme = tt_rewards.PBR(price=price, commission=commission)
+            reward_scheme = tt_rewards.PBR(
+                price=price,
+                commission=commission,
+                **{**anti_churn_defaults, **reward_params},
+            )
         elif reward_name == "AdvancedPBR":
-            reward_scheme = tt_rewards.AdvancedPBR(price=price, commission=commission, **reward_params)
+            reward_scheme = tt_rewards.AdvancedPBR(
+                price=price,
+                commission=commission,
+                **{**anti_churn_defaults, **reward_params},
+            )
         elif reward_name == "FractionalPBR":
             reward_scheme = tt_rewards.FractionalPBR(price=price, commission=commission)
         elif reward_name == "RiskAdjustedReturns":
@@ -335,7 +447,7 @@ class InferenceRunner:
             max_allowed_loss=training_config.get("max_allowed_loss", config.get("max_allowed_loss", 0.4)),
         )
         env.portfolio = portfolio
-        return env, ohlcv_data
+        return env, ohlcv_data, asset
 
     @staticmethod
     def _load_data(source_type: str, source_config: dict) -> pd.DataFrame:

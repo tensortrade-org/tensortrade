@@ -40,6 +40,12 @@ class TrainingUpdateMessage(TypedDict, total=False):
     net_worth_mean: float
     trade_count_mean: float
     hold_count_mean: float
+    buy_count_mean: float
+    sell_count_mean: float
+    hold_ratio_mean: float
+    trade_ratio_mean: float
+    pnl_per_trade_mean: float
+    buy_sell_imbalance_mean: float
 
 
 class EpisodeEventMessage(TypedDict, total=False):
@@ -115,6 +121,10 @@ class EpisodeMetricsMessage(TypedDict, total=False):
     hold_count: int
     buy_count: int
     sell_count: int
+    hold_ratio: float
+    trade_ratio: float
+    pnl_per_trade: float
+    buy_sell_imbalance: float
     action_distribution: dict[str, int]
 
 

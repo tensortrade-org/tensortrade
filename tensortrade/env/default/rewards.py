@@ -255,11 +255,30 @@ class PBR(TensorTradeRewardScheme):
 
     registered_name = "pbr"
 
-    def __init__(self, price: 'Stream', commission: float = 0.003) -> None:
+    def __init__(
+        self,
+        price: 'Stream',
+        commission: float = 0.003,
+        trade_penalty_multiplier: float = 1.0,
+        churn_penalty_multiplier: float = 0.75,
+        churn_window: int = 4,
+        hold_bonus: float = 0.0,
+        reward_clip: float | None = None,
+    ) -> None:
         super().__init__()
         self.position = 0    # Start in cash (0=flat, 1=long)
         self.commission = commission
+        self.trade_penalty_multiplier = trade_penalty_multiplier
+        self.churn_penalty_multiplier = churn_penalty_multiplier
+        self.churn_window = max(0, int(churn_window))
+        self.hold_bonus = hold_bonus
+        self.reward_clip = reward_clip
         self._traded = False  # Whether current step involved a trade
+        self._step_count = 0
+        self._last_trade_step: int | None = None
+        self._churn_trade_count = 0
+        self._total_commission_penalty = 0.0
+        self._total_reward = 0.0
         self.buy_count = 0
         self.sell_count = 0
         self.hold_count = 0
@@ -291,27 +310,58 @@ class PBR(TensorTradeRewardScheme):
     def get_reward(self, portfolio: 'Portfolio') -> float:
         data = self.feed.next()
         reward = data["reward"]
+        self._step_count += 1
+
         # Penalize trades proportional to price × commission
         # This keeps the penalty in the same scale as price-based rewards
         if self._traded:
             current_price = data.get("current_price", 0)
             if current_price > 0:
-                reward -= current_price * self.commission
+                penalty = current_price * self.commission * self.trade_penalty_multiplier
+                if (
+                    self._last_trade_step is not None
+                    and (self._step_count - self._last_trade_step) <= self.churn_window
+                ):
+                    penalty += current_price * self.commission * self.churn_penalty_multiplier
+                    self._churn_trade_count += 1
+                reward -= penalty
+                self._total_commission_penalty += penalty
+            self._last_trade_step = self._step_count
+        elif self.hold_bonus:
+            reward += self.hold_bonus
+
+        if self.reward_clip is not None and self.reward_clip > 0:
+            reward = float(np.clip(reward, -self.reward_clip, self.reward_clip))
+
+        self._total_reward += reward
         return reward
 
     def get_stats(self) -> dict:
         """Returns trading statistics for analysis."""
+        trade_count = self.buy_count + self.sell_count
+        churn_ratio = (self._churn_trade_count / trade_count) if trade_count > 0 else 0.0
+        avg_penalty = (self._total_commission_penalty / trade_count) if trade_count > 0 else 0.0
         return {
-            "trade_count": self.buy_count + self.sell_count,
+            "trade_count": trade_count,
             "buy_count": self.buy_count,
             "sell_count": self.sell_count,
             "hold_count": self.hold_count,
+            "churn_trade_count": self._churn_trade_count,
+            "churn_ratio": churn_ratio,
+            "avg_penalty_per_trade": avg_penalty,
+            "total_commission_penalty": self._total_commission_penalty,
+            "cumulative_reward": self._total_reward,
         }
 
     def reset(self) -> None:
         """Resets the `position` and `feed` of the reward scheme."""
         self.position = 0
         self._traded = False
+        self._step_count = 0
+        self._last_trade_step = None
+        self._churn_trade_count = 0
+        self._total_commission_penalty = 0.0
+        self._total_reward = 0.0
         self.buy_count = 0
         self.sell_count = 0
         self.hold_count = 0
@@ -354,7 +404,11 @@ class AdvancedPBR(TensorTradeRewardScheme):
         trade_penalty: float = -0.001,
         hold_bonus: float = 0.0001,
         volatility_threshold: float = 0.001,
-        commission: float = 0.003
+        commission: float = 0.003,
+        trade_penalty_multiplier: float = 1.0,
+        churn_penalty_multiplier: float = 0.75,
+        churn_window: int = 4,
+        reward_clip: float | None = None,
     ) -> None:
         super().__init__()
         self.position = 0    # Start in cash (0=flat, 1=long)
@@ -365,7 +419,17 @@ class AdvancedPBR(TensorTradeRewardScheme):
         self.hold_bonus = hold_bonus
         self.volatility_threshold = volatility_threshold
         self.commission = commission
+        self.trade_penalty_multiplier = trade_penalty_multiplier
+        self.churn_penalty_multiplier = churn_penalty_multiplier
+        self.churn_window = max(0, int(churn_window))
+        self.reward_clip = reward_clip
+        self.action_changed = False
         self._traded = False
+        self._step_count = 0
+        self._last_trade_step: int | None = None
+        self._churn_trade_count = 0
+        self._total_commission_penalty = 0.0
+        self._total_reward = 0.0
 
         # PBR component
         r = Stream.sensor(price, lambda p: p.value, dtype="float").diff()
@@ -387,8 +451,6 @@ class AdvancedPBR(TensorTradeRewardScheme):
         self._traded = False
         # Track if action changed
         self.action_changed = (action != self.prev_action)
-        if self.action_changed:
-            self.trade_count += 1
 
         self.prev_action = action
         if action == 1:
@@ -401,20 +463,37 @@ class AdvancedPBR(TensorTradeRewardScheme):
                 self._traded = True
                 self.sell_count += 1
             self.position = 0   # Sell → cash (flat)
+        else:
+            # Count explicit hold actions, regardless of hold-bonus eligibility.
+            self.hold_count += 1
+
+        if self._traded:
+            self.trade_count += 1
 
     def get_reward(self, portfolio: 'Portfolio') -> float:
         data = self.feed.next()
         pbr_reward = data["pbr_reward"]
         current_price = data.get(self.price_stream.name, 0)
+        self._step_count += 1
 
         # 1. PBR component (scaled)
         reward = self.pbr_weight * pbr_reward
 
         # 2. Commission-aware trade penalty (price-scaled)
-        if self._traded and current_price > 0:
-            reward -= current_price * self.commission
-        elif self.action_changed:
+        if self._traded:
+            if current_price > 0:
+                penalty = current_price * self.commission * self.trade_penalty_multiplier
+                if (
+                    self._last_trade_step is not None
+                    and (self._step_count - self._last_trade_step) <= self.churn_window
+                ):
+                    penalty += current_price * self.commission * self.churn_penalty_multiplier
+                    self._churn_trade_count += 1
+                reward -= penalty
+                self._total_commission_penalty += penalty
+            # Apply fixed trade penalty only when an order actually executes.
             reward += self.trade_penalty
+            self._last_trade_step = self._step_count
 
         # 3. Hold bonus - reward for holding in flat/uncertain markets
         if self.prev_price is not None and current_price > 0:
@@ -422,11 +501,14 @@ class AdvancedPBR(TensorTradeRewardScheme):
             is_flat_market = price_change < self.volatility_threshold
 
             # Only give hold bonus if we're holding (not trading) in a flat market
-            if is_flat_market and not self.action_changed:
+            if is_flat_market and not self._traded and self.prev_action == 0:
                 reward += self.hold_bonus
-                self.hold_count += 1
+
+        if self.reward_clip is not None and self.reward_clip > 0:
+            reward = float(np.clip(reward, -self.reward_clip, self.reward_clip))
 
         self.prev_price = current_price
+        self._total_reward += reward
 
         return reward
 
@@ -437,6 +519,11 @@ class AdvancedPBR(TensorTradeRewardScheme):
         self.prev_price = None
         self.action_changed = False
         self._traded = False
+        self._step_count = 0
+        self._last_trade_step = None
+        self._churn_trade_count = 0
+        self._total_commission_penalty = 0.0
+        self._total_reward = 0.0
         self.trade_count = 0
         self.hold_count = 0
         self.buy_count = 0
@@ -445,11 +532,21 @@ class AdvancedPBR(TensorTradeRewardScheme):
 
     def get_stats(self) -> dict:
         """Returns trading statistics for analysis."""
+        trade_count = self.buy_count + self.sell_count
+        churn_ratio = (self._churn_trade_count / trade_count) if trade_count > 0 else 0.0
+        avg_penalty = (
+            self._total_commission_penalty / trade_count
+        ) if trade_count > 0 else 0.0
         return {
-            "trade_count": self.trade_count,
+            "trade_count": trade_count,
             "buy_count": self.buy_count,
             "sell_count": self.sell_count,
             "hold_count": self.hold_count,
+            "churn_trade_count": self._churn_trade_count,
+            "churn_ratio": churn_ratio,
+            "avg_penalty_per_trade": avg_penalty,
+            "total_commission_penalty": self._total_commission_penalty,
+            "cumulative_reward": self._total_reward,
         }
 
 

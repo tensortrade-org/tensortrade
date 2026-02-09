@@ -29,6 +29,24 @@ const METRIC_DEFINITIONS: MetricDefinition[] = [
 		colorCoded: false,
 	},
 	{
+		key: "pnl_per_trade",
+		label: "PnL / Trade",
+		format: formatPnl,
+		colorCoded: true,
+	},
+	{
+		key: "trade_ratio",
+		label: "Trade Ratio",
+		format: (v: number) => formatPercent(v * 100),
+		colorCoded: false,
+	},
+	{
+		key: "hold_ratio",
+		label: "Hold Ratio",
+		format: (v: number) => formatPercent(v * 100),
+		colorCoded: false,
+	},
+	{
 		key: "sharpe_ratio",
 		label: "Sharpe Ratio",
 		format: (v: number) => formatNumber(v, 2),
@@ -49,7 +67,7 @@ interface MetricCardsProps {
 function getValueColor(key: string, value: number, colorCoded: boolean): string {
 	if (!colorCoded) return "text-[var(--text-primary)]";
 	if (key === "max_drawdown") {
-		return value <= 0 ? "text-[var(--accent-red)]" : "text-[var(--accent-green)]";
+		return value <= 0 ? "text-[var(--accent-green)]" : "text-[var(--accent-red)]";
 	}
 	if (value > 0) return "text-[var(--accent-green)]";
 	if (value < 0) return "text-[var(--accent-red)]";

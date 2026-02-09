@@ -44,6 +44,9 @@ function formatOverrideValue(key: string, value: unknown): string {
 		if (key === "commission") return String(value);
 		return String(value);
 	}
+	if (value && typeof value === "object") {
+		return JSON.stringify(value);
+	}
 	return String(value);
 }
 

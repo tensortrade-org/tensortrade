@@ -9,12 +9,72 @@ import {
 	type RewardSchemeInfo,
 	getCompatibleRewardSchemes,
 } from "@/lib/scheme-compat";
-import type { DatasetConfig } from "@/lib/types";
+import type { CampaignParamSpec, DatasetConfig } from "@/lib/types";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 interface CampaignConfigFormProps {
 	onLaunched: (studyName: string) => void;
 }
+
+type RewardParamKey =
+	| "trade_penalty_multiplier"
+	| "churn_penalty_multiplier"
+	| "churn_window"
+	| "reward_clip";
+
+interface RewardParamSetting {
+	label: string;
+	type: "float" | "int";
+	tune: boolean;
+	value: number;
+	low: number;
+	high: number;
+	log: boolean;
+	step: number;
+}
+
+const DEFAULT_REWARD_PARAM_SETTINGS: Record<RewardParamKey, RewardParamSetting> = {
+	trade_penalty_multiplier: {
+		label: "Trade Penalty",
+		type: "float",
+		tune: false,
+		value: 1.1,
+		low: 0.6,
+		high: 2.0,
+		log: false,
+		step: 0.05,
+	},
+	churn_penalty_multiplier: {
+		label: "Churn Penalty",
+		type: "float",
+		tune: false,
+		value: 1.0,
+		low: 0.5,
+		high: 2.0,
+		log: false,
+		step: 0.05,
+	},
+	churn_window: {
+		label: "Churn Window",
+		type: "int",
+		tune: false,
+		value: 6,
+		low: 2,
+		high: 24,
+		log: false,
+		step: 1,
+	},
+	reward_clip: {
+		label: "Reward Clip",
+		type: "float",
+		tune: false,
+		value: 200,
+		low: 50,
+		high: 500,
+		log: false,
+		step: 5,
+	},
+};
 
 function SchemeCheckbox({
 	label,
@@ -55,6 +115,9 @@ export function CampaignConfigForm({ onLaunched }: CampaignConfigFormProps) {
 	const [datasets, setDatasets] = useState<DatasetConfig[]>([]);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+	const [rewardParamSettings, setRewardParamSettings] = useState<
+		Record<RewardParamKey, RewardParamSetting>
+	>(DEFAULT_REWARD_PARAM_SETTINGS);
 
 	// Scheme selection — default all selected
 	const [selectedActions, setSelectedActions] = useState<Set<string>>(
@@ -141,6 +204,45 @@ export function CampaignConfigForm({ onLaunched }: CampaignConfigFormProps) {
 		return count;
 	}, [selectedActions, selectedRewards]);
 
+	const usesPbrRewards = useMemo(
+		() => selectedRewards.has("PBR") || selectedRewards.has("AdvancedPBR"),
+		[selectedRewards],
+	);
+
+	const rewardParamSearchSpace = useMemo(() => {
+		const space: Record<string, CampaignParamSpec> = {};
+		(Object.keys(rewardParamSettings) as RewardParamKey[]).forEach((key) => {
+			const setting = rewardParamSettings[key];
+			space[key] = setting.tune
+				? {
+						mode: "tune",
+						type: setting.type,
+						low: setting.low,
+						high: setting.high,
+						log: setting.log,
+					}
+				: {
+						mode: "fixed",
+						type: setting.type,
+						value: setting.value,
+					};
+		});
+		return space;
+	}, [rewardParamSettings]);
+
+	const updateRewardParam = useCallback(
+		<K extends keyof RewardParamSetting>(key: RewardParamKey, field: K, value: RewardParamSetting[K]) => {
+			setRewardParamSettings((prev) => ({
+				...prev,
+				[key]: {
+					...prev[key],
+					[field]: value,
+				},
+			}));
+		},
+		[],
+	);
+
 	const handleLaunch = useCallback(async () => {
 		if (!studyName.trim() || !datasetId) {
 			setError("Study name and dataset are required");
@@ -149,6 +251,14 @@ export function CampaignConfigForm({ onLaunched }: CampaignConfigFormProps) {
 		if (selectedActions.size === 0 || selectedRewards.size === 0) {
 			setError("Select at least one action and one reward scheme");
 			return;
+		}
+		if (usesPbrRewards) {
+			for (const [paramName, spec] of Object.entries(rewardParamSettings)) {
+				if (spec.tune && spec.low >= spec.high) {
+					setError(`Invalid range for ${paramName}: low must be less than high.`);
+					return;
+				}
+			}
 		}
 		setLoading(true);
 		setError(null);
@@ -160,6 +270,7 @@ export function CampaignConfigForm({ onLaunched }: CampaignConfigFormProps) {
 				iterations_per_trial: iterationsPerTrial,
 				action_schemes: [...selectedActions],
 				reward_schemes: [...selectedRewards],
+				search_space: usesPbrRewards ? rewardParamSearchSpace : undefined,
 			});
 			if ("error" in res) {
 				setError((res as unknown as { error: string }).error);
@@ -178,6 +289,9 @@ export function CampaignConfigForm({ onLaunched }: CampaignConfigFormProps) {
 		iterationsPerTrial,
 		selectedActions,
 		selectedRewards,
+		usesPbrRewards,
+		rewardParamSettings,
+		rewardParamSearchSpace,
 		onLaunched,
 	]);
 
@@ -316,7 +430,111 @@ export function CampaignConfigForm({ onLaunched }: CampaignConfigFormProps) {
 				</div>
 			</div>
 
-			{/* Row 3: Sliders */}
+			{/* Row 3: Reward Param Search Space */}
+			{usesPbrRewards && (
+				<div className="rounded-md border border-[var(--border-color)] bg-[var(--bg-primary)] p-3">
+					<div className="mb-2 flex items-center justify-between">
+						<div>
+							<p className="text-sm font-medium text-[var(--text-primary)]">
+								PBR Reward Parameter Search
+							</p>
+							<p className="text-xs text-[var(--text-secondary)]">
+								Set each parameter to fixed or tune it with Optuna.
+							</p>
+						</div>
+						<span className="rounded bg-[var(--bg-secondary)] px-2 py-1 text-[10px] uppercase tracking-wide text-[var(--text-secondary)]">
+							PBR / AdvancedPBR
+						</span>
+					</div>
+					<div className="space-y-2">
+						{(Object.keys(rewardParamSettings) as RewardParamKey[]).map((key) => {
+							const setting = rewardParamSettings[key];
+							return (
+								<div
+									key={key}
+									className="grid grid-cols-12 items-center gap-2 rounded border border-[var(--border-color)] bg-[var(--bg-secondary)] p-2"
+								>
+									<div className="col-span-3 text-xs font-medium text-[var(--text-primary)]">
+										{setting.label}
+									</div>
+									<label className="col-span-2 flex items-center gap-1 text-xs text-[var(--text-secondary)]">
+										<input
+											type="checkbox"
+											checked={setting.tune}
+											onChange={(e) => updateRewardParam(key, "tune", e.target.checked)}
+											className="accent-[var(--accent-blue)]"
+										/>
+										Tune
+									</label>
+									{setting.tune ? (
+										<>
+											<input
+												type="number"
+												step={setting.step}
+												value={setting.low}
+												onChange={(e) =>
+													updateRewardParam(
+														key,
+														"low",
+														setting.type === "int"
+															? Number.parseInt(e.target.value || "0", 10)
+															: Number(e.target.value),
+													)
+												}
+												className="col-span-3 rounded border border-[var(--border-color)] bg-[var(--bg-primary)] px-2 py-1 text-xs text-[var(--text-primary)]"
+												aria-label={`${setting.label} low`}
+											/>
+											<input
+												type="number"
+												step={setting.step}
+												value={setting.high}
+												onChange={(e) =>
+													updateRewardParam(
+														key,
+														"high",
+														setting.type === "int"
+															? Number.parseInt(e.target.value || "0", 10)
+															: Number(e.target.value),
+													)
+												}
+												className="col-span-3 rounded border border-[var(--border-color)] bg-[var(--bg-primary)] px-2 py-1 text-xs text-[var(--text-primary)]"
+												aria-label={`${setting.label} high`}
+											/>
+											<div className="col-span-1 text-[10px] text-[var(--text-secondary)]">
+												lo/hi
+											</div>
+										</>
+									) : (
+										<>
+											<input
+												type="number"
+												step={setting.step}
+												value={setting.value}
+												onChange={(e) =>
+													updateRewardParam(
+														key,
+														"value",
+														setting.type === "int"
+															? Number.parseInt(e.target.value || "0", 10)
+															: Number(e.target.value),
+													)
+												}
+												className="col-span-6 rounded border border-[var(--border-color)] bg-[var(--bg-primary)] px-2 py-1 text-xs text-[var(--text-primary)]"
+												aria-label={`${setting.label} fixed value`}
+											/>
+											<div className="col-span-2 text-[10px] text-[var(--text-secondary)]">
+												fixed
+											</div>
+										</>
+									)}
+								</div>
+							);
+						})}
+					</div>
+				</div>
+			)}
+
+			{/* Row 4: Sliders */}
 			<div className="grid grid-cols-2 gap-4">
 				<div>
 					<label

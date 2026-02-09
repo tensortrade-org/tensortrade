@@ -14,19 +14,42 @@ import { TrainingControls } from "@/components/training/TrainingControls";
 import { useApi } from "@/hooks/useApi";
 import { getExperiments } from "@/lib/api";
 import { formatCurrency } from "@/lib/formatters";
-import type { ExperimentSummary, TrainingUpdate } from "@/lib/types";
+import type { ExperimentSummary, IterationRecord, TrainingUpdate } from "@/lib/types";
 import { useTrainingStore } from "@/stores/trainingStore";
 import { useCallback, useMemo } from "react";
+
+const MAX_ITERATION_CHART_POINTS = 500;
+
+function downsampleIterationRecords(
+	records: IterationRecord[],
+	maxPoints = MAX_ITERATION_CHART_POINTS,
+): IterationRecord[] {
+	if (records.length <= maxPoints) return records;
+	const stride = Math.ceil(records.length / maxPoints);
+	const sampled = records.filter((record) => record.iteration % stride === 0);
+	if (sampled[sampled.length - 1]?.iteration !== records[records.length - 1]?.iteration) {
+		sampled.push(records[records.length - 1]);
+	}
+	return sampled.length > 0 ? sampled : records.filter((_, idx) => idx % stride === 0);
+}
 
 function buildLatestMetrics(iterations: TrainingUpdate[]): Record<string, number> {
 	const latest = iterations[iterations.length - 1];
 	if (!latest) return {};
+	const tradeCount = latest.trade_count_mean ?? 0;
+	const holdCount = latest.hold_count_mean ?? 0;
+	const totalActions = tradeCount + holdCount;
+	const inferredHoldRatio = totalActions > 0 ? holdCount / totalActions : 0;
+	const inferredTradeRatio = totalActions > 0 ? tradeCount / totalActions : 0;
+	const inferredPnlPerTrade = tradeCount > 0 ? latest.pnl_mean / tradeCount : 0;
 	return {
-		episode_return_mean: latest.episode_return_mean,
-		pnl_mean: latest.pnl_mean,
-		pnl_pct_mean: latest.pnl_pct_mean,
-		net_worth_mean: latest.net_worth_mean,
-		trade_count_mean: latest.trade_count_mean,
+		pnl: latest.pnl_mean,
+		net_worth: latest.net_worth_mean,
+		episode_return: latest.pnl_pct_mean,
+		trade_count: latest.trade_count_mean,
+		hold_ratio: latest.hold_ratio_mean ?? inferredHoldRatio,
+		trade_ratio: latest.trade_ratio_mean ?? inferredTradeRatio,
+		pnl_per_trade: latest.pnl_per_trade_mean ?? inferredPnlPerTrade,
 	};
 }
 
@@ -85,7 +108,8 @@ function RecentExperimentsTable({
 }
 
 export default function TrainingMonitorPage() {
-	const store = useTrainingStore();
+	const iterations = useTrainingStore((s) => s.iterations);
+	const trainingStatus = useTrainingStore((s) => s.status);
 
 	const recentFetcher = useCallback(() => getExperiments({ limit: 5 }), []);
 	const {
@@ -94,13 +118,13 @@ export default function TrainingMonitorPage() {
 		error: expError,
 	} = useApi<ExperimentSummary[]>(recentFetcher, []);
 
-	const latestMetrics = useMemo(() => buildLatestMetrics(store.iterations), [store.iterations]);
+	const latestMetrics = useMemo(() => buildLatestMetrics(iterations), [iterations]);
 
 	const iterationRecords = useMemo(
 		() =>
-			store.iterations.map((it, idx) => ({
+			iterations.map((it, idx) => ({
 				id: idx,
-				experiment_id: store.status?.experiment_id ?? "",
+				experiment_id: trainingStatus?.experiment_id ?? "",
 				iteration: it.iteration,
 				metrics: {
 					episode_return_mean: it.episode_return_mean,
@@ -108,10 +132,20 @@ export default function TrainingMonitorPage() {
 					pnl_pct_mean: it.pnl_pct_mean,
 					net_worth_mean: it.net_worth_mean,
 					trade_count_mean: it.trade_count_mean,
+					hold_count_mean: it.hold_count_mean,
+					buy_count_mean: it.buy_count_mean ?? 0,
+					sell_count_mean: it.sell_count_mean ?? 0,
+					hold_ratio_mean: it.hold_ratio_mean ?? 0,
+					trade_ratio_mean: it.trade_ratio_mean ?? 0,
+					pnl_per_trade_mean: it.pnl_per_trade_mean ?? 0,
 				},
-				timestamp: new Date().toISOString(),
+				timestamp: String(it.iteration),
 			})),
-		[store.iterations, store.status?.experiment_id],
+		[iterations, trainingStatus?.experiment_id],
+	);
+	const chartIterationRecords = useMemo(
+		() => downsampleIterationRecords(iterationRecords),
+		[iterationRecords],
 	);
 
 	const isWarmingUp = useTrainingStore((s) => s.isWarmingUp);
@@ -219,8 +253,13 @@ export default function TrainingMonitorPage() {
 					<div className="h-80">
 						{iterationRecords.length > 0 ? (
 							<MetricsLineChart
-								data={iterationRecords}
-								metricKeys={["episode_return_mean", "pnl_mean"]}
+								data={chartIterationRecords}
+								metricKeys={[
+									"episode_return_mean",
+									"pnl_mean",
+									"pnl_per_trade_mean",
+									"trade_ratio_mean",
+								]}
 							/>
 						) : (
 							<div className="flex h-full items-center justify-center text-sm text-[var(--text-secondary)]">

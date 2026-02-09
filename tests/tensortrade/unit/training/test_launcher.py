@@ -170,19 +170,32 @@ class TestCancel:
         mock_process.pid = 99999
         mock_process.poll.return_value = None
 
-        with patch("tensortrade.training.launcher.subprocess.Popen", return_value=mock_process):
+        with (
+            patch("tensortrade.training.launcher.os.path.expanduser", return_value="/tmp"),
+            patch.object(launcher, "_generate_script", return_value="/tmp/launch_test-exp-id.py"),
+            patch("tensortrade.training.launcher.subprocess.Popen", return_value=mock_process),
+        ):
             exp_id = launcher.launch(
                 name="To Cancel",
                 hp_pack_id="hp-1",
                 dataset_id="ds-1",
             )
 
-        with patch("os.killpg"):
+        with patch("os.killpg"), patch("tensortrade.training.launcher.subprocess.run"):
             result = launcher.cancel(exp_id)
 
         assert result is True
         mock_stores[0].complete_experiment.assert_called_once()
         assert launcher.list_running() == []
+
+    def test_stop_all_with_no_active_runs(self, launcher):
+        from unittest.mock import patch
+
+        with patch("tensortrade.training.launcher.subprocess.run") as mock_run:
+            stopped = launcher.stop_all()
+
+        assert stopped == 0
+        mock_run.assert_called_once()
 
 
 class TestCleanupFinished:

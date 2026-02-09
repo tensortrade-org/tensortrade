@@ -84,7 +84,13 @@ export const useTrainingStore = create<TrainingState>((set) => ({
 
 	addIteration: (update: TrainingUpdate) =>
 		set((state) => {
-			const next = [...state.iterations, update];
+			const current = state.iterations;
+			let next: TrainingUpdate[];
+			if (current.length > 0 && current[current.length - 1].iteration === update.iteration) {
+				next = [...current.slice(0, -1), update];
+			} else {
+				next = [...current, update];
+			}
 			return {
 				iterations: next.length > MAX_ITERATIONS ? next.slice(-MAX_ITERATIONS) : next,
 				currentIteration: update.iteration,
@@ -109,7 +115,13 @@ export const useTrainingStore = create<TrainingState>((set) => ({
 
 	addEpisode: (episode: EpisodeMetrics) =>
 		set((state) => {
-			const next = [...state.episodes, episode];
+			const current = state.episodes;
+			let next: EpisodeMetrics[];
+			if (current.length > 0 && current[current.length - 1].episode === episode.episode) {
+				next = [...current.slice(0, -1), episode];
+			} else {
+				next = [...current, episode];
+			}
 			return {
 				episodes: next.length > MAX_EPISODES ? next.slice(-MAX_EPISODES) : next,
 			};

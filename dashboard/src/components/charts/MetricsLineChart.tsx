@@ -78,6 +78,8 @@ export function MetricsLineChart({ data, metricKeys }: MetricsLineChartProps) {
 	const leftKeys = metricKeys.filter((k) => !isRightAxisMetric(k));
 	const rightKeys = metricKeys.filter((k) => isRightAxisMetric(k));
 	const useDualAxis = leftKeys.length > 0 && rightKeys.length > 0;
+	const enableAnimation = chartData.length <= 600;
+	const animationDuration = enableAnimation ? 180 : 0;
 
 	// Assign colors: left-axis metrics first, then right-axis
 	const orderedKeys = [...leftKeys, ...rightKeys];
@@ -132,6 +134,8 @@ export function MetricsLineChart({ data, metricKeys }: MetricsLineChartProps) {
 						strokeWidth={2}
 						dot={false}
 						activeDot={{ r: 4, fill: colorMap.get(key) ?? LINE_COLORS[0] }}
+						isAnimationActive={enableAnimation}
+						animationDuration={animationDuration}
 					/>
 				))}
 			</LineChart>
