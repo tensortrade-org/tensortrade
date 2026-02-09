@@ -1,0 +1,13 @@
+.venv
+.git
+.dev-pids
+.dev-logs
+dashboard/node_modules
+dashboard/.next
+__pycache__
+*.pyc
+*.egg-info
+dist
+build
+.ruff_cache
+.pytest_cache

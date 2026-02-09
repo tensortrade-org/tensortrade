@@ -36,6 +36,5 @@ COPY . ./
 
 # Install uv and dependencies
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
-RUN uv pip install --no-cache-dir --system -r requirements.txt && \
-    uv pip install --no-cache-dir --system -r examples/requirements.txt && \
-    uv pip install --no-cache-dir --system -e ".[docs,tests]"
+RUN uv pip install --no-cache-dir --system -e . && \
+    uv pip install --no-cache-dir --system -r examples/requirements.txt
