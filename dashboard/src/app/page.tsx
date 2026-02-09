@@ -263,7 +263,7 @@ export default function MissionControlPage() {
 			{statsLoading ? (
 				<LoadingState message="Loading stats..." />
 			) : stats ? (
-				<div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
+				<div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5">
 					<StatCard
 						label="Total Runs"
 						value={formatNumber(stats.total_experiments)}
@@ -284,11 +284,6 @@ export default function MissionControlPage() {
 						label="Best Net Worth"
 						value={stats.best_net_worth !== null ? formatCurrency(stats.best_net_worth) : "--"}
 						accent={stats.best_net_worth !== null ? "green" : "neutral"}
-					/>
-					<StatCard
-						label="Total Trades"
-						value={formatNumber(stats.total_trades)}
-						accent="neutral"
 					/>
 				</div>
 			) : null}

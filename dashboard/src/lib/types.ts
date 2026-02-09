@@ -487,6 +487,89 @@ export interface CampaignEndMessage {
 	total_pruned: number;
 }
 
+// --- Live Paper Trading ---
+
+export interface LiveSession {
+	id: string;
+	experiment_id: string;
+	config: Record<string, unknown>;
+	status: "running" | "stopped" | "error";
+	started_at: string;
+	stopped_at: string | null;
+	symbol: string;
+	timeframe: string;
+	initial_equity: number | null;
+	final_equity: number | null;
+	total_trades: number;
+	total_bars: number;
+	pnl: number;
+	max_drawdown_pct: number;
+	model_version: number;
+}
+
+export interface LiveStatusMessage {
+	type: "live_status";
+	state: "idle" | "running" | "stopped" | "error";
+	session_id: string | null;
+	symbol: string;
+	equity: number;
+	pnl: number;
+	pnl_pct: number;
+	position: "cash" | "asset";
+	total_bars: number;
+	total_trades: number;
+	drawdown_pct: number;
+}
+
+export interface LiveBar {
+	type: "live_bar";
+	timestamp: number;
+	open: number;
+	high: number;
+	low: number;
+	close: number;
+	volume: number;
+	step: number;
+}
+
+export interface LiveActionEvent {
+	type: "live_action";
+	step: number;
+	action: number;
+	action_label: "hold" | "buy" | "sell";
+	price: number;
+	position: number; // 0=cash, 1=asset
+	timestamp: number;
+}
+
+export interface LiveTradeEvent {
+	type: "live_trade";
+	step: number;
+	timestamp: number;
+	side: "buy" | "sell";
+	symbol: string;
+	price: number;
+	size: number;
+	commission: number;
+	alpaca_order_id: string | null;
+}
+
+export interface LivePortfolioMessage {
+	type: "live_portfolio";
+	equity: number;
+	cash: number;
+	position_value: number;
+	pnl: number;
+	pnl_pct: number;
+	drawdown_pct: number;
+}
+
+export interface LiveTradingStartRequest {
+	experiment_id: string;
+	symbol: string;
+	timeframe: string;
+}
+
 export type WebSocketMessage =
 	| StepUpdate
 	| TradeEvent
@@ -504,6 +587,11 @@ export type WebSocketMessage =
 	| CampaignImportanceMessage
 	| CampaignProgressMessage
 	| CampaignEndMessage
+	| LiveStatusMessage
+	| LiveBar
+	| LiveActionEvent
+	| LiveTradeEvent
+	| LivePortfolioMessage
 	| { type: "training_disconnected" }
 	| { type: "experiment_start"; experiment_id: string; name: string }
 	| { type: "experiment_end"; experiment_id: string; status: string };

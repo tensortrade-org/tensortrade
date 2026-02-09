@@ -156,6 +156,61 @@ class ExperimentStore:
                 raw_response TEXT NOT NULL DEFAULT '',
                 created_at TEXT NOT NULL
             );
+
+            CREATE TABLE IF NOT EXISTS live_sessions (
+                id TEXT PRIMARY KEY,
+                experiment_id TEXT NOT NULL,
+                config TEXT NOT NULL DEFAULT '{}',
+                status TEXT NOT NULL DEFAULT 'running',
+                started_at TEXT NOT NULL,
+                stopped_at TEXT,
+                symbol TEXT NOT NULL,
+                timeframe TEXT NOT NULL,
+                initial_equity REAL,
+                final_equity REAL,
+                total_trades INTEGER DEFAULT 0,
+                total_bars INTEGER DEFAULT 0,
+                pnl REAL DEFAULT 0,
+                max_drawdown_pct REAL DEFAULT 0,
+                model_version INTEGER DEFAULT 1,
+                FOREIGN KEY (experiment_id) REFERENCES experiments(id)
+            );
+
+            CREATE TABLE IF NOT EXISTS live_trades (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                session_id TEXT NOT NULL,
+                timestamp TEXT NOT NULL,
+                step INTEGER NOT NULL,
+                side TEXT NOT NULL,
+                symbol TEXT NOT NULL,
+                price REAL NOT NULL,
+                size REAL NOT NULL,
+                commission REAL DEFAULT 0,
+                alpaca_order_id TEXT,
+                model_version INTEGER DEFAULT 1,
+                FOREIGN KEY (session_id) REFERENCES live_sessions(id)
+            );
+
+            CREATE INDEX IF NOT EXISTS idx_live_trades_session
+                ON live_trades(session_id);
+
+            CREATE TABLE IF NOT EXISTS live_experiences (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                session_id TEXT NOT NULL,
+                step INTEGER NOT NULL,
+                timestamp TEXT NOT NULL,
+                observation BLOB NOT NULL,
+                action INTEGER NOT NULL,
+                reward REAL NOT NULL,
+                next_observation BLOB NOT NULL,
+                done INTEGER NOT NULL DEFAULT 0,
+                symbol TEXT NOT NULL,
+                price REAL NOT NULL,
+                FOREIGN KEY (session_id) REFERENCES live_sessions(id)
+            );
+
+            CREATE INDEX IF NOT EXISTS idx_live_experiences_session
+                ON live_experiences(session_id);
         """)
         self._conn.commit()
 

@@ -98,7 +98,7 @@ def test_run_episode_uses_trained_policy(monkeypatch):
 
     policy_algo = MagicMock()
     policy_algo.compute_single_action.return_value = 1
-    monkeypatch.setattr(runner, "_create_env", lambda config, dataset_id=None, start_date=None, end_date=None: (env, _make_ohlcv(), _FakeWallet()))
+    monkeypatch.setattr(runner, "_create_env", lambda config, dataset_id=None, start_date=None, end_date=None, test_only=False: (env, _make_ohlcv(), _FakeWallet()))
     monkeypatch.setattr(runner, "_load_trained_algo", lambda experiment: (policy_algo, False))
 
     asyncio.run(runner.run_episode("exp-1"))

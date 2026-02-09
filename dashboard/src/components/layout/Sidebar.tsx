@@ -17,6 +17,7 @@ const navItems: NavItem[] = [
 	{ label: "HP Studio", href: "/hyperparams", icon: "\u2692" },
 	{ label: "Datasets", href: "/datasets", icon: "\u25A6" },
 	{ label: "Inference", href: "/live", icon: "\u23E9" },
+	{ label: "Paper Trading", href: "/paper-trading", icon: "\u2261" },
 	{ label: "Experiments", href: "/experiments", icon: "\u2630" },
 	{ label: "Leaderboard", href: "/leaderboard", icon: "\u2655" },
 	{ label: "Optuna", href: "/optuna", icon: "\u2699" },

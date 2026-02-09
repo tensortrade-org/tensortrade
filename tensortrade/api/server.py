@@ -19,6 +19,8 @@ from fastapi import FastAPI, Query, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 
+from tensortrade.live.store import LiveTradingStore
+from tensortrade.live.trader import LiveTrader
 from tensortrade.training.dataset_store import DatasetStore
 from tensortrade.training.experiment_store import ExperimentStore
 from tensortrade.training.feature_engine import FeatureEngine
@@ -100,6 +102,8 @@ _hp_store: HyperparameterStore | None = None
 _ds_store: DatasetStore | None = None
 _launcher: TrainingLauncher | None = None
 _feature_engine: FeatureEngine | None = None
+_live_store: LiveTradingStore | None = None
+_live_trader: LiveTrader | None = None
 
 
 def _get_store() -> ExperimentStore:
@@ -137,15 +141,38 @@ def _get_feature_engine() -> FeatureEngine:
     return _feature_engine
 
 
+def _get_live_store() -> LiveTradingStore:
+    global _live_store
+    if _live_store is None:
+        _live_store = LiveTradingStore()
+    return _live_store
+
+
+def _get_live_trader() -> LiveTrader:
+    global _live_trader
+    if _live_trader is None:
+        _live_trader = LiveTrader()
+    return _live_trader
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
-    global _store, _hp_store, _ds_store, _feature_engine
+    global _store, _hp_store, _ds_store, _feature_engine, _live_store, _live_trader
     _store = ExperimentStore()
     _hp_store = HyperparameterStore()
     _ds_store = DatasetStore()
     _feature_engine = FeatureEngine()
+    _live_store = LiveTradingStore()
     logger.info("TensorTrade API server started")
     yield
+    # Stop live trader if running
+    if _live_trader and _live_trader.is_running:
+        await _live_trader.stop()
+    # Force-shutdown Ray if any consumers leaked
+    from tensortrade.ray_manager import ray_manager
+    ray_manager.force_shutdown()
+    if _live_store:
+        _live_store.close()
     if _store:
         _store.close()
     if _hp_store:
@@ -754,7 +781,13 @@ def _register_routes(app: FastAPI) -> None:
 
     @app.get("/api/status")
     async def get_status() -> dict:
-        return _manager.get_status()
+        from tensortrade.ray_manager import ray_manager
+        status = _manager.get_status()
+        status["ray"] = {
+            "active": ray_manager.is_active,
+            "consumers": ray_manager.active_consumers,
+        }
+        return status
 
     # --- REST: Training Controls ---
 
@@ -767,9 +800,9 @@ def _register_routes(app: FastAPI) -> None:
         await _manager.send_control_to_training("stop")
         if stopped_runs > 0:
             _manager._current_experiment_id = None
-            message = f"Stopped {stopped_runs} active run(s) and terminated Ray."
+            message = f"Stopped {stopped_runs} active run(s) and cleaned training runtime."
         else:
-            message = "No active launched run found; sent stop command and cleaned Ray."
+            message = "No active launched run found; sent stop command and attempted runtime cleanup."
         return {"status": "stop_sent", "message": message}
 
     @app.post("/api/training/pause")
@@ -802,6 +835,201 @@ def _register_routes(app: FastAPI) -> None:
                         await _manager.send_control_to_training(cmd)
                 except json.JSONDecodeError:
                     pass
+        except WebSocketDisconnect:
+            _manager.disconnect_dashboard(ws)
+
+    # --- REST: Live Trading ---
+
+    @app.post("/api/live/start")
+    async def start_live_trading(body: dict) -> dict:
+        """Start a paper/live trading session."""
+        global _live_trader
+        experiment_id = body.get("experiment_id")
+        if not experiment_id:
+            return {"error": "experiment_id is required"}
+
+        store = _get_store()
+        exp = store.get_experiment(experiment_id)
+        if not exp:
+            return {"error": "Experiment not found"}
+
+        # Check if already running
+        trader = _get_live_trader()
+        if trader.is_running:
+            return {"error": "A live trading session is already running"}
+
+        # Extract checkpoint path (same as InferenceRunner)
+        from tensortrade.api.inference_runner import InferenceRunner
+
+        checkpoint_path = InferenceRunner._get_checkpoint_path(exp)
+        if not checkpoint_path:
+            return {"error": "No checkpoint found for this experiment"}
+
+        config = exp.config
+        training_config = config.get("training_config", config)
+
+        from tensortrade.live.config import LiveTradingConfig
+
+        live_config = LiveTradingConfig(
+            symbol=body.get("symbol", "BTC/USD"),
+            timeframe=body.get("timeframe", "1h"),
+            paper=body.get("paper", True),
+            checkpoint_path=checkpoint_path,
+            experiment_id=experiment_id,
+            feature_specs=config.get("features", []),
+            window_size=training_config.get(
+                "window_size", config.get("window_size", 10),
+            ),
+            max_position_size_usd=body.get("max_position_size_usd", 10_000.0),
+            max_drawdown_pct=body.get("max_drawdown_pct", 20.0),
+        )
+
+        errors = live_config.validate()
+        if errors:
+            return {"error": "; ".join(errors)}
+
+        try:
+            # Create a fresh trader instance
+            _live_trader = LiveTrader()
+            await _live_trader.start(live_config, _manager)
+            return {
+                "status": "started",
+                "session_id": _live_trader._session_id,
+            }
+        except Exception as e:
+            logger.exception("Failed to start live trading")
+            return {"error": str(e)}
+
+    @app.post("/api/live/stop")
+    async def stop_live_trading() -> dict:
+        """Stop the active live trading session."""
+        trader = _get_live_trader()
+        if not trader.is_running:
+            return {"error": "No active live trading session"}
+        await trader.stop()
+        return {"status": "stopped"}
+
+    @app.get("/api/live/status")
+    async def get_live_status() -> dict:
+        """Get current live trading status and portfolio snapshot."""
+        trader = _get_live_trader()
+        return trader.get_status()
+
+    @app.get("/api/live/sessions")
+    async def list_live_sessions(
+        experiment_id: str | None = None,
+        status: str | None = None,
+        limit: int = Query(default=100, le=500),
+        offset: int = Query(default=0, ge=0),
+    ) -> list[dict]:
+        """List past and current live trading sessions."""
+        live_store = _get_live_store()
+        sessions = live_store.list_sessions(
+            experiment_id=experiment_id,
+            status=status,
+            limit=limit,
+            offset=offset,
+        )
+        return [
+            {
+                "id": s.id,
+                "experiment_id": s.experiment_id,
+                "status": s.status,
+                "started_at": s.started_at,
+                "stopped_at": s.stopped_at,
+                "symbol": s.symbol,
+                "timeframe": s.timeframe,
+                "initial_equity": s.initial_equity,
+                "final_equity": s.final_equity,
+                "total_trades": s.total_trades,
+                "total_bars": s.total_bars,
+                "pnl": s.pnl,
+                "max_drawdown_pct": s.max_drawdown_pct,
+                "model_version": s.model_version,
+            }
+            for s in sessions
+        ]
+
+    @app.get("/api/live/sessions/{session_id}")
+    async def get_live_session(session_id: str) -> dict:
+        """Get detail for a specific live session."""
+        live_store = _get_live_store()
+        session = live_store.get_session(session_id)
+        if not session:
+            return {"error": "not found"}
+        return {
+            "id": session.id,
+            "experiment_id": session.experiment_id,
+            "config": session.config,
+            "status": session.status,
+            "started_at": session.started_at,
+            "stopped_at": session.stopped_at,
+            "symbol": session.symbol,
+            "timeframe": session.timeframe,
+            "initial_equity": session.initial_equity,
+            "final_equity": session.final_equity,
+            "total_trades": session.total_trades,
+            "total_bars": session.total_bars,
+            "pnl": session.pnl,
+            "max_drawdown_pct": session.max_drawdown_pct,
+            "model_version": session.model_version,
+        }
+
+    @app.get("/api/live/sessions/{session_id}/trades")
+    async def get_live_session_trades(
+        session_id: str,
+        limit: int = Query(default=1000, le=5000),
+        offset: int = Query(default=0, ge=0),
+    ) -> list[dict]:
+        """Get trades for a specific live session."""
+        live_store = _get_live_store()
+        trades = live_store.get_session_trades(
+            session_id, limit=limit, offset=offset,
+        )
+        return [
+            {
+                "id": t.id,
+                "session_id": t.session_id,
+                "timestamp": t.timestamp,
+                "step": t.step,
+                "side": t.side,
+                "symbol": t.symbol,
+                "price": t.price,
+                "size": t.size,
+                "commission": t.commission,
+                "alpaca_order_id": t.alpaca_order_id,
+                "model_version": t.model_version,
+            }
+            for t in trades
+        ]
+
+    # --- WebSocket: Live (consumer) ---
+
+    @app.websocket("/ws/live")
+    async def ws_live(ws: WebSocket) -> None:
+        await _manager.connect_dashboard(ws)
+        try:
+            # Send current live status on connect
+            trader = _get_live_trader()
+            raw = trader.get_status()
+            state = "running" if raw.get("running") else "idle"
+            position = "asset" if raw.get("position") == 1 else "cash"
+            await ws.send_json({
+                "type": "live_status",
+                "state": state,
+                "session_id": raw.get("session_id") or None,
+                "symbol": raw.get("symbol", ""),
+                "equity": raw.get("equity", 0),
+                "pnl": raw.get("pnl", 0),
+                "pnl_pct": raw.get("pnl_pct", 0),
+                "position": position,
+                "total_bars": raw.get("total_bars", 0),
+                "total_trades": raw.get("total_trades", 0),
+                "drawdown_pct": raw.get("max_drawdown_pct", 0),
+            })
+            while True:
+                # Keep connection alive — ignore incoming messages
+                await ws.receive_text()
         except WebSocketDisconnect:
             _manager.disconnect_dashboard(ws)
 

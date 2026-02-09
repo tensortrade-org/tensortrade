@@ -13,6 +13,10 @@ import type {
 	LaunchRequest,
 	LaunchResponse,
 	LeaderboardEntry,
+	LiveSession,
+	LiveStatusMessage,
+	LiveTradeEvent,
+	LiveTradingStartRequest,
 	OptunaStudyDetail,
 	OptunaStudySummary,
 	ParamImportance,
@@ -343,6 +347,43 @@ export async function generateHpPack(
 		"/insights/generate-pack",
 		body as unknown as Record<string, unknown>,
 	);
+}
+
+// --- Live Paper Trading ---
+
+interface LiveTradingStartResponse {
+	session_id?: string;
+	status?: string;
+	error?: string;
+}
+
+export async function startLiveTrading(
+	request: LiveTradingStartRequest,
+): Promise<LiveTradingStartResponse> {
+	return postJSON<LiveTradingStartResponse>(
+		"/live/start",
+		request as unknown as Record<string, unknown>,
+	);
+}
+
+export async function stopLiveTrading(): Promise<ActionResponse> {
+	return postJSON<ActionResponse>("/live/stop", {});
+}
+
+export async function getLiveStatus(): Promise<LiveStatusMessage> {
+	return fetchJSON<LiveStatusMessage>("/live/status");
+}
+
+export async function getLiveSessions(): Promise<LiveSession[]> {
+	return fetchJSON<LiveSession[]>("/live/sessions");
+}
+
+export async function getLiveSession(id: string): Promise<LiveSession> {
+	return fetchJSON<LiveSession>(`/live/sessions/${id}`);
+}
+
+export async function getLiveSessionTrades(id: string): Promise<LiveTradeEvent[]> {
+	return fetchJSON<LiveTradeEvent[]>(`/live/sessions/${id}/trades`);
 }
 
 // --- Streaming Analysis (SSE) ---

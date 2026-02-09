@@ -19,6 +19,8 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from tensortrade.ray_config import using_shared_ray_cluster
+
 if TYPE_CHECKING:
     from tensortrade.training.dataset_store import DatasetStore
     from tensortrade.training.experiment_store import ExperimentStore
@@ -214,6 +216,9 @@ class TrainingLauncher:
     @staticmethod
     def _stop_ray_runtime() -> None:
         """Best-effort stop of Ray runtime to avoid orphan workers."""
+        if using_shared_ray_cluster():
+            logger.info("Shared Ray cluster configured; skipping local 'ray stop --force'")
+            return
         try:
             subprocess.run(
                 [sys.executable, "-m", "ray", "stop", "--force"],
@@ -354,6 +359,7 @@ class TrainingLauncher:
             "from tensortrade.env.default import actions as tt_actions",
             "from tensortrade.env.default import rewards as tt_rewards",
             "import tensortrade.env.default as default",
+            "from tensortrade.ray_config import build_ray_init_kwargs",
             "from tensortrade.training.experiment_store import ExperimentStore",
             "from tensortrade.training.feature_engine import FeatureEngine",
             "",
@@ -531,8 +537,8 @@ class TrainingLauncher:
             '        "initial_cash": CONFIG.get("initial_cash", 10000),',
             "    }",
             "",
-            '    ray.init(num_cpus=max(2, CONFIG.get("num_rollout_workers", 2) + 2),',
-            "             ignore_reinit_error=True, log_to_driver=False)",
+            '    ray_init_kwargs = build_ray_init_kwargs(default_num_cpus=max(2, int(CONFIG.get("num_rollout_workers", 2)) + 2))',
+            "    ray.init(**ray_init_kwargs)",
             '    register_env("TradingEnv", create_env)',
             "",
             "    # Connect to dashboard",
@@ -774,6 +780,7 @@ class TrainingLauncher:
             "from tensortrade.env.default import actions as tt_actions",
             "from tensortrade.env.default import rewards as tt_rewards",
             "import tensortrade.env.default as default",
+            "from tensortrade.ray_config import build_ray_init_kwargs",
             "from tensortrade.training.experiment_store import ExperimentStore",
             "from tensortrade.training.feature_engine import FeatureEngine",
             "from tensortrade.api.training_bridge import TrainingBridge",
@@ -995,7 +1002,8 @@ class TrainingLauncher:
             "    train_data.to_csv(csv_path, index=False)",
             "",
             "    # Initialize Ray",
-            "    ray.init(num_cpus=6, ignore_reinit_error=True, log_to_driver=False)",
+            "    ray_init_kwargs = build_ray_init_kwargs(default_num_cpus=6)",
+            "    ray.init(**ray_init_kwargs)",
             '    register_env("TradingEnv", create_env)',
             "",
             "    # Connect to dashboard",

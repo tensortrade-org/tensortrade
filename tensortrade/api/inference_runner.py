@@ -233,13 +233,8 @@ class InferenceRunner:
                     policy_algo.stop()
                 except Exception:
                     logger.debug("Failed to stop inference policy cleanly", exc_info=True)
-            if ray_started_here:
-                try:
-                    import ray
-                    if ray.is_initialized():
-                        ray.shutdown()
-                except Exception:
-                    logger.debug("Failed to shutdown Ray cleanly after inference", exc_info=True)
+            from tensortrade.ray_manager import ray_manager
+            ray_manager.release("inference")
 
     async def _send_error(self, experiment_id: str, message: str) -> None:
         await self.manager.broadcast_to_dashboards(
@@ -305,13 +300,11 @@ class InferenceRunner:
         if not os.path.exists(checkpoint_path):
             raise ValueError(f"Checkpoint path does not exist: {checkpoint_path}")
 
-        import ray
         from ray.rllib.policy.policy import Policy
 
-        ray_started_here = False
-        if not ray.is_initialized():
-            ray.init(ignore_reinit_error=True, log_to_driver=False)
-            ray_started_here = True
+        from tensortrade.ray_manager import ray_manager
+
+        ray_manager.acquire("inference")
 
         # Load just the policy weights — no env runners or env registration needed.
         # Policy.from_checkpoint returns a dict of {policy_id: Policy}.
@@ -319,7 +312,7 @@ class InferenceRunner:
         policy = policies.get("default_policy")
         if policy is None:
             raise ValueError(f"No default_policy found in checkpoint: {checkpoint_path}")
-        return policy, ray_started_here
+        return policy, False  # ray_started_here unused now
 
     def _create_env(
         self,

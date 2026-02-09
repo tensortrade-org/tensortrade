@@ -148,6 +148,17 @@ Features:
 - Experiment history with final metrics
 - Launch training runs from the UI with dataset and hyperparameter selection
 
+Optional shared Ray cluster (training + inference + live/paper):
+
+```bash
+# Connect all TensorTrade processes to an existing Ray cluster
+export TENSORTRADE_RAY_ADDRESS="auto"                 # or: ray://<host>:10001
+export TENSORTRADE_RAY_NAMESPACE="tensortrade"        # optional
+```
+
+When `TENSORTRADE_RAY_ADDRESS` is set, training subprocesses, inference, and live/paper trading
+all connect to the same Ray runtime and launcher stop operations avoid force-stopping the shared cluster.
+
 ---
 
 ## Installation

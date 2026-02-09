@@ -197,6 +197,16 @@ class TestCancel:
         assert stopped == 0
         mock_run.assert_called_once()
 
+    def test_stop_all_skips_force_stop_with_shared_ray(self, launcher, monkeypatch):
+        from unittest.mock import patch
+
+        monkeypatch.setenv("TENSORTRADE_RAY_ADDRESS", "ray://127.0.0.1:10001")
+        with patch("tensortrade.training.launcher.subprocess.run") as mock_run:
+            stopped = launcher.stop_all()
+
+        assert stopped == 0
+        mock_run.assert_not_called()
+
 
 class TestCleanupFinished:
     def test_cleanup_removes_finished(self, launcher, mock_stores):
