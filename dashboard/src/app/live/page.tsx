@@ -10,8 +10,9 @@ import { EpisodeSummaryCard } from "@/components/inference/EpisodeSummaryCard";
 import { ExperimentSelector } from "@/components/inference/ExperimentSelector";
 import { InferenceControls } from "@/components/inference/InferenceControls";
 import { TradeList } from "@/components/inference/TradeList";
-import { startInference } from "@/lib/api";
-import { formatCurrency, formatNumber, formatPercent } from "@/lib/formatters";
+import { getExperiment, startInference } from "@/lib/api";
+import { formatCurrency, formatDate, formatNumber, formatPercent } from "@/lib/formatters";
+import type { ExperimentDetail } from "@/lib/types";
 import { useInferenceStore } from "@/stores/inferenceStore";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -28,6 +29,7 @@ export default function InferencePlaybackPage() {
 	const [selectedDataset, setSelectedDataset] = useState("");
 	const [startDate, setStartDate] = useState("");
 	const [endDate, setEndDate] = useState("");
+	const [experimentDetail, setExperimentDetail] = useState<ExperimentDetail | null>(null);
 
 	// Auto-select experiment from URL query param (e.g. from Optuna "Run Inference")
 	useEffect(() => {
@@ -36,6 +38,21 @@ export default function InferencePlaybackPage() {
 			setSelectedExperiment(expId);
 		}
 	}, [searchParams, selectedExperiment]);
+
+	// Fetch experiment details when selection changes
+	useEffect(() => {
+		if (!selectedExperiment) {
+			setExperimentDetail(null);
+			return;
+		}
+		let cancelled = false;
+		getExperiment(selectedExperiment).then((detail) => {
+			if (!cancelled) setExperimentDetail(detail);
+		});
+		return () => {
+			cancelled = true;
+		};
+	}, [selectedExperiment]);
 
 	const status = useInferenceStore((s) => s.status);
 	const steps = useInferenceStore((s) => s.steps);
@@ -288,6 +305,101 @@ export default function InferencePlaybackPage() {
 
 			{/* Episode Summary */}
 			{episodeSummary && <EpisodeSummaryCard summary={episodeSummary} />}
+
+			{/* Experiment Config */}
+			{experimentDetail && <ExperimentConfigPanel detail={experimentDetail} />}
 		</div>
+	);
+}
+
+interface ConfigPanelProps {
+	detail: ExperimentDetail;
+}
+
+interface ConfigRecord {
+	training_config?: Record<string, unknown>;
+	hp_pack_name?: string;
+	dataset_name?: string;
+	source_type?: string;
+	source_config?: Record<string, unknown>;
+	features?: Array<Record<string, unknown>>;
+	split_config?: Record<string, number>;
+	[key: string]: unknown;
+}
+
+function ConfigValue({ value }: { value: unknown }) {
+	if (value === null || value === undefined) return <span>--</span>;
+	if (typeof value === "boolean") return <span>{value ? "true" : "false"}</span>;
+	if (typeof value === "number") return <span>{value}</span>;
+	if (typeof value === "string") return <span>{value}</span>;
+	if (Array.isArray(value)) return <span>{value.join(", ")}</span>;
+	if (typeof value === "object") return <span>{JSON.stringify(value)}</span>;
+	return <span>{String(value)}</span>;
+}
+
+function ConfigSection({ title, entries }: { title: string; entries: [string, unknown][] }) {
+	if (entries.length === 0) return null;
+	return (
+		<div>
+			<h4 className="mb-2 text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">
+				{title}
+			</h4>
+			<div className="grid grid-cols-2 gap-x-4 gap-y-1 sm:grid-cols-3 lg:grid-cols-4">
+				{entries.map(([key, val]) => (
+					<div key={key} className="flex items-baseline justify-between gap-2 py-0.5">
+						<span className="text-xs text-[var(--text-secondary)]">{key}</span>
+						<span className="font-mono text-xs text-[var(--text-primary)]">
+							<ConfigValue value={val} />
+						</span>
+					</div>
+				))}
+			</div>
+		</div>
+	);
+}
+
+function ExperimentConfigPanel({ detail }: ConfigPanelProps) {
+	const { experiment } = detail;
+	const config = experiment.config as ConfigRecord;
+	const tc = config.training_config ?? {};
+
+	// Separate model from the rest of training config
+	const { model, ...tcRest } = tc as Record<string, unknown> & { model?: Record<string, unknown> };
+	const tcEntries = Object.entries(tcRest);
+	const modelEntries = model ? Object.entries(model) : [];
+
+	const metaEntries: [string, unknown][] = [
+		["name", experiment.name],
+		["status", experiment.status],
+		["started", formatDate(experiment.started_at)],
+		["hp_pack", config.hp_pack_name],
+		["dataset", config.dataset_name],
+		["source_type", config.source_type],
+	];
+
+	const sourceEntries = config.source_config ? Object.entries(config.source_config) : [];
+	const featureEntries: [string, unknown][] = (config.features ?? []).map((f, i) => [
+		`feature_${i + 1}`,
+		f.type
+			? `${f.type} (${Object.entries(f)
+					.filter(([k]) => k !== "type")
+					.map(([k, v]) => `${k}=${v}`)
+					.join(", ")})`
+			: JSON.stringify(f),
+	]);
+	const splitEntries = config.split_config ? Object.entries(config.split_config) : [];
+
+	return (
+		<Card>
+			<CardHeader title="Experiment Configuration" />
+			<div className="space-y-4">
+				<ConfigSection title="Experiment" entries={metaEntries} />
+				<ConfigSection title="Training" entries={tcEntries} />
+				{modelEntries.length > 0 && <ConfigSection title="Model" entries={modelEntries} />}
+				<ConfigSection title="Data Source" entries={sourceEntries} />
+				<ConfigSection title="Features" entries={featureEntries} />
+				{splitEntries.length > 0 && <ConfigSection title="Split" entries={splitEntries} />}
+			</div>
+		</Card>
 	);
 }

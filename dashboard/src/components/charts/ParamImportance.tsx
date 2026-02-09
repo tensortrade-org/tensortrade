@@ -53,38 +53,42 @@ export function ParamImportance({ importance }: ParamImportanceProps) {
 	const chartHeight = chartData.length * barHeight + 40;
 
 	return (
-		<div className="h-full w-full overflow-y-auto">
-			<ResponsiveContainer width="100%" height={chartHeight}>
-				<BarChart
-					data={chartData}
-					layout="vertical"
-					margin={{ top: 8, right: 16, left: 8, bottom: 8 }}
-				>
-					<XAxis
-						type="number"
-						stroke="#8b8fa3"
-						tick={{ fill: "#8b8fa3", fontSize: 11 }}
-						tickLine={{ stroke: "#2a2e45" }}
-						axisLine={{ stroke: "#2a2e45" }}
-						domain={[0, "auto"]}
-					/>
-					<YAxis
-						type="category"
-						dataKey="name"
-						stroke="#8b8fa3"
-						tick={{ fill: "#8b8fa3", fontSize: 11 }}
-						tickLine={{ stroke: "#2a2e45" }}
-						axisLine={{ stroke: "#2a2e45" }}
-						width={120}
-					/>
-					<Tooltip content={<ChartTooltip />} />
-					<Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={20}>
-						{chartData.map((entry) => (
-							<Cell key={entry.name} fill="#3b82f6" />
-						))}
-					</Bar>
-				</BarChart>
-			</ResponsiveContainer>
+		<div className="h-full w-full overflow-hidden">
+			<div className="h-full overflow-y-auto">
+				<div style={{ height: chartHeight, minHeight: "100%" }}>
+					<ResponsiveContainer width="100%" height="100%">
+						<BarChart
+							data={chartData}
+							layout="vertical"
+							margin={{ top: 8, right: 16, left: 8, bottom: 8 }}
+						>
+							<XAxis
+								type="number"
+								stroke="#8b8fa3"
+								tick={{ fill: "#8b8fa3", fontSize: 11 }}
+								tickLine={{ stroke: "#2a2e45" }}
+								axisLine={{ stroke: "#2a2e45" }}
+								domain={[0, "auto"]}
+							/>
+							<YAxis
+								type="category"
+								dataKey="name"
+								stroke="#8b8fa3"
+								tick={{ fill: "#8b8fa3", fontSize: 11 }}
+								tickLine={{ stroke: "#2a2e45" }}
+								axisLine={{ stroke: "#2a2e45" }}
+								width={120}
+							/>
+							<Tooltip content={<ChartTooltip />} />
+							<Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={20}>
+								{chartData.map((entry) => (
+									<Cell key={entry.name} fill="#3b82f6" />
+								))}
+							</Bar>
+						</BarChart>
+					</ResponsiveContainer>
+				</div>
+			</div>
 		</div>
 	);
 }
