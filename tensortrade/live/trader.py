@@ -236,14 +236,16 @@ class LiveTrader:
         result: list[dict[str, object]] = []
         for _, row in buf.iterrows():
             ts = int(pd.Timestamp(row["date"]).timestamp()) if "date" in row.index else 0
-            result.append({
-                "timestamp": ts,
-                "open": float(row.get("open", 0)),
-                "high": float(row.get("high", 0)),
-                "low": float(row.get("low", 0)),
-                "close": float(row.get("close", 0)),
-                "volume": float(row.get("volume", 0)),
-            })
+            result.append(
+                {
+                    "timestamp": ts,
+                    "open": float(row.get("open", 0)),
+                    "high": float(row.get("high", 0)),
+                    "low": float(row.get("low", 0)),
+                    "close": float(row.get("close", 0)),
+                    "volume": float(row.get("volume", 0)),
+                }
+            )
         return result
 
     def get_session_trades(self) -> list[dict[str, object]]:
@@ -254,16 +256,18 @@ class LiveTrader:
         result: list[dict[str, object]] = []
         for t in trades:
             ts = int(pd.Timestamp(t.timestamp).timestamp()) if t.timestamp else 0
-            result.append({
-                "step": t.step,
-                "timestamp": ts,
-                "side": t.side,
-                "symbol": t.symbol,
-                "price": t.price,
-                "size": t.size,
-                "commission": t.commission,
-                "alpaca_order_id": t.alpaca_order_id,
-            })
+            result.append(
+                {
+                    "step": t.step,
+                    "timestamp": ts,
+                    "side": t.side,
+                    "symbol": t.symbol,
+                    "price": t.price,
+                    "size": t.size,
+                    "commission": t.commission,
+                    "alpaca_order_id": t.alpaca_order_id,
+                }
+            )
         return result
 
     def get_status(self) -> dict[str, object]:
@@ -296,9 +300,7 @@ class LiveTrader:
             return
         bars = self.get_initial_bars()
         if bars:
-            await self._manager.broadcast_to_dashboards(
-                {"type": "live_bars_history", "bars": bars}
-            )
+            await self._manager.broadcast_to_dashboards({"type": "live_bars_history", "bars": bars})
             logger.info("Broadcast %d initial bars to dashboard", len(bars))
 
     async def _run(self) -> None:

@@ -2,10 +2,10 @@ import logging
 from abc import abstractmethod
 from collections import deque
 from itertools import product
-from typing import Union, List, Any
+from typing import Any
 
 import numpy as np
-from gymnasium.spaces import Space, Discrete
+from gymnasium.spaces import Discrete, Space
 
 from tensortrade.core import Clock
 from tensortrade.env.generic import ActionScheme, TradingEnv
@@ -14,11 +14,10 @@ from tensortrade.oms.orders import (
     Broker,
     Order,
     OrderListener,
-    OrderSpec,
+    TradeSide,
+    TradeType,
     proportion_order,
     risk_managed_order,
-    TradeSide,
-    TradeType
 )
 from tensortrade.oms.wallets import Portfolio
 
@@ -48,11 +47,11 @@ class TensorTradeActionScheme(ActionScheme):
 
     def __init__(self) -> None:
         super().__init__()
-        self.portfolio: 'Portfolio' = None
-        self.broker: 'Broker' = Broker()
+        self.portfolio: Portfolio = None
+        self.broker: Broker = Broker()
 
     @property
-    def clock(self) -> 'Clock':
+    def clock(self) -> "Clock":
         """The reference clock from the environment. (`Clock`)
 
         When the clock is set for the we also set the clock for the portfolio
@@ -66,7 +65,7 @@ class TensorTradeActionScheme(ActionScheme):
         return self._clock
 
     @clock.setter
-    def clock(self, clock: 'Clock') -> None:
+    def clock(self, clock: "Clock") -> None:
         self._clock = clock
 
         components = [self.portfolio] + self.portfolio.exchanges
@@ -74,7 +73,7 @@ class TensorTradeActionScheme(ActionScheme):
             c.clock = clock
         self.broker.clock = clock
 
-    def perform(self, env: 'TradingEnv', action: Any) -> None:
+    def perform(self, env: "TradingEnv", action: Any) -> None:
         """Performs the action on the given environment.
 
         Under the TT action scheme, the subclassed action scheme is expected
@@ -92,13 +91,13 @@ class TensorTradeActionScheme(ActionScheme):
 
         for order in orders:
             if order:
-                logging.info('Step {}: {} {}'.format(order.step, order.side, order.quantity))
+                logging.info(f"Step {order.step}: {order.side} {order.quantity}")
                 self.broker.submit(order)
 
         self.broker.update()
 
     @abstractmethod
-    def get_orders(self, action: Any, portfolio: 'Portfolio') -> 'List[Order]':
+    def get_orders(self, action: Any, portfolio: "Portfolio") -> "list[Order]":
         """Gets the list of orders to be submitted for the given action.
 
         Parameters
@@ -141,7 +140,7 @@ class BSH(TensorTradeActionScheme):
 
     registered_name = "bsh"
 
-    def __init__(self, cash: 'Wallet', asset: 'Wallet'):
+    def __init__(self, cash: "Wallet", asset: "Wallet"):
         super().__init__()
         self.cash = cash
         self.asset = asset
@@ -157,7 +156,7 @@ class BSH(TensorTradeActionScheme):
         self.listeners += [listener]
         return self
 
-    def get_orders(self, action: int, portfolio: 'Portfolio') -> 'List[Order]':
+    def get_orders(self, action: int, portfolio: "Portfolio") -> "list[Order]":
         order = None
 
         if action == 1 and self._position == 0:
@@ -208,13 +207,13 @@ class TrailingStopBSH(TensorTradeActionScheme):
 
     registered_name = "trailing-stop-bsh"
 
-    def __init__(self, cash: 'Wallet', asset: 'Wallet', stop_pct: float = 0.05):
+    def __init__(self, cash: "Wallet", asset: "Wallet", stop_pct: float = 0.05):
         super().__init__()
         self.cash = cash
         self.asset = asset
         self.stop_pct = stop_pct
 
-        self.listeners: List[OrderListener] = []
+        self.listeners: list[OrderListener] = []
         self._position = 0
         self._entry_price: float = 0.0
         self._peak_price: float = 0.0
@@ -223,18 +222,18 @@ class TrailingStopBSH(TensorTradeActionScheme):
     def action_space(self) -> Space:
         return Discrete(3)
 
-    def attach(self, listener: 'OrderListener'):
+    def attach(self, listener: "OrderListener"):
         self.listeners += [listener]
         return self
 
-    def _get_exchange_pair(self) -> 'ExchangePair':
+    def _get_exchange_pair(self) -> "ExchangePair":
         pair = self.cash.instrument / self.asset.instrument
         return ExchangePair(self.cash.exchange, pair)
 
     def _current_price(self) -> float:
         return float(self._get_exchange_pair().price)
 
-    def get_orders(self, action: int, portfolio: 'Portfolio') -> 'List[Order]':
+    def get_orders(self, action: int, portfolio: "Portfolio") -> "list[Order]":
         order = None
         effective_action = action
 
@@ -296,15 +295,14 @@ class BracketBSH(TensorTradeActionScheme):
 
     registered_name = "bracket-bsh"
 
-    def __init__(self, cash: 'Wallet', asset: 'Wallet',
-                 stop_loss_pct: float = 0.05, take_profit_pct: float = 0.10):
+    def __init__(self, cash: "Wallet", asset: "Wallet", stop_loss_pct: float = 0.05, take_profit_pct: float = 0.10):
         super().__init__()
         self.cash = cash
         self.asset = asset
         self.stop_loss_pct = stop_loss_pct
         self.take_profit_pct = take_profit_pct
 
-        self.listeners: List[OrderListener] = []
+        self.listeners: list[OrderListener] = []
         self._position = 0
         self._entry_price: float = 0.0
 
@@ -312,28 +310,27 @@ class BracketBSH(TensorTradeActionScheme):
     def action_space(self) -> Space:
         return Discrete(3)
 
-    def attach(self, listener: 'OrderListener'):
+    def attach(self, listener: "OrderListener"):
         self.listeners += [listener]
         return self
 
-    def _get_exchange_pair(self) -> 'ExchangePair':
+    def _get_exchange_pair(self) -> "ExchangePair":
         pair = self.cash.instrument / self.asset.instrument
         return ExchangePair(self.cash.exchange, pair)
 
     def _current_price(self) -> float:
         return float(self._get_exchange_pair().price)
 
-    def get_orders(self, action: int, portfolio: 'Portfolio') -> 'List[Order]':
+    def get_orders(self, action: int, portfolio: "Portfolio") -> "list[Order]":
         order = None
         effective_action = action
 
         if self._position == 1:
             price = self._current_price()
             # Check stop-loss
-            if price <= self._entry_price * (1 - self.stop_loss_pct):
-                effective_action = 2
-            # Check take-profit
-            elif price >= self._entry_price * (1 + self.take_profit_pct):
+            if price <= self._entry_price * (1 - self.stop_loss_pct) or price >= self._entry_price * (
+                1 + self.take_profit_pct
+            ):
                 effective_action = 2
 
         if effective_action == 1 and self._position == 0:
@@ -382,15 +379,14 @@ class DrawdownBudgetBSH(TensorTradeActionScheme):
 
     registered_name = "drawdown-budget-bsh"
 
-    def __init__(self, cash: 'Wallet', asset: 'Wallet',
-                 max_drawdown_pct: float = 0.10, lockout_steps: int = 10):
+    def __init__(self, cash: "Wallet", asset: "Wallet", max_drawdown_pct: float = 0.10, lockout_steps: int = 10):
         super().__init__()
         self.cash = cash
         self.asset = asset
         self.max_drawdown_pct = max_drawdown_pct
         self.lockout_steps = lockout_steps
 
-        self.listeners: List[OrderListener] = []
+        self.listeners: list[OrderListener] = []
         self._position = 0
         self._equity_peak: float = 0.0
         self._lockout_remaining: int = 0
@@ -399,11 +395,11 @@ class DrawdownBudgetBSH(TensorTradeActionScheme):
     def action_space(self) -> Space:
         return Discrete(3)
 
-    def attach(self, listener: 'OrderListener'):
+    def attach(self, listener: "OrderListener"):
         self.listeners += [listener]
         return self
 
-    def get_orders(self, action: int, portfolio: 'Portfolio') -> 'List[Order]':
+    def get_orders(self, action: int, portfolio: "Portfolio") -> "list[Order]":
         order = None
         effective_action = action
 
@@ -412,9 +408,11 @@ class DrawdownBudgetBSH(TensorTradeActionScheme):
             self._equity_peak = max(self._equity_peak, net_worth)
 
         # Check drawdown breach
-        if (self._equity_peak > 0
-                and net_worth is not None
-                and (self._equity_peak - net_worth) / self._equity_peak > self.max_drawdown_pct):
+        if (
+            self._equity_peak > 0
+            and net_worth is not None
+            and (self._equity_peak - net_worth) / self._equity_peak > self.max_drawdown_pct
+        ):
             if self._position == 1:
                 effective_action = 2  # Force sell
             self._lockout_remaining = self.lockout_steps
@@ -469,12 +467,12 @@ class CooldownBSH(BSH):
 
     registered_name = "cooldown-bsh"
 
-    def __init__(self, cash: 'Wallet', asset: 'Wallet', cooldown_steps: int = 5):
+    def __init__(self, cash: "Wallet", asset: "Wallet", cooldown_steps: int = 5):
         super().__init__(cash, asset)
         self.cooldown_steps = cooldown_steps
         self._cooldown_remaining: int = 0
 
-    def get_orders(self, action: int, portfolio: 'Portfolio') -> 'List[Order]':
+    def get_orders(self, action: int, portfolio: "Portfolio") -> "list[Order]":
         effective_action = action
 
         # Suppress buys during cooldown
@@ -517,12 +515,12 @@ class HoldMinimumBSH(BSH):
 
     registered_name = "hold-minimum-bsh"
 
-    def __init__(self, cash: 'Wallet', asset: 'Wallet', min_hold_steps: int = 5):
+    def __init__(self, cash: "Wallet", asset: "Wallet", min_hold_steps: int = 5):
         super().__init__(cash, asset)
         self.min_hold_steps = min_hold_steps
         self._hold_remaining: int = 0
 
-    def get_orders(self, action: int, portfolio: 'Portfolio') -> 'List[Order]':
+    def get_orders(self, action: int, portfolio: "Portfolio") -> "list[Order]":
         effective_action = action
 
         # Suppress sells during hold minimum
@@ -567,13 +565,13 @@ class ConfirmationBSH(BSH):
 
     registered_name = "confirmation-bsh"
 
-    def __init__(self, cash: 'Wallet', asset: 'Wallet', confirmation_steps: int = 3):
+    def __init__(self, cash: "Wallet", asset: "Wallet", confirmation_steps: int = 3):
         super().__init__(cash, asset)
         self.confirmation_steps = confirmation_steps
         self._pending_action: int = 0
         self._confirmation_count: int = 0
 
-    def get_orders(self, action: int, portfolio: 'Portfolio') -> 'List[Order]':
+    def get_orders(self, action: int, portfolio: "Portfolio") -> "list[Order]":
         effective_action = 0  # Default to hold
 
         if action == 0:
@@ -632,13 +630,13 @@ class ScaledEntryBSH(TensorTradeActionScheme):
 
     registered_name = "scaled-entry-bsh"
 
-    def __init__(self, cash: 'Wallet', asset: 'Wallet', num_tranches: int = 3):
+    def __init__(self, cash: "Wallet", asset: "Wallet", num_tranches: int = 3):
         super().__init__()
         self.cash = cash
         self.asset = asset
         self.num_tranches = num_tranches
 
-        self.listeners: List[OrderListener] = []
+        self.listeners: list[OrderListener] = []
         self._position = 0  # 0=cash, 1=any asset
         self._tranches_in: int = 0
 
@@ -646,11 +644,11 @@ class ScaledEntryBSH(TensorTradeActionScheme):
     def action_space(self) -> Space:
         return Discrete(4)
 
-    def attach(self, listener: 'OrderListener'):
+    def attach(self, listener: "OrderListener"):
         self.listeners += [listener]
         return self
 
-    def get_orders(self, action: int, portfolio: 'Portfolio') -> 'List[Order]':
+    def get_orders(self, action: int, portfolio: "Portfolio") -> "list[Order]":
         order = None
 
         if action == 1 and self._tranches_in < self.num_tranches:
@@ -715,25 +713,24 @@ class PartialTakeProfitBSH(TensorTradeActionScheme):
 
     registered_name = "partial-tp-bsh"
 
-    def __init__(self, cash: 'Wallet', asset: 'Wallet',
-                 first_sell_proportion: float = 0.5):
+    def __init__(self, cash: "Wallet", asset: "Wallet", first_sell_proportion: float = 0.5):
         super().__init__()
         self.cash = cash
         self.asset = asset
         self.first_sell_proportion = first_sell_proportion
 
-        self.listeners: List[OrderListener] = []
+        self.listeners: list[OrderListener] = []
         self._position = 0  # 0=cash, 1=full, 2=half
 
     @property
     def action_space(self) -> Space:
         return Discrete(4)
 
-    def attach(self, listener: 'OrderListener'):
+    def attach(self, listener: "OrderListener"):
         self.listeners += [listener]
         return self
 
-    def get_orders(self, action: int, portfolio: 'Portfolio') -> 'List[Order]':
+    def get_orders(self, action: int, portfolio: "Portfolio") -> "list[Order]":
         order = None
 
         if action == 1 and self._position == 0:
@@ -745,9 +742,7 @@ class PartialTakeProfitBSH(TensorTradeActionScheme):
         elif action == 2 and self._position == 1:
             # Sell partial from full position
             if self.asset.balance.as_float() > 0:
-                order = proportion_order(
-                    portfolio, self.asset, self.cash, self.first_sell_proportion
-                )
+                order = proportion_order(portfolio, self.asset, self.cash, self.first_sell_proportion)
                 self._position = 2
 
         elif action == 2 and self._position == 2:
@@ -802,9 +797,15 @@ class VolatilitySizedBSH(TensorTradeActionScheme):
 
     registered_name = "volatility-bsh"
 
-    def __init__(self, cash: 'Wallet', asset: 'Wallet',
-                 window: int = 20, target_risk: float = 0.02,
-                 min_size: float = 0.1, max_size: float = 1.0):
+    def __init__(
+        self,
+        cash: "Wallet",
+        asset: "Wallet",
+        window: int = 20,
+        target_risk: float = 0.02,
+        min_size: float = 0.1,
+        max_size: float = 1.0,
+    ):
         super().__init__()
         self.cash = cash
         self.asset = asset
@@ -813,7 +814,7 @@ class VolatilitySizedBSH(TensorTradeActionScheme):
         self.min_size = min_size
         self.max_size = max_size
 
-        self.listeners: List[OrderListener] = []
+        self.listeners: list[OrderListener] = []
         self._position = 0
         self._price_buffer: deque[float] = deque(maxlen=window + 1)
 
@@ -821,11 +822,11 @@ class VolatilitySizedBSH(TensorTradeActionScheme):
     def action_space(self) -> Space:
         return Discrete(3)
 
-    def attach(self, listener: 'OrderListener'):
+    def attach(self, listener: "OrderListener"):
         self.listeners += [listener]
         return self
 
-    def _get_exchange_pair(self) -> 'ExchangePair':
+    def _get_exchange_pair(self) -> "ExchangePair":
         pair = self.cash.instrument / self.asset.instrument
         return ExchangePair(self.cash.exchange, pair)
 
@@ -842,7 +843,7 @@ class VolatilitySizedBSH(TensorTradeActionScheme):
             return 0.0
         return float(np.std(log_returns))
 
-    def perform(self, env: 'TradingEnv', action: int) -> None:
+    def perform(self, env: "TradingEnv", action: int) -> None:
         """Override perform to record price each step."""
         price = self._current_price()
         self._price_buffer.append(price)
@@ -850,11 +851,11 @@ class VolatilitySizedBSH(TensorTradeActionScheme):
         orders = self.get_orders(action, self.portfolio)
         for order in orders:
             if order:
-                logging.info('Step {}: {} {}'.format(order.step, order.side, order.quantity))
+                logging.info(f"Step {order.step}: {order.side} {order.quantity}")
                 self.broker.submit(order)
         self.broker.update()
 
-    def get_orders(self, action: int, portfolio: 'Portfolio') -> 'List[Order]':
+    def get_orders(self, action: int, portfolio: "Portfolio") -> "list[Order]":
         order = None
         effective_action = action
 
@@ -911,31 +912,33 @@ class SimpleOrders(TensorTradeActionScheme):
         The minimum value when placing an order, calculated in absolute order value.
     """
 
-    def __init__(self,
-                 criteria: 'Union[List[OrderCriteria], OrderCriteria]' = None,
-                 trade_sizes: 'Union[List[float], int]' = 10,
-                 durations: 'Union[List[int], int]' = None,
-                 trade_type: 'TradeType' = TradeType.MARKET,
-                 order_listener: 'OrderListener' = None,
-                 min_order_pct: float = 0.02,
-                 min_order_abs: float = 0.00) -> None:
+    def __init__(
+        self,
+        criteria: "list[OrderCriteria] | OrderCriteria" = None,
+        trade_sizes: "list[float] | int" = 10,
+        durations: "list[int] | int" = None,
+        trade_type: "TradeType" = TradeType.MARKET,
+        order_listener: "OrderListener" = None,
+        min_order_pct: float = 0.02,
+        min_order_abs: float = 0.00,
+    ) -> None:
         super().__init__()
         self.min_order_pct = min_order_pct
         self.min_order_abs = min_order_abs
-        criteria = self.default('criteria', criteria)
+        criteria = self.default("criteria", criteria)
         self.criteria = criteria if isinstance(criteria, list) else [criteria]
 
-        trade_sizes = self.default('trade_sizes', trade_sizes)
+        trade_sizes = self.default("trade_sizes", trade_sizes)
         if isinstance(trade_sizes, list):
             self.trade_sizes = trade_sizes
         else:
             self.trade_sizes = [(x + 1) / trade_sizes for x in range(trade_sizes)]
 
-        durations = self.default('durations', durations)
+        durations = self.default("durations", durations)
         self.durations = durations if isinstance(durations, list) else [durations]
 
-        self._trade_type = self.default('trade_type', trade_type)
-        self._order_listener = self.default('order_listener', order_listener)
+        self._trade_type = self.default("trade_type", trade_type)
+        self._order_listener = self.default("order_listener", order_listener)
 
         self._action_space = None
         self.actions = None
@@ -943,12 +946,7 @@ class SimpleOrders(TensorTradeActionScheme):
     @property
     def action_space(self) -> Space:
         if not self._action_space:
-            self.actions = product(
-                self.criteria,
-                self.trade_sizes,
-                self.durations,
-                [TradeSide.BUY, TradeSide.SELL]
-            )
+            self.actions = product(self.criteria, self.trade_sizes, self.durations, [TradeSide.BUY, TradeSide.SELL])
             self.actions = list(self.actions)
             self.actions = list(product(self.portfolio.exchange_pairs, self.actions))
             self.actions = [None] + self.actions
@@ -956,9 +954,7 @@ class SimpleOrders(TensorTradeActionScheme):
             self._action_space = Discrete(len(self.actions))
         return self._action_space
 
-    def get_orders(self,
-                   action: int,
-                   portfolio: 'Portfolio') -> 'List[Order]':
+    def get_orders(self, action: int, portfolio: "Portfolio") -> "list[Order]":
 
         if action == 0:
             return []
@@ -969,14 +965,16 @@ class SimpleOrders(TensorTradeActionScheme):
         wallet = portfolio.get_wallet(ep.exchange.id, instrument=instrument)
 
         balance = wallet.balance.as_float()
-        size = (balance * proportion)
+        size = balance * proportion
         size = min(balance, size)
 
         quantity = (size * instrument).quantize()
 
-        if size < 10 ** -instrument.precision \
-                or size < self.min_order_pct * portfolio.net_worth \
-                or size < self.min_order_abs:
+        if (
+            size < 10**-instrument.precision
+            or size < self.min_order_pct * portfolio.net_worth
+            or size < self.min_order_abs
+        ):
             return []
 
         order = Order(
@@ -988,7 +986,7 @@ class SimpleOrders(TensorTradeActionScheme):
             quantity=quantity,
             criteria=criteria,
             end=self.clock.step + duration if duration else None,
-            portfolio=portfolio
+            portfolio=portfolio,
         )
 
         if self._order_listener is not None:
@@ -1023,45 +1021,43 @@ class ManagedRiskOrders(TensorTradeActionScheme):
         The minimum value when placing an order, calculated in absolute order value.
     """
 
-    def __init__(self,
-                 stop: 'List[float]' = [0.02, 0.04, 0.06],
-                 take: 'List[float]' = [0.01, 0.02, 0.03],
-                 trade_sizes: 'Union[List[float], int]' = 10,
-                 durations: 'Union[List[int], int]' = None,
-                 trade_type: 'TradeType' = TradeType.MARKET,
-                 order_listener: 'OrderListener' = None,
-                 min_order_pct: float = 0.02,
-                 min_order_abs: float = 0.00) -> None:
+    def __init__(
+        self,
+        stop: "list[float]" = [0.02, 0.04, 0.06],
+        take: "list[float]" = [0.01, 0.02, 0.03],
+        trade_sizes: "list[float] | int" = 10,
+        durations: "list[int] | int" = None,
+        trade_type: "TradeType" = TradeType.MARKET,
+        order_listener: "OrderListener" = None,
+        min_order_pct: float = 0.02,
+        min_order_abs: float = 0.00,
+    ) -> None:
         super().__init__()
         self.min_order_pct = min_order_pct
         self.min_order_abs = min_order_abs
-        self.stop = self.default('stop', stop)
-        self.take = self.default('take', take)
+        self.stop = self.default("stop", stop)
+        self.take = self.default("take", take)
 
-        trade_sizes = self.default('trade_sizes', trade_sizes)
+        trade_sizes = self.default("trade_sizes", trade_sizes)
         if isinstance(trade_sizes, list):
             self.trade_sizes = trade_sizes
         else:
             self.trade_sizes = [(x + 1) / trade_sizes for x in range(trade_sizes)]
 
-        durations = self.default('durations', durations)
+        durations = self.default("durations", durations)
         self.durations = durations if isinstance(durations, list) else [durations]
 
-        self._trade_type = self.default('trade_type', trade_type)
-        self._order_listener = self.default('order_listener', order_listener)
+        self._trade_type = self.default("trade_type", trade_type)
+        self._order_listener = self.default("order_listener", order_listener)
 
         self._action_space = None
         self.actions = None
 
     @property
-    def action_space(self) -> 'Space':
+    def action_space(self) -> "Space":
         if not self._action_space:
             self.actions = product(
-                self.stop,
-                self.take,
-                self.trade_sizes,
-                self.durations,
-                [TradeSide.BUY, TradeSide.SELL]
+                self.stop, self.take, self.trade_sizes, self.durations, [TradeSide.BUY, TradeSide.SELL]
             )
             self.actions = list(self.actions)
             self.actions = list(product(self.portfolio.exchange_pairs, self.actions))
@@ -1070,7 +1066,7 @@ class ManagedRiskOrders(TensorTradeActionScheme):
             self._action_space = Discrete(len(self.actions))
         return self._action_space
 
-    def get_orders(self, action: int, portfolio: 'Portfolio') -> 'List[Order]':
+    def get_orders(self, action: int, portfolio: "Portfolio") -> "list[Order]":
 
         if action == 0:
             return []
@@ -1083,25 +1079,27 @@ class ManagedRiskOrders(TensorTradeActionScheme):
         wallet = portfolio.get_wallet(ep.exchange.id, instrument=instrument)
 
         balance = wallet.balance.as_float()
-        size = (balance * proportion)
+        size = balance * proportion
         size = min(balance, size)
         quantity = (size * instrument).quantize()
 
-        if size < 10 ** -instrument.precision \
-                or size < self.min_order_pct * portfolio.net_worth \
-                or size < self.min_order_abs:
+        if (
+            size < 10**-instrument.precision
+            or size < self.min_order_pct * portfolio.net_worth
+            or size < self.min_order_abs
+        ):
             return []
 
         params = {
-            'side': side,
-            'exchange_pair': ep,
-            'price': ep.price,
-            'quantity': quantity,
-            'down_percent': stop,
-            'up_percent': take,
-            'portfolio': portfolio,
-            'trade_type': self._trade_type,
-            'end': self.clock.step + duration if duration else None
+            "side": side,
+            "exchange_pair": ep,
+            "price": ep.price,
+            "quantity": quantity,
+            "down_percent": stop,
+            "up_percent": take,
+            "portfolio": portfolio,
+            "trade_type": self._trade_type,
+            "end": self.clock.step + duration if duration else None,
         }
 
         order = risk_managed_order(**params)
@@ -1113,22 +1111,22 @@ class ManagedRiskOrders(TensorTradeActionScheme):
 
 
 _registry = {
-    'bsh': BSH,
-    'trailing-stop-bsh': TrailingStopBSH,
-    'bracket-bsh': BracketBSH,
-    'drawdown-budget-bsh': DrawdownBudgetBSH,
-    'cooldown-bsh': CooldownBSH,
-    'hold-minimum-bsh': HoldMinimumBSH,
-    'confirmation-bsh': ConfirmationBSH,
-    'scaled-entry-bsh': ScaledEntryBSH,
-    'partial-tp-bsh': PartialTakeProfitBSH,
-    'volatility-bsh': VolatilitySizedBSH,
-    'simple': SimpleOrders,
-    'managed-risk': ManagedRiskOrders,
+    "bsh": BSH,
+    "trailing-stop-bsh": TrailingStopBSH,
+    "bracket-bsh": BracketBSH,
+    "drawdown-budget-bsh": DrawdownBudgetBSH,
+    "cooldown-bsh": CooldownBSH,
+    "hold-minimum-bsh": HoldMinimumBSH,
+    "confirmation-bsh": ConfirmationBSH,
+    "scaled-entry-bsh": ScaledEntryBSH,
+    "partial-tp-bsh": PartialTakeProfitBSH,
+    "volatility-bsh": VolatilitySizedBSH,
+    "simple": SimpleOrders,
+    "managed-risk": ManagedRiskOrders,
 }
 
 
-def get(identifier: str) -> 'ActionScheme':
+def get(identifier: str) -> "ActionScheme":
     """Gets the `ActionScheme` that matches with the identifier.
 
     Parameters
