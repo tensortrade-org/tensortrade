@@ -3104,6 +3104,7 @@ optuna = [
 dev = [
     { name = "autopep8" },
     { name = "docutils" },
+    { name = "httpx" },
     { name = "ipykernel" },
     { name = "nbsphinx" },
     { name = "nbsphinx-link" },
@@ -3136,6 +3137,7 @@ lint = [
     { name = "ruff" },
 ]
 test = [
+    { name = "httpx" },
     { name = "pytest" },
     { name = "pytest-cov" },
     { name = "pytest-html" },
@@ -3167,6 +3169,7 @@ requires-dist = [
 dev = [
     { name = "autopep8", specifier = ">=2.0.4" },
     { name = "docutils", specifier = ">=0.20,<0.21" },
+    { name = "httpx", specifier = ">=0.27.0" },
     { name = "ipykernel", specifier = ">=6.29.0" },
     { name = "nbsphinx", specifier = ">=0.9.0" },
     { name = "nbsphinx-link", specifier = ">=1.3.0" },
@@ -3199,6 +3202,7 @@ lint = [
     { name = "ruff", specifier = ">=0.3.0" },
 ]
 test = [
+    { name = "httpx", specifier = ">=0.27.0" },
     { name = "pytest", specifier = ">=8.0.0" },
     { name = "pytest-cov", specifier = ">=4.1.0" },
     { name = "pytest-html", specifier = ">=4.1.0" },
