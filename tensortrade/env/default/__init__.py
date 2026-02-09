@@ -1,27 +1,23 @@
-
 from typing import Union
-
-from . import actions
-from . import rewards
-from . import observers
-from . import stoppers
-from . import informers
-from . import renderers
 
 from tensortrade.env.generic import TradingEnv
 from tensortrade.env.generic.components.renderer import AggregateRenderer
 from tensortrade.feed.core import DataFeed
 from tensortrade.oms.wallets import Portfolio
 
+from . import actions, informers, observers, renderers, rewards, stoppers
 
-def create(portfolio: 'Portfolio',
-           action_scheme: 'Union[actions.TensorTradeActionScheme, str]',
-           reward_scheme: 'Union[rewards.TensorTradeRewardScheme, str]',
-           feed: 'DataFeed',
-           window_size: int = 1,
-           min_periods: int = None,
-           random_start_pct: float = 0.00,
-           **kwargs) -> TradingEnv:
+
+def create(
+    portfolio: "Portfolio",
+    action_scheme: "actions.TensorTradeActionScheme | str",
+    reward_scheme: "rewards.TensorTradeRewardScheme | str",
+    feed: "DataFeed",
+    window_size: int = 1,
+    min_periods: int = None,
+    random_start_pct: float = 0.00,
+    **kwargs,
+) -> TradingEnv:
     """Creates the default `TradingEnv` of the project to be used in training
     RL agents.
 
@@ -60,14 +56,12 @@ def create(portfolio: 'Portfolio',
     observer = observers.TensorTradeObserver(
         portfolio=portfolio,
         feed=feed,
-        renderer_feed=kwargs.get("renderer_feed", None),
+        renderer_feed=kwargs.get("renderer_feed"),
         window_size=window_size,
-        min_periods=min_periods
+        min_periods=min_periods,
     )
 
-    stopper = stoppers.MaxLossStopper(
-        max_allowed_loss=kwargs.get("max_allowed_loss", 0.5)
-    )
+    stopper = stoppers.MaxLossStopper(max_allowed_loss=kwargs.get("max_allowed_loss", 0.5))
 
     renderer_list = kwargs.get("renderer", renderers.EmptyRenderer())
 
@@ -91,7 +85,7 @@ def create(portfolio: 'Portfolio',
         renderer=renderer,
         min_periods=min_periods,
         random_start_pct=random_start_pct,
-        device=kwargs.get("device", None),
-        max_episode_steps=kwargs.get("max_episode_steps", None),
+        device=kwargs.get("device"),
+        max_episode_steps=kwargs.get("max_episode_steps"),
     )
     return env
