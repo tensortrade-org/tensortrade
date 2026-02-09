@@ -2,11 +2,17 @@
 
 Submits market orders to Alpaca via the ``alpaca-py`` SDK and returns
 TensorTrade ``Trade`` objects matching the simulated execution contract.
+
+Note: Alpaca paper trading API requires integer ``qty`` for crypto orders
+and does not support the ``notional`` parameter.  For sells, we use the
+close-position endpoint (``DELETE /v2/positions/{symbol}``) to liquidate
+fractional positions that cannot be sold via a regular order.
 """
 
 from __future__ import annotations
 
 import logging
+import math
 import uuid
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -70,10 +76,14 @@ class AlpacaExecutionService:
         side: TradeSide,
         qty: float = 0,
         *,
-        notional: float = 0,
         client_order_id: str | None = None,
     ) -> AlpacaFill | None:
         """Submit a market order and block until it fills (or fails).
+
+        For BUY orders, ``qty`` is rounded down to an integer (Alpaca paper
+        trading requires integer qty for crypto).  For SELL orders, the
+        close-position endpoint is used to liquidate the full position
+        including any fractional remainder.
 
         Parameters
         ----------
@@ -82,11 +92,7 @@ class AlpacaExecutionService:
         side : TradeSide
             ``TradeSide.BUY`` or ``TradeSide.SELL``.
         qty : float
-            Quantity of the *base* asset to trade.  Mutually exclusive with
-            *notional*.
-        notional : float
-            Dollar amount to trade (Alpaca computes qty).  Preferred for BUY
-            orders on crypto where fractional qty may be rejected.
+            Quantity of the *base* asset to trade.
         client_order_id : str | None
             Optional idempotency key.
 
@@ -95,43 +101,45 @@ class AlpacaExecutionService:
         AlpacaFill | None
             Filled order details, or ``None`` if the order was rejected.
         """
+        if side == TradeSide.SELL:
+            return self._close_position(symbol)
+
+        return self._submit_buy(symbol, qty, client_order_id)
+
+    def _submit_buy(
+        self,
+        symbol: str,
+        qty: float,
+        client_order_id: str | None = None,
+    ) -> AlpacaFill | None:
+        """Submit a BUY market order with integer qty."""
         from alpaca.trading.enums import OrderSide, OrderType, TimeInForce
         from alpaca.trading.requests import MarketOrderRequest
 
-        alpaca_side = OrderSide.BUY if side == TradeSide.BUY else OrderSide.SELL
+        int_qty = max(1, math.floor(qty))
 
-        order_params: dict[str, object] = {
-            "symbol": symbol,
-            "side": alpaca_side,
-            "type": OrderType.MARKET,
-            "time_in_force": TimeInForce.GTC,
-            "client_order_id": client_order_id or str(uuid.uuid4()),
-        }
-
-        if notional > 0:
-            order_params["notional"] = round(notional, 2)
-        else:
-            order_params["qty"] = qty
-
-        request = MarketOrderRequest(**order_params)  # type: ignore[arg-type]
-
-        log_size = notional if notional > 0 else qty
-        log_label = "notional $" if notional > 0 else "qty"
         logger.info(
-            "Submitting %s market order: %s %s%.6f",
-            alpaca_side.value,
+            "Submitting BUY market order: %s qty %d (requested %.6f)",
             symbol,
-            log_label,
-            log_size,
+            int_qty,
+            qty,
+        )
+
+        request = MarketOrderRequest(
+            symbol=symbol,
+            side=OrderSide.BUY,
+            type=OrderType.MARKET,
+            time_in_force=TimeInForce.GTC,
+            qty=int_qty,
+            client_order_id=client_order_id or str(uuid.uuid4()),
         )
 
         try:
             order = self._client.submit_order(request)
         except Exception:
-            logger.exception("Order submission failed for %s", symbol)
+            logger.exception("BUY order submission failed for %s", symbol)
             return None
 
-        # Wait for fill — Alpaca market orders on crypto fill near-instantly
         filled_order = self._wait_for_fill(order.id)
         if filled_order is None:
             return None
@@ -141,10 +149,45 @@ class AlpacaExecutionService:
 
         return AlpacaFill(
             order_id=str(filled_order.id),
-            side=side,
+            side=TradeSide.BUY,
             filled_qty=filled_qty,
             filled_avg_price=filled_avg,
-            commission=0.0,  # Alpaca crypto has no commission
+            commission=0.0,
+            filled_at=filled_order.filled_at or datetime.now(UTC),
+        )
+
+    def _close_position(self, symbol: str) -> AlpacaFill | None:
+        """Close a crypto position via DELETE /v2/positions/{symbol}.
+
+        This endpoint handles fractional quantities that cannot be sold
+        through a regular order on the Alpaca paper trading API.
+        """
+        # Alpaca wants the symbol without the slash for the positions endpoint
+        api_symbol = symbol.replace("/", "")
+
+        logger.info("Closing position via DELETE /v2/positions/%s", api_symbol)
+
+        try:
+            close_response = self._client.close_position(api_symbol)
+        except Exception:
+            logger.exception("Close position failed for %s", api_symbol)
+            return None
+
+        # close_position returns an Order object — wait for it to fill
+        order_id = close_response.id
+        filled_order = self._wait_for_fill(order_id)
+        if filled_order is None:
+            return None
+
+        filled_qty = float(filled_order.filled_qty or 0)
+        filled_avg = float(filled_order.filled_avg_price or 0)
+
+        return AlpacaFill(
+            order_id=str(filled_order.id),
+            side=TradeSide.SELL,
+            filled_qty=filled_qty,
+            filled_avg_price=filled_avg,
+            commission=0.0,
             filled_at=filled_order.filled_at or datetime.now(UTC),
         )
 
@@ -171,7 +214,7 @@ class AlpacaExecutionService:
                 logger.exception("Failed to poll order %s", order_id)
                 return None
 
-            status = str(order.status)
+            status = getattr(order.status, "value", str(order.status))
             if status == "filled":
                 logger.info("Order %s filled", order_id)
                 return order

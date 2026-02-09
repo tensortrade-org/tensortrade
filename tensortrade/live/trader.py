@@ -426,17 +426,18 @@ class LiveTrader:
         assert self._store is not None
 
         if action == 1 and self._position == 0:
-            # Buy: use notional (dollar amount) so Alpaca handles fractional qty
+            # Buy: compute qty from max position size and current price
             notional = config.max_position_size_usd
             if notional <= 0 or price <= 0:
                 return None
 
+            qty = notional / price
             fill = await asyncio.get_event_loop().run_in_executor(
                 None,
                 lambda: self._execution.execute(
                     symbol=config.symbol,
                     side=TradeSide.BUY,
-                    notional=notional,
+                    qty=qty,
                 ),
             )
             if fill is not None:
