@@ -68,8 +68,9 @@ class AlpacaExecutionService:
         self,
         symbol: str,
         side: TradeSide,
-        qty: float,
+        qty: float = 0,
         *,
+        notional: float = 0,
         client_order_id: str | None = None,
     ) -> AlpacaFill | None:
         """Submit a market order and block until it fills (or fails).
@@ -81,7 +82,11 @@ class AlpacaExecutionService:
         side : TradeSide
             ``TradeSide.BUY`` or ``TradeSide.SELL``.
         qty : float
-            Quantity of the *base* asset to trade.
+            Quantity of the *base* asset to trade.  Mutually exclusive with
+            *notional*.
+        notional : float
+            Dollar amount to trade (Alpaca computes qty).  Preferred for BUY
+            orders on crypto where fractional qty may be rejected.
         client_order_id : str | None
             Optional idempotency key.
 
@@ -95,20 +100,29 @@ class AlpacaExecutionService:
 
         alpaca_side = OrderSide.BUY if side == TradeSide.BUY else OrderSide.SELL
 
-        request = MarketOrderRequest(
-            symbol=symbol,
-            qty=qty,
-            side=alpaca_side,
-            type=OrderType.MARKET,
-            time_in_force=TimeInForce.GTC,
-            client_order_id=client_order_id or str(uuid.uuid4()),
-        )
+        order_params: dict[str, object] = {
+            "symbol": symbol,
+            "side": alpaca_side,
+            "type": OrderType.MARKET,
+            "time_in_force": TimeInForce.GTC,
+            "client_order_id": client_order_id or str(uuid.uuid4()),
+        }
 
+        if notional > 0:
+            order_params["notional"] = round(notional, 2)
+        else:
+            order_params["qty"] = qty
+
+        request = MarketOrderRequest(**order_params)  # type: ignore[arg-type]
+
+        log_size = notional if notional > 0 else qty
+        log_label = "notional $" if notional > 0 else "qty"
         logger.info(
-            "Submitting %s market order: %s %.6f",
+            "Submitting %s market order: %s %s%.6f",
             alpaca_side.value,
             symbol,
-            qty,
+            log_label,
+            log_size,
         )
 
         try:
