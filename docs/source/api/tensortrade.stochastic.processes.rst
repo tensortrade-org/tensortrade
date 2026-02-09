@@ -3,8 +3,8 @@ tensortrade.stochastic.processes package
 
 .. automodule:: tensortrade.stochastic.processes
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 Submodules
 ----------

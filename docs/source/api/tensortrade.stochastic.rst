@@ -3,8 +3,8 @@ tensortrade.stochastic package
 
 .. automodule:: tensortrade.stochastic
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 Subpackages
 -----------

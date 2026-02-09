@@ -3,8 +3,8 @@ tensortrade.feed.api.boolean package
 
 .. automodule:: tensortrade.feed.api.boolean
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 Submodules
 ----------

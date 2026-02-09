@@ -4,8 +4,8 @@ sphinx
 sphinx_rtd_theme
 sphinxcontrib.apidoc
 nbsphinx
-nbsphinx_link
+myst-parser
 recommonmark
 sphinx_markdown_tables
 ipykernel
-docutils<0.18
+docutils>=0.18

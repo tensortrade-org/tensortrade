@@ -3,8 +3,8 @@ tensortrade.oms.services package
 
 .. automodule:: tensortrade.oms.services
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 Subpackages
 -----------

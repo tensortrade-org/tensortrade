@@ -3,8 +3,8 @@ tensortrade.feed.api.string package
 
 .. automodule:: tensortrade.feed.api.string
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 Submodules
 ----------

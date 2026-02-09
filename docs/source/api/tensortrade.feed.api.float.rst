@@ -3,8 +3,8 @@ tensortrade.feed.api.float package
 
 .. automodule:: tensortrade.feed.api.float
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 Subpackages
 -----------

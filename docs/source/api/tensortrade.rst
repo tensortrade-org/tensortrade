@@ -3,8 +3,8 @@ tensortrade package
 
 .. automodule:: tensortrade
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 Subpackages
 -----------
