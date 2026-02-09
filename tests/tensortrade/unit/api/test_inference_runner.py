@@ -19,12 +19,20 @@ class _FakeManager:
         self.messages.append(message)
 
 
+class _FakeBroker:
+    """Mimics env.action_scheme.broker with an empty trades OrderedDict."""
+    def __init__(self) -> None:
+        from collections import OrderedDict
+        self.trades: OrderedDict[str, list[object]] = OrderedDict()
+
+
 class _FakeEnv:
     def __init__(self, sample_action: int = 2) -> None:
         self.window_size = 1
         self.portfolio = SimpleNamespace(net_worth=10000.0)
         self.action_space = MagicMock()
         self.action_space.sample.return_value = sample_action
+        self.action_scheme = SimpleNamespace(broker=_FakeBroker())
         self.seen_actions: list[int] = []
 
     def reset(self):

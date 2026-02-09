@@ -183,8 +183,9 @@ class TestStatusEndpoint:
 
 class TestTrainingControls:
     def test_stop_training(self, client):
-        import tensortrade.api.server as server_module
         from unittest.mock import MagicMock
+
+        import tensortrade.api.server as server_module
 
         mock_launcher = MagicMock()
         mock_launcher.stop_all.return_value = 1

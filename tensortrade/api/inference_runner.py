@@ -106,12 +106,15 @@ class InferenceRunner:
 
             initial_net_worth = float(env.portfolio.net_worth)
             peak_net_worth = initial_net_worth
-            prev_asset_balance = asset_wallet.balance.as_float()
             max_drawdown_pct = 0.0
             buy_count = 0
             sell_count = 0
             hold_count = 0
             total_trades = 0
+
+            # Track broker trades by count to detect new ones each step
+            broker = env.action_scheme.broker
+            prev_trade_count = sum(len(tl) for tl in broker.trades.values())
 
             while not done and not truncated:
                 action = self._coerce_action(policy_algo.compute_single_action(obs, explore=False))
@@ -136,34 +139,32 @@ class InferenceRunner:
                 v = float(row.get("volume", 0))
                 ts = int(pd.Timestamp(row["date"]).timestamp()) if "date" in row.index else step
 
-                # Track action distribution (works for BSH and ScaledEntryBSH)
-                if action == 0:
-                    hold_count += 1
-                elif action == 1:
-                    buy_count += 1
-                else:
-                    sell_count += 1  # action 2 (BSH sell) or 2/3 (ScaledEntry sell)
-
-                # Detect trades by asset balance change
-                curr_asset_balance = asset_wallet.balance.as_float()
-                balance_change = curr_asset_balance - prev_asset_balance
-                if abs(balance_change) > 1e-10:
+                # Broadcast executed trades from the OMS broker
+                all_trades = [t for tl in broker.trades.values() for t in tl]
+                new_trades = all_trades[prev_trade_count:]
+                for trade in new_trades:
                     total_trades += 1
-                    side = "buy" if balance_change > 0 else "sell"
-                    trade_size = abs(balance_change)
+                    side = str(trade.side)  # TradeSide.BUY/SELL → "buy"/"sell"
+                    if side == "buy":
+                        buy_count += 1
+                    else:
+                        sell_count += 1
+                    commission_val = float(trade.commission.size) if hasattr(trade.commission, "size") else 0.0
                     await self.manager.broadcast_to_dashboards(
                         {
                             "type": "trade",
                             "step": step,
                             "timestamp": ts,
                             "side": side,
-                            "price": c,
-                            "size": round(trade_size, 8),
-                            "commission": 0.0,
+                            "price": float(trade.price),
+                            "size": round(float(trade.size), 8),
+                            "commission": round(commission_val, 8),
                             "source": "inference",
                         }
                     )
-                prev_asset_balance = curr_asset_balance
+                if not new_trades:
+                    hold_count += 1
+                prev_trade_count = len(all_trades)
                 await self.manager.broadcast_to_dashboards(
                     {
                         "type": "step_update",

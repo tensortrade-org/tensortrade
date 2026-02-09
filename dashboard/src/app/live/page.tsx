@@ -9,6 +9,7 @@ import { EpisodeProgressBar } from "@/components/inference/EpisodeProgressBar";
 import { EpisodeSummaryCard } from "@/components/inference/EpisodeSummaryCard";
 import { ExperimentSelector } from "@/components/inference/ExperimentSelector";
 import { InferenceControls } from "@/components/inference/InferenceControls";
+import { TradeList } from "@/components/inference/TradeList";
 import { startInference } from "@/lib/api";
 import { formatCurrency, formatNumber, formatPercent } from "@/lib/formatters";
 import { useInferenceStore } from "@/stores/inferenceStore";
@@ -43,6 +44,7 @@ export default function InferencePlaybackPage() {
 	const currentStep = useInferenceStore((s) => s.currentStep);
 	const totalSteps = useInferenceStore((s) => s.totalSteps);
 	const datasetName = useInferenceStore((s) => s.datasetName);
+	const setStarting = useInferenceStore((s) => s.setStarting);
 	const reset = useInferenceStore((s) => s.reset);
 
 	const latestStep = steps[steps.length - 1];
@@ -98,6 +100,7 @@ export default function InferencePlaybackPage() {
 	const handleRun = useCallback(async () => {
 		if (!selectedExperiment) return;
 		reset();
+		setStarting();
 		try {
 			await startInference(
 				selectedExperiment,
@@ -108,7 +111,7 @@ export default function InferencePlaybackPage() {
 		} catch (err) {
 			console.error("Failed to start inference:", err);
 		}
-	}, [selectedExperiment, selectedDataset, startDate, endDate, reset]);
+	}, [selectedExperiment, selectedDataset, startDate, endDate, reset, setStarting]);
 
 	const handleReset = useCallback(() => {
 		reset();
@@ -157,7 +160,7 @@ export default function InferencePlaybackPage() {
 			<div className="grid grid-cols-1 gap-4 lg:grid-cols-4">
 				{/* Candlestick Chart */}
 				<div className="lg:col-span-3">
-					<Card className="h-[500px]">
+					<Card className="h-[670px]">
 						<CardHeader title="Price Action" />
 						<div className="h-[calc(100%-2rem)]">
 							<CandlestickChart steps={steps} trades={trades} />
@@ -261,19 +264,27 @@ export default function InferencePlaybackPage() {
 			</div>
 
 			{/* Progress Bar */}
-			{status === "running" && (
+			{(status === "starting" || status === "running") && (
 				<Card>
 					<EpisodeProgressBar currentStep={currentStep} totalSteps={totalSteps} />
 				</Card>
 			)}
 
-			{/* Portfolio Chart */}
-			<Card className="h-64">
-				<CardHeader title="Net Worth Over Time" />
-				<div className="h-[calc(100%-2rem)]">
-					<PortfolioChart steps={steps} />
-				</div>
-			</Card>
+			{/* Trade List + Portfolio Chart */}
+			<div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+				<Card className="h-64">
+					<CardHeader title={`Trades (${trades.length})`} />
+					<div className="h-[calc(100%-2rem)]">
+						<TradeList trades={trades} />
+					</div>
+				</Card>
+				<Card className="h-64">
+					<CardHeader title="Net Worth Over Time" />
+					<div className="h-[calc(100%-2rem)]">
+						<PortfolioChart steps={steps} />
+					</div>
+				</Card>
+			</div>
 
 			{/* Episode Summary */}
 			{episodeSummary && <EpisodeSummaryCard summary={episodeSummary} />}

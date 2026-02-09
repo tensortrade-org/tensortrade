@@ -1,8 +1,10 @@
 import type { EpisodeSummary, InferenceStatus, StepUpdate, TradeEvent } from "@/lib/types";
 import { create } from "zustand";
 
+export type InferenceStatusState = InferenceStatus["state"] | "starting";
+
 interface InferenceState {
-	status: InferenceStatus["state"];
+	status: InferenceStatusState;
 	experimentId: string | null;
 	datasetName: string | null;
 	steps: StepUpdate[];
@@ -12,6 +14,7 @@ interface InferenceState {
 	currentStep: number;
 	error: string | null;
 
+	setStarting: () => void;
 	setStatus: (msg: InferenceStatus) => void;
 	addStep: (step: StepUpdate) => void;
 	addTrade: (trade: TradeEvent) => void;
@@ -43,6 +46,8 @@ const initialState: Pick<
 
 export const useInferenceStore = create<InferenceState>((set) => ({
 	...initialState,
+
+	setStarting: () => set({ status: "starting" }),
 
 	setStatus: (msg: InferenceStatus) =>
 		set({
