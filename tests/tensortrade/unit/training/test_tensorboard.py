@@ -2,6 +2,8 @@
 
 from unittest.mock import MagicMock, patch
 
+import pytest
+
 
 class TestTensorBoardConfig:
     def test_defaults(self):
@@ -17,6 +19,9 @@ class TestTensorBoardConfig:
         cfg = TensorBoardConfig(log_dir="/tmp/tb", flush_secs=10)
         assert cfg.log_dir == "/tmp/tb"
         assert cfg.flush_secs == 10
+
+
+torch = pytest.importorskip("torch", reason="torch not installed")
 
 
 class TestTradingTensorBoardLogger:
