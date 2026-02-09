@@ -29,6 +29,7 @@ export default function InferencePlaybackPage() {
 	const [selectedDataset, setSelectedDataset] = useState("");
 	const [startDate, setStartDate] = useState("");
 	const [endDate, setEndDate] = useState("");
+	const [testOnly, setTestOnly] = useState(false);
 	const [experimentDetail, setExperimentDetail] = useState<ExperimentDetail | null>(null);
 
 	// Auto-select experiment from URL query param (e.g. from Optuna "Run Inference")
@@ -122,13 +123,14 @@ export default function InferencePlaybackPage() {
 			await startInference(
 				selectedExperiment,
 				selectedDataset || undefined,
-				startDate || undefined,
-				endDate || undefined,
+				testOnly ? undefined : startDate || undefined,
+				testOnly ? undefined : endDate || undefined,
+				testOnly || undefined,
 			);
 		} catch (err) {
 			console.error("Failed to start inference:", err);
 		}
-	}, [selectedExperiment, selectedDataset, startDate, endDate, reset, setStarting]);
+	}, [selectedExperiment, selectedDataset, startDate, endDate, testOnly, reset, setStarting]);
 
 	const handleReset = useCallback(() => {
 		reset();
@@ -137,27 +139,8 @@ export default function InferencePlaybackPage() {
 	return (
 		<div className="space-y-4">
 			{/* Header row */}
-			<div className="flex flex-wrap items-center justify-between gap-3">
-				<div className="flex items-center gap-3">
-					<h1 className="text-xl font-semibold text-[var(--text-primary)]">Inference Playback</h1>
-					<ExperimentSelector value={selectedExperiment} onChange={setSelectedExperiment} />
-					<DatasetSelector value={selectedDataset} onChange={setSelectedDataset} />
-					<input
-						type="date"
-						value={startDate}
-						onChange={(e) => setStartDate(e.target.value)}
-						placeholder="Start"
-						className="rounded-md border border-[var(--border-primary)] bg-[var(--bg-primary)] px-2 py-1.5 text-sm text-[var(--text-primary)]"
-					/>
-					<span className="text-sm text-[var(--text-secondary)]">to</span>
-					<input
-						type="date"
-						value={endDate}
-						onChange={(e) => setEndDate(e.target.value)}
-						placeholder="End"
-						className="rounded-md border border-[var(--border-primary)] bg-[var(--bg-primary)] px-2 py-1.5 text-sm text-[var(--text-primary)]"
-					/>
-				</div>
+			<div className="flex items-center justify-between">
+				<h1 className="text-xl font-semibold text-[var(--text-primary)]">Inference Playback</h1>
 				<div className="flex items-center gap-3">
 					{datasetName && status !== "idle" && (
 						<span className="rounded-md bg-[var(--bg-secondary)] px-2 py-1 text-xs text-[var(--text-secondary)]">
@@ -171,6 +154,40 @@ export default function InferencePlaybackPage() {
 						disabled={!selectedExperiment}
 					/>
 				</div>
+			</div>
+
+			{/* Controls row */}
+			<div className="flex flex-wrap items-center gap-3">
+				<ExperimentSelector value={selectedExperiment} onChange={setSelectedExperiment} />
+				<DatasetSelector value={selectedDataset} onChange={setSelectedDataset} />
+				<input
+					type="date"
+					value={startDate}
+					onChange={(e) => setStartDate(e.target.value)}
+					placeholder="Start"
+					disabled={testOnly}
+					className="rounded-md border border-[var(--border-primary)] bg-[var(--bg-primary)] px-2 py-1.5 text-sm text-[var(--text-primary)] disabled:opacity-40"
+				/>
+				<span className="text-sm text-[var(--text-secondary)]">to</span>
+				<input
+					type="date"
+					value={endDate}
+					onChange={(e) => setEndDate(e.target.value)}
+					placeholder="End"
+					disabled={testOnly}
+					className="rounded-md border border-[var(--border-primary)] bg-[var(--bg-primary)] px-2 py-1.5 text-sm text-[var(--text-primary)] disabled:opacity-40"
+				/>
+				<label className="flex items-center gap-1.5 cursor-pointer select-none">
+					<input
+						type="checkbox"
+						checked={testOnly}
+						onChange={(e) => setTestOnly(e.target.checked)}
+						className="h-3.5 w-3.5 rounded border-[var(--border-primary)] accent-[var(--accent-blue)]"
+					/>
+					<span className="text-xs text-[var(--text-secondary)] whitespace-nowrap">
+						Test split only
+					</span>
+				</label>
 			</div>
 
 			{/* Main area: Candlestick + Side panel */}

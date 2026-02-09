@@ -304,13 +304,14 @@ def _register_routes(app: FastAPI) -> None:
         dataset_id = body.get("dataset_id")
         start_date = body.get("start_date")
         end_date = body.get("end_date")
+        test_only = body.get("test_only", False)
         if not experiment_id:
             return {"error": "experiment_id is required"}
 
         store = _get_store()
         ds_store = _get_ds_store()
         runner = InferenceRunner(store, _manager, ds_store)
-        asyncio.create_task(runner.run_episode(experiment_id, dataset_id, start_date, end_date))
+        asyncio.create_task(runner.run_episode(experiment_id, dataset_id, start_date, end_date, test_only))
         return {"status": "started"}
 
     # --- REST: Insights ---
@@ -408,6 +409,40 @@ def _register_routes(app: FastAPI) -> None:
             media_type="text/event-stream",
             headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
         )
+
+    @app.post("/api/insights/generate-pack")
+    async def generate_pack(body: dict) -> dict:
+        store = _get_store()
+        hp_store = _get_hp_store()
+        api_key = os.environ.get("ANTHROPIC_API_KEY")
+        if not api_key:
+            return {"error": "ANTHROPIC_API_KEY not set"}
+
+        experiment_id = body.get("experiment_id")
+        insight_id = body.get("insight_id")
+        if not experiment_id or not insight_id:
+            return {"error": "experiment_id and insight_id are required"}
+
+        from tensortrade.api.insights import InsightsEngine
+
+        engine = InsightsEngine(store, api_key)
+        try:
+            pack_data = await engine.generate_hp_pack(
+                experiment_id,
+                insight_id,
+                user_guidance=body.get("prompt"),
+            )
+            pack_id = hp_store.create_pack(
+                name=pack_data["name"],
+                description=pack_data["description"],
+                config=pack_data["config"],
+            )
+            pack = hp_store.get_pack(pack_id)
+            if not pack:
+                return {"error": "Failed to create pack"}
+            return asdict(pack)
+        except Exception as e:
+            return {"error": str(e)}
 
     @app.get("/api/insights/study/{study_name}")
     async def get_study_insight(study_name: str) -> dict:

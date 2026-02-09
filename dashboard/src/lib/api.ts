@@ -172,6 +172,7 @@ interface InferenceRunRequest {
 	dataset_id?: string;
 	start_date?: string;
 	end_date?: string;
+	test_only?: boolean;
 }
 
 export async function startInference(
@@ -179,6 +180,7 @@ export async function startInference(
 	datasetId?: string,
 	startDate?: string,
 	endDate?: string,
+	testOnly?: boolean,
 ): Promise<ActionResponse> {
 	const body: InferenceRunRequest = {
 		experiment_id: experimentId,
@@ -191,6 +193,9 @@ export async function startInference(
 	}
 	if (endDate) {
 		body.end_date = endDate;
+	}
+	if (testOnly) {
+		body.test_only = true;
 	}
 	return postJSON<ActionResponse>("/inference/run", body as unknown as Record<string, unknown>);
 }
@@ -312,6 +317,32 @@ export async function getRunningCampaign(): Promise<RunningCampaign | null> {
 	const result = await fetchJSON<{ is_active: boolean; study_name?: string }>("/campaign/running");
 	if (!result.is_active) return null;
 	return result as unknown as RunningCampaign;
+}
+
+// --- Generate HP Pack from Insights ---
+
+interface GenerateHpPackRequest {
+	experiment_id: string;
+	insight_id: string;
+	prompt?: string;
+}
+
+export async function generateHpPack(
+	experimentId: string,
+	insightId: string,
+	prompt?: string,
+): Promise<HyperparameterPack> {
+	const body: GenerateHpPackRequest = {
+		experiment_id: experimentId,
+		insight_id: insightId,
+	};
+	if (prompt) {
+		body.prompt = prompt;
+	}
+	return postJSON<HyperparameterPack>(
+		"/insights/generate-pack",
+		body as unknown as Record<string, unknown>,
+	);
 }
 
 // --- Streaming Analysis (SSE) ---

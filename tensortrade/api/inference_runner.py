@@ -52,6 +52,7 @@ class InferenceRunner:
         dataset_id: str | None = None,
         start_date: str | None = None,
         end_date: str | None = None,
+        test_only: bool = False,
     ) -> None:
         """Run one episode and broadcast step/trade updates.
 
@@ -61,6 +62,7 @@ class InferenceRunner:
                 this dataset's config instead of the experiment's embedded one.
             start_date: Optional start date (YYYY-MM-DD) to filter data.
             end_date: Optional end date (YYYY-MM-DD) to filter data.
+            test_only: If True, restrict data to the test split (last 15%).
         """
         policy_algo = None
         ray_started_here = False
@@ -80,7 +82,7 @@ class InferenceRunner:
             dataset_name = self._resolve_dataset_name(config, dataset_id)
 
             env, ohlcv, asset_wallet = await asyncio.get_event_loop().run_in_executor(
-                None, self._create_env, config, dataset_id, start_date, end_date,
+                None, self._create_env, config, dataset_id, start_date, end_date, test_only,
             )
 
             # The env's window_size consumes initial rows, so the first
@@ -325,6 +327,7 @@ class InferenceRunner:
         dataset_id: str | None = None,
         start_date: str | None = None,
         end_date: str | None = None,
+        test_only: bool = False,
     ):
         """Create a TradingEnv from experiment config using proper dataset loading.
 
@@ -366,8 +369,14 @@ class InferenceRunner:
             ohlcv = {"date", "open", "high", "low", "close", "volume"}
             feature_cols = [c for c in data.columns if c not in ohlcv]
 
-        # Filter by date range if specified, otherwise use last 1000 candles
-        if start_date or end_date:
+        # Filter data: test_only uses the test split, date range overrides, else last 1000
+        if test_only:
+            split_config = config.get("split_config", {})
+            test_pct = split_config.get("test_pct", 0.15)
+            n = len(data)
+            test_start = int(n * (1 - test_pct))
+            data = data.iloc[test_start:].reset_index(drop=True)
+        elif start_date or end_date:
             if "date" in data.columns:
                 if start_date:
                     data = data[data["date"] >= pd.Timestamp(start_date)]
