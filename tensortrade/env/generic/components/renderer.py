@@ -13,6 +13,7 @@
 # limitations under the License
 
 from abc import ABCMeta, abstractmethod
+from typing import List
 
 from tensortrade.core import Component
 
@@ -24,7 +25,7 @@ class Renderer(Component, metaclass=ABCMeta):
     registered_name = "renderer"
 
     @abstractmethod
-    def render(self, env: "TradingEnv", **kwargs):
+    def render(self, env: 'TradingEnv', **kwargs):
         """Renders a view of the environment at the current step of an episode.
 
         Parameters
@@ -64,11 +65,11 @@ class AggregateRenderer(Renderer):
         A list of renderers to aggregate.
     """
 
-    def __init__(self, renderers: list[Renderer]) -> None:
+    def __init__(self, renderers: List[Renderer]) -> None:
         super().__init__()
         self.renderers = renderers
 
-    def render(self, env: "TradingEnv", **kwargs) -> None:
+    def render(self, env: 'TradingEnv', **kwargs) -> None:
         for r in self.renderers:
             r.render(env, **kwargs)
 

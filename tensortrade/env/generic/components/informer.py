@@ -14,17 +14,18 @@
 
 from abc import abstractmethod
 
-from tensortrade.core.base import TimeIndexed
 from tensortrade.core.component import Component
+from tensortrade.core.base import TimeIndexed
 
 
 class Informer(Component, TimeIndexed):
-    """A component to provide information at each step of an episode."""
+    """A component to provide information at each step of an episode.
+    """
 
     registered_name = "monitor"
 
     @abstractmethod
-    def info(self, env: "TradingEnv") -> dict:
+    def info(self, env: 'TradingEnv') -> dict:
         """Provides information at a given step of an episode.
 
         Parameters

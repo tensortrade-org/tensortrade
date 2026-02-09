@@ -12,13 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License
 
-from abc import ABCMeta, abstractmethod
+from abc import abstractmethod, ABCMeta
 from typing import Any
 
 from gymnasium.spaces import Space
 
-from tensortrade.core.base import TimeIndexed
+
 from tensortrade.core.component import Component
+from tensortrade.core.base import TimeIndexed
 
 
 class ActionScheme(Component, TimeIndexed, metaclass=ABCMeta):
@@ -31,11 +32,12 @@ class ActionScheme(Component, TimeIndexed, metaclass=ABCMeta):
     @property
     @abstractmethod
     def action_space(self) -> Space:
-        """The action space of the `TradingEnv`. (`Space`, read-only)"""
+        """The action space of the `TradingEnv`. (`Space`, read-only)
+        """
         raise NotImplementedError()
 
     @abstractmethod
-    def perform(self, env: "TradingEnv", action: Any) -> None:
+    def perform(self, env: 'TradingEnv', action: Any) -> None:
         """Performs an action on the environment.
 
         Parameters

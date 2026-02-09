@@ -1,16 +1,22 @@
+
+from typing import List
+
+
 import datetime as dt
-from collections import OrderedDict
+import numpy as np
+import pandas as pd
+
+from gymnasium.spaces import Box, Space
 from random import randrange
 
-import numpy as np
-from gymnasium.spaces import Box, Space
 
-from tensortrade.env.generic import Observer
-from tensortrade.feed.core import DataFeed, NameSpace, Stream
+from tensortrade.feed.core import Stream, NameSpace, DataFeed
 from tensortrade.oms.wallets import Wallet
+from tensortrade.env.generic import Observer
+from collections import OrderedDict
 
 
-def _create_wallet_source(wallet: "Wallet", include_worth: bool = True) -> "list[Stream[float]]":
+def _create_wallet_source(wallet: 'Wallet', include_worth: bool = True) -> 'List[Stream[float]]':
     """Creates a list of streams to describe a `Wallet`.
 
     Parameters
@@ -39,19 +45,17 @@ def _create_wallet_source(wallet: "Wallet", include_worth: bool = True) -> "list
 
         if include_worth:
             # Fix stream selector to handle both naming conventions
-            price = Stream.select(
-                wallet.exchange.streams(),
-                lambda node: (
-                    node.name.endswith(f":{symbol}") or node.name.endswith(f"-{symbol}") or node.name.endswith(symbol)
-                ),
-            )
-            worth = price.mul(total_balance).rename("worth")
+            price = Stream.select(wallet.exchange.streams(), 
+                                lambda node: (node.name.endswith(f":{symbol}") or 
+                                            node.name.endswith(f"-{symbol}") or
+                                            node.name.endswith(symbol)))
+            worth = price.mul(total_balance).rename('worth')
             streams += [worth]
 
     return streams
 
 
-def _create_internal_streams(portfolio: "Portfolio") -> "list[Stream[float]]":
+def _create_internal_streams(portfolio: 'Portfolio') -> 'List[Stream[float]]':
     """Creates a list of streams to describe a `Portfolio`.
 
     Parameters
@@ -83,7 +87,7 @@ def _create_internal_streams(portfolio: "Portfolio") -> "list[Stream[float]]":
     return sources
 
 
-class ObservationHistory:
+class ObservationHistory(object):
     """Stores observations from a given episode of the environment.
 
     Parameters
@@ -119,7 +123,7 @@ class ObservationHistory:
         if len(self.rows.keys()) > self.window_size:
             del self.rows[list(self.rows.keys())[0]]
 
-    def observe(self) -> "np.array":
+    def observe(self) -> 'np.array':
         """Gets the observation at a given step in an episode
 
         Returns
@@ -182,31 +186,36 @@ class TensorTradeObserver(Observer):
         The history of the renderer data feed.
     """
 
-    def __init__(
-        self,
-        portfolio: "Portfolio",
-        feed: "DataFeed" = None,
-        renderer_feed: "DataFeed" = None,
-        window_size: int = 1,
-        min_periods: int = None,
-        **kwargs,
-    ) -> None:
+    def __init__(self,
+                 portfolio: 'Portfolio',
+                 feed: 'DataFeed' = None,
+                 renderer_feed: 'DataFeed' = None,
+                 window_size: int = 1,
+                 min_periods: int = None,
+                 **kwargs) -> None:
         internal_group = Stream.group(_create_internal_streams(portfolio)).rename("internal")
         external_group = Stream.group(feed.inputs).rename("external")
 
         if renderer_feed:
             renderer_group = Stream.group(renderer_feed.inputs).rename("renderer")
 
-            self.feed = DataFeed([internal_group, external_group, renderer_group])
+            self.feed = DataFeed([
+                internal_group,
+                external_group,
+                renderer_group
+            ])
         else:
-            self.feed = DataFeed([internal_group, external_group])
+            self.feed = DataFeed([
+                internal_group,
+                external_group
+            ])
 
         self.window_size = window_size
         self.min_periods = min_periods
 
-        self._observation_dtype = kwargs.get("dtype", np.float32)
-        self._observation_lows = kwargs.get("observation_lows", -np.inf)
-        self._observation_highs = kwargs.get("observation_highs", np.inf)
+        self._observation_dtype = kwargs.get('dtype', np.float32)
+        self._observation_lows = kwargs.get('observation_lows', -np.inf)
+        self._observation_highs = kwargs.get('observation_highs', np.inf)
 
         self.history = ObservationHistory(window_size=window_size)
 
@@ -217,7 +226,7 @@ class TensorTradeObserver(Observer):
             low=self._observation_lows,
             high=self._observation_highs,
             shape=(self.window_size, n_features),
-            dtype=self._observation_dtype,
+            dtype=self._observation_dtype
         )
 
         self.feed = self.feed.attach(portfolio)
@@ -232,14 +241,15 @@ class TensorTradeObserver(Observer):
         return self._observation_space
 
     def warmup(self) -> None:
-        """Warms up the data feed."""
+        """Warms up the data feed.
+        """
         if self.min_periods is not None:
             for _ in range(self.min_periods):
                 if self.has_next():
                     obs_row = self.feed.next()["external"]
                     self.history.push(obs_row)
 
-    def observe(self, env: "TradingEnv") -> np.array:
+    def observe(self, env: 'TradingEnv') -> np.array:
         """Observes the environment.
 
         As a consequence of observing the `env`, a new observation is generated
@@ -322,47 +332,52 @@ class IntradayObserver(Observer):
         The history of the renderer data feed.
     """
 
-    def __init__(
-        self,
-        portfolio: "Portfolio",
-        feed: "DataFeed" = None,
-        renderer_feed: "DataFeed" = None,
-        stop_time: "datetime.time" = dt.time(16, 0, 0),
-        window_size: int = 1,
-        min_periods: int = None,
-        randomize: bool = False,
-        **kwargs,
-    ) -> None:
+    def __init__(self,
+                 portfolio: 'Portfolio',
+                 feed: 'DataFeed' = None,
+                 renderer_feed: 'DataFeed' = None,
+                 stop_time: 'datetime.time' = dt.time(16, 0, 0),
+                 window_size: int = 1,
+                 min_periods: int = None,
+                 randomize: bool = False,
+                 **kwargs) -> None:
         internal_group = Stream.group(_create_internal_streams(portfolio)).rename("internal")
         external_group = Stream.group(feed.inputs).rename("external")
 
         if renderer_feed:
             renderer_group = Stream.group(renderer_feed.inputs).rename("renderer")
 
-            self.feed = DataFeed([internal_group, external_group, renderer_group])
+            self.feed = DataFeed([
+                internal_group,
+                external_group,
+                renderer_group
+            ])
         else:
-            self.feed = DataFeed([internal_group, external_group])
+            self.feed = DataFeed([
+                internal_group,
+                external_group
+            ])
 
         self.stop_time = stop_time
         self.window_size = window_size
         self.min_periods = min_periods
         self.randomize = randomize
 
-        self._observation_dtype = kwargs.get("dtype", np.float32)
-        self._observation_lows = kwargs.get("observation_lows", -np.inf)
-        self._observation_highs = kwargs.get("observation_highs", np.inf)
+        self._observation_dtype = kwargs.get('dtype', np.float32)
+        self._observation_lows = kwargs.get('observation_lows', -np.inf)
+        self._observation_highs = kwargs.get('observation_highs', np.inf)
 
         self.history = ObservationHistory(window_size=window_size)
 
         initial_obs = self.feed.next()["external"]
-        initial_obs.pop("timestamp", None)
+        initial_obs.pop('timestamp', None)
         n_features = len(initial_obs.keys())
 
         self._observation_space = Box(
             low=self._observation_lows,
             high=self._observation_highs,
             shape=(self.window_size, n_features),
-            dtype=self._observation_dtype,
+            dtype=self._observation_dtype
         )
 
         self.feed = self.feed.attach(portfolio)
@@ -386,15 +401,16 @@ class IntradayObserver(Observer):
         return self._observation_space
 
     def warmup(self) -> None:
-        """Warms up the data feed."""
+        """Warms up the data feed.
+        """
         if self.min_periods is not None:
             for _ in range(self.min_periods):
                 if self.has_next():
                     obs_row = self.feed.next()["external"]
-                    obs_row.pop("timestamp", None)
+                    obs_row.pop('timestamp', None)
                     self.history.push(obs_row)
 
-    def observe(self, env: "TradingEnv") -> np.array:
+    def observe(self, env: 'TradingEnv') -> np.array:
         """Observes the environment.
         As a consequence of observing the `env`, a new observation is generated
         from the `feed` and stored in the observation history.
@@ -412,7 +428,7 @@ class IntradayObserver(Observer):
         # Push new observation to observation history
         obs_row = data["external"]
         try:
-            obs_ts = obs_row.pop("timestamp")
+            obs_ts = obs_row.pop('timestamp')
         except KeyError:
             raise KeyError("Include Stream of Timestamps named 'timestamp' in feed")
         self.history.push(obs_row)
