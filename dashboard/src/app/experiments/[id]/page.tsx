@@ -109,7 +109,7 @@ export default function ExperimentDetailPage() {
 			)}
 
 			{/* Insight Result */}
-			{insightReport && <InsightCard insight={insightReport} />}
+			{insightReport && <InsightCard insight={insightReport} experimentId={experimentId} />}
 
 			{/* Final Metrics */}
 			<MetricCards metrics={experiment.final_metrics} />

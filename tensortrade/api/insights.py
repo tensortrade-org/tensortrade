@@ -202,6 +202,113 @@ class InsightsEngine:
         except Exception as exc:
             yield f"event: error\ndata: {json.dumps({'error': str(exc)})}\n\n"
 
+    async def generate_hp_pack(
+        self,
+        experiment_id: str,
+        insight_id: str,
+        *,
+        user_guidance: str | None = None,
+    ) -> dict:
+        """Generate an improved HP pack from experiment config + AI suggestions.
+
+        Returns a dict with keys: name, description, config (a TrainingConfig dict).
+        """
+        import asyncio
+
+        exp = self.store.get_experiment(experiment_id)
+        if not exp:
+            raise ValueError(f"Experiment {experiment_id} not found")
+
+        insight = self.store.get_insight(insight_id)
+        if not insight:
+            raise ValueError(f"Insight {insight_id} not found")
+
+        suggestions = insight.get("suggestions", [])
+        if not suggestions:
+            raise ValueError("Insight has no suggestions to apply")
+
+        prompt = self._build_hp_pack_prompt(exp.config, suggestions, exp.name, user_guidance)
+
+        loop = asyncio.get_event_loop()
+        response = await loop.run_in_executor(
+            None,
+            lambda: self.client.messages.create(
+                model="claude-sonnet-4-5-20250929",
+                max_tokens=2000,
+                messages=[{"role": "user", "content": prompt}],
+            ),
+        )
+
+        raw_text = response.content[0].text
+        parsed = self._parse_response(raw_text)
+
+        # Ensure required keys exist
+        if "config" not in parsed:
+            raise ValueError("LLM response did not contain a valid config object")
+
+        return {
+            "name": parsed.get("name", f"{exp.name} — Improved"),
+            "description": parsed.get("description", "AI-generated HP pack based on insight suggestions"),
+            "config": parsed["config"],
+        }
+
+    @staticmethod
+    def _build_hp_pack_prompt(
+        current_config: dict,
+        suggestions: list[str],
+        experiment_name: str,
+        user_guidance: str | None = None,
+    ) -> str:
+        suggestions_text = "\n".join(f"- {s}" for s in suggestions)
+        guidance_section = ""
+        if user_guidance:
+            guidance_section = f"\n\nAdditional user guidance:\n{user_guidance}"
+
+        return f"""You are a reinforcement learning hyperparameter tuning expert.
+
+Given the current training configuration and AI-generated suggestions, produce an improved TrainingConfig JSON.
+
+CURRENT CONFIG (baseline):
+{json.dumps(current_config, indent=2)}
+
+AI SUGGESTIONS TO APPLY:
+{suggestions_text}
+{guidance_section}
+
+RULES:
+1. Only change parameters explicitly mentioned in the suggestions. Keep everything else the same as the baseline.
+2. The output must be a valid TrainingConfig matching this schema:
+
+TrainingConfig schema:
+- algorithm: string (usually "PPO")
+- learning_rate: number (0.000001 to 0.01)
+- gamma: number (0.9 to 0.9999)
+- lambda_: number (0.9 to 1.0)
+- clip_param: number (0.1 to 0.5)
+- entropy_coeff: number (0.0 to 0.1)
+- vf_loss_coeff: number (0.1 to 2.0)
+- num_sgd_iter: integer (1 to 80)
+- sgd_minibatch_size: integer (32 to 8192)
+- train_batch_size: integer (256 to 65536)
+- num_rollout_workers: integer (0 to 16)
+- rollout_fragment_length: integer (50 to 2000)
+- model: {{ "fcnet_hiddens": [int, int], "fcnet_activation": "relu" | "tanh" }}
+- action_scheme: "BSH" | "TrailingStopBSH" | "BracketBSH" | "DrawdownBudgetBSH" | "CooldownBSH" | "HoldMinimumBSH" | "ConfirmationBSH" | "ScaledEntryBSH" | "PartialTakeProfitBSH" | "VolatilitySizedBSH" | "SimpleOrders" | "ManagedRiskOrders"
+- reward_scheme: "SimpleProfit" | "RiskAdjustedReturns" | "PBR" | "AdvancedPBR" | "FractionalPBR" | "MaxDrawdownPenalty" | "AdaptiveProfitSeeker"
+- reward_params: object (key-value pairs of reward parameters)
+- commission: number (0 to 0.01)
+- initial_cash: number (1000 to 1000000)
+- window_size: integer (5 to 200)
+- max_allowed_loss: number (0.1 to 1.0)
+- max_episode_steps: integer or null
+- num_iterations: integer (1 to 500)
+
+3. All numeric values must be within the valid ranges above.
+4. Suggest a short descriptive name for this pack based on what you changed (e.g. "High Entropy Explorer", "Aggressive Trader v2").
+
+Respond with ONLY a JSON object in this exact format (no markdown fences, no explanation):
+{{"name": "descriptive pack name", "description": "1-2 sentence description of changes made", "config": {{ ...full TrainingConfig... }}}}"""
+
     async def analyze_trades(self, experiment_id: str, *, custom_prompt: str | None = None) -> InsightReport:
         """Deep analysis of trade patterns."""
         exp = self.store.get_experiment(experiment_id)
