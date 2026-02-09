@@ -1032,6 +1032,7 @@ def _register_routes(app: FastAPI) -> None:
                     "total_bars": raw.get("total_bars", 0),
                     "total_trades": raw.get("total_trades", 0),
                     "drawdown_pct": raw.get("max_drawdown_pct", 0),
+                    "entry_price": raw.get("entry_price", 0),
                 }
             )
             # Send bar history and trade history so refreshed clients

@@ -43,3 +43,26 @@
 - [ ] **No offline detection** — App doesn't detect when user goes offline; WebSocket reconnects infinitely.
 - [ ] **No deployment/ops docs** — No guide for required env vars, production config, or monitoring setup.
 - [ ] **Database migration strategy** — No schema versioning. Adding columns later will require manual migration.
+
+## Continuous Training — Feature ([plan](docs/continuous-training-plan.md))
+
+Background scheduler that periodically retrains the model on latest Alpaca candles (rolling window) and hot-swaps the live trader's policy.
+
+### Backend
+- [ ] **DB schema** — Add `continuous_training_schedules` table + CRUD methods to `experiment_store.py`
+- [ ] **LiveTrader hot-swap** — Add `reload_policy()` + `_load_policy_weights_only()` to `trader.py`
+- [ ] **Launcher extension** — Add `launch_continuous()` + checkpoint-restore script generation to `launcher.py`
+- [ ] **ContinuousTrainer module** — New `tensortrade/training/continuous_trainer.py` with scheduler loop, cycle logic, WS broadcasting
+- [ ] **API endpoints** — 6 routes in `server.py`: start/stop/pause/resume/status/history for `/api/continuous/*`
+
+### Frontend
+- [ ] **TypeScript types** — `ContinuousTrainingConfig`, `ContinuousTrainingStatus`, `ContinuousCycleRecord` + WS message types in `types.ts`
+- [ ] **API client** — `startContinuousTraining()`, `stopContinuousTraining()`, etc. in `api.ts`
+- [ ] **Zustand store** — `dashboard/src/stores/continuousStore.ts`
+- [ ] **Dashboard page** — `dashboard/src/app/continuous/page.tsx` (setup, status, cycle history, metrics chart)
+- [ ] **Sidebar nav** — Add "Continuous" link after "Paper Trading" in `Sidebar.tsx`
+- [ ] **WS handler** — Handle `continuous_*` message types in dashboard WebSocket hook
+
+### Testing
+- [ ] **Python tests** — ContinuousTrainer scheduling, LiveTrader.reload_policy(), schedule CRUD
+- [ ] **Lint** — `make lint` + `npx biome check --write src/`

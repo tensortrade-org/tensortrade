@@ -24,6 +24,7 @@ interface LiveStore {
 	pnl: number;
 	pnlPct: number;
 	position: "cash" | "asset";
+	entryPrice: number | null;
 	bars: LiveBar[];
 	trades: LiveTradeEvent[];
 	actions: LiveActionEvent[];
@@ -54,6 +55,7 @@ const initialState: Pick<
 	| "pnl"
 	| "pnlPct"
 	| "position"
+	| "entryPrice"
 	| "bars"
 	| "trades"
 	| "actions"
@@ -70,6 +72,7 @@ const initialState: Pick<
 	pnl: 0,
 	pnlPct: 0,
 	position: "cash",
+	entryPrice: null,
 	bars: [],
 	trades: [],
 	actions: [],
@@ -94,6 +97,7 @@ export const useLiveStore = create<LiveStore>((set) => ({
 			pnl: msg.pnl,
 			pnlPct: msg.pnl_pct,
 			position: msg.position,
+			entryPrice: msg.entry_price ?? null,
 			totalBars: msg.total_bars,
 			totalTrades: msg.total_trades,
 			drawdownPct: msg.drawdown_pct,
@@ -115,6 +119,7 @@ export const useLiveStore = create<LiveStore>((set) => ({
 					? [...state.trades.slice(-250), trade]
 					: [...state.trades, trade],
 			totalTrades: state.totalTrades + 1,
+			entryPrice: trade.entry_price ?? state.entryPrice,
 		})),
 
 	setTrades: (trades: LiveTradeEvent[]) => set({ trades }),
@@ -138,6 +143,7 @@ export const useLiveStore = create<LiveStore>((set) => ({
 				pnl: msg.pnl,
 				pnlPct: msg.pnl_pct,
 				drawdownPct: msg.drawdown_pct,
+				entryPrice: msg.entry_price ?? state.entryPrice,
 				portfolioHistory: [
 					...history,
 					{

@@ -17,7 +17,7 @@ import numpy as np
 import pandas as pd
 
 from tensortrade.data.alpaca_live import AlpacaLiveStream
-from tensortrade.live.account_sync import AccountSync
+from tensortrade.live.account_sync import AccountSync, PositionInfo
 from tensortrade.live.config import LiveTradingConfig
 from tensortrade.live.store import LiveTradingStore
 from tensortrade.oms.orders import TradeSide
@@ -65,6 +65,7 @@ class LiveTrader:
         # Portfolio tracking
         self._position: int = 0  # 0=cash, 1=asset (BSH scheme)
         self._position_qty: float = 0.0
+        self._entry_price: float = 0.0
         self._initial_equity: float = 0.0
         self._peak_equity: float = 0.0
         self._current_equity: float = 0.0
@@ -141,19 +142,36 @@ class LiveTrader:
         else:
             self._feature_cols = []
 
-        # --- Fetch initial equity ---
+        # --- Fetch initial equity and sync existing positions ---
         snap = await loop.run_in_executor(None, self._account_sync.snapshot)
-        self._initial_equity = snap.equity
-        self._peak_equity = snap.equity
         self._current_equity = snap.equity
 
-        # Detect existing position
+        # Detect existing position and capture entry price / unrealized PnL
+        matched_pos: PositionInfo | None = None
         for pos in snap.positions:
             if pos.symbol.replace("/", "") == config.symbol.replace("/", ""):
+                matched_pos = pos
                 self._position = 1
                 self._position_qty = pos.qty
+                self._entry_price = pos.avg_entry_price
                 self._account_sync.set_local_position(config.symbol, pos.qty)
                 break
+
+        if matched_pos is not None:
+            # Subtract unrealized PnL so _pnl immediately reflects existing gains/losses
+            self._initial_equity = snap.equity - matched_pos.unrealized_pl
+            self._pnl = matched_pos.unrealized_pl
+            logger.info(
+                "Synced existing position: %s qty=%.4f entry=%.2f unrealized_pl=%.2f",
+                config.symbol,
+                matched_pos.qty,
+                matched_pos.avg_entry_price,
+                matched_pos.unrealized_pl,
+            )
+        else:
+            self._initial_equity = snap.equity
+
+        self._peak_equity = snap.equity
 
         # --- Create DB session ---
         self._session_id = self._store.create_session(
@@ -285,6 +303,7 @@ class LiveTrader:
             "pnl_pct": (self._pnl / self._initial_equity * 100) if self._initial_equity > 0 else 0.0,
             "position": self._position,
             "position_qty": self._position_qty,
+            "entry_price": self._entry_price,
             "total_trades": self._total_trades,
             "total_bars": self._step,
             "max_drawdown_pct": self._max_drawdown_pct,
@@ -504,6 +523,7 @@ class LiveTrader:
             if fill is not None:
                 self._position = 1
                 self._position_qty = fill.filled_qty
+                self._entry_price = fill.filled_avg_price
                 self._total_trades += 1
                 if self._account_sync:
                     self._account_sync.set_local_position(
@@ -546,6 +566,7 @@ class LiveTrader:
             if fill is not None:
                 self._position = 0
                 self._position_qty = 0.0
+                self._entry_price = 0.0
                 self._total_trades += 1
                 if self._account_sync:
                     self._account_sync.set_local_position(config.symbol, 0.0)
@@ -641,6 +662,7 @@ class LiveTrader:
                 "pnl": self._pnl,
                 "pnl_pct": pnl_pct,
                 "position": "asset" if self._position == 1 else "cash",
+                "entry_price": self._entry_price,
                 "total_bars": self._step,
                 "total_trades": self._total_trades,
                 "drawdown_pct": self._max_drawdown_pct,
@@ -706,6 +728,7 @@ class LiveTrader:
                 "size": size,
                 "alpaca_order_id": alpaca_order_id,
                 "commission": commission,
+                "entry_price": self._entry_price,
                 "source": "live",
             }
         )
@@ -723,6 +746,7 @@ class LiveTrader:
                 "pnl": self._pnl,
                 "pnl_pct": pnl_pct,
                 "drawdown_pct": self._max_drawdown_pct,
+                "entry_price": self._entry_price,
                 "source": "live",
             }
         )

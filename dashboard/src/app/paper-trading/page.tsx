@@ -123,11 +123,13 @@ function useLiveWebSocket() {
 interface LiveCandlestickChartProps {
 	bars: LiveBar[];
 	trades: LiveTradeEvent[];
+	entryPrice: number | null;
 }
 
 const LiveCandlestickChart = memo(function LiveCandlestickChart({
 	bars,
 	trades,
+	entryPrice,
 }: LiveCandlestickChartProps) {
 	const containerRef = useRef<HTMLDivElement>(null);
 	const chartRef = useRef<ReturnType<typeof import("lightweight-charts").createChart> | null>(null);
@@ -226,6 +228,33 @@ const LiveCandlestickChart = memo(function LiveCandlestickChart({
 			}
 		};
 	}, []);
+
+	const priceLineRef = useRef<ReturnType<
+		NonNullable<typeof candleSeriesRef.current>["createPriceLine"]
+	> | null>(null);
+
+	// Manage entry price line
+	useEffect(() => {
+		if (!candleSeriesRef.current || !chartReady) return;
+
+		// Remove existing price line
+		if (priceLineRef.current) {
+			candleSeriesRef.current.removePriceLine(priceLineRef.current);
+			priceLineRef.current = null;
+		}
+
+		// Create new price line if we have an entry price
+		if (entryPrice && entryPrice > 0) {
+			priceLineRef.current = candleSeriesRef.current.createPriceLine({
+				price: entryPrice,
+				color: "#f59e0b",
+				lineWidth: 1,
+				lineStyle: 2, // Dashed
+				axisLabelVisible: true,
+				title: `Entry ${entryPrice.toFixed(2)}`,
+			});
+		}
+	}, [entryPrice, chartReady]);
 
 	const prevBarCountRef = useRef(0);
 	const prevTradeCountRef = useRef(0);
@@ -408,6 +437,7 @@ interface PortfolioCardProps {
 	pnlPct: number;
 	drawdownPct: number;
 	position: "cash" | "asset";
+	entryPrice: number | null;
 	totalBars: number;
 	totalTrades: number;
 }
@@ -418,6 +448,7 @@ const PortfolioCard = memo(function PortfolioCard({
 	pnlPct,
 	drawdownPct,
 	position,
+	entryPrice,
 	totalBars,
 	totalTrades,
 }: PortfolioCardProps) {
@@ -463,6 +494,14 @@ const PortfolioCard = memo(function PortfolioCard({
 						{position === "asset" ? "LONG" : "FLAT"}
 					</span>
 				</div>
+				{position === "asset" && entryPrice != null && entryPrice > 0 && (
+					<div className="flex items-center justify-between">
+						<span className="text-sm text-[var(--text-secondary)]">Entry Price</span>
+						<span className="font-mono text-sm font-medium" style={{ color: "#f59e0b" }}>
+							{formatCurrency(entryPrice)}
+						</span>
+					</div>
+				)}
 				<div className="border-t border-[var(--border-color)] pt-2">
 					<div className="flex items-center justify-between">
 						<span className="text-xs text-[var(--text-secondary)]">Bars</span>
@@ -703,6 +742,7 @@ export default function PaperTradingPage() {
 	const pnl = useLiveStore((s) => s.pnl);
 	const pnlPct = useLiveStore((s) => s.pnlPct);
 	const position = useLiveStore((s) => s.position);
+	const entryPrice = useLiveStore((s) => s.entryPrice);
 	const bars = useLiveStore((s) => s.bars);
 	const trades = useLiveStore((s) => s.trades);
 	const actions = useLiveStore((s) => s.actions);
@@ -877,7 +917,7 @@ export default function PaperTradingPage() {
 					<Card className="h-[440px]">
 						<CardHeader title="Price Action" />
 						<div className="h-[calc(100%-2rem)]">
-							<LiveCandlestickChart bars={bars} trades={trades} />
+							<LiveCandlestickChart bars={bars} trades={trades} entryPrice={entryPrice} />
 						</div>
 					</Card>
 
@@ -897,6 +937,7 @@ export default function PaperTradingPage() {
 						pnlPct={pnlPct}
 						drawdownPct={drawdownPct}
 						position={position}
+						entryPrice={entryPrice}
 						totalBars={totalBars}
 						totalTrades={totalTrades}
 					/>

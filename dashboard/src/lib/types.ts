@@ -516,6 +516,7 @@ export interface LiveStatusMessage {
 	pnl: number;
 	pnl_pct: number;
 	position: "cash" | "asset";
+	entry_price: number | null;
 	total_bars: number;
 	total_trades: number;
 	drawdown_pct: number;
@@ -552,6 +553,7 @@ export interface LiveTradeEvent {
 	size: number;
 	commission: number;
 	alpaca_order_id: string | null;
+	entry_price: number | null;
 }
 
 export interface LivePortfolioMessage {
@@ -562,6 +564,7 @@ export interface LivePortfolioMessage {
 	pnl: number;
 	pnl_pct: number;
 	drawdown_pct: number;
+	entry_price: number | null;
 }
 
 export interface LiveBarsHistoryMessage {
