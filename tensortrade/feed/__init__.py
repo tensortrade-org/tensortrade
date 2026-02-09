@@ -1,5 +1,2 @@
-
-from . import api
-from . import core
-
-from .core import Stream, NameSpace, DataFeed
+from . import api, core
+from .core import DataFeed, NameSpace, Stream

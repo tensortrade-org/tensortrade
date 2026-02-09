@@ -1,29 +1,24 @@
-
-from typing import Union
-
-from . import actions
-from . import rewards
-from . import observers
-from . import stoppers
-from . import informers
-from . import renderers
+from typing import Optional, Union
 
 from tensortrade.env.generic import TradingEnv
 from tensortrade.env.generic.components.renderer import AggregateRenderer
 from tensortrade.feed.core import DataFeed
 from tensortrade.oms.wallets import Portfolio
 
+from . import actions, informers, observers, renderers, rewards, stoppers
 
-def create(portfolio: 'Portfolio',
-           action_scheme: 'Union[actions.TensorTradeActionScheme, str]',
-           reward_scheme: 'Union[rewards.TensorTradeRewardScheme, str]',
-           feed: 'DataFeed',
-           window_size: int = 1,
-           min_periods: int = None,
-           random_start_pct: float = 0.00,
-           **kwargs) -> TradingEnv:
-    """Creates the default `TradingEnv` of the project to be used in training
-    RL agents.
+
+def create(
+    portfolio: "Portfolio",
+    action_scheme: "actions.TensorTradeActionScheme | str",
+    reward_scheme: "rewards.TensorTradeRewardScheme | str",
+    feed: "DataFeed",
+    window_size: int = 1,
+    min_periods: int | None = None,
+    random_start_pct: float = 0.00,
+    **kwargs,
+) -> TradingEnv:
+    """Create the default `TradingEnv` of the project to be used in training RL agents.
 
     Parameters
     ----------
@@ -51,9 +46,12 @@ def create(portfolio: 'Portfolio',
     `TradingEnv`
         The default trading environment.
     """
-
-    action_scheme = actions.get(action_scheme) if isinstance(action_scheme, str) else action_scheme
-    reward_scheme = rewards.get(reward_scheme) if isinstance(reward_scheme, str) else reward_scheme
+    action_scheme = (
+        actions.get(action_scheme) if isinstance(action_scheme, str) else action_scheme
+    )
+    reward_scheme = (
+        rewards.get(reward_scheme) if isinstance(reward_scheme, str) else reward_scheme
+    )
 
     action_scheme.portfolio = portfolio
 
@@ -62,7 +60,7 @@ def create(portfolio: 'Portfolio',
         feed=feed,
         renderer_feed=kwargs.get("renderer_feed", None),
         window_size=window_size,
-        min_periods=min_periods
+        min_periods=min_periods,
     )
 
     stopper = stoppers.MaxLossStopper(

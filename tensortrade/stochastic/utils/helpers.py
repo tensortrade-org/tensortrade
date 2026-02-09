@@ -13,19 +13,17 @@
 # limitations under the License
 
 import re
-
-from typing import Callable
+from collections.abc import Callable
 
 import numpy as np
 import pandas as pd
 
-from stochastic.processes.noise import GaussianNoise
-
+from tensortrade.stochastic.utils.noise import GaussianNoise
 from tensortrade.stochastic.utils.parameters import ModelParameters, default
 
 
 def scale_times_to_generate(times_to_generate: int, time_frame: str) -> int:
-    """Adjusts the number of times to generate the prices based on a time frame.
+    """Adjust the number of times to generate the prices based on a time frame.
 
     Parameters
     ----------
@@ -45,25 +43,26 @@ def scale_times_to_generate(times_to_generate: int, time_frame: str) -> int:
     ValueError
         Raised if the `time_frame` provided does not match the correct format.
     """
-
-    if 'MIN' in time_frame.upper():
-        times_to_generate *= int(re.findall(r'\d+', time_frame)[0])
-    elif 'H' in time_frame.upper():
-        times_to_generate *= int(re.findall(r'\d+', time_frame)[0]) * 60
-    elif 'D' in time_frame.upper():
-        times_to_generate *= int(re.findall(r'\d+', time_frame)[0]) * 60 * 24
-    elif 'W' in time_frame.upper():
-        times_to_generate *= int(re.findall(r'\d+', time_frame)[0]) * 60 * 24 * 7
-    elif 'M' in time_frame.upper():
-        times_to_generate *= int(re.findall(r'\d+', time_frame)[0]) * 60 * 24 * 7 * 30
+    if "MIN" in time_frame.upper():
+        times_to_generate *= int(re.findall(r"\d+", time_frame)[0])
+    elif "H" in time_frame.upper():
+        times_to_generate *= int(re.findall(r"\d+", time_frame)[0]) * 60
+    elif "D" in time_frame.upper():
+        times_to_generate *= int(re.findall(r"\d+", time_frame)[0]) * 60 * 24
+    elif "W" in time_frame.upper():
+        times_to_generate *= int(re.findall(r"\d+", time_frame)[0]) * 60 * 24 * 7
+    elif "M" in time_frame.upper():
+        times_to_generate *= int(re.findall(r"\d+", time_frame)[0]) * 60 * 24 * 7 * 30
     else:
-        raise ValueError('Timeframe must be either in minutes (min), hours (H), days (D), weeks (W), or months (M)')
+        raise ValueError(
+            "Timeframe must be either in minutes (min), hours (H), days (D), weeks (W), or months (M)"
+        )
 
     return times_to_generate
 
 
 def get_delta(time_frame: str) -> float:
-    """Gets the time delta for a given time frame.
+    """Get the time delta for a given time frame.
 
     Parameters
     ----------
@@ -76,20 +75,20 @@ def get_delta(time_frame: str) -> float:
     float
         The time delta for the given time frame.
     """
-    tf_upper = time_frame.upper()
-    if 'MIN' in tf_upper:
-        return 1 / (252 * 24 * (60 / int(tf_upper.split('MIN')[0])))
-    elif 'H' in tf_upper:
-        return 1 / (252 * (24 / int(tf_upper.split('H')[0])))
-    elif 'D' in tf_upper:
+    time_frame = time_frame.upper()
+    if "MIN" in time_frame:
+        return 1 / (252 * 24 * (60 / int(time_frame.split("MIN")[0])))
+    elif "H" in time_frame:
+        return 1 / (252 * (24 / int(time_frame.split("H")[0])))
+    elif "D" in time_frame:
         return 1 / 252
-    elif 'M' in tf_upper:
+    elif "M" in time_frame:
         return 1 / 12
+    return 0
 
 
-def convert_to_prices(param: 'ModelParameters', log_returns: 'np.array') -> 'np.array':
-    """Converts a sequence of log returns into normal returns (exponentiation)
-    and then computes a price sequence given a starting price, param.all_s0.
+def convert_to_prices(param: "ModelParameters", log_returns: np.ndarray) -> np.ndarray:
+    """Convert a sequence of log returns into normal returns (exponentiation) and then computes a price sequence given a starting price, param.all_s0.
 
     Parameters
     ----------
@@ -113,15 +112,17 @@ def convert_to_prices(param: 'ModelParameters', log_returns: 'np.array') -> 'np.
     return np.array(price_sequence)
 
 
-def generate(price_fn: 'Callable[[ModelParameters], np.array]',
-             base_price: int = 1,
-             base_volume: int = 1,
-             start_date: str = '2010-01-01',
-             start_date_format: str = '%Y-%m-%d',
-             times_to_generate: int = 1000,
-             time_frame: str = '1h',
-             params: ModelParameters = None) -> 'pd.DataFrame':
-    """Generates a data frame of OHLCV data based on the price model specified.
+def generate(
+    price_fn: Callable[[ModelParameters], np.ndarray],
+    base_price: int = 1,
+    base_volume: int = 1,
+    start_date: str = "2010-01-01",
+    start_date_format: str = "%Y-%m-%d",
+    times_to_generate: int = 1000,
+    time_frame: str = "1h",
+    params: ModelParameters | None = None,
+) -> pd.DataFrame:
+    """Generate a data frame of OHLCV data based on the price model specified.
 
     Parameters
     ----------
@@ -147,7 +148,6 @@ def generate(price_fn: 'Callable[[ModelParameters], np.array]',
     `pd.DataFrame`
         The data frame containing the OHLCV bars.
     """
-
     delta = get_delta(time_frame)
     times_to_generate = scale_times_to_generate(times_to_generate, time_frame)
 
@@ -159,22 +159,24 @@ def generate(price_fn: 'Callable[[ModelParameters], np.array]',
     volumes = volume_gen.sample(times_to_generate) + base_volume
 
     start_date = pd.to_datetime(start_date, format=start_date_format)
-    price_frame = pd.DataFrame([], columns=['date', 'price'], dtype=float)
-    volume_frame = pd.DataFrame([], columns=['date', 'volume'], dtype=float)
+    price_frame = pd.DataFrame([], columns=["date", "price"], dtype=float)
+    volume_frame = pd.DataFrame([], columns=["date", "volume"], dtype=float)
 
-    price_frame['date'] = pd.date_range(start=start_date, periods=times_to_generate, freq="1min")
-    price_frame['price'] = abs(prices)
+    price_frame["date"] = pd.date_range(
+        start=start_date, periods=times_to_generate, freq="1min"
+    )
+    price_frame["price"] = abs(prices)
 
-    volume_frame['date'] = price_frame['date'].copy()
-    volume_frame['volume'] = abs(volumes)
+    volume_frame["date"] = price_frame["date"].copy()
+    volume_frame["volume"] = abs(volumes)
 
-    price_frame.set_index('date')
-    price_frame.index = pd.to_datetime(price_frame.index, unit='m', origin=start_date)
+    price_frame.set_index("date")
+    price_frame.index = pd.to_datetime(price_frame.index, unit="m", origin=start_date)
 
-    volume_frame.set_index('date')
-    volume_frame.index = pd.to_datetime(volume_frame.index, unit='m', origin=start_date)
+    volume_frame.set_index("date")
+    volume_frame.index = pd.to_datetime(volume_frame.index, unit="m", origin=start_date)
 
-    data_frame = price_frame['price'].resample(time_frame).ohlc()
-    data_frame['volume'] = volume_frame['volume'].resample(time_frame).sum()
+    data_frame = price_frame["price"].resample(time_frame).ohlc()
+    data_frame["volume"] = volume_frame["volume"].resample(time_frame).sum()
 
     return data_frame

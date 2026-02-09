@@ -9,5 +9,5 @@ from tensortrade.oms.orders.create import (
     limit_order,
     hidden_limit_order,
     risk_managed_order,
-    proportion_order
+    proportion_order,
 )

@@ -8,18 +8,15 @@ global_clock : `Clock`
 """
 
 import uuid
-
 from abc import ABCMeta
 
 from tensortrade.core.clock import Clock
 
-
 global_clock = Clock()
 
 
-class Identifiable(object, metaclass=ABCMeta):
-    """Identifiable mixin for adding a unique `id` property to instances of a class.
-    """
+class Identifiable(metaclass=ABCMeta):
+    """Identifiable mixin for adding a unique `id` property to instances of a class."""
 
     @property
     def id(self) -> str:
@@ -30,13 +27,13 @@ class Identifiable(object, metaclass=ABCMeta):
         str
            The identifier for the object.
         """
-        if not hasattr(self, '_id'):
+        if not hasattr(self, "_id"):
             self._id = str(uuid.uuid4())
         return self._id
 
     @id.setter
     def id(self, identifier: str) -> None:
-        """Sets the identifier for the object
+        """Set the identifier for the object.
 
         Parameters
         ----------
@@ -47,8 +44,7 @@ class Identifiable(object, metaclass=ABCMeta):
 
 
 class TimeIndexed:
-    """A class for objects that are indexed by time.
-    """
+    """A class for objects that are indexed by time."""
 
     _clock = global_clock
 
@@ -65,7 +61,7 @@ class TimeIndexed:
 
     @clock.setter
     def clock(self, clock: Clock) -> None:
-        """Sets the clock associated with this object.
+        """Set the clock associated with this object.
 
         Parameters
         ----------
@@ -101,7 +97,7 @@ class TimedIdentifiable(Identifiable, TimeIndexed, metaclass=ABCMeta):
 
     @clock.setter
     def clock(self, clock: "Clock") -> None:
-        """Sets the clock associated with this object.
+        """Set the clock associated with this object.
 
         In addition, the `created_at` attribute is set according to the new clock.
 
@@ -137,7 +133,7 @@ class Observable:
         self.listeners = []
 
     def attach(self, listener) -> "Observable":
-        """Adds a listener to receive alerts.
+        """Add a listener to receive alerts.
 
         Parameters
         ----------
@@ -152,7 +148,7 @@ class Observable:
         return self
 
     def detach(self, listener) -> "Observable":
-        """Removes a listener from receiving alerts.
+        """Remove a listener from receiving alerts.
 
         Parameters
         ----------

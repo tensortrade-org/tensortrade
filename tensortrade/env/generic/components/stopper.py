@@ -14,8 +14,8 @@
 
 from abc import abstractmethod
 
-from tensortrade.core.component import Component
 from tensortrade.core.base import TimeIndexed
+from tensortrade.core.component import Component
 
 
 class Stopper(Component, TimeIndexed):
@@ -26,7 +26,7 @@ class Stopper(Component, TimeIndexed):
     registered_name = "stopper"
 
     @abstractmethod
-    def stop(self, env: 'TradingEnv') -> bool:
+    def stop(self, env: "TradingEnv") -> bool:
         """Computes if the environment satisfies the defined stopping criteria.
 
         Parameters
@@ -43,4 +43,3 @@ class Stopper(Component, TimeIndexed):
 
     def reset(self) -> None:
         """Resets the stopper."""
-        pass

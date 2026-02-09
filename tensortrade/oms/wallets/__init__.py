@@ -1,6 +1,5 @@
-from .wallet import Wallet
 from .portfolio import Portfolio
-
+from .wallet import Wallet
 
 _registry = {}
 
@@ -16,5 +15,6 @@ def get(identifier: str) -> Portfolio:
     """
     if identifier not in _registry.keys():
         raise KeyError(
-            'Identifier {} is not associated with any `TradingStrategy`.'.format(identifier))
+            f"Identifier {identifier} is not associated with any `TradingStrategy`."
+        )
     return _registry[identifier]

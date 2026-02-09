@@ -1,12 +1,7 @@
-
-
-from tensortrade.feed.core import Stream, NameSpace
-
-from tensortrade.feed.core.base import Placeholder
+from tensortrade.feed.core import NameSpace, Stream
 
 
 class Counter(Stream):
-
     def __init__(self):
         super().__init__(dtype="string")
         self.count = None
@@ -26,7 +21,6 @@ class Counter(Stream):
 
 
 def test_stream():
-
     counter = Counter()
 
     assert counter.value is None
@@ -41,7 +35,6 @@ def test_stream():
 
 
 def test_stream_head():
-
     c1 = Counter().rename("c1")
 
     with NameSpace("world"):
@@ -51,9 +44,7 @@ def test_stream_head():
     assert c2.name == "world:/c1"
 
 
-
 def test_stream_source():
-
     s = Stream.source(range(10))
 
     assert s.forward() == 0
@@ -63,7 +54,6 @@ def test_stream_source():
 
     assert s.forward() == 0
     assert s.forward() == 1
-
 
     def g():
         done = False
@@ -86,7 +76,6 @@ def test_stream_source():
 
 
 def test_placholder():
-
     s = Stream.placeholder(dtype="float")
 
     s.push(5)

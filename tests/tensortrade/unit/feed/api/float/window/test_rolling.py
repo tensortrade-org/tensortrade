@@ -1,19 +1,13 @@
-
 from itertools import product
 
-import pytest
 import numpy as np
 import pandas as pd
+import pytest
 
 from tensortrade.feed import Stream
-
 from tests.utils.ops import assert_op
 
-
-arrays = [
-    [1, 2, 3, 4, 5, 6, 7],
-    [1, np.nan, 3, 4, 5, 6, np.nan, 7]
-]
+arrays = [[1, 2, 3, 4, 5, 6, 7], [1, np.nan, 3, 4, 5, 6, np.nan, 7]]
 
 configurations = [
     {"window": 2, "min_periods": 0},

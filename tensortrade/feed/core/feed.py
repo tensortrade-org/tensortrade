@@ -1,8 +1,4 @@
-
-
-from typing import List
-
-from tensortrade.feed.core.base import Stream, T, Placeholder, IterableStream
+from tensortrade.feed.core.base import IterableStream, Placeholder, Stream
 
 
 class DataFeed(Stream[dict]):
@@ -14,7 +10,7 @@ class DataFeed(Stream[dict]):
         A list of streams to be used in the data feed.
     """
 
-    def __init__(self, streams: "List[Stream]") -> None:
+    def __init__(self, streams: "list[Stream]") -> None:
         super().__init__()
 
         self.process = None
@@ -75,7 +71,7 @@ class PushFeed(DataFeed):
         A list of streams to be used in the data feed.
     """
 
-    def __init__(self, streams: "List[Stream]"):
+    def __init__(self, streams: "list[Stream]"):
         super().__init__(streams)
 
         self.compile()

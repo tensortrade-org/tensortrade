@@ -14,20 +14,20 @@
 
 
 import operator
-
-from abc import abstractmethod, ABCMeta
-from typing import Callable, Union, TypeVar
+from abc import ABCMeta, abstractmethod
+from collections.abc import Callable
 from enum import Enum
 
-from tensortrade.oms.orders import TradeSide, Order
 from tensortrade.oms.exchanges import Exchange
+from tensortrade.oms.orders.order import Order
+from tensortrade.oms.orders.trade import TradeSide
 
 
-class Criteria(object, metaclass=ABCMeta):
+class Criteria(metaclass=ABCMeta):
     """A criteria to be satisfied before an order will be executed."""
 
     @abstractmethod
-    def check(self, order: 'Order', exchange: 'Exchange') -> bool:
+    def check(self, order: "Order", exchange: "Exchange") -> bool:
         """Checks whether the `order` is executable on `exchange`.
 
         Parameters
@@ -44,18 +44,18 @@ class Criteria(object, metaclass=ABCMeta):
         """
         raise NotImplementedError
 
-    def __call__(self, order: 'Order', exchange: 'Exchange') -> bool:
+    def __call__(self, order: "Order", exchange: "Exchange") -> bool:
         if not exchange.is_pair_tradable(order.pair):
             return False
         return self.check(order, exchange)
 
-    def __and__(self, other: 'Callable[[Order, Exchange], bool]') -> 'Criteria':
+    def __and__(self, other: "Callable[[Order, Exchange], bool]") -> "Criteria":
         return CriteriaBinOp(self, other, operator.and_, "&")
 
-    def __or__(self, other: 'Callable[[Order, Exchange], bool]') -> 'Criteria':
+    def __or__(self, other: "Callable[[Order, Exchange], bool]") -> "Criteria":
         return CriteriaBinOp(self, other, operator.or_, "|")
 
-    def __xor__(self, other: 'Callable[[Order, Exchange], bool]') -> 'Criteria':
+    def __xor__(self, other: "Callable[[Order, Exchange], bool]") -> "Criteria":
         return CriteriaBinOp(self, other, operator.xor, "^")
 
     def __invert__(self):
@@ -80,17 +80,19 @@ class CriteriaBinOp(Criteria):
         The string representing the op.
     """
 
-    def __init__(self,
-                 left: 'Callable[[Order, Exchange], bool]',
-                 right: 'Callable[[Order, Exchange], bool]',
-                 op: Callable[[bool, bool], bool],
-                 op_str: str):
+    def __init__(
+        self,
+        left: "Callable[[Order, Exchange], bool]",
+        right: "Callable[[Order, Exchange], bool]",
+        op: Callable[[bool, bool], bool],
+        op_str: str,
+    ):
         self.left = left
         self.right = right
         self.op = op
         self.op_str = op_str
 
-    def check(self, order: 'Order', exchange: 'Exchange') -> bool:
+    def check(self, order: "Order", exchange: "Exchange") -> bool:
         left = self.left(order, exchange)
         right = self.right(order, exchange)
 
@@ -101,13 +103,13 @@ class CriteriaBinOp(Criteria):
         is_right_op = isinstance(self.right, CriteriaBinOp)
 
         if is_left_op and is_right_op:
-            return "({}) {} ({})".format(self.left, self.op_str, self.right)
+            return f"({self.left}) {self.op_str} ({self.right})"
         elif is_left_op and not is_right_op:
-            return "({}) {} {}".format(self.left, self.op_str, self.right)
+            return f"({self.left}) {self.op_str} {self.right}"
         elif not is_left_op and is_right_op:
-            return "{} {} ({})".format(self.left, self.op_str, self.right)
+            return f"{self.left} {self.op_str} ({self.right})"
 
-        return "{} {} {}".format(self.left, self.op_str, self.right)
+        return f"{self.left} {self.op_str} {self.right}"
 
 
 class NotCriteria(Criteria):
@@ -119,11 +121,10 @@ class NotCriteria(Criteria):
         The criteria to invert the truth value of.
     """
 
-    def __init__(self,
-                 criteria: 'Callable[[Order, Exchange], bool]') -> None:
+    def __init__(self, criteria: "Callable[[Order, Exchange], bool]") -> None:
         self.criteria = criteria
 
-    def check(self, order: 'Order', exchange: 'Exchange') -> bool:
+    def check(self, order: "Order", exchange: "Exchange") -> bool:
         return not self.criteria(order, exchange)
 
     def __str__(self) -> str:
@@ -146,11 +147,11 @@ class Limit(Criteria):
     def __init__(self, limit_price: float) -> None:
         self.limit_price = limit_price
 
-    def check(self, order: 'Order', exchange: 'Exchange') -> bool:
+    def check(self, order: "Order", exchange: "Exchange") -> bool:
         price = exchange.quote_price(order.pair)
 
-        buy_satisfied = (order.side == TradeSide.BUY and price <= self.limit_price)
-        sell_satisfied = (order.side == TradeSide.SELL and price >= self.limit_price)
+        buy_satisfied = order.side == TradeSide.BUY and price <= self.limit_price
+        sell_satisfied = order.side == TradeSide.SELL and price >= self.limit_price
 
         return buy_satisfied or sell_satisfied
 
@@ -180,13 +181,11 @@ class Stop(Criteria):
         The percentage of the current price to use for watching.
     """
 
-    def __init__(self,
-                 direction: 'Union[StopDirection, str]',
-                 percent: float) -> None:
+    def __init__(self, direction: "StopDirection | str", percent: float) -> None:
         self.direction = StopDirection(direction)
         self.percent = percent
 
-    def check(self, order: 'Order', exchange: 'Exchange') -> bool:
+    def check(self, order: "Order", exchange: "Exchange") -> bool:
         price = exchange.quote_price(order.pair)
         percent = abs(price - order.price) / order.price
 
@@ -211,7 +210,7 @@ class Timed(Criteria):
     def __init__(self, duration: float):
         self.duration = duration
 
-    def check(self, order: 'Order', exchange: 'Exchange'):
+    def check(self, order: "Order", exchange: "Exchange"):
         return (order.clock.step - order.created_at) <= self.duration
 
     def __str__(self):

@@ -1,7 +1,7 @@
 from datetime import datetime
 
 
-class Clock(object):
+class Clock:
     """A class to track the time for a process.
 
     Attributes
@@ -25,8 +25,9 @@ class Clock(object):
         self.start = 0
         self.step = self.start
 
-    def now(self, format: str = None) -> datetime:
-        """Gets the current time in the provided format.
+    def now(self, format: str | None = None) -> datetime | str:
+        """Get the current time in the provided format.
+
         Parameters
         ----------
         format : str or None, optional
@@ -44,5 +45,5 @@ class Clock(object):
         self.step += 1
 
     def reset(self) -> None:
-        """Resets the clock."""
+        """Reset the clock."""
         self.step = self.start

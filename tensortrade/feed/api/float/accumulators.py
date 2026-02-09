@@ -1,8 +1,7 @@
-
 import numpy as np
 
-from tensortrade.feed.core.base import Stream
 from tensortrade.feed.api.float import Float
+from tensortrade.feed.core.base import Stream
 
 
 class CumSum(Stream[float]):
@@ -128,7 +127,7 @@ class CumMax(Stream[float]):
 
 
 @Float.register(["cumsum"])
-def cumsum(s: "Stream[float]") -> "Stream[float]":
+def cumsum(s: Stream[float]) -> Stream[float]:
     """Computes the cumulative sum of a stream.
 
     Parameters
@@ -145,7 +144,7 @@ def cumsum(s: "Stream[float]") -> "Stream[float]":
 
 
 @Float.register(["cumprod"])
-def cumprod(s: "Stream[float]") -> "Stream[float]":
+def cumprod(s: Stream[float]) -> Stream[float]:
     """Computes the cumulative product of a stream.
 
     Parameters
@@ -162,7 +161,7 @@ def cumprod(s: "Stream[float]") -> "Stream[float]":
 
 
 @Float.register(["cummin"])
-def cummin(s: "Stream[float]", skipna: bool = True) -> "Stream[float]":
+def cummin(s: Stream[float], skipna: bool = True) -> Stream[float]:
     """Computes the cumulative minimum of a stream.
 
     Parameters
@@ -181,7 +180,7 @@ def cummin(s: "Stream[float]", skipna: bool = True) -> "Stream[float]":
 
 
 @Float.register(["cummax"])
-def cummax(s: "Stream[float]", skipna: bool = True) -> "Stream[float]":
+def cummax(s: Stream[float], skipna: bool = True) -> Stream[float]:
     """Computes the cumulative maximum of a stream.
 
     Parameters

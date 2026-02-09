@@ -1,12 +1,8 @@
-
-
 from tensortrade.feed import Stream
-
 from tests.utils.ops import assert_op
 
 
 def test_reduce_sum():
-
     s1 = Stream.source([1, 2, 3, 4, 5, 6, 7], dtype="float").rename("s1")
     s2 = Stream.source([7, 6, 5, 4, 3, 2, 1], dtype="float").rename("s2")
 
@@ -18,7 +14,6 @@ def test_reduce_sum():
 
 
 def test_reduce_min():
-
     s1 = Stream.source([1, 2, 3, 4, 5, 6, 7], dtype="float").rename("s1")
     s2 = Stream.source([-3, 6, 4, 2, 0, 4, 10], dtype="float").rename("s2")
 
@@ -30,7 +25,6 @@ def test_reduce_min():
 
 
 def test_reduce_max():
-
     s1 = Stream.source([1, 2, 3, 4, 5, 6, 7], dtype="float").rename("s1")
     s2 = Stream.source([-3, 6, 4, 2, 0, 4, 10], dtype="float").rename("s2")
 
@@ -42,7 +36,6 @@ def test_reduce_max():
 
 
 def test_reduce_prod():
-
     s1 = Stream.source([1, 2, 3, 4, 5, 6, 7], dtype="float").rename("s1")
     s2 = Stream.source([3, 6, 4, 2, 0, 4, 10], dtype="float").rename("s2")
 

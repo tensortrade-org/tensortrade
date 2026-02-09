@@ -16,10 +16,10 @@
 from abc import ABCMeta
 
 
-class OrderListener(object, metaclass=ABCMeta):
+class OrderListener(metaclass=ABCMeta):
     """A callback class for an order."""
 
-    def on_execute(self, order: 'Order') -> None:
+    def on_execute(self, order: "Order") -> None:
         """Callback for an order after execution.
 
         Parameters
@@ -29,7 +29,7 @@ class OrderListener(object, metaclass=ABCMeta):
         """
         pass
 
-    def on_cancel(self, order: 'Order') -> None:
+    def on_cancel(self, order: "Order") -> None:
         """Callback for an order after cancellation.
 
         Parameters
@@ -39,7 +39,7 @@ class OrderListener(object, metaclass=ABCMeta):
         """
         pass
 
-    def on_fill(self, order: 'Order', trade: 'Trade') -> None:
+    def on_fill(self, order: "Order", trade: "Trade") -> None:
         """Callback for an order after being filled.
 
         Parameters
@@ -51,7 +51,7 @@ class OrderListener(object, metaclass=ABCMeta):
         """
         pass
 
-    def on_complete(self, order: 'Order') -> None:
+    def on_complete(self, order: "Order") -> None:
         """Callback for an order after being completed.
 
         Parameters

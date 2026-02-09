@@ -2,12 +2,12 @@
 rolling.py contains functions and classes for rolling stream operations.
 """
 
-from typing import List, Callable
+from collections.abc import Callable
 
 import numpy as np
 
-from tensortrade.feed.core.base import Stream
 from tensortrade.feed.api.float import Float
+from tensortrade.feed.core.base import Stream
 
 
 class RollingNode(Stream[float]):
@@ -15,11 +15,11 @@ class RollingNode(Stream[float]):
 
     Parameters
     ----------
-    func : `Callable[[List[float]], float]`
+    func : Callable[[list[float]], float]
         A function that aggregates a rolling window.
     """
 
-    def __init__(self, func: "Callable[[List[float]], float]"):
+    def __init__(self, func: Callable[[list[float]], float]):
         super().__init__(dtype="float")
         self.func = func
         self.n = 0
@@ -28,7 +28,11 @@ class RollingNode(Stream[float]):
         rolling = self.inputs[0]
         history = rolling.value
 
-        output = np.nan if rolling.n - rolling.nan < rolling.min_periods else self.func(history)
+        output = (
+            np.nan
+            if rolling.n - rolling.nan < rolling.min_periods
+            else self.func(history)
+        )
 
         return output
 
@@ -53,7 +57,7 @@ class RollingCount(RollingNode):
         return self.func(history)
 
 
-class Rolling(Stream[List[float]]):
+class Rolling(Stream[list[float]]):
     """A stream that generates a rolling window of values from a stream.
 
     Parameters
@@ -67,9 +71,7 @@ class Rolling(Stream[List[float]]):
 
     generic_name = "rolling"
 
-    def __init__(self,
-                 window: int,
-                 min_periods: int = 1) -> None:
+    def __init__(self, window: int, min_periods: int = 1) -> None:
         super().__init__()
         assert min_periods <= window
         self.window = window
@@ -80,7 +82,7 @@ class Rolling(Stream[List[float]]):
 
         self.history = []
 
-    def forward(self) -> "List[float]":
+    def forward(self) -> "list[float]":
         node = self.inputs[0]
 
         self.n += 1
@@ -95,7 +97,7 @@ class Rolling(Stream[List[float]]):
     def has_next(self) -> bool:
         return True
 
-    def agg(self, func: "Callable[[List[float]], float]") -> "Stream[float]":
+    def agg(self, func: "Callable[[list[float]], float]") -> "Stream[float]":
         """Computes an aggregation of a rolling window of values.
 
         Parameters
@@ -150,8 +152,13 @@ class Rolling(Stream[List[float]]):
         `Stream[float]`
             A rolling variance stream.
         """
-        def func1(x): return np.nanvar(x, ddof=1)
-        def func2(x): return np.var(x, ddof=1)
+
+        def func1(x):
+            return np.nanvar(x, ddof=1)
+
+        def func2(x):
+            return np.var(x, ddof=1)
+
         func = func1 if self.min_periods < self.window else func2
         return self.agg(func).astype("float")
 
@@ -187,12 +194,12 @@ class Rolling(Stream[List[float]]):
         func = np.nanmin if self.min_periods < self.window else np.min
         return self.agg(func).astype("float")
 
-    def max(self) -> "Stream[float]":
+    def max(self) -> Stream[float]:
         """Computes a rolling maximum from the underlying stream.
 
         Returns
         -------
-        `Stream[float]`
+        Stream[float]
             A rolling maximum stream.
         """
         func = np.nanmax if self.min_periods < self.window else np.max
@@ -206,9 +213,7 @@ class Rolling(Stream[List[float]]):
 
 
 @Float.register(["rolling"])
-def rolling(s: "Stream[float]",
-            window: int,
-            min_periods: int = 1) -> "Stream[List[float]]":
+def rolling(s: Stream[float], window: int, min_periods: int = 1) -> Stream[list[float]]:
     """Creates a stream that generates a rolling window of values from a stream.
 
     Parameters
@@ -221,7 +226,4 @@ def rolling(s: "Stream[float]",
         The number of periods to wait before producing values from the aggregation
         function.
     """
-    return Rolling(
-        window=window,
-        min_periods=min_periods
-    )(s)
+    return Rolling(window=window, min_periods=min_periods)(s)

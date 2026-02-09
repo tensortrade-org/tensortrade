@@ -1,11 +1,10 @@
-
+from tensortrade.feed.api.float import Float
 from tensortrade.feed.api.generic.imputation import FillNa, ForwardFill
 from tensortrade.feed.core.base import Stream
-from tensortrade.feed.api.float import Float
 
 
 @Float.register(["fillna"])
-def fillna(s: "Stream[float]", fill_value: float = 0.0) -> "Stream[float]":
+def fillna(s: Stream[float], fill_value: float = 0.0) -> Stream[float]:
     """Fill in missing values with a fill value.
 
     Parameters
@@ -24,7 +23,7 @@ def fillna(s: "Stream[float]", fill_value: float = 0.0) -> "Stream[float]":
 
 
 @Float.register(["ffill"])
-def ffill(s: "Stream[float]") -> "Stream[float]":
+def ffill(s: Stream[float]) -> Stream[float]:
     """Fill in missing values by forward filling.
 
     Parameters

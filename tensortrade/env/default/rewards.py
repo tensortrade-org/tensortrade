@@ -1,19 +1,16 @@
-
 from abc import abstractmethod
 
 import numpy as np
 import pandas as pd
 
 from tensortrade.env.generic import RewardScheme, TradingEnv
-from tensortrade.feed.core import Stream, DataFeed
-import math
+from tensortrade.feed.core import DataFeed, Stream
 
 
 class TensorTradeRewardScheme(RewardScheme):
-    """An abstract base class for reward schemes for the default environment.
-    """
+    """An abstract base class for reward schemes for the default environment."""
 
-    def reward(self, env: 'TradingEnv') -> float:
+    def reward(self, env: "TradingEnv") -> float:
         return self.get_reward(env.action_scheme.portfolio)
 
     @abstractmethod
@@ -49,9 +46,9 @@ class SimpleProfit(TensorTradeRewardScheme):
     """
 
     def __init__(self, window_size: int = 1):
-        self._window_size = self.default('window_size', window_size)
+        self._window_size = self.default("window_size", window_size)
 
-    def get_reward(self, portfolio: 'Portfolio') -> float:
+    def get_reward(self, portfolio: "Portfolio") -> float:
         """Rewards the agent for incremental increases in net worth over a
         sliding window.
 
@@ -66,9 +63,13 @@ class SimpleProfit(TensorTradeRewardScheme):
             The cumulative percentage change in net worth over the previous
             `window_size` time steps.
         """
-        net_worths = [nw['net_worth'] for nw in portfolio.performance.values()]
+        net_worths = [nw["net_worth"] for nw in portfolio.performance.values()]
         if len(net_worths) > 1:
-            return net_worths[-1] / net_worths[-min(len(net_worths), self._window_size + 1)] - 1.0
+            return (
+                net_worths[-1]
+                / net_worths[-min(len(net_worths), self._window_size + 1)]
+                - 1.0
+            )
         else:
             return 0.0
 
@@ -89,26 +90,28 @@ class RiskAdjustedReturns(TensorTradeRewardScheme):
         The size of the look back window for computing the reward.
     """
 
-    def __init__(self,
-                 return_algorithm: str = 'sharpe',
-                 risk_free_rate: float = 0.,
-                 target_returns: float = 0.,
-                 window_size: int = 1) -> None:
-        algorithm = self.default('return_algorithm', return_algorithm)
+    def __init__(
+        self,
+        return_algorithm: str = "sharpe",
+        risk_free_rate: float = 0.0,
+        target_returns: float = 0.0,
+        window_size: int = 1,
+    ) -> None:
+        algorithm = self.default("return_algorithm", return_algorithm)
 
-        assert algorithm in ['sharpe', 'sortino']
+        assert algorithm in ["sharpe", "sortino"]
 
-        if algorithm == 'sharpe':
+        if algorithm == "sharpe":
             return_algorithm = self._sharpe_ratio
-        elif algorithm == 'sortino':
+        elif algorithm == "sortino":
             return_algorithm = self._sortino_ratio
 
         self._return_algorithm = return_algorithm
-        self._risk_free_rate = self.default('risk_free_rate', risk_free_rate)
-        self._target_returns = self.default('target_returns', target_returns)
-        self._window_size = self.default('window_size', window_size)
+        self._risk_free_rate = self.default("risk_free_rate", risk_free_rate)
+        self._target_returns = self.default("target_returns", target_returns)
+        self._window_size = self.default("window_size", window_size)
 
-    def _sharpe_ratio(self, returns: 'pd.Series') -> float:
+    def _sharpe_ratio(self, returns: "pd.Series") -> float:
         """Computes the sharpe ratio for a given series of a returns.
 
         Parameters
@@ -125,9 +128,11 @@ class RiskAdjustedReturns(TensorTradeRewardScheme):
         ----------
         .. [1] https://en.wikipedia.org/wiki/Sharpe_ratio
         """
-        return (np.mean(returns) - self._risk_free_rate + 1e-9) / (np.std(returns) + 1e-9)
+        return (np.mean(returns) - self._risk_free_rate + 1e-9) / (
+            np.std(returns) + 1e-9
+        )
 
-    def _sortino_ratio(self, returns: 'pd.Series') -> float:
+    def _sortino_ratio(self, returns: "pd.Series") -> float:
         """Computes the sortino ratio for a given series of a returns.
 
         Parameters
@@ -156,7 +161,7 @@ class RiskAdjustedReturns(TensorTradeRewardScheme):
 
         return (expected_return - self._risk_free_rate + 1e-9) / (downside_std + 1e-9)
 
-    def get_reward(self, portfolio: 'Portfolio') -> float:
+    def get_reward(self, portfolio: "Portfolio") -> float:
         """Computes the reward corresponding to the selected risk-adjusted return metric.
 
         Parameters
@@ -169,14 +174,16 @@ class RiskAdjustedReturns(TensorTradeRewardScheme):
         float
             The reward corresponding to the selected risk-adjusted return metric.
         """
-        net_worths = [nw['net_worth'] for nw in portfolio.performance.values()][-(self._window_size + 1):]
+        net_worths = [nw["net_worth"] for nw in portfolio.performance.values()][
+            -(self._window_size + 1) :
+        ]
         returns = pd.Series(net_worths).pct_change().dropna()
         risk_adjusted_return = self._return_algorithm(returns)
         return risk_adjusted_return
 
 
 class PBR(TensorTradeRewardScheme):
-    """A reward scheme for position-based returns.
+    r"""A reward scheme for position-based returns.
 
     * Let :math:`p_t` denote the price at time t.
     * Let :math:`x_t` denote the position at time t.
@@ -193,7 +200,7 @@ class PBR(TensorTradeRewardScheme):
 
     registered_name = "pbr"
 
-    def __init__(self, price: 'Stream') -> None:
+    def __init__(self, price: "Stream") -> None:
         super().__init__()
         self.position = -1
 
@@ -208,7 +215,7 @@ class PBR(TensorTradeRewardScheme):
     def on_action(self, action: int) -> None:
         self.position = -1 if action == 0 else 1
 
-    def get_reward(self, portfolio: 'Portfolio') -> float:
+    def get_reward(self, portfolio: "Portfolio") -> float:
         return self.feed.next()["reward"]
 
     def reset(self) -> None:
@@ -246,11 +253,11 @@ class AdvancedPBR(TensorTradeRewardScheme):
 
     def __init__(
         self,
-        price: 'Stream',
+        price: "Stream",
         pbr_weight: float = 1.0,
         trade_penalty: float = -0.001,
         hold_bonus: float = 0.0001,
-        volatility_threshold: float = 0.001
+        volatility_threshold: float = 0.001,
     ) -> None:
         super().__init__()
         self.position = -1
@@ -277,14 +284,14 @@ class AdvancedPBR(TensorTradeRewardScheme):
 
     def on_action(self, action: int) -> None:
         # Track if action changed
-        self.action_changed = (action != self.prev_action)
+        self.action_changed = action != self.prev_action
         if self.action_changed:
             self.trade_count += 1
 
         self.prev_action = action
         self.position = -1 if action == 0 else 1
 
-    def get_reward(self, portfolio: 'Portfolio') -> float:
+    def get_reward(self, portfolio: "Portfolio") -> float:
         data = self.feed.next()
         pbr_reward = data["pbr_reward"]
         current_price = data.get(self.price_stream.name, 0)
@@ -322,21 +329,18 @@ class AdvancedPBR(TensorTradeRewardScheme):
 
     def get_stats(self) -> dict:
         """Returns trading statistics for analysis."""
-        return {
-            "trade_count": self.trade_count,
-            "hold_count": self.hold_count
-        }
+        return {"trade_count": self.trade_count, "hold_count": self.hold_count}
 
 
 _registry = {
-    'simple': SimpleProfit,
-    'risk-adjusted': RiskAdjustedReturns,
-    'pbr': PBR,
-    'advanced-pbr': AdvancedPBR,
+    "simple": SimpleProfit,
+    "risk-adjusted": RiskAdjustedReturns,
+    "pbr": PBR,
+    "advanced-pbr": AdvancedPBR,
 }
 
 
-def get(identifier: str) -> 'TensorTradeRewardScheme':
+def get(identifier: str) -> "TensorTradeRewardScheme":
     """Gets the `RewardScheme` that matches with the identifier.
 
     Parameters

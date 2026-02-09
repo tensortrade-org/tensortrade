@@ -1,2 +1,1 @@
-from . import generic
-from . import default
+from . import default, generic

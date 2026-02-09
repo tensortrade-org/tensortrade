@@ -1,11 +1,9 @@
+from itertools import product
 
 import numpy as np
 import pandas as pd
 
-from itertools import product
-
 from tensortrade.feed import Stream
-
 from tests.utils.ops import assert_op
 
 arrays = [
@@ -70,12 +68,12 @@ def test_pct_change():
     ]
 
     for array, config in product(arrays, configs):
-
         s = Stream.source(array, dtype="float")
         w = s.pct_change(**config).rename("w")
 
         # Get expected from pandas with same config
         import warnings
+
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", FutureWarning)
             expected = list(pd.Series(array).pct_change(**config))
@@ -85,7 +83,6 @@ def test_pct_change():
 
 
 def test_diff():
-
     for array in arrays:
         s = Stream.source(array, dtype="float")
         w = s.diff(periods=1).rename("w")

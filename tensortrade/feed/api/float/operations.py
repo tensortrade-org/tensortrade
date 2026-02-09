@@ -5,13 +5,13 @@ streams.
 
 import numpy as np
 
+from tensortrade.feed.api.float import Float
 from tensortrade.feed.core.base import Stream
 from tensortrade.feed.core.operators import BinOp
-from tensortrade.feed.api.float import Float
 
 
 @Float.register(["add", "__add__"])
-def add(s1: "Stream[float]", s2: "Stream[float]") -> "Stream[float]":
+def add(s1: Stream[float], s2: Stream[float]) -> Stream[float]:
     """Computes the addition of two float streams.
 
     Parameters
@@ -33,7 +33,7 @@ def add(s1: "Stream[float]", s2: "Stream[float]") -> "Stream[float]":
 
 
 @Float.register(["radd", "__radd__"])
-def radd(s1: "Stream[float]", s2: "Stream[float]") -> "Stream[float]":
+def radd(s1: Stream[float], s2: Stream[float]) -> Stream[float]:
     """Computes the reversed addition of two float streams.
 
     Parameters
@@ -52,7 +52,7 @@ def radd(s1: "Stream[float]", s2: "Stream[float]") -> "Stream[float]":
 
 
 @Float.register(["sub", "__sub__"])
-def sub(s1: "Stream[float]", s2: "Stream[float]") -> "Stream[float]":
+def sub(s1: Stream[float], s2: Stream[float]) -> Stream[float]:
     """Computes the subtraction of two float streams.
 
     Parameters
@@ -74,7 +74,7 @@ def sub(s1: "Stream[float]", s2: "Stream[float]") -> "Stream[float]":
 
 
 @Float.register(["rsub", "__rsub__"])
-def rsub(s1: "Stream[float]", s2: "Stream[float]") -> "Stream[float]":
+def rsub(s1: Stream[float], s2: Stream[float]) -> Stream[float]:
     """Computes the reverse subtraction of two float streams.
 
     Parameters
@@ -96,7 +96,7 @@ def rsub(s1: "Stream[float]", s2: "Stream[float]") -> "Stream[float]":
 
 
 @Float.register(["mul", "__mul__"])
-def mul(s1: "Stream[float]", s2: "Stream[float]") -> "Stream[float]":
+def mul(s1: Stream[float], s2: Stream[float]) -> Stream[float]:
     """Computes the multiplication of two float streams.
 
     Parameters
@@ -118,7 +118,7 @@ def mul(s1: "Stream[float]", s2: "Stream[float]") -> "Stream[float]":
 
 
 @Float.register(["rmul", "__rmul__"])
-def rmul(s1: "Stream[float]", s2: "Stream[float]") -> "Stream[float]":
+def rmul(s1: Stream[float], s2: Stream[float]) -> Stream[float]:
     """Computes the reverse multiplication of two float streams.
 
     Parameters
@@ -137,7 +137,7 @@ def rmul(s1: "Stream[float]", s2: "Stream[float]") -> "Stream[float]":
 
 
 @Float.register(["div", "__truediv__"])
-def truediv(s1: "Stream[float]", s2: "Stream[float]") -> "Stream[float]":
+def truediv(s1: Stream[float], s2: Stream[float]) -> Stream[float]:
     """Computes the division of two float streams.
 
     Parameters
@@ -159,7 +159,7 @@ def truediv(s1: "Stream[float]", s2: "Stream[float]") -> "Stream[float]":
 
 
 @Float.register(["rdiv", "__rtruediv__"])
-def rtruediv(s1: "Stream[float]", s2: "Stream[float]") -> "Stream[float]":
+def rtruediv(s1: Stream[float], s2: Stream[float]) -> Stream[float]:
     """Computes the reverse division of two float streams.
 
     Parameters
@@ -181,7 +181,7 @@ def rtruediv(s1: "Stream[float]", s2: "Stream[float]") -> "Stream[float]":
 
 
 @Float.register(["abs", "__abs__"])
-def abs(s: "Stream[float]") -> "Stream[float]":
+def abs(s: Stream[float]) -> Stream[float]:
     """Computes the absolute value of a float stream.
 
     Parameters
@@ -198,7 +198,7 @@ def abs(s: "Stream[float]") -> "Stream[float]":
 
 
 @Float.register(["neg", "__neg__"])
-def neg(s: "Stream[float]") -> "Stream[float]":
+def neg(s: Stream[float]) -> Stream[float]:
     """Computes the negation of a float stream.
 
     Parameters

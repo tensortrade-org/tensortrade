@@ -2,12 +2,12 @@
 operations.py contain functions for streaming string operations.
 """
 
-from tensortrade.feed.core.base import Stream
 from tensortrade.feed.api.string import String
+from tensortrade.feed.core.base import Stream
 
 
 @String.register(["capitalize"])
-def capitalize(s: "Stream[str]") -> "Stream[str]":
+def capitalize(s: Stream[str]) -> Stream[str]:
     """Computes the capitalization of a stream.
 
     Parameters
@@ -24,7 +24,7 @@ def capitalize(s: "Stream[str]") -> "Stream[str]":
 
 
 @String.register(["upper"])
-def upper(s: "Stream[str]") -> "Stream[str]":
+def upper(s: Stream[str]) -> Stream[str]:
     """Computes the uppercase of a string stream.
 
     Parameters
@@ -41,7 +41,7 @@ def upper(s: "Stream[str]") -> "Stream[str]":
 
 
 @String.register(["lower"])
-def lower(s: "Stream[str]") -> "Stream[str]":
+def lower(s: Stream[str]) -> Stream[str]:
     """Computes the lowercase of a string stream.
 
     Parameters
@@ -58,7 +58,7 @@ def lower(s: "Stream[str]") -> "Stream[str]":
 
 
 @String.register(["slice"])
-def slice(s: "Stream[str]", start: int, end: int) -> "Stream[str]":
+def slice(s: Stream[str], start: int, end: int) -> Stream[str]:
     """Computes the substring of a string stream.
 
     Parameters
@@ -79,7 +79,7 @@ def slice(s: "Stream[str]", start: int, end: int) -> "Stream[str]":
 
 
 @String.register(["cat"])
-def cat(s: "Stream[str]", word: str) -> "Stream[str]":
+def cat(s: Stream[str], word: str) -> Stream[str]:
     """Computes the concatenation of a stream with a word.
 
     Parameters
@@ -98,7 +98,7 @@ def cat(s: "Stream[str]", word: str) -> "Stream[str]":
 
 
 @String.register(["startswith"])
-def startswith(s: "Stream[str]", word: str) -> "Stream[bool]":
+def startswith(s: Stream[str], word: str) -> Stream[bool]:
     """Computes the boolean stream of a string starting with a specific value.
 
     Parameters
@@ -117,7 +117,7 @@ def startswith(s: "Stream[str]", word: str) -> "Stream[bool]":
 
 
 @String.register(["endswith"])
-def endswith(s: "Stream[str]", word: str) -> "Stream[bool]":
+def endswith(s: Stream[str], word: str) -> Stream[bool]:
     """Computes the boolean stream of a string ending with a specific value.
 
     Parameters

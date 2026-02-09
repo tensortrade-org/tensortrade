@@ -1,25 +1,22 @@
-
 import unittest.mock as mock
 
+from tensortrade.oms.instruments import BTC, USD
 from tensortrade.oms.orders.criteria import Stop, StopDirection
-from tensortrade.oms.instruments import USD, BTC
 
 
 def test_init():
-
     criteria = Stop(direction=StopDirection.UP, percent=0.3)
     assert criteria.direction == StopDirection.UP
     assert criteria.percent == 0.3
 
 
-@mock.patch('tensortrade.exchanges.Exchange')
-@mock.patch('tensortrade.orders.Order')
+@mock.patch("tensortrade.exchanges.Exchange")
+@mock.patch("tensortrade.orders.Order")
 def test_call_with_direction_down(mock_order_class, mock_exchange_class):
-
     exchange = mock_exchange_class.return_value
 
     order = mock_order_class.return_value
-    order.pair = USD/BTC
+    order.pair = USD / BTC
     order.price = 7000.00
 
     criteria = Stop(direction=StopDirection.DOWN, percent=0.03)
@@ -37,10 +34,9 @@ def test_call_with_direction_down(mock_order_class, mock_exchange_class):
     assert not criteria(order, exchange)
 
 
-@mock.patch('tensortrade.exchanges.Exchange')
-@mock.patch('tensortrade.orders.Order')
+@mock.patch("tensortrade.exchanges.Exchange")
+@mock.patch("tensortrade.orders.Order")
 def test_call_with_direction_up(mock_order_class, mock_exchange_class):
-
     exchange = mock_exchange_class.return_value
 
     order = mock_order_class.return_value

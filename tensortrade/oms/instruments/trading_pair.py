@@ -12,9 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License
 
-from typing import Any
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any
 
 from tensortrade.core.exceptions import InvalidTradingPair
+
+if TYPE_CHECKING:
+    from tensortrade.oms.instruments.instrument import Instrument
 
 
 class TradingPair:
@@ -33,7 +38,7 @@ class TradingPair:
         Raises if base and quote instrument are equal.
     """
 
-    def __init__(self, base: "Instrument", quote: "Instrument") -> None:
+    def __init__(self, base: Instrument, quote: Instrument) -> None:
         if base == quote:
             raise InvalidTradingPair(base, quote)
         self.base = base
@@ -42,17 +47,17 @@ class TradingPair:
     def __hash__(self) -> int:
         return hash(str(self))
 
-    def __eq__(self, other: "Any") -> bool:
+    def __eq__(self, other: Any) -> bool:
         if isinstance(other, TradingPair):
             if str(self) == str(other):
                 return True
         return False
 
-    def __ne__(self, other: "Any") -> bool:
+    def __ne__(self, other: Any) -> bool:
         return not self.__eq__(other)
 
     def __str__(self) -> str:
-        return "{}/{}".format(self.base.symbol, self.quote.symbol)
+        return f"{self.base.symbol}/{self.quote.symbol}"
 
     def __repr__(self) -> str:
         return str(self)

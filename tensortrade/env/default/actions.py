@@ -1,29 +1,31 @@
+from __future__ import annotations
+
 import logging
 from abc import abstractmethod
 from itertools import product
-from typing import Union, List, Any
+from typing import TYPE_CHECKING, Any
 
-from gymnasium.spaces import Space, Discrete
+from gymnasium.spaces import Discrete, Space
 
 from tensortrade.core import Clock
 from tensortrade.env.generic import ActionScheme, TradingEnv
-from tensortrade.oms.instruments import ExchangePair
 from tensortrade.oms.orders import (
     Broker,
     Order,
     OrderListener,
-    OrderSpec,
+    TradeSide,
+    TradeType,
     proportion_order,
     risk_managed_order,
-    TradeSide,
-    TradeType
 )
-from tensortrade.oms.wallets import Portfolio
+from tensortrade.oms.wallets import Portfolio, Wallet
+
+if TYPE_CHECKING:
+    from tensortrade.oms.orders.criteria import OrderCriteria
 
 
 class TensorTradeActionScheme(ActionScheme):
-    """An abstract base class for any `ActionScheme` that wants to be
-    compatible with the built in OMS.
+    """An abstract base class for any `ActionScheme` that wants to be compatible with the built in OMS.
 
     The structure of the action scheme is built to make sure that action space
     can be used with the system, provided that the user defines the methods to
@@ -46,12 +48,12 @@ class TensorTradeActionScheme(ActionScheme):
 
     def __init__(self) -> None:
         super().__init__()
-        self.portfolio: 'Portfolio' = None
-        self.broker: 'Broker' = Broker()
+        self.portfolio: Portfolio | None = None
+        self.broker: Broker = Broker()
 
     @property
-    def clock(self) -> 'Clock':
-        """The reference clock from the environment. (`Clock`)
+    def clock(self) -> Clock:
+        """Get reference clock from the environment (`Clock`).
 
         When the clock is set for the we also set the clock for the portfolio
         as well as the exchanges defined in the portfolio.
@@ -64,7 +66,7 @@ class TensorTradeActionScheme(ActionScheme):
         return self._clock
 
     @clock.setter
-    def clock(self, clock: 'Clock') -> None:
+    def clock(self, clock: Clock) -> None:
         self._clock = clock
 
         components = [self.portfolio] + self.portfolio.exchanges
@@ -72,8 +74,8 @@ class TensorTradeActionScheme(ActionScheme):
             c.clock = clock
         self.broker.clock = clock
 
-    def perform(self, env: 'TradingEnv', action: Any) -> None:
-        """Performs the action on the given environment.
+    def perform(self, env: TradingEnv, action: Any) -> None:
+        """Perform the action on the given environment.
 
         Under the TT action scheme, the subclassed action scheme is expected
         to provide a method for getting a list of orders to be submitted to
@@ -90,14 +92,14 @@ class TensorTradeActionScheme(ActionScheme):
 
         for order in orders:
             if order:
-                logging.info('Step {}: {} {}'.format(order.step, order.side, order.quantity))
+                logging.info(f"Step {order.step}: {order.side} {order.quantity}")
                 self.broker.submit(order)
 
         self.broker.update()
 
     @abstractmethod
-    def get_orders(self, action: Any, portfolio: 'Portfolio') -> 'List[Order]':
-        """Gets the list of orders to be submitted for the given action.
+    def get_orders(self, action: Any, portfolio: Portfolio) -> list[Order]:
+        """Get the list of orders to be submitted for the given action.
 
         Parameters
         ----------
@@ -120,8 +122,7 @@ class TensorTradeActionScheme(ActionScheme):
 
 
 class BSH(TensorTradeActionScheme):
-    """A simple discrete action scheme where the only options are to buy, sell,
-    or hold.
+    """A simple discrete action scheme where the only options are to buy, sell, or hold.
 
     Parameters
     ----------
@@ -133,7 +134,7 @@ class BSH(TensorTradeActionScheme):
 
     registered_name = "bsh"
 
-    def __init__(self, cash: 'Wallet', asset: 'Wallet'):
+    def __init__(self, cash: Wallet, asset: Wallet):
         super().__init__()
         self.cash = cash
         self.asset = asset
@@ -149,14 +150,16 @@ class BSH(TensorTradeActionScheme):
         self.listeners += [listener]
         return self
 
-    def get_orders(self, action: int, portfolio: 'Portfolio') -> 'Order':
+    def get_orders(self, action: int, portfolio: Portfolio) -> list[Order]:
         order = None
 
         if abs(action - self.action) > 0:
             src = self.cash if self.action == 0 else self.asset
             tgt = self.asset if self.action == 0 else self.cash
 
-            if src.balance == 0:  # We need to check, regardless of the proposed order, if we have balance in 'src'
+            if (
+                src.balance == 0
+            ):  # We need to check, regardless of the proposed order, if we have balance in 'src'
                 return []  # Otherwise just return an empty order list
 
             order = proportion_order(portfolio, src, tgt, 1.0)
@@ -164,6 +167,8 @@ class BSH(TensorTradeActionScheme):
 
         for listener in self.listeners:
             listener.on_action(action)
+
+        assert isinstance(order, Order)
 
         return [order]
 
@@ -173,8 +178,7 @@ class BSH(TensorTradeActionScheme):
 
 
 class SimpleOrders(TensorTradeActionScheme):
-    """A discrete action scheme that determines actions based on a list of
-    trading pairs, order criteria, and trade sizes.
+    """A discrete action scheme that determines actions based on a list of trading pairs, order criteria, and trade sizes.
 
     Parameters
     ----------
@@ -197,31 +201,33 @@ class SimpleOrders(TensorTradeActionScheme):
         The minimum value when placing an order, calculated in absolute order value.
     """
 
-    def __init__(self,
-                 criteria: 'Union[List[OrderCriteria], OrderCriteria]' = None,
-                 trade_sizes: 'Union[List[float], int]' = 10,
-                 durations: 'Union[List[int], int]' = None,
-                 trade_type: 'TradeType' = TradeType.MARKET,
-                 order_listener: 'OrderListener' = None,
-                 min_order_pct: float = 0.02,
-                 min_order_abs: float = 0.00) -> None:
+    def __init__(
+        self,
+        criteria: list[OrderCriteria] | OrderCriteria | None = None,
+        trade_sizes: list[float] | int = 10,
+        durations: list[int] | int | None = None,
+        trade_type: TradeType = TradeType.MARKET,
+        order_listener: OrderListener | None = None,
+        min_order_pct: float = 0.02,
+        min_order_abs: float = 0.00,
+    ) -> None:
         super().__init__()
         self.min_order_pct = min_order_pct
         self.min_order_abs = min_order_abs
-        criteria = self.default('criteria', criteria)
+        criteria = self.default("criteria", criteria)
         self.criteria = criteria if isinstance(criteria, list) else [criteria]
 
-        trade_sizes = self.default('trade_sizes', trade_sizes)
+        trade_sizes = self.default("trade_sizes", trade_sizes)
         if isinstance(trade_sizes, list):
             self.trade_sizes = trade_sizes
         else:
             self.trade_sizes = [(x + 1) / trade_sizes for x in range(trade_sizes)]
 
-        durations = self.default('durations', durations)
+        durations = self.default("durations", durations)
         self.durations = durations if isinstance(durations, list) else [durations]
 
-        self._trade_type = self.default('trade_type', trade_type)
-        self._order_listener = self.default('order_listener', order_listener)
+        self._trade_type = self.default("trade_type", trade_type)
+        self._order_listener = self.default("order_listener", order_listener)
 
         self._action_space = None
         self.actions = None
@@ -233,7 +239,7 @@ class SimpleOrders(TensorTradeActionScheme):
                 self.criteria,
                 self.trade_sizes,
                 self.durations,
-                [TradeSide.BUY, TradeSide.SELL]
+                [TradeSide.BUY, TradeSide.SELL],
             )
             self.actions = list(self.actions)
             self.actions = list(product(self.portfolio.exchange_pairs, self.actions))
@@ -242,10 +248,7 @@ class SimpleOrders(TensorTradeActionScheme):
             self._action_space = Discrete(len(self.actions))
         return self._action_space
 
-    def get_orders(self,
-                   action: int,
-                   portfolio: 'Portfolio') -> 'List[Order]':
-
+    def get_orders(self, action: int, portfolio: Portfolio) -> list[Order]:
         if action == 0:
             return []
 
@@ -255,14 +258,16 @@ class SimpleOrders(TensorTradeActionScheme):
         wallet = portfolio.get_wallet(ep.exchange.id, instrument=instrument)
 
         balance = wallet.balance.as_float()
-        size = (balance * proportion)
+        size = balance * proportion
         size = min(balance, size)
 
         quantity = (size * instrument).quantize()
 
-        if size < 10 ** -instrument.precision \
-                or size < self.min_order_pct * portfolio.net_worth \
-                or size < self.min_order_abs:
+        if (
+            size < 10**-instrument.precision
+            or size < self.min_order_pct * portfolio.net_worth
+            or size < self.min_order_abs
+        ):
             return []
 
         order = Order(
@@ -274,7 +279,7 @@ class SimpleOrders(TensorTradeActionScheme):
             quantity=quantity,
             criteria=criteria,
             end=self.clock.step + duration if duration else None,
-            portfolio=portfolio
+            portfolio=portfolio,
         )
 
         if self._order_listener is not None:
@@ -284,8 +289,9 @@ class SimpleOrders(TensorTradeActionScheme):
 
 
 class ManagedRiskOrders(TensorTradeActionScheme):
-    """A discrete action scheme that determines actions based on managing risk,
-       through setting a follow-up stop loss and take profit on every order.
+    """A discrete action scheme that determines actions based on managing risk.
+
+    This is done through setting a follow-up stop loss and take profit on every order.
 
     Parameters
     ----------
@@ -309,45 +315,47 @@ class ManagedRiskOrders(TensorTradeActionScheme):
         The minimum value when placing an order, calculated in absolute order value.
     """
 
-    def __init__(self,
-                 stop: 'List[float]' = [0.02, 0.04, 0.06],
-                 take: 'List[float]' = [0.01, 0.02, 0.03],
-                 trade_sizes: 'Union[List[float], int]' = 10,
-                 durations: 'Union[List[int], int]' = None,
-                 trade_type: 'TradeType' = TradeType.MARKET,
-                 order_listener: 'OrderListener' = None,
-                 min_order_pct: float = 0.02,
-                 min_order_abs: float = 0.00) -> None:
+    def __init__(
+        self,
+        stop: list[float] = [0.02, 0.04, 0.06],
+        take: list[float] = [0.01, 0.02, 0.03],
+        trade_sizes: list[float] | int = 10,
+        durations: list[int] | int = None,
+        trade_type: TradeType = TradeType.MARKET,
+        order_listener: OrderListener = None,
+        min_order_pct: float = 0.02,
+        min_order_abs: float = 0.00,
+    ) -> None:
         super().__init__()
         self.min_order_pct = min_order_pct
         self.min_order_abs = min_order_abs
-        self.stop = self.default('stop', stop)
-        self.take = self.default('take', take)
+        self.stop = self.default("stop", stop)
+        self.take = self.default("take", take)
 
-        trade_sizes = self.default('trade_sizes', trade_sizes)
+        trade_sizes = self.default("trade_sizes", trade_sizes)
         if isinstance(trade_sizes, list):
             self.trade_sizes = trade_sizes
         else:
             self.trade_sizes = [(x + 1) / trade_sizes for x in range(trade_sizes)]
 
-        durations = self.default('durations', durations)
+        durations = self.default("durations", durations)
         self.durations = durations if isinstance(durations, list) else [durations]
 
-        self._trade_type = self.default('trade_type', trade_type)
-        self._order_listener = self.default('order_listener', order_listener)
+        self._trade_type = self.default("trade_type", trade_type)
+        self._order_listener = self.default("order_listener", order_listener)
 
         self._action_space = None
         self.actions = None
 
     @property
-    def action_space(self) -> 'Space':
+    def action_space(self) -> Space:
         if not self._action_space:
             self.actions = product(
                 self.stop,
                 self.take,
                 self.trade_sizes,
                 self.durations,
-                [TradeSide.BUY, TradeSide.SELL]
+                [TradeSide.BUY, TradeSide.SELL],
             )
             self.actions = list(self.actions)
             self.actions = list(product(self.portfolio.exchange_pairs, self.actions))
@@ -356,8 +364,7 @@ class ManagedRiskOrders(TensorTradeActionScheme):
             self._action_space = Discrete(len(self.actions))
         return self._action_space
 
-    def get_orders(self, action: int, portfolio: 'Portfolio') -> 'List[Order]':
-
+    def get_orders(self, action: int, portfolio: Portfolio) -> list[Order]:
         if action == 0:
             return []
 
@@ -369,25 +376,27 @@ class ManagedRiskOrders(TensorTradeActionScheme):
         wallet = portfolio.get_wallet(ep.exchange.id, instrument=instrument)
 
         balance = wallet.balance.as_float()
-        size = (balance * proportion)
+        size = balance * proportion
         size = min(balance, size)
         quantity = (size * instrument).quantize()
 
-        if size < 10 ** -instrument.precision \
-                or size < self.min_order_pct * portfolio.net_worth \
-                or size < self.min_order_abs:
+        if (
+            size < 10**-instrument.precision
+            or size < self.min_order_pct * portfolio.net_worth
+            or size < self.min_order_abs
+        ):
             return []
 
         params = {
-            'side': side,
-            'exchange_pair': ep,
-            'price': ep.price,
-            'quantity': quantity,
-            'down_percent': stop,
-            'up_percent': take,
-            'portfolio': portfolio,
-            'trade_type': self._trade_type,
-            'end': self.clock.step + duration if duration else None
+            "side": side,
+            "exchange_pair": ep,
+            "price": ep.price,
+            "quantity": quantity,
+            "down_percent": stop,
+            "up_percent": take,
+            "portfolio": portfolio,
+            "trade_type": self._trade_type,
+            "end": self.clock.step + duration if duration else None,
         }
 
         order = risk_managed_order(**params)
@@ -399,14 +408,14 @@ class ManagedRiskOrders(TensorTradeActionScheme):
 
 
 _registry = {
-    'bsh': BSH,
-    'simple': SimpleOrders,
-    'managed-risk': ManagedRiskOrders,
+    "bsh": BSH,
+    "simple": SimpleOrders,
+    "managed-risk": ManagedRiskOrders,
 }
 
 
-def get(identifier: str) -> 'ActionScheme':
-    """Gets the `ActionScheme` that matches with the identifier.
+def get(identifier: str) -> ActionScheme:
+    """Get the `ActionScheme` that matches with the identifier.
 
     Parameters
     ----------
@@ -424,5 +433,7 @@ def get(identifier: str) -> 'ActionScheme':
         Raised if the `identifier` is not associated with any `ActionScheme`.
     """
     if identifier not in _registry.keys():
-        raise KeyError(f"Identifier {identifier} is not associated with any `ActionScheme`.")
+        raise KeyError(
+            f"Identifier {identifier} is not associated with any `ActionScheme`."
+        )
     return _registry[identifier]()

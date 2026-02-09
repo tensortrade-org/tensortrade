@@ -1,10 +1,7 @@
-
-
-from tensortrade.feed import Stream, DataFeed
+from tensortrade.feed import DataFeed, Stream
 
 
 def test_generic():
-
     s1 = Stream.source(["hello", "my", "name", "is"], dtype="string")
     s2 = Stream.source([1, 2, 3, 4, 5, 6])
 
