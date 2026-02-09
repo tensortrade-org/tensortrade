@@ -14,6 +14,7 @@ function formatParamValue(value: ParamValue): string {
 	if (value == null) return "—";
 	if (typeof value === "boolean") return value ? "true" : "false";
 	if (typeof value === "string") return value;
+	if (typeof value === "object") return JSON.stringify(value);
 	if (typeof value !== "number" || Number.isNaN(value)) return String(value);
 	if (Number.isInteger(value)) return String(value);
 	if (Math.abs(value) < 0.01) return value.toExponential(2);

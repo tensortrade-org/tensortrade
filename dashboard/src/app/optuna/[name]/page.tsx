@@ -109,6 +109,7 @@ function BestTrialsTable({
 								<td className="py-2 pr-4">
 									<code className="text-xs text-[var(--text-secondary)]">
 										{Object.entries(trial.params)
+											.filter(([, v]) => typeof v !== "object")
 											.map(([k, v]) => {
 												const numVal = typeof v === "number" ? v : Number(v);
 												return `${k}=${Number.isFinite(numVal) ? numVal.toPrecision(3) : v}`;
