@@ -10,7 +10,7 @@ members = ["packages/*"]
 [tool.uv]
 dev-dependencies = [
     "tensortrade",
-    "tensortrade-platform[insights,optuna,alpaca]",
+    "tensortrade-platform[torch,insights,optuna,alpaca]",
 ]
 
 [tool.uv.sources]

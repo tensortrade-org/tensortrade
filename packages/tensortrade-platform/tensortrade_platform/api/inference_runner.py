@@ -330,6 +330,14 @@ class InferenceRunner:
         if not os.path.exists(checkpoint_path):
             raise ValueError(f"Checkpoint path does not exist: {checkpoint_path}")
 
+        try:
+            import torch  # noqa: F401
+        except ImportError:
+            raise ImportError(
+                "PyTorch is required for loading RLlib checkpoints. "
+                "Install it with: uv pip install 'tensortrade-platform[torch]'"
+            ) from None
+
         from ray.rllib.policy.policy import Policy
 
         from tensortrade_platform.ray_manager import ray_manager

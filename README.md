@@ -4,7 +4,7 @@
 
 # TensorTrade
 
-**Train RL agents to trade. Can they beat Buy-and-Hold?**
+**An open-source Python framework for training reinforcement learning agents to trade.**
 
 [![Tests](https://github.com/tensortrade-org/tensortrade/actions/workflows/tests.yml/badge.svg)](https://github.com/tensortrade-org/tensortrade/actions/workflows/tests.yml)
 [![Documentation Status](https://readthedocs.org/projects/tensortrade/badge/?version=latest)](https://tensortrade.org)
@@ -12,246 +12,142 @@
 [![Discord](https://img.shields.io/discord/592446624882491402.svg?color=brightgreen)](https://discord.gg/ZZ7BGWh)
 [![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/release/python-3120/)
 
-TensorTrade is an open-source Python framework for building, training, and evaluating reinforcement learning agents for algorithmic trading. The framework provides composable components for environments, action schemes, reward functions, and data feeds that can be combined to create custom trading systems.
+TensorTrade provides composable building blocks for trading environments, action schemes, reward functions, and data feeds. Wire them together, point an RL algorithm at the environment, and see if your agent can beat buy-and-hold.
 
-## Quick Start
+```python
+import tensortrade.env.default as default
+from tensortrade.feed.core import DataFeed, Stream
+from tensortrade.oms.exchanges import Exchange
+from tensortrade.oms.instruments import USD, BTC
+from tensortrade.oms.services.execution.simulated import execute_order
+from tensortrade.oms.wallets import Portfolio, Wallet
 
-```bash
-# Requires Python 3.12+ and uv (https://docs.astral.sh/uv/)
-uv venv --python 3.12 .venv
-source .venv/bin/activate
+# Price data (swap in real OHLCV data here)
+price = Stream.source([100 + i * 0.5 for i in range(200)], dtype="float").rename("USD-BTC")
 
-# Install core library
-uv pip install -e .
+exchange = Exchange("sim", service=execute_order)(price)
+portfolio = Portfolio(USD, [
+    Wallet(exchange, 10_000 * USD),
+    Wallet(exchange, 0 * BTC),
+])
 
-# For training with Ray/RLlib (recommended)
-uv pip install -r examples/requirements.txt
+env = default.create(
+    portfolio=portfolio,
+    action_scheme="bsh",       # Buy / Sell / Hold
+    reward_scheme="pbr",       # Position-Based Returns
+    window_size=20,
+)
 
-# Run training
-python examples/training/train_simple.py
+# env is a standard gymnasium.Env - use with any RL library
+obs, info = env.reset()
+obs, reward, terminated, truncated, info = env.step(env.action_space.sample())
 ```
 
-## Documentation & Tutorials
+## Install
 
-📚 **[Tutorial Index](docs/tutorials/index.md)** — Start here for the complete learning curriculum.
+```bash
+pip install tensortrade          # core library only
+pip install tensortrade-platform # + training dashboard, live trading, API server
+```
 
-### Foundations
-- [The Three Pillars](docs/tutorials/01-foundations/01-three-pillars.md) — RL + Trading + Data concepts
-- [Architecture](docs/tutorials/01-foundations/02-architecture.md) — How components work together
-- [Your First Run](docs/tutorials/01-foundations/03-your-first-run.md) — Run and understand output
+**From source (development):**
 
-### Domain Knowledge
-- [Trading for RL Practitioners](docs/tutorials/02-domains/track-a-trading-for-rl/01-trading-basics.md)
-- [RL for Traders](docs/tutorials/02-domains/track-b-rl-for-traders/01-rl-fundamentals.md)
-- [Common Failures](docs/tutorials/02-domains/track-b-rl-for-traders/02-common-failures.md) — Critical pitfalls to avoid
-- [Full Introduction](docs/tutorials/02-domains/track-c-full-intro/README.md) — New to both domains
-
-### Core Components
-- [Action Schemes](docs/tutorials/03-components/01-action-schemes.md) — BSH and order execution
-- [Reward Schemes](docs/tutorials/03-components/02-reward-schemes.md) — Why PBR works
-- [Observers & Feeds](docs/tutorials/03-components/03-observers-feeds.md) — Feature engineering
-
-### Training
-- [First Training](docs/tutorials/04-training/01-first-training.md) — Train with Ray RLlib
-- [Ray RLlib Deep Dive](docs/tutorials/04-training/02-ray-rllib.md) — Configuration options
-- [Optuna Optimization](docs/tutorials/04-training/03-optuna.md) — Hyperparameter tuning
-
-### Advanced Topics
-- [Overfitting](docs/tutorials/05-advanced/01-overfitting.md) — Detection and prevention
-- [Commission Analysis](docs/tutorials/05-advanced/02-commission.md) — Key research findings
-- [Walk-Forward Validation](docs/tutorials/05-advanced/03-walk-forward.md) — Proper evaluation
-
-### Additional Resources
-- [Experiments Log](docs/EXPERIMENTS.md) — Full research documentation
-- [Environment Setup](docs/ENVIRONMENT_SETUP.md) — Detailed installation guide
-- [API Reference](https://www.tensortrade.org/en/latest/)
-
----
-
-## Research Findings
-
-We conducted extensive experiments training PPO agents on BTC/USD. Key results:
-
-| Configuration | Test P&L | vs Buy-and-Hold |
-|---------------|----------|-----------------|
-| Agent (0% commission) | +$239 | +$594 |
-| Agent (0.1% commission) | -$650 | -$295 |
-| Buy-and-Hold | -$355 | — |
-
-The agent demonstrates directional prediction capability at zero commission. The primary challenge is trading frequency—commission costs currently exceed prediction profits. See [EXPERIMENTS.md](docs/EXPERIMENTS.md) for methodology and detailed analysis.
-
----
+```bash
+git clone https://github.com/tensortrade-org/tensortrade.git && cd tensortrade
+uv venv --python 3.12 .venv && source .venv/bin/activate
+uv sync --all-extras --group dev    # installs both packages + test/lint deps
+uv run pytest packages/tensortrade/tests/ -x -q   # verify
+```
 
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                        TradingEnv                               │
-│                                                                 │
-│   Observer ──────> Agent ──────> ActionScheme ──────> Portfolio │
-│   (features)      (policy)      (BSH/Orders)        (wallets)  │
-│       ^                                                  │      │
-│       └──────────── RewardScheme <───────────────────────┘      │
-│                        (PBR)                                    │
-│                                                                 │
-│   DataFeed ──────> Exchange ──────> Broker ──────> Trades       │
-└─────────────────────────────────────────────────────────────────┘
+                          TradingEnv (gymnasium.Env)
+  ┌──────────────────────────────────────────────────────────────┐
+  │                                                              │
+  │   Observer ────> Agent ────> ActionScheme ────> Portfolio     │
+  │   (features)    (policy)    (BSH / Orders)    (wallets)      │
+  │       ^                                           |          │
+  │       └──────── RewardScheme <────────────────────┘          │
+  │                    (PBR)                                     │
+  │                                                              │
+  │   DataFeed ────> Exchange ────> Broker ────> Trades          │
+  └──────────────────────────────────────────────────────────────┘
 ```
 
-| Component | Purpose | Default |
-|-----------|---------|---------|
-| ActionScheme | Converts agent output to orders | BSH (Buy/Sell/Hold) |
-| RewardScheme | Computes learning signal | PBR (Position-Based Returns) |
-| Observer | Generates observations | Windowed features |
-| Portfolio | Manages wallets and positions | USD + BTC |
-| Exchange | Simulates execution | Configurable commission |
+| Component | What it does | Default |
+|-----------|-------------|---------|
+| **ActionScheme** | Maps agent output to orders | BSH (Buy/Sell/Hold) |
+| **RewardScheme** | Computes learning signal | PBR (Position-Based Returns) |
+| **Observer** | Builds observation window | Windowed price features |
+| **Portfolio** | Tracks wallets and positions | USD + BTC |
+| **Exchange** | Simulates order execution | Configurable commission |
 
----
+## Packages
 
-## Training Scripts
+This repo is a **uv workspace** with two Python packages:
 
-| Script | Description |
-|--------|-------------|
-| `examples/training/train_simple.py` | Basic demo with wallet tracking |
-| `examples/training/train_ray_long.py` | Distributed training with Ray RLlib |
-| `examples/training/train_optuna.py` | Hyperparameter optimization |
-| `examples/training/train_best.py` | Best configuration from experiments |
+| Package | What | Install |
+|---------|------|---------|
+| [`tensortrade`](packages/tensortrade/) | Core RL trading library (env, feed, oms, agents, stochastic) | `pip install tensortrade` |
+| [`tensortrade-platform`](packages/tensortrade-platform/) | Training infra, API server, live trading, data fetching | `pip install tensortrade-platform` |
 
----
+The core library has **zero** dependency on the platform. You can use `tensortrade` on its own with any RL library (Stable-Baselines3, CleanRL, RLlib, etc).
 
-## Training Dashboard
+```
+packages/
+  tensortrade/                # Core library
+    tensortrade/
+      core/                   # Base classes, clock, context, registry
+      feed/                   # Streaming data pipeline
+      oms/                    # Order management (exchanges, wallets, orders)
+      env/                    # Gymnasium environments + default components
+      agents/                 # Built-in DQN / A2C agents
+      stochastic/             # Synthetic price generators (GBM, Heston, etc.)
+  tensortrade-platform/       # Platform (optional)
+    tensortrade_platform/
+      api/                    # FastAPI + WebSocket server
+      training/               # Ray/RLlib launcher, stores, callbacks
+      live/                   # Alpaca live/paper trading
+      data/                   # Crypto data fetching
+```
 
-TensorTrade includes a real-time training dashboard for monitoring experiments.
+## Documentation
+
+**[Tutorial Index](docs/tutorials/index.md)** — the full learning curriculum.
+
+| Section | Topics |
+|---------|--------|
+| [Foundations](docs/tutorials/01-foundations/) | RL + trading concepts, architecture, your first run |
+| [Domain Knowledge](docs/tutorials/02-domains/) | Trading for RL practitioners, RL for traders, common failures |
+| [Components](docs/tutorials/03-components/) | Action schemes, reward schemes, observers and feeds |
+| [Training](docs/tutorials/04-training/) | Ray RLlib, Optuna hyperparameter tuning |
+| [Advanced](docs/tutorials/05-advanced/) | Overfitting, commission analysis, walk-forward validation |
+| [Experiments](docs/EXPERIMENTS.md) | Full research log with results |
+| [API Reference](https://www.tensortrade.org/en/latest/) | Auto-generated from source |
+
+## Training Dashboard (Platform)
+
+The platform package includes a real-time dashboard for launching and monitoring training runs.
 
 ```bash
-# Quick start (both servers, recommended)
-make dev
-
-# Or start individually:
-.venv/bin/python -m tensortrade_platform.api.server  # Backend API (port 8000)
-cd dashboard && npm run dev                  # Frontend (port 3000)
+make dev          # starts backend (:8000) + frontend (:3000)
+make stop         # stop both
 ```
 
-The backend automatically initializes the SQLite database at `~/.tensortrade/experiments.db` on first startup, seeding default datasets (Synthetic GBM, BTC/USD Hourly, BTC Trend Features) and hyperparameter packs (Simple PPO, Best Known, Trend Following, Optuna Optimized).
+Features: live training progress, iteration metrics charts, action distribution, experiment history, dataset and hyperparameter selection.
 
-```bash
-make init-db    # Check database status / seed if empty
-make reset-db   # Delete database and re-seed from scratch
-make stop       # Stop all servers
-```
-
-Features:
-- Live training progress with iteration tracking and ETA
-- Real-time iteration metrics (reward, PnL) charts
-- Episode reward and P&L tracking
-- Action distribution visualization (buy/sell/hold breakdown)
-- Experiment history with final metrics
-- Launch training runs from the UI with dataset and hyperparameter selection
-
-Optional shared Ray cluster (training + inference + live/paper):
-
-```bash
-# Connect all TensorTrade processes to an existing Ray cluster
-export TENSORTRADE_RAY_ADDRESS="auto"                 # or: ray://<host>:10001
-export TENSORTRADE_RAY_NAMESPACE="tensortrade"        # optional
-```
-
-When `TENSORTRADE_RAY_ADDRESS` is set, training subprocesses, inference, and live/paper trading
-all connect to the same Ray runtime and launcher stop operations avoid force-stopping the shared cluster.
-
----
-
-## Installation
-
-**Requirements:** Python 3.12+ and [uv](https://docs.astral.sh/uv/)
-
-```bash
-# Create environment
-uv venv --python 3.12 .venv
-source .venv/bin/activate  # Windows: .venv\Scripts\activate
-
-# Install
-uv pip install -r requirements.txt
-uv pip install -e .
-
-# Verify
-pytest tests/tensortrade/unit -v
-
-# Training dependencies (optional)
-uv pip install -r examples/requirements.txt
-
-# Dashboard dependencies (optional)
-uv pip install -e ".[dashboard]"
-```
-
-See [ENVIRONMENT_SETUP.md](docs/ENVIRONMENT_SETUP.md) for platform-specific instructions and troubleshooting.
-
-### Docker
-
-```bash
-make run-notebook  # Jupyter
-make run-docs      # Documentation
-make run-tests     # Test suite
-```
-
----
-
-## Project Structure
-
-```
-tensortrade/
-├── tensortrade/           # Core library
-│   ├── env/              # Trading environments
-│   ├── feed/             # Data pipeline
-│   ├── oms/              # Order management
-│   ├── api/              # FastAPI backend
-│   ├── training/         # Training modules
-│   └── data/             # Data fetching
-├── dashboard/             # Next.js training dashboard
-│   ├── src/app/          # Pages (file-based routing)
-│   ├── src/components/   # React components
-│   ├── src/stores/       # Zustand state stores
-│   └── src/lib/          # API client & types
-├── examples/
-│   ├── training/         # Training scripts
-│   └── notebooks/        # Jupyter tutorials
-├── docs/
-│   ├── tutorials/        # Learning curriculum
-│   └── EXPERIMENTS.md    # Research log
-└── tests/
-```
-
----
-
-## Troubleshooting
-
-| Issue | Solution |
-|-------|----------|
-| "No stream satisfies selector" | Update to v1.0.4-dev1+ |
-| Ray installation fails | `uv pip install ray[default,tune,rllib]==2.37.0` |
-| TensorFlow CUDA issues | `uv pip install tensorflow[and-cuda]==2.15.1` |
-| NumPy version conflict | `uv pip install "numpy>=1.26.4,<2.0"` |
-
----
+See the [platform package README](packages/tensortrade-platform/) for setup details.
 
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
-Priority areas:
-1. Trading frequency reduction (position sizing, holding periods)
-2. Commission-aware reward schemes
-3. Alternative action spaces
-
----
-
 ## Community
 
 - [Discord](https://discord.gg/ZZ7BGWh)
-- [GitHub Issues](https://github.com/notadamking/tensortrade/issues)
+- [GitHub Issues](https://github.com/tensortrade-org/tensortrade/issues)
 - [Documentation](https://www.tensortrade.org/)
-
----
 
 ## License
 
