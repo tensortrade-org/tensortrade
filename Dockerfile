@@ -34,7 +34,9 @@ RUN wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz && \
 # Copy project files
 COPY . ./
 
-# Install uv and dependencies
+# Install uv and dependencies (workspace packages)
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
-RUN uv pip install --no-cache-dir --system -e . && \
+RUN uv pip install --no-cache-dir --system \
+        -e packages/tensortrade \
+        -e "packages/tensortrade-platform[insights,optuna,alpaca]" && \
     uv pip install --no-cache-dir --system -r examples/requirements.txt

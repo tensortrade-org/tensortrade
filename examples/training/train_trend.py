@@ -22,7 +22,7 @@ from ray.tune.registry import register_env
 from ray.rllib.algorithms.ppo import PPOConfig
 from ray.rllib.algorithms.callbacks import DefaultCallbacks
 
-from tensortrade.data.cdd import CryptoDataDownload
+from tensortrade_platform.data.cdd import CryptoDataDownload
 from tensortrade.feed.core import DataFeed, Stream
 from tensortrade.oms.exchanges import Exchange, ExchangeOptions
 from tensortrade.oms.instruments import USD, BTC

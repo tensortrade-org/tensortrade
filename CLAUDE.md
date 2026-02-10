@@ -6,8 +6,8 @@
 # Create venv (one-time)
 uv venv --python 3.12 .venv
 
-# Install all deps
-uv pip install -e ".[dashboard,insights,optuna]"
+# Install all deps (uv workspace)
+uv sync --all-extras --group dev
 
 # Activate (if needed outside uv)
 source .venv/bin/activate
@@ -38,12 +38,12 @@ make dev-status # or: ./dev.sh status
 ### Individual servers (if needed)
 ```bash
 # Backend only
-.venv/bin/python -m tensortrade.api.server
+.venv/bin/python -m tensortrade_platform.api.server
 
 # Frontend only
 cd dashboard && npm run dev
 ```
-The backend app uses a factory function `create_app()` — there is no module-level `app` variable. Use `python -m` to run it, not `uvicorn tensortrade.api.server:app`. The frontend proxies API/WebSocket calls to port 8000.
+The backend app uses a factory function `create_app()` — there is no module-level `app` variable. Use `python -m` to run it, not `uvicorn tensortrade_platform.api.server:app`. The frontend proxies API/WebSocket calls to port 8000.
 
 ### Environment variables
 Put secrets in `.env` at project root (git-ignored). The backend loads it on startup.
@@ -55,7 +55,9 @@ ANTHROPIC_API_KEY=sk-ant-...
 
 ### Python tests
 ```bash
-.venv/bin/python -m pytest tests/ -x -q
+uv run pytest packages/tensortrade/tests/ -x -q          # core only
+uv run pytest packages/tensortrade-platform/tests/ -x -q  # platform only
+make test                                                  # all tests
 ```
 
 ### Frontend tests
@@ -65,7 +67,7 @@ cd dashboard && npm run test
 
 ### Python lint/format
 ```bash
-make lint       # ruff check tensortrade/ tests/
+make lint       # ruff check packages/
 make format     # ruff format + auto-fix
 ```
 
@@ -74,18 +76,27 @@ make format     # ruff format + auto-fix
 cd dashboard && npx biome check --write src/
 ```
 
-## Project Structure
+## Project Structure (uv workspace)
 
-- `tensortrade/` — core library (env, agents, feeds, oms)
-- `tensortrade/api/server.py` — FastAPI backend (REST + WebSocket)
-- `tensortrade/training/` — training modules (stores, launcher, features, callbacks)
-- `dashboard/` — Next.js 15 / React 19 / Zustand / Recharts frontend
+```
+packages/
+  tensortrade/          — core RL library (import as tensortrade.*)
+    tensortrade/        — env, agents, feed, oms, core, stochastic, contrib
+    tests/              — core tests
+  tensortrade-platform/ — platform infrastructure (import as tensortrade_platform.*)
+    tensortrade_platform/ — api, training, live, data, ray_config, ray_manager
+    tests/              — platform tests
+dashboard/              — Next.js 15 / React 19 / Zustand / Recharts frontend
+examples/               — training scripts & Jupyter notebooks
+```
+
+Key files:
+- `packages/tensortrade-platform/tensortrade_platform/api/server.py` — FastAPI backend (REST + WebSocket)
+- `packages/tensortrade-platform/tensortrade_platform/training/` — training modules (stores, launcher, features, callbacks)
 - `dashboard/src/app/` — pages (file-based routing)
 - `dashboard/src/stores/` — Zustand state stores
 - `dashboard/src/lib/api.ts` — typed API client
 - `dashboard/src/lib/types.ts` — shared TypeScript interfaces
-- `examples/training/` — training scripts
-- `tests/` — pytest test suite
 
 ## Database
 
@@ -105,11 +116,11 @@ Stores that share the database:
 
 ## Training System
 
-- `tensortrade/training/launcher.py` — generates and spawns training scripts as subprocesses
-- `tensortrade/training/experiment_store.py` — SQLite store at `~/.tensortrade/experiments.db`
-- `tensortrade/training/dataset_store.py` — dataset configs (synthetic + crypto)
-- `tensortrade/training/hyperparameter_store.py` — HP pack presets
-- `tensortrade/training/feature_engine.py` — computes features (returns, RSI, SMA, volatility, etc.)
+- `tensortrade_platform/training/launcher.py` — generates and spawns training scripts as subprocesses
+- `tensortrade_platform/training/experiment_store.py` — SQLite store at `~/.tensortrade/experiments.db`
+- `tensortrade_platform/training/dataset_store.py` — dataset configs (synthetic + crypto)
+- `tensortrade_platform/training/hyperparameter_store.py` — HP pack presets
+- `tensortrade_platform/training/feature_engine.py` — computes features (returns, RSI, SMA, volatility, etc.)
 
 ### WebSocket Architecture
 - Training subprocess connects to `/ws/training` (producer)

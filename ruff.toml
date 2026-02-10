@@ -1,53 +1,37 @@
-# Ruff linter + formatter config
-# https://docs.astral.sh/ruff/configuration/
-
+line-length = 88
+indent-width = 4
 target-version = "py312"
-line-length = 120
-
-exclude = [
-    ".venv",
-    "build",
-    "dist",
-    "docs",
-    "examples/*.ipynb",
-    "__pycache__",
-]
 
 [lint]
 select = [
-    "E",   # pycodestyle errors
-    "F",   # pyflakes
-    "I",   # isort (import sorting)
-    "UP",  # pyupgrade
-    "B",   # bugbear
-    "SIM", # simplify
+    "E",      # pycodestyle errors
+    "W",      # pycodestyle warnings
+    "F",      # pyflakes
+    "I",      # isort
+    "B",      # flake8-bugbear
+    "UP",     # pyupgrade
 ]
 ignore = [
-    "E501",   # line too long — handled by formatter as soft wrap
-    "E711",   # comparison to None — existing codebase uses this pattern
-    "E712",   # comparison to True/False — existing codebase uses this
-    "F403",   # star imports — used extensively in tensortrade's module re-exports
-    "F405",   # names from star imports — consequence of F403 pattern
-    "F821",   # undefined name — false positives from star imports
-    "E402",   # module-level import not at top — used intentionally in some modules
-    "B010",   # do not call setattr with a constant attribute value
-    "B905",   # zip without explicit strict — too noisy for existing code
-    "SIM105", # use contextlib.suppress — sometimes less readable than try/except
-    "SIM108", # use ternary operator — sometimes less readable
-    "SIM201", # negate-equal-op — existing pattern `not x == y`
-    "SIM202", # negate-not-equal-op — existing pattern `not x != y`
-    "UP015",  # redundant open modes — low value churn
-    "UP046",  # non-pep695 generic class — Python 3.12 syntax not widely adopted yet
-    "B024",   # abstract base class without abstract method — existing design pattern
-    "B027",   # empty method without abstract decorator — existing design pattern
+    "E501",   # line too long (handled by formatter)
+    "B008",   # do not perform function calls in argument defaults
+    "B905",   # zip without strict= (Python 3.10+)
+    "F403",   # star imports
+    "F405",   # may be undefined from star import
+    "F821",   # undefined name (often forward references)
+    "B006",   # mutable argument default
+    "B024",   # abstract base class without abstract methods
+    "B027",   # empty method without abstract decorator
+    "UP046",  # non-PEP695 generic class (Python 3.12+ syntax)
 ]
 
 [lint.per-file-ignores]
-"__init__.py" = ["F401"]  # re-exports are intentional in __init__.py
+"__init__.py" = ["F401", "F403", "E402", "I001"]
 
 [lint.isort]
-known-first-party = ["tensortrade"]
+known-first-party = ["tensortrade", "tensortrade_platform"]
 
 [format]
 quote-style = "double"
 indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"

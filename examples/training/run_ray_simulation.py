@@ -35,7 +35,7 @@ def macd(price: pd.Series, fast: float, slow: float, signal: float) -> pd.Series
 
 def prepare_data():
     """Fetch and prepare data, save to CSV files."""
-    from tensortrade.data.cdd import CryptoDataDownload
+    from tensortrade_platform.data.cdd import CryptoDataDownload
     from sklearn.model_selection import train_test_split
 
     print("Fetching crypto data...")

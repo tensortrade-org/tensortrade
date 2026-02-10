@@ -52,24 +52,30 @@ clean:
 
 # Testing
 test:
-	uv run pytest tests/
+	uv run pytest packages/tensortrade/tests/ packages/tensortrade-platform/tests/
+
+test-core:
+	uv run pytest packages/tensortrade/tests/ -x -q
+
+test-platform:
+	uv run pytest packages/tensortrade-platform/tests/ -x -q
 
 test-parallel:
-	uv run pytest --workers auto tests/
+	uv run pytest --workers auto packages/tensortrade/tests/ packages/tensortrade-platform/tests/
 
 doctest:
-	uv run pytest --doctest-modules tensortrade/
+	uv run pytest --doctest-modules packages/tensortrade/tensortrade/
 
 # Linting and formatting
 lint:
-	uv run ruff check tensortrade/ tests/
+	uv run ruff check packages/
 
 format:
-	uv run ruff format tensortrade/ tests/
-	uv run ruff check --fix tensortrade/ tests/
+	uv run ruff format packages/
+	uv run ruff check --fix packages/
 
 typecheck:
-	uv run ty check tensortrade/
+	uv run ty check packages/tensortrade/tensortrade/
 
 # Documentation
 docs-build:
@@ -105,7 +111,7 @@ run-docs: build-cpu-if-not-built
 	python3 -m webbrowser http://localhost:8000/docs/build/html/index.html
 
 run-tests: build-cpu-if-not-built
-	docker run --rm --shm-size=${SHM_SIZE} ${CPU_IMAGE} pytest tests/ -m "not rllib"
+	docker run --rm --shm-size=${SHM_SIZE} ${CPU_IMAGE} pytest packages/tensortrade/tests/ packages/tensortrade-platform/tests/ -m "not rllib"
 
 run-notebook-gpu: build-gpu-if-not-built
 	docker run -it --rm -p=8888:8888 -p=6006:6006 -v ${PWD}/examples:/app/examples -v ${PWD}/docs:/app/docs --shm-size=${SHM_SIZE} ${GPU_IMAGE} jupyter lab --ip='*' --port=8888 --no-browser --allow-root /app/
@@ -116,7 +122,7 @@ run-docs-gpu: build-gpu-if-not-built
 	python3 -m webbrowser http://localhost:8000/docs/build/html/index.html
 
 run-tests-gpu: build-gpu-if-not-built
-	docker run --rm --shm-size=${SHM_SIZE} ${GPU_IMAGE} pytest tests/ -m "not rllib"
+	docker run --rm --shm-size=${SHM_SIZE} ${GPU_IMAGE} pytest packages/tensortrade/tests/ packages/tensortrade-platform/tests/ -m "not rllib"
 
 # Publishing
 package:

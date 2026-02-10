@@ -1,70 +1,21 @@
 [project]
-name = "tensortrade"
-version = "1.0.4"
-description = "TensorTrade: A reinforcement learning library for training, evaluating, and deploying robust trading agents."
-readme = "README.md"
-license = "Apache-2.0"
-authors = [
-    { name = "Adam King", email = "adamjking3@gmail.com" },
-    { name = "Matthew Brulhardt", email = "mwbrulhardt@gmail.com" },
-]
-maintainers = [
-    { name = "Carlo Grisetti", email = "carlo.grisetti@gmail.com" },
-]
+name = "tensortrade-workspace"
+version = "0.0.0"
+description = "TensorTrade workspace root — not a publishable package."
 requires-python = ">=3.12"
-classifiers = [
-    "Development Status :: 5 - Production/Stable",
-    "Natural Language :: English",
-    "Intended Audience :: Developers",
-    "Intended Audience :: Education",
-    "Intended Audience :: Science/Research",
-    "Intended Audience :: Financial and Insurance Industry",
-    "Intended Audience :: Information Technology",
-    "License :: OSI Approved :: Apache Software License",
-    "Operating System :: OS Independent",
-    "Programming Language :: Python :: 3.12",
-    "Topic :: Office/Business :: Financial :: Investment",
-    "Topic :: Office/Business :: Financial",
-    "Topic :: Scientific/Engineering :: Information Analysis",
-    "Topic :: System :: Distributed Computing",
-    "Topic :: Scientific/Engineering :: Artificial Intelligence",
-    "Topic :: Software Development :: Libraries",
-    "Topic :: Software Development :: Libraries :: Python Modules",
-]
-dependencies = [
-    "numpy>=1.26.4",
-    "pandas>=2.2.3,<3.0",
-    "gymnasium>=0.28.1",
-    "pyyaml>=5.1.2",
-    "stochastic>=0.6.0",
-    "tensorflow>=2.15.1",
-    "ipython>=7.12.0",
-    "matplotlib>=3.1.1",
-    "plotly>=4.5.0",
-    "deprecated>=1.2.13",
-    "ta>=0.4.7",
+
+[tool.uv.workspace]
+members = ["packages/*"]
+
+[tool.uv]
+dev-dependencies = [
+    "tensortrade",
+    "tensortrade-platform",
 ]
 
-[project.urls]
-Homepage = "https://github.com/tensortrade-org/tensortrade"
-Repository = "https://github.com/tensortrade-org/tensortrade"
-Documentation = "https://tensortrade.org"
-
-[project.optional-dependencies]
-dashboard = [
-    "fastapi>=0.115.0",
-    "uvicorn[standard]>=0.34.0",
-    "websockets>=14.0",
-]
-insights = [
-    "anthropic>=0.42.0",
-]
-optuna = [
-    "optuna>=4.0.0",
-]
-alpaca = [
-    "alpaca-py>=0.35.0",
-]
+[tool.uv.sources]
+tensortrade = { workspace = true }
+tensortrade-platform = { workspace = true }
 
 [dependency-groups]
 test = [
@@ -96,63 +47,15 @@ dev = [
     { include-group = "docs" },
 ]
 
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
-
-[tool.hatch.build.targets.wheel]
-packages = ["tensortrade"]
-
-[tool.hatch.build.targets.sdist]
-include = [
-    "/tensortrade",
-]
-
-[tool.ruff]
-line-length = 88
-indent-width = 4
-target-version = "py312"
-
-[tool.ruff.lint]
-select = [
-    "E",      # pycodestyle errors
-    "W",      # pycodestyle warnings
-    "F",      # pyflakes
-    "I",      # isort
-    "B",      # flake8-bugbear
-    "UP",     # pyupgrade
-]
-ignore = [
-    "E501",   # line too long (handled by formatter)
-    "B008",   # do not perform function calls in argument defaults
-    "B905",   # zip without strict= (Python 3.10+)
-    "F403",   # star imports
-    "F405",   # may be undefined from star import
-    "F821",   # undefined name (often forward references)
-    "B006",   # mutable argument default
-    "B024",   # abstract base class without abstract methods
-    "B027",   # empty method without abstract decorator
-    "UP046",  # non-PEP695 generic class (Python 3.12+ syntax)
-]
-
-[tool.ruff.lint.per-file-ignores]
-"__init__.py" = ["F401", "F403", "E402", "I001"]
-
-[tool.ruff.lint.isort]
-known-first-party = ["tensortrade"]
-
-[tool.ruff.format]
-quote-style = "double"
-indent-style = "space"
-skip-magic-trailing-comma = false
-line-ending = "auto"
-
 [tool.pytest.ini_options]
-testpaths = ["tests"]
+testpaths = [
+    "packages/tensortrade/tests",
+    "packages/tensortrade-platform/tests",
+]
 python_files = ["test_*.py"]
 python_functions = ["test_*"]
 markers = [
     "slow: marks tests as slow (skip with -m 'not slow')",
     "rllib: marks RLlib integration tests (skip with -m 'not rllib')",
 ]
-addopts = "-v --tb=short"
+addopts = "-v --tb=short --import-mode=importlib"

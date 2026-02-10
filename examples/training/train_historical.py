@@ -27,7 +27,7 @@ except ImportError:
     HAS_PANDAS_TA = False
     print("Warning: pandas_ta not installed, using basic indicators")
 
-from tensortrade.data.cdd import CryptoDataDownload
+from tensortrade_platform.data.cdd import CryptoDataDownload
 from tensortrade.feed.core import DataFeed, Stream
 from tensortrade.oms.exchanges import Exchange, ExchangeOptions
 from tensortrade.oms.instruments import USD, BTC

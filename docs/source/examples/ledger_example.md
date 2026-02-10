@@ -12,7 +12,7 @@
 import tensortrade.env.default as default
 
 from tensortrade.feed.core import Stream, DataFeed
-from tensortrade.data.cdd import CryptoDataDownload
+from tensortrade_platform.data.cdd import CryptoDataDownload
 from tensortrade.oms.wallets import Portfolio, Wallet
 from tensortrade.oms.exchanges import Exchange
 from tensortrade.oms.services.execution.simulated import execute_order

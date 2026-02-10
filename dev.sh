@@ -105,7 +105,7 @@ cmd_start() {
 
     # Database is auto-initialized on backend startup (tables + seed data)
     echo -e "${CYAN}Starting backend (FastAPI :8000)...${NC}"
-    "$ROOT_DIR/.venv/bin/python" -m tensortrade.api.server \
+    "$ROOT_DIR/.venv/bin/python" -m tensortrade_platform.api.server \
         > "$LOG_DIR/backend.log" 2>&1 &
     echo $! > "$PID_DIR/backend.pid"
 
@@ -162,9 +162,9 @@ cmd_reset_db() {
     fi
     echo -e "${CYAN}Initializing fresh database with seed data...${NC}"
     "$ROOT_DIR/.venv/bin/python" -c "
-from tensortrade.training.experiment_store import ExperimentStore
-from tensortrade.training.hyperparameter_store import HyperparameterStore
-from tensortrade.training.dataset_store import DatasetStore
+from tensortrade_platform.training.experiment_store import ExperimentStore
+from tensortrade_platform.training.hyperparameter_store import HyperparameterStore
+from tensortrade_platform.training.dataset_store import DatasetStore
 store = ExperimentStore()
 hp = HyperparameterStore()
 ds = DatasetStore()
@@ -179,9 +179,9 @@ cmd_init_db() {
     local db_path="$HOME/.tensortrade/experiments.db"
     echo -e "${CYAN}Initializing database (seeding if empty)...${NC}"
     "$ROOT_DIR/.venv/bin/python" -c "
-from tensortrade.training.experiment_store import ExperimentStore
-from tensortrade.training.hyperparameter_store import HyperparameterStore
-from tensortrade.training.dataset_store import DatasetStore
+from tensortrade_platform.training.experiment_store import ExperimentStore
+from tensortrade_platform.training.hyperparameter_store import HyperparameterStore
+from tensortrade_platform.training.dataset_store import DatasetStore
 store = ExperimentStore()
 hp = HyperparameterStore()
 ds = DatasetStore()

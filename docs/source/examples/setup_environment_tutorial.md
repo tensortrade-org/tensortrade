@@ -7,7 +7,7 @@ import ta
 import pandas as pd
 import tensortrade.env.default as default
 
-from tensortrade.data.cdd import CryptoDataDownload
+from tensortrade_platform.data.cdd import CryptoDataDownload
 from tensortrade.feed.core import Stream, DataFeed, NameSpace
 from tensortrade.oms.instruments import USD, BTC, ETH, LTC
 from tensortrade.oms.wallets import Wallet, Portfolio

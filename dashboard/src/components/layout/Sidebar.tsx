@@ -12,6 +12,7 @@ interface NavItem {
 const navItems: NavItem[] = [
 	{ label: "Overview", href: "/", icon: "\u2302" },
 	{ label: "Training", href: "/training", icon: "\u23F1" },
+	{ label: "Agent Cortex", href: "/training/cortex", icon: "\u25CE" },
 	{ label: "Launch", href: "/launch", icon: "\u25B6" },
 	{ label: "Alpha Search", href: "/campaign", icon: "\u2694" },
 	{ label: "HP Studio", href: "/hyperparams", icon: "\u2692" },
@@ -29,7 +30,15 @@ export function Sidebar() {
 
 	const isActive = (href: string) => {
 		if (href === "/") return pathname === "/";
-		return pathname.startsWith(href);
+		if (pathname.startsWith(href)) {
+			// Check if a more specific nav item matches
+			const hasMoreSpecific = navItems.some(
+				(other) =>
+					other.href !== href && other.href.startsWith(href) && pathname.startsWith(other.href),
+			);
+			return !hasMoreSpecific;
+		}
+		return false;
 	};
 
 	return (

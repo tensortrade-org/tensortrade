@@ -13,9 +13,9 @@ import sys
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from tensortrade.training.experiment_store import ExperimentStore
-    from tensortrade.training.tensorboard import TradingTensorBoardLogger
-    from tensortrade.api.training_bridge import TrainingBridge
+    from tensortrade_platform.training.experiment_store import ExperimentStore
+    from tensortrade_platform.training.tensorboard import TradingTensorBoardLogger
+    from tensortrade_platform.api.training_bridge import TrainingBridge
 
 
 def add_training_args(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
@@ -66,7 +66,7 @@ def setup_experiment(
 
     Returns (store, experiment_id, tb_logger, bridge).
     """
-    from tensortrade.training.experiment_store import ExperimentStore
+    from tensortrade_platform.training.experiment_store import ExperimentStore
 
     store = ExperimentStore()
 
@@ -82,7 +82,7 @@ def setup_experiment(
     tb_logger: TradingTensorBoardLogger | None = None
     if args.tensorboard:
         try:
-            from tensortrade.training.tensorboard import (
+            from tensortrade_platform.training.tensorboard import (
                 TradingTensorBoardLogger,
                 TensorBoardConfig,
             )
@@ -99,8 +99,8 @@ def setup_experiment(
     bridge: TrainingBridge | None = None
     if args.dashboard:
         try:
-            from tensortrade.api.training_bridge import TrainingBridge
-            from tensortrade.api.server import create_app
+            from tensortrade_platform.api.training_bridge import TrainingBridge
+            from tensortrade_platform.api.server import create_app
             import threading
             import uvicorn
 
@@ -142,7 +142,7 @@ def build_composed_callbacks(
     bridge: TrainingBridge | None = None,
 ) -> type:
     """Build composed callback class from integrations."""
-    from tensortrade.training.callbacks import make_training_callbacks
+    from tensortrade_platform.training.callbacks import make_training_callbacks
 
     return make_training_callbacks(
         base_cls=base_cls,

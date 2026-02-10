@@ -11,3 +11,6 @@ dist
 build
 .ruff_cache
 .pytest_cache
+ray_results
+*.db
+uv.lock

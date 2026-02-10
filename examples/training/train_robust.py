@@ -24,7 +24,7 @@ from ray.rllib.evaluation.episode_v2 import EpisodeV2
 from ray.rllib.policy import Policy
 from ray.rllib.utils.typing import PolicyID
 
-from tensortrade.data.cdd import CryptoDataDownload
+from tensortrade_platform.data.cdd import CryptoDataDownload
 from tensortrade.feed.core import DataFeed, Stream
 from tensortrade.oms.exchanges import Exchange, ExchangeOptions
 from tensortrade.oms.instruments import USD, BTC

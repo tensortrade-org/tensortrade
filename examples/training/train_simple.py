@@ -5,7 +5,7 @@ Simple training demo showing actual wallet balances and trade execution.
 
 import numpy as np
 import pandas as pd
-from tensortrade.data.cdd import CryptoDataDownload
+from tensortrade_platform.data.cdd import CryptoDataDownload
 from tensortrade.feed.core import DataFeed, Stream
 from tensortrade.oms.exchanges import Exchange, ExchangeOptions
 from tensortrade.oms.instruments import USD, BTC
