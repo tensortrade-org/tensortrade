@@ -22,11 +22,14 @@ from deprecated import deprecated
 
 from tensortrade.agents import Agent, ReplayMemory
 
-DQNTransition = namedtuple("DQNTransition", ["state", "action", "reward", "next_state", "done"])
+DQNTransition = namedtuple(
+    "DQNTransition", ["state", "action", "reward", "next_state", "done"]
+)
 
 
 @deprecated(
-    version="1.0.4", reason="Builtin agents are being deprecated in favor of external implementations (ie: Ray)"
+    version="1.0.4",
+    reason="Builtin agents are being deprecated in favor of external implementations (ie: Ray)",
 )
 class DQNAgent(Agent):
     """
@@ -193,17 +196,23 @@ class DQNAgent(Agent):
 
         pool_1 = tf.keras.layers.AveragePooling1D(pool_size=3, strides=2)(dropout_3)
 
-        gru_1 = tf.keras.layers.GRU(units=64, activation="tanh", return_sequences=True)(pool_1)
+        gru_1 = tf.keras.layers.GRU(units=64, activation="tanh", return_sequences=True)(
+            pool_1
+        )
 
         dropout_4 = tf.keras.layers.Dropout(rate=dropout)(gru_1)
 
-        gru_2 = tf.keras.layers.GRU(units=64, activation="tanh", return_sequences=True)(dropout_4)
+        gru_2 = tf.keras.layers.GRU(units=64, activation="tanh", return_sequences=True)(
+            dropout_4
+        )
 
         dropout_5 = tf.keras.layers.Dropout(rate=dropout)(gru_2)
 
         concat_rnn_1 = tf.keras.layers.Concatenate()([dropout_4, dropout_5])
 
-        gru_3 = tf.keras.layers.GRU(units=64, activation="tanh", return_sequences=True)(concat_rnn_1)
+        gru_3 = tf.keras.layers.GRU(units=64, activation="tanh", return_sequences=True)(
+            concat_rnn_1
+        )
 
         dropout_6 = tf.keras.layers.Dropout(rate=dropout)(gru_3)
 
@@ -219,15 +228,21 @@ class DQNAgent(Agent):
 
         dense_2 = tf.keras.layers.Dense(units=16, activation="softmax")(dense_1)
 
-        dense_3 = tf.keras.layers.Dense(units=16, activation=tf.keras.layers.PReLU(), kernel_initializer="he_uniform")(
-            dense_2
-        )
+        dense_3 = tf.keras.layers.Dense(
+            units=16,
+            activation=tf.keras.layers.PReLU(),
+            kernel_initializer="he_uniform",
+        )(dense_2)
 
         dropout_8 = tf.keras.layers.Dropout(rate=dropout)(dense_3)
 
         # outputs = tf.keras.layers.Dense(units=self.n_actions, activation='linear')(dropout_8)
-        pre_outputs = tf.keras.layers.Dense(units=self.n_actions, activation="sigmoid")(dropout_8)
-        outputs = tf.keras.layers.Dense(units=self.n_actions, activation="softmax")(pre_outputs)
+        pre_outputs = tf.keras.layers.Dense(units=self.n_actions, activation="sigmoid")(
+            dropout_8
+        )
+        outputs = tf.keras.layers.Dense(units=self.n_actions, activation="softmax")(
+            pre_outputs
+        )
 
         network = tf.keras.models.Model(inputs=inputs, outputs=outputs)
 
@@ -242,9 +257,21 @@ class DQNAgent(Agent):
         episode: int = kwargs.get("episode")
 
         if episode:
-            filename = "policy_network__" + self.id[:7] + "__" + datetime.now().strftime("%Y%m%d_%H%M%S") + ".hdf5"
+            filename = (
+                "policy_network__"
+                + self.id[:7]
+                + "__"
+                + datetime.now().strftime("%Y%m%d_%H%M%S")
+                + ".hdf5"
+            )
         else:
-            filename = "policy_network__" + self.id[:7] + "__" + datetime.now().strftime("%Y%m%d_%H%M%S") + ".hdf5"
+            filename = (
+                "policy_network__"
+                + self.id[:7]
+                + "__"
+                + datetime.now().strftime("%Y%m%d_%H%M%S")
+                + ".hdf5"
+            )
 
         self.policy_network.save(path + filename)
 
@@ -259,7 +286,11 @@ class DQNAgent(Agent):
             return np.argmax(self.policy_network(np.expand_dims(state, 0)))
 
     def _apply_gradient_descent(
-        self, memory: ReplayMemory, batch_size: int, learning_rate: float, discount_factor: float
+        self,
+        memory: ReplayMemory,
+        batch_size: int,
+        learning_rate: float,
+        discount_factor: float,
     ):
 
         # Optimization strategy.
@@ -278,14 +309,20 @@ class DQNAgent(Agent):
 
         with tf.GradientTape() as tape:
             state_action_values = tf.math.reduce_sum(
-                self.policy_network(state_batch) * tf.one_hot(action_batch, self.n_actions), axis=1
+                self.policy_network(state_batch)
+                * tf.one_hot(action_batch, self.n_actions),
+                axis=1,
             )
 
             next_state_values = tf.where(
-                done_batch, tf.zeros(batch_size), tf.math.reduce_max(self.target_network(next_state_batch), axis=1)
+                done_batch,
+                tf.zeros(batch_size),
+                tf.math.reduce_max(self.target_network(next_state_batch), axis=1),
             )
 
-            expected_state_action_values = reward_batch + (discount_factor * next_state_values)
+            expected_state_action_values = reward_batch + (
+                discount_factor * next_state_values
+            )
             loss_value = loss(expected_state_action_values, state_action_values)
 
         variables = self.policy_network.trainable_variables
@@ -331,7 +368,9 @@ class DQNAgent(Agent):
             steps_done = 0
 
             while not done:
-                threshold = eps_end + (eps_start - eps_end) * np.exp(-total_steps_done / eps_decay_steps)
+                threshold = eps_end + (eps_start - eps_end) * np.exp(
+                    -total_steps_done / eps_decay_steps
+                )
                 action = self.get_action(state, threshold=threshold)
                 step_result = self.env.step(action)
                 if len(step_result) == 5:
@@ -350,16 +389,22 @@ class DQNAgent(Agent):
                 if len(memory) < batch_size:
                     continue
 
-                self._apply_gradient_descent(memory, batch_size, learning_rate, discount_factor)
+                self._apply_gradient_descent(
+                    memory, batch_size, learning_rate, discount_factor
+                )
 
                 if n_steps and steps_done >= n_steps:
                     done = True
 
                 if render_interval is not None and steps_done % render_interval == 0:
-                    self.env.render(episode=episode, max_episodes=n_episodes, max_steps=n_steps)
+                    self.env.render(
+                        episode=episode, max_episodes=n_episodes, max_steps=n_steps
+                    )
 
                 if steps_done % update_target_every == 0:
-                    self.target_network = tf.keras.models.clone_model(self.policy_network)
+                    self.target_network = tf.keras.models.clone_model(
+                        self.policy_network
+                    )
                     self.target_network.trainable = False
 
             is_checkpoint = save_every and episode % save_every == 0

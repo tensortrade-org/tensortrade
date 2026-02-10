@@ -3,7 +3,18 @@ from collections import namedtuple
 import pandas as pd
 
 Transaction = namedtuple(
-    "Transaction", ["poid", "step", "source", "target", "memo", "amount", "free", "locked", "locked_poid"]
+    "Transaction",
+    [
+        "poid",
+        "step",
+        "source",
+        "target",
+        "memo",
+        "amount",
+        "free",
+        "locked",
+        "locked_poid",
+    ],
 )
 
 
@@ -14,7 +25,14 @@ class Ledger:
     def __init__(self):
         self.transactions: list[Transaction] = []
 
-    def commit(self, wallet: "Wallet", quantity: "Quantity", source: str, target: str, memo: str) -> None:
+    def commit(
+        self,
+        wallet: "Wallet",
+        quantity: "Quantity",
+        source: str,
+        target: str,
+        memo: str,
+    ) -> None:
         """Commits a transaction to the ledger records.
 
         Parameters

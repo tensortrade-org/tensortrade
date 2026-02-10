@@ -116,7 +116,10 @@ class Order(TimedIdentifiable, Observable):
         self._specs = []
         self.trades = []
 
-        wallet = portfolio.get_wallet(self.exchange_pair.exchange.id, self.side.instrument(self.exchange_pair.pair))
+        wallet = portfolio.get_wallet(
+            self.exchange_pair.exchange.id,
+            self.side.instrument(self.exchange_pair.pair),
+        )
 
         if self.path_id not in wallet.locked:
             self.quantity = wallet.lock(quantity, self, "LOCK FOR ORDER")
@@ -168,7 +171,9 @@ class Order(TimedIdentifiable, Observable):
     @property
     def is_executable(self) -> bool:
         """If this order is executable. (bool, read-only)"""
-        is_satisfied = self.criteria is None or self.criteria(self, self.exchange_pair.exchange)
+        is_satisfied = self.criteria is None or self.criteria(
+            self, self.exchange_pair.exchange
+        )
         clock = self.exchange_pair.exchange.clock
         return is_satisfied and clock.step >= self.start
 
@@ -187,7 +192,9 @@ class Order(TimedIdentifiable, Observable):
     @property
     def is_active(self) -> bool:
         """If this order is active. (bool, read-only)"""
-        return self.status != OrderStatus.FILLED and self.status != OrderStatus.CANCELLED
+        return (
+            self.status != OrderStatus.FILLED and self.status != OrderStatus.CANCELLED
+        )
 
     @property
     def is_complete(self) -> bool:
@@ -196,7 +203,8 @@ class Order(TimedIdentifiable, Observable):
             return True
 
         wallet = self.portfolio.get_wallet(
-            self.exchange_pair.exchange.id, self.side.instrument(self.exchange_pair.pair)
+            self.exchange_pair.exchange.id,
+            self.side.instrument(self.exchange_pair.pair),
         )
         quantity = wallet.locked.get(self.path_id, None)
 

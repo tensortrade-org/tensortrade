@@ -46,10 +46,20 @@ class TradingTensorBoardLogger:
             },
             "Performance": {
                 "Episode Return": ["Multiline", ["Performance/episode_return_mean"]],
-                "Loss": ["Multiline", ["Performance/total_loss", "Performance/policy_loss", "Performance/vf_loss"]],
+                "Loss": [
+                    "Multiline",
+                    [
+                        "Performance/total_loss",
+                        "Performance/policy_loss",
+                        "Performance/vf_loss",
+                    ],
+                ],
             },
             "Behavior": {
-                "Actions": ["Multiline", ["Behavior/trade_count", "Behavior/hold_count"]],
+                "Actions": [
+                    "Multiline",
+                    ["Behavior/trade_count", "Behavior/hold_count"],
+                ],
             },
         }
         self._writer.file_writer.add_summary(custom_scalars(layout))
@@ -73,7 +83,9 @@ class TradingTensorBoardLogger:
         # Standard RLlib performance metrics
         env_runners = result.get("env_runners", {})
         perf_metrics = {
-            "Performance/episode_return_mean": env_runners.get("episode_return_mean", 0),
+            "Performance/episode_return_mean": env_runners.get(
+                "episode_return_mean", 0
+            ),
         }
 
         # Learner losses
@@ -83,11 +95,17 @@ class TradingTensorBoardLogger:
             perf_metrics["Performance/policy_loss"] = learner.get("policy_loss", 0)
             perf_metrics["Performance/vf_loss"] = learner.get("vf_loss", 0)
 
-        for tag, value in {**trading_metrics, **perf_metrics, **behavior_metrics}.items():
+        for tag, value in {
+            **trading_metrics,
+            **perf_metrics,
+            **behavior_metrics,
+        }.items():
             if value is not None:
                 self._writer.add_scalar(tag, float(value), iteration)
 
-    def log_evaluation(self, metrics: dict, iteration: int, prefix: str = "Eval") -> None:
+    def log_evaluation(
+        self, metrics: dict, iteration: int, prefix: str = "Eval"
+    ) -> None:
         """Log evaluation-phase metrics (validation or test)."""
         for key, value in metrics.items():
             if isinstance(value, (int, float)):

@@ -256,7 +256,9 @@ class Stream(Generic[T], Named, Observable):
         return Group()(*streams)
 
     @staticmethod
-    def sensor(obj: "Any", func: "Callable[[Any], T]", dtype: str = None) -> "Stream[T]":
+    def sensor(
+        obj: "Any", func: "Callable[[Any], T]", dtype: str = None
+    ) -> "Stream[T]":
         """Creates a stream from observing a value from an object.
 
         Parameters
@@ -277,7 +279,9 @@ class Stream(Generic[T], Named, Observable):
         return Sensor(obj, func, dtype=dtype)
 
     @staticmethod
-    def select(streams: "list[Stream[T]]", func: "Callable[[Stream[T]], bool]") -> "Stream[T]":
+    def select(
+        streams: "list[Stream[T]]", func: "Callable[[Stream[T]], bool]"
+    ) -> "Stream[T]":
         """Selects a stream satisfying particular criteria from a list of
         streams.
 

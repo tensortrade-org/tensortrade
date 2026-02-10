@@ -3,17 +3,17 @@
 import pytest
 from starlette.testclient import TestClient
 
-from tensortrade.api.server import create_app
-from tensortrade.training.dataset_store import SEED_DATASETS, DatasetStore
-from tensortrade.training.feature_engine import FEATURE_CATALOG
+from tensortrade_platform.api.server import create_app
+from tensortrade_platform.training.dataset_store import SEED_DATASETS, DatasetStore
+from tensortrade_platform.training.feature_engine import FEATURE_CATALOG
 
 
 @pytest.fixture
 def stores(tmp_path):
     db_path = str(tmp_path / "test_datasets.db")
 
-    from tensortrade.training.experiment_store import ExperimentStore
-    from tensortrade.training.hyperparameter_store import HyperparameterStore
+    from tensortrade_platform.training.experiment_store import ExperimentStore
+    from tensortrade_platform.training.hyperparameter_store import HyperparameterStore
 
     exp_store = ExperimentStore(db_path=db_path)
     hp_store = HyperparameterStore(db_path=db_path)
@@ -26,7 +26,7 @@ def stores(tmp_path):
 
 @pytest.fixture
 def client(stores):
-    import tensortrade.api.server as server_module
+    import tensortrade_platform.api.server as server_module
 
     exp_store, hp_store, ds_store = stores
     original_store = server_module._store
@@ -38,7 +38,7 @@ def client(stores):
     server_module._hp_store = hp_store
     server_module._ds_store = ds_store
 
-    from tensortrade.training.feature_engine import FeatureEngine
+    from tensortrade_platform.training.feature_engine import FeatureEngine
 
     server_module._feature_engine = FeatureEngine()
 

@@ -3,8 +3,11 @@
 import pytest
 from starlette.testclient import TestClient
 
-from tensortrade.api.server import create_app
-from tensortrade.training.hyperparameter_store import SEED_PACKS, HyperparameterStore
+from tensortrade_platform.api.server import create_app
+from tensortrade_platform.training.hyperparameter_store import (
+    SEED_PACKS,
+    HyperparameterStore,
+)
 
 
 @pytest.fixture
@@ -12,8 +15,8 @@ def stores(tmp_path):
     db_path = str(tmp_path / "test_packs.db")
     hp_store = HyperparameterStore(db_path=db_path)
 
-    from tensortrade.training.dataset_store import DatasetStore
-    from tensortrade.training.experiment_store import ExperimentStore
+    from tensortrade_platform.training.dataset_store import DatasetStore
+    from tensortrade_platform.training.experiment_store import ExperimentStore
 
     exp_store = ExperimentStore(db_path=db_path)
     ds_store = DatasetStore(db_path=db_path)
@@ -25,7 +28,7 @@ def stores(tmp_path):
 
 @pytest.fixture
 def client(stores):
-    import tensortrade.api.server as server_module
+    import tensortrade_platform.api.server as server_module
 
     exp_store, hp_store, ds_store = stores
     original_store = server_module._store

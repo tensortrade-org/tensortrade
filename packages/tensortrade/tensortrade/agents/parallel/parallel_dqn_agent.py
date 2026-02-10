@@ -28,10 +28,15 @@ from tensortrade.agents.parallel.parallel_queue import ParallelQueue
 
 
 @deprecated(
-    version="1.0.4", reason="Builtin agents are being deprecated in favor of external implementations (ie: Ray)"
+    version="1.0.4",
+    reason="Builtin agents are being deprecated in favor of external implementations (ie: Ray)",
 )
 class ParallelDQNAgent(Agent):
-    def __init__(self, create_env: Callable[[None], "TradingEnvironment"], model: ParallelDQNModel = None):
+    def __init__(
+        self,
+        create_env: Callable[[None], "TradingEnvironment"],
+        model: ParallelDQNModel = None,
+    ):
         self.create_env = create_env
         self.model = model or ParallelDQNModel(create_env=self.create_env)
 

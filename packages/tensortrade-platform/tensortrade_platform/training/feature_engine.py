@@ -332,7 +332,9 @@ class FeatureEngine:
         """Return the feature catalog with parameter schemas."""
         return FEATURE_CATALOG
 
-    def compute(self, df: pd.DataFrame, feature_specs: list[dict[str, object]]) -> pd.DataFrame:
+    def compute(
+        self, df: pd.DataFrame, feature_specs: list[dict[str, object]]
+    ) -> pd.DataFrame:
         """Compute features on a DataFrame based on specs.
 
         Args:
@@ -487,7 +489,9 @@ class FeatureEngine:
         return df
 
     @staticmethod
-    def _compute_trend_strength(df: pd.DataFrame, spec: dict[str, object]) -> pd.DataFrame:
+    def _compute_trend_strength(
+        df: pd.DataFrame, spec: dict[str, object]
+    ) -> pd.DataFrame:
         fast = int(spec.get("fast", 20))  # type: ignore[arg-type]
         slow = int(spec.get("slow", 50))  # type: ignore[arg-type]
 
@@ -510,7 +514,9 @@ class FeatureEngine:
         return df
 
     @staticmethod
-    def _compute_volume_ratio(df: pd.DataFrame, spec: dict[str, object]) -> pd.DataFrame:
+    def _compute_volume_ratio(
+        df: pd.DataFrame, spec: dict[str, object]
+    ) -> pd.DataFrame:
         period = int(spec.get("period", 20))  # type: ignore[arg-type]
 
         if "volume" in df.columns:
@@ -521,7 +527,9 @@ class FeatureEngine:
         return df
 
     @staticmethod
-    def _compute_bollinger_position(df: pd.DataFrame, spec: dict[str, object]) -> pd.DataFrame:
+    def _compute_bollinger_position(
+        df: pd.DataFrame, spec: dict[str, object]
+    ) -> pd.DataFrame:
         period = int(spec.get("period", 20))  # type: ignore[arg-type]
         std_dev = float(spec.get("std_dev", 2.0))  # type: ignore[arg-type]
 
@@ -631,7 +639,9 @@ class FeatureEngine:
         typical_price = (high + low + df["close"]) / 3
 
         tp_sma = typical_price.rolling(period).mean()
-        tp_mad = typical_price.rolling(period).apply(lambda x: np.abs(x - x.mean()).mean(), raw=True)
+        tp_mad = typical_price.rolling(period).apply(
+            lambda x: np.abs(x - x.mean()).mean(), raw=True
+        )
         cci = (typical_price - tp_sma) / (0.015 * tp_mad + 1e-10)
         # CCI typically ranges -200 to +200; tanh(cci/200) maps to ~[-1,1]
         df["cci"] = np.tanh(cci / 200)

@@ -32,7 +32,9 @@ class ExponentialWeightedMovingAverage(Stream[float]):
     .. [1] https://github.com/pandas-dev/pandas/blob/d9fff2792bf16178d4e450fe7384244e50635733/pandas/_libs/window/aggregations.pyx#L1801
     """
 
-    def __init__(self, alpha: float, adjust: bool, ignore_na: bool, min_periods: int) -> None:
+    def __init__(
+        self, alpha: float, adjust: bool, ignore_na: bool, min_periods: int
+    ) -> None:
         super().__init__()
         self.alpha = alpha
         self.adjust = adjust
@@ -111,7 +113,9 @@ class ExponentialWeightedMovingCovariance(Stream[float]):
         Use a standard estimation bias correction
     """
 
-    def __init__(self, alpha: float, adjust: bool, ignore_na: bool, min_periods: int, bias: bool) -> None:
+    def __init__(
+        self, alpha: float, adjust: bool, ignore_na: bool, min_periods: int, bias: bool
+    ) -> None:
         super().__init__()
         self.alpha = alpha
         self.adjust = adjust
@@ -143,7 +147,9 @@ class ExponentialWeightedMovingCovariance(Stream[float]):
         if self.mean_x is None and self.mean_y is None:
             self.mean_x = v1
             self.mean_y = v2
-            is_observation = (self.mean_x == self.mean_x) and (self.mean_y == self.mean_y)
+            is_observation = (self.mean_x == self.mean_x) and (
+                self.mean_y == self.mean_y
+            )
             self.n += int(is_observation)
             if not is_observation:
                 self.mean_x = np.nan
@@ -166,11 +172,15 @@ class ExponentialWeightedMovingCovariance(Stream[float]):
                     wt_sum = self.old_wt + self.new_wt
 
                     if self.mean_x != v1:
-                        self.mean_x = ((self.old_wt * old_mean_x) + (self.new_wt * v1)) / wt_sum
+                        self.mean_x = (
+                            (self.old_wt * old_mean_x) + (self.new_wt * v1)
+                        ) / wt_sum
 
                     # avoid numerical errors on constant series
                     if self.mean_y != v2:
-                        self.mean_y = ((self.old_wt * old_mean_y) + (self.new_wt * v2)) / wt_sum
+                        self.mean_y = (
+                            (self.old_wt * old_mean_y) + (self.new_wt * v2)
+                        ) / wt_sum
 
                     d1 = old_mean_x - self.mean_x
                     d2 = old_mean_y - self.mean_y
@@ -352,7 +362,10 @@ class EWM(Stream[list[float]]):
             underlying stream of values.
         """
         return ExponentialWeightedMovingAverage(
-            alpha=self.alpha, min_periods=self.min_periods, adjust=self.adjust, ignore_na=self.ignore_na
+            alpha=self.alpha,
+            min_periods=self.min_periods,
+            adjust=self.adjust,
+            ignore_na=self.ignore_na,
         )(self.inputs[0]).astype("float")
 
     def var(self, bias=False) -> "Stream[float]":
@@ -365,7 +378,11 @@ class EWM(Stream[list[float]]):
             underlying stream of values.
         """
         return ExponentialWeightedMovingCovariance(
-            alpha=self.alpha, adjust=self.adjust, ignore_na=self.ignore_na, min_periods=self.min_periods, bias=bias
+            alpha=self.alpha,
+            adjust=self.adjust,
+            ignore_na=self.ignore_na,
+            min_periods=self.min_periods,
+            bias=bias,
         )(self.inputs[0], self.inputs[0]).astype("float")
 
     def std(self, bias=False) -> "Stream[float]":
@@ -432,5 +449,11 @@ def ewm(
         weighted moving operations.
     """
     return EWM(
-        com=com, span=span, halflife=halflife, alpha=alpha, min_periods=min_periods, adjust=adjust, ignore_na=ignore_na
+        com=com,
+        span=span,
+        halflife=halflife,
+        alpha=alpha,
+        min_periods=min_periods,
+        adjust=adjust,
+        ignore_na=ignore_na,
     )(s)

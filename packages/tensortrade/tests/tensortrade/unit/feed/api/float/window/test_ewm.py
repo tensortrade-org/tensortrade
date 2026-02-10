@@ -1,18 +1,82 @@
 import numpy as np
 import pandas as pd
-
-from tensortrade.feed import Stream
 from tests.utils.ops import assert_op
 
+from tensortrade.feed import Stream
+
 configurations = [
-    {"com": None, "span": 3, "halflife": None, "alpha": None, "min_periods": 0, "adjust": True, "ignore_na": True},
-    {"com": None, "span": 3, "halflife": None, "alpha": None, "min_periods": 0, "adjust": True, "ignore_na": False},
-    {"com": None, "span": 3, "halflife": None, "alpha": None, "min_periods": 0, "adjust": False, "ignore_na": True},
-    {"com": None, "span": 3, "halflife": None, "alpha": None, "min_periods": 0, "adjust": False, "ignore_na": False},
-    {"com": None, "span": 3, "halflife": None, "alpha": None, "min_periods": 2, "adjust": True, "ignore_na": True},
-    {"com": None, "span": 3, "halflife": None, "alpha": None, "min_periods": 2, "adjust": True, "ignore_na": False},
-    {"com": None, "span": 3, "halflife": None, "alpha": None, "min_periods": 2, "adjust": False, "ignore_na": True},
-    {"com": None, "span": 3, "halflife": None, "alpha": None, "min_periods": 2, "adjust": False, "ignore_na": False},
+    {
+        "com": None,
+        "span": 3,
+        "halflife": None,
+        "alpha": None,
+        "min_periods": 0,
+        "adjust": True,
+        "ignore_na": True,
+    },
+    {
+        "com": None,
+        "span": 3,
+        "halflife": None,
+        "alpha": None,
+        "min_periods": 0,
+        "adjust": True,
+        "ignore_na": False,
+    },
+    {
+        "com": None,
+        "span": 3,
+        "halflife": None,
+        "alpha": None,
+        "min_periods": 0,
+        "adjust": False,
+        "ignore_na": True,
+    },
+    {
+        "com": None,
+        "span": 3,
+        "halflife": None,
+        "alpha": None,
+        "min_periods": 0,
+        "adjust": False,
+        "ignore_na": False,
+    },
+    {
+        "com": None,
+        "span": 3,
+        "halflife": None,
+        "alpha": None,
+        "min_periods": 2,
+        "adjust": True,
+        "ignore_na": True,
+    },
+    {
+        "com": None,
+        "span": 3,
+        "halflife": None,
+        "alpha": None,
+        "min_periods": 2,
+        "adjust": True,
+        "ignore_na": False,
+    },
+    {
+        "com": None,
+        "span": 3,
+        "halflife": None,
+        "alpha": None,
+        "min_periods": 2,
+        "adjust": False,
+        "ignore_na": True,
+    },
+    {
+        "com": None,
+        "span": 3,
+        "halflife": None,
+        "alpha": None,
+        "min_periods": 2,
+        "adjust": False,
+        "ignore_na": False,
+    },
 ]
 
 

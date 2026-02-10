@@ -28,7 +28,9 @@ def test_push_one_datum():
     m1 = s1.clamp_min(0)
     m2 = s2.clamp_max(0)
 
-    feed = PushFeed([s1.rename("v1"), s2.rename("v2"), m1.rename("v3"), m2.rename("v4")])
+    feed = PushFeed(
+        [s1.rename("v1"), s2.rename("v2"), m1.rename("v3"), m2.rename("v4")]
+    )
 
     arr1 = [1, -1, 2, -2, 3, -3, 4, -4, 5, -5]
     arr2 = [-5, 5, -4, 4, -3, 3, -2, 2, -1, 1]

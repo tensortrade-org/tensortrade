@@ -20,7 +20,8 @@ from deprecated import deprecated
 
 
 @deprecated(
-    version="1.0.4", reason="Builtin agents are being deprecated in favor of external implementations (ie: Ray)"
+    version="1.0.4",
+    reason="Builtin agents are being deprecated in favor of external implementations (ie: Ray)",
 )
 class SharedCounter:
     """A synchronized shared counter.
@@ -63,7 +64,8 @@ class SharedCounter:
 
 
 @deprecated(
-    version="1.0.4", reason="Builtin agents are being deprecated in favor of external implementations (ie: Ray)"
+    version="1.0.4",
+    reason="Builtin agents are being deprecated in favor of external implementations (ie: Ray)",
 )
 class ParallelQueue(Queue):
     """A portable implementation of multiprocessing.Queue.

@@ -4,7 +4,7 @@ import sqlite3
 
 import pytest
 
-from tensortrade.training.hyperparameter_store import (
+from tensortrade_platform.training.hyperparameter_store import (
     SEED_PACKS,
     HyperparameterPack,
     HyperparameterStore,
@@ -38,7 +38,9 @@ class TestSeedPacks:
 class TestCreatePack:
     def test_create_pack(self, store):
         config = {"algorithm": "PPO", "learning_rate": 1e-4}
-        pack_id = store.create_pack(name="Custom Pack", description="A test pack", config=config)
+        pack_id = store.create_pack(
+            name="Custom Pack", description="A test pack", config=config
+        )
         assert isinstance(pack_id, str)
         assert len(pack_id) == 36
 
@@ -131,7 +133,9 @@ class TestUpdatePack:
         assert pack.config == new_config
 
     def test_update_pack_preserves_unchanged_fields(self, store):
-        pack_id = store.create_pack(name="Preserve", description="Keep this", config={"lr": 0.001})
+        pack_id = store.create_pack(
+            name="Preserve", description="Keep this", config={"lr": 0.001}
+        )
         store.update_pack(pack_id, name="New Name Only")
 
         pack = store.get_pack(pack_id)
@@ -171,7 +175,9 @@ class TestDeletePack:
 
 class TestDuplicatePack:
     def test_duplicate_pack(self, store):
-        original_id = store.create_pack(name="Original", description="Source pack", config={"lr": 0.001})
+        original_id = store.create_pack(
+            name="Original", description="Source pack", config={"lr": 0.001}
+        )
         new_id = store.duplicate_pack(original_id)
         assert new_id != original_id
 

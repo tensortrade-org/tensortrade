@@ -15,7 +15,6 @@ from typing import TYPE_CHECKING
 import pandas as pd
 
 import tensortrade.env.default as default
-from tensortrade.data.cdd import CryptoDataDownload
 from tensortrade.env.default import actions as tt_actions
 from tensortrade.env.default import rewards as tt_rewards
 from tensortrade.feed.core import DataFeed, Stream
@@ -23,12 +22,13 @@ from tensortrade.oms.exchanges import Exchange, ExchangeOptions
 from tensortrade.oms.instruments import BTC, USD
 from tensortrade.oms.services.execution.simulated import execute_order
 from tensortrade.oms.wallets import Portfolio, Wallet
-from tensortrade.training.feature_engine import FeatureEngine
+from tensortrade_platform.data.cdd import CryptoDataDownload
+from tensortrade_platform.training.feature_engine import FeatureEngine
 
 if TYPE_CHECKING:
-    from tensortrade.api.server import ConnectionManager
-    from tensortrade.training.dataset_store import DatasetStore
-    from tensortrade.training.experiment_store import ExperimentStore
+    from tensortrade_platform.api.server import ConnectionManager
+    from tensortrade_platform.training.dataset_store import DatasetStore
+    from tensortrade_platform.training.experiment_store import ExperimentStore
 
 logger = logging.getLogger(__name__)
 
@@ -74,7 +74,10 @@ class InferenceRunner:
 
             config = exp.config
 
-            policy_algo, ray_started_here = await asyncio.get_event_loop().run_in_executor(
+            (
+                policy_algo,
+                ray_started_here,
+            ) = await asyncio.get_event_loop().run_in_executor(
                 None,
                 self._load_trained_algo,
                 exp,
@@ -127,7 +130,9 @@ class InferenceRunner:
             prev_trade_count = sum(len(tl) for tl in broker.trades.values())
 
             while not done and not truncated:
-                action = self._coerce_action(policy_algo.compute_single_action(obs, explore=False))
+                action = self._coerce_action(
+                    policy_algo.compute_single_action(obs, explore=False)
+                )
 
                 obs, reward, done, truncated, info = env.step(action)
                 step += 1
@@ -147,7 +152,11 @@ class InferenceRunner:
                 lo = float(row.get("low", 0))
                 c = float(row.get("close", 0))
                 v = float(row.get("volume", 0))
-                ts = int(pd.Timestamp(row["date"]).timestamp()) if "date" in row.index else step
+                ts = (
+                    int(pd.Timestamp(row["date"]).timestamp())
+                    if "date" in row.index
+                    else step
+                )
 
                 # Broadcast executed trades from the OMS broker
                 all_trades = [t for tl in broker.trades.values() for t in tl]
@@ -159,7 +168,11 @@ class InferenceRunner:
                         buy_count += 1
                     else:
                         sell_count += 1
-                    commission_val = float(trade.commission.size) if hasattr(trade.commission, "size") else 0.0
+                    commission_val = (
+                        float(trade.commission.size)
+                        if hasattr(trade.commission, "size")
+                        else 0.0
+                    )
                     await self.manager.broadcast_to_dashboards(
                         {
                             "type": "trade",
@@ -240,8 +253,10 @@ class InferenceRunner:
                 try:
                     policy_algo.stop()
                 except Exception:
-                    logger.debug("Failed to stop inference policy cleanly", exc_info=True)
-            from tensortrade.ray_manager import ray_manager
+                    logger.debug(
+                        "Failed to stop inference policy cleanly", exc_info=True
+                    )
+            from tensortrade_platform.ray_manager import ray_manager
 
             ray_manager.release("inference")
 
@@ -290,12 +305,16 @@ class InferenceRunner:
     def _get_checkpoint_path(experiment: object) -> str | None:
         config = getattr(experiment, "config", {}) or {}
         final_metrics = getattr(experiment, "final_metrics", {}) or {}
-        training_config = config.get("training_config", {}) if isinstance(config, dict) else {}
+        training_config = (
+            config.get("training_config", {}) if isinstance(config, dict) else {}
+        )
 
         candidate_paths = [
             final_metrics.get("checkpoint_path"),
             config.get("checkpoint_path") if isinstance(config, dict) else None,
-            training_config.get("checkpoint_path") if isinstance(training_config, dict) else None,
+            training_config.get("checkpoint_path")
+            if isinstance(training_config, dict)
+            else None,
         ]
         for path in candidate_paths:
             if isinstance(path, str) and path.strip():
@@ -313,7 +332,7 @@ class InferenceRunner:
 
         from ray.rllib.policy.policy import Policy
 
-        from tensortrade.ray_manager import ray_manager
+        from tensortrade_platform.ray_manager import ray_manager
 
         ray_manager.acquire("inference")
 
@@ -322,7 +341,9 @@ class InferenceRunner:
         policies = Policy.from_checkpoint(checkpoint_path)
         policy = policies.get("default_policy")
         if policy is None:
-            raise ValueError(f"No default_policy found in checkpoint: {checkpoint_path}")
+            raise ValueError(
+                f"No default_policy found in checkpoint: {checkpoint_path}"
+            )
         return policy, False  # ray_started_here unused now
 
     def _create_env(
@@ -385,7 +406,9 @@ class InferenceRunner:
                 if start_date:
                     data = data[data["date"] >= pd.Timestamp(start_date)]
                 if end_date:
-                    data = data[data["date"] <= pd.Timestamp(end_date) + pd.Timedelta(days=1)]
+                    data = data[
+                        data["date"] <= pd.Timestamp(end_date) + pd.Timedelta(days=1)
+                    ]
             data = data.reset_index(drop=True)
         else:
             data = data.tail(1000).reset_index(drop=True)
@@ -397,7 +420,9 @@ class InferenceRunner:
         # Build environment
         training_config = config.get("training_config", config)
         commission = training_config.get("commission", config.get("commission", 0.0005))
-        initial_cash = training_config.get("initial_cash", config.get("initial_cash", 10000))
+        initial_cash = training_config.get(
+            "initial_cash", config.get("initial_cash", 10000)
+        )
 
         price = Stream.source(list(data["close"]), dtype="float").rename("USD-BTC")
         exchange = Exchange(
@@ -410,13 +435,21 @@ class InferenceRunner:
         asset = Wallet(exchange, 0 * BTC)
         portfolio = Portfolio(USD, [cash, asset])
 
-        features = [Stream.source(list(data[c]), dtype="float").rename(c) for c in feature_cols if c in data.columns]
+        features = [
+            Stream.source(list(data[c]), dtype="float").rename(c)
+            for c in feature_cols
+            if c in data.columns
+        ]
         feed = DataFeed(features)
         feed.compile()
 
         # Dispatch reward scheme from config
-        reward_name = training_config.get("reward_scheme", config.get("reward_scheme", "PBR"))
-        reward_params = training_config.get("reward_params", config.get("reward_params", {}))
+        reward_name = training_config.get(
+            "reward_scheme", config.get("reward_scheme", "PBR")
+        )
+        reward_params = training_config.get(
+            "reward_params", config.get("reward_params", {})
+        )
         anti_churn_defaults = {
             "trade_penalty_multiplier": 1.1,
             "churn_penalty_multiplier": 1.0,
@@ -442,12 +475,16 @@ class InferenceRunner:
         elif reward_name == "MaxDrawdownPenalty":
             reward_scheme = tt_rewards.MaxDrawdownPenalty(**reward_params)
         elif reward_name == "AdaptiveProfitSeeker":
-            reward_scheme = tt_rewards.AdaptiveProfitSeeker(price=price, commission=commission, **reward_params)
+            reward_scheme = tt_rewards.AdaptiveProfitSeeker(
+                price=price, commission=commission, **reward_params
+            )
         else:
             reward_scheme = tt_rewards.SimpleProfit(**reward_params)
 
         # Dispatch action scheme from config
-        action_name = training_config.get("action_scheme", config.get("action_scheme", "BSH"))
+        action_name = training_config.get(
+            "action_scheme", config.get("action_scheme", "BSH")
+        )
         action_cls = getattr(tt_actions, action_name, tt_actions.BSH)
         action_scheme = action_cls(cash=cash, asset=asset)
         if hasattr(reward_scheme, "on_action"):
@@ -458,8 +495,12 @@ class InferenceRunner:
             portfolio=portfolio,
             action_scheme=action_scheme,
             reward_scheme=reward_scheme,
-            window_size=training_config.get("window_size", config.get("window_size", 10)),
-            max_allowed_loss=training_config.get("max_allowed_loss", config.get("max_allowed_loss", 0.4)),
+            window_size=training_config.get(
+                "window_size", config.get("window_size", 10)
+            ),
+            max_allowed_loss=training_config.get(
+                "max_allowed_loss", config.get("max_allowed_loss", 0.4)
+            ),
         )
         env.portfolio = portfolio
         return env, ohlcv_data, asset
@@ -480,7 +521,7 @@ class InferenceRunner:
             data.sort_values("date", inplace=True)
             data.reset_index(drop=True, inplace=True)
         elif source_type == "alpaca_crypto":
-            from tensortrade.data.alpaca_crypto import AlpacaCryptoData
+            from tensortrade_platform.data.alpaca_crypto import AlpacaCryptoData
 
             alpaca = AlpacaCryptoData()
             data = alpaca.fetch(

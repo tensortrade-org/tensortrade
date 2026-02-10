@@ -232,21 +232,27 @@ class DatasetStore:
 
     def get_config(self, config_id: str) -> DatasetConfig | None:
         """Retrieve a single dataset config by ID."""
-        row = self._conn.execute("SELECT * FROM dataset_configs WHERE id = ?", (config_id,)).fetchone()
+        row = self._conn.execute(
+            "SELECT * FROM dataset_configs WHERE id = ?", (config_id,)
+        ).fetchone()
         if row is None:
             return None
         return self._row_to_dataset(row)
 
     def get_config_by_name(self, name: str) -> DatasetConfig | None:
         """Retrieve a dataset config by name."""
-        row = self._conn.execute("SELECT * FROM dataset_configs WHERE name = ?", (name,)).fetchone()
+        row = self._conn.execute(
+            "SELECT * FROM dataset_configs WHERE name = ?", (name,)
+        ).fetchone()
         if row is None:
             return None
         return self._row_to_dataset(row)
 
     def list_configs(self) -> list[DatasetConfig]:
         """List all dataset configurations ordered by name."""
-        rows = self._conn.execute("SELECT * FROM dataset_configs ORDER BY name").fetchall()
+        rows = self._conn.execute(
+            "SELECT * FROM dataset_configs ORDER BY name"
+        ).fetchall()
         return [self._row_to_dataset(r) for r in rows]
 
     def update_config(
@@ -268,7 +274,9 @@ class DatasetStore:
         new_name = name if name is not None else existing.name
         new_desc = description if description is not None else existing.description
         new_src_type = source_type if source_type is not None else existing.source_type
-        new_src_cfg = source_config if source_config is not None else existing.source_config
+        new_src_cfg = (
+            source_config if source_config is not None else existing.source_config
+        )
         new_feats = features if features is not None else existing.features
         new_split = split_config if split_config is not None else existing.split_config
 
@@ -294,7 +302,9 @@ class DatasetStore:
 
     def delete_config(self, config_id: str) -> bool:
         """Delete a dataset config. Returns True if deleted."""
-        cursor = self._conn.execute("DELETE FROM dataset_configs WHERE id = ?", (config_id,))
+        cursor = self._conn.execute(
+            "DELETE FROM dataset_configs WHERE id = ?", (config_id,)
+        )
         self._conn.commit()
         return cursor.rowcount > 0
 
@@ -310,7 +320,7 @@ class DatasetStore:
 
         import numpy as np
 
-        from tensortrade.training.feature_engine import FeatureEngine
+        from tensortrade_platform.training.feature_engine import FeatureEngine
 
         # Generate or load data based on source type
         df = self._load_source_data(config)
@@ -372,7 +382,7 @@ class DatasetStore:
             return df
 
         if config.source_type == "alpaca_crypto":
-            from tensortrade.data.alpaca_crypto import AlpacaCryptoData
+            from tensortrade_platform.data.alpaca_crypto import AlpacaCryptoData
 
             sc = config.source_config
             alpaca = AlpacaCryptoData()

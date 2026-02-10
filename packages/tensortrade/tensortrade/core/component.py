@@ -37,7 +37,7 @@ class InitContextMeta(ABCMeta):
         config = {**context.shared, **data}
 
         instance = cls.__new__(cls, *args, **kwargs)
-        setattr(instance, "context", Context(**config))
+        instance.context = Context(**config)
         instance.__init__(*args, **kwargs)
 
         return instance

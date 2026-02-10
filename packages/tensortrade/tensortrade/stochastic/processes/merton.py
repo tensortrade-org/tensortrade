@@ -15,7 +15,9 @@
 import pandas as pd
 from stochastic.processes.noise import GaussianNoise
 
-from tensortrade.stochastic.processes.heston import geometric_brownian_motion_jump_diffusion_levels
+from tensortrade.stochastic.processes.heston import (
+    geometric_brownian_motion_jump_diffusion_levels,
+)
 from tensortrade.stochastic.utils.helpers import get_delta, scale_times_to_generate
 from tensortrade.stochastic.utils.parameters import ModelParameters, default
 
@@ -68,7 +70,9 @@ def merton(
     price_frame = pd.DataFrame([], columns=["date", "price"], dtype=float)
     volume_frame = pd.DataFrame([], columns=["date", "volume"], dtype=float)
 
-    price_frame["date"] = pd.date_range(start=start_date, periods=times_to_generate, freq="1min")
+    price_frame["date"] = pd.date_range(
+        start=start_date, periods=times_to_generate, freq="1min"
+    )
     price_frame["price"] = abs(prices)
 
     volume_frame["date"] = price_frame["date"].copy()

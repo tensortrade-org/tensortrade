@@ -2,9 +2,9 @@ from itertools import product
 
 import numpy as np
 import pandas as pd
+from tests.utils.ops import assert_op
 
 from tensortrade.feed import Stream
-from tests.utils.ops import assert_op
 
 configurations = [{"min_periods": 0}, {"min_periods": 2}]
 

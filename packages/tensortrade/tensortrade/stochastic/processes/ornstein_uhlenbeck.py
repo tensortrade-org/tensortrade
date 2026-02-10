@@ -96,7 +96,9 @@ def ornstein(
     price_frame = pd.DataFrame([], columns=["date", "price"], dtype=float)
     volume_frame = pd.DataFrame([], columns=["date", "volume"], dtype=float)
 
-    price_frame["date"] = pd.date_range(start=start_date, periods=times_to_generate, freq="1min")
+    price_frame["date"] = pd.date_range(
+        start=start_date, periods=times_to_generate, freq="1min"
+    )
     price_frame["price"] = abs(prices)
 
     volume_frame["date"] = price_frame["date"].copy()

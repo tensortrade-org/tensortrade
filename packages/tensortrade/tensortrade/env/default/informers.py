@@ -6,4 +6,7 @@ class TensorTradeInformer(Informer):
         super().__init__()
 
     def info(self, env: "TradingEnv") -> dict:
-        return {"step": self.clock.step, "net_worth": env.action_scheme.portfolio.net_worth}
+        return {
+            "step": self.clock.step,
+            "net_worth": env.action_scheme.portfolio.net_worth,
+        }

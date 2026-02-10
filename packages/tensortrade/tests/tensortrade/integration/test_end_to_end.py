@@ -31,16 +31,22 @@ class TestEndToEnd:
         prices = np.random.uniform(90, 110, 100).tolist()
 
         # Create exchange
-        exchange = Exchange("simulated", service=execute_order)(Stream.source(prices, dtype="float").rename("USD-BTC"))
+        exchange = Exchange("simulated", service=execute_order)(
+            Stream.source(prices, dtype="float").rename("USD-BTC")
+        )
 
         # Create portfolio
-        portfolio = Portfolio(USD, [Wallet(exchange, 10000 * USD), Wallet(exchange, 0 * BTC)])
+        portfolio = Portfolio(
+            USD, [Wallet(exchange, 10000 * USD), Wallet(exchange, 0 * BTC)]
+        )
 
         # Create feed
         feed = DataFeed(
             [
                 Stream.source(prices, dtype="float").rename("price"),
-                Stream.source(np.random.uniform(1000, 2000, 100).tolist(), dtype="float").rename("volume"),
+                Stream.source(
+                    np.random.uniform(1000, 2000, 100).tolist(), dtype="float"
+                ).rename("volume"),
             ]
         )
 
@@ -95,7 +101,12 @@ class TestEndToEnd:
 
         # Create portfolio
         portfolio = Portfolio(
-            USD, [Wallet(exchange, 10000 * USD), Wallet(exchange, 0 * BTC), Wallet(exchange, 0 * ETH)]
+            USD,
+            [
+                Wallet(exchange, 10000 * USD),
+                Wallet(exchange, 0 * BTC),
+                Wallet(exchange, 0 * ETH),
+            ],
         )
 
         # Create feed
@@ -108,7 +119,11 @@ class TestEndToEnd:
 
         # Create environment
         env = default.create(
-            portfolio=portfolio, action_scheme="managed-risk", reward_scheme="risk-adjusted", feed=feed, window_size=5
+            portfolio=portfolio,
+            action_scheme="managed-risk",
+            reward_scheme="risk-adjusted",
+            feed=feed,
+            window_size=5,
         )
 
         # Test environment
@@ -127,15 +142,23 @@ class TestEndToEnd:
         # Create simple environment
         prices = [100, 101, 102, 103, 104, 105]
 
-        exchange = Exchange("simulated", service=execute_order)(Stream.source(prices, dtype="float").rename("USD-BTC"))
+        exchange = Exchange("simulated", service=execute_order)(
+            Stream.source(prices, dtype="float").rename("USD-BTC")
+        )
 
         initial_usd = 10000
-        portfolio = Portfolio(USD, [Wallet(exchange, initial_usd * USD), Wallet(exchange, 0 * BTC)])
+        portfolio = Portfolio(
+            USD, [Wallet(exchange, initial_usd * USD), Wallet(exchange, 0 * BTC)]
+        )
 
         feed = DataFeed([Stream.source(prices, dtype="float").rename("price")])
 
         env = default.create(
-            portfolio=portfolio, action_scheme="simple", reward_scheme="simple", feed=feed, window_size=1
+            portfolio=portfolio,
+            action_scheme="simple",
+            reward_scheme="simple",
+            feed=feed,
+            window_size=1,
         )
 
         # Reset environment
@@ -153,7 +176,9 @@ class TestEndToEnd:
 
         # Verify portfolio state is tracked
         assert portfolio.net_worth > 0
-        print(f"Initial net worth: {initial_net_worth}, Final net worth: {portfolio.net_worth}")
+        print(
+            f"Initial net worth: {initial_net_worth}, Final net worth: {portfolio.net_worth}"
+        )
 
     def test_data_feed_processing(self):
         """Test data feed processing with multiple features"""
@@ -165,10 +190,14 @@ class TestEndToEnd:
         lows = [p * 0.98 for p in prices]
 
         # Create exchange
-        exchange = Exchange("simulated", service=execute_order)(Stream.source(prices, dtype="float").rename("USD-BTC"))
+        exchange = Exchange("simulated", service=execute_order)(
+            Stream.source(prices, dtype="float").rename("USD-BTC")
+        )
 
         # Create portfolio
-        portfolio = Portfolio(USD, [Wallet(exchange, 10000 * USD), Wallet(exchange, 0 * BTC)])
+        portfolio = Portfolio(
+            USD, [Wallet(exchange, 10000 * USD), Wallet(exchange, 0 * BTC)]
+        )
 
         # Create feed with multiple features
         feed = DataFeed(
@@ -182,7 +211,11 @@ class TestEndToEnd:
 
         # Create environment
         env = default.create(
-            portfolio=portfolio, action_scheme="simple", reward_scheme="simple", feed=feed, window_size=10
+            portfolio=portfolio,
+            action_scheme="simple",
+            reward_scheme="simple",
+            feed=feed,
+            window_size=10,
         )
 
         # Test environment

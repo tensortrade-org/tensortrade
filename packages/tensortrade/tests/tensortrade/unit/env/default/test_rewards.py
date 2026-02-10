@@ -1,4 +1,3 @@
-
 from collections import OrderedDict
 
 import numpy as np
@@ -15,18 +14,14 @@ from tensortrade.oms.wallets import Portfolio, Wallet
 
 
 class TestTensorTradeRewardScheme:
-
     def setup_method(self):
         self.config = {
-            'base_instrument': 'USD',
-            'instruments': 'ETH',
-            'rewards': {
-                'size': 0
-            }
+            "base_instrument": "USD",
+            "instruments": "ETH",
+            "rewards": {"size": 0},
         }
 
         class ConcreteRewardScheme(rewards.TensorTradeRewardScheme):
-
             def get_reward(self, env) -> float:
                 pass
 
@@ -35,28 +30,27 @@ class TestTensorTradeRewardScheme:
     def test_injects_reward_scheme_with_context(self):
 
         with TradingContext(self.config):
-
             reward_scheme = self.concrete_class()
 
-            assert hasattr(reward_scheme.context, 'size')
+            assert hasattr(reward_scheme.context, "size")
             assert reward_scheme.context.size == 0
-            assert reward_scheme.context['size'] == 0
+            assert reward_scheme.context["size"] == 0
 
     def test_injects_string_initialized_reward_scheme(self):
 
         with TradingContext(self.config):
-
-            reward_scheme = rewards.get('simple')
+            reward_scheme = rewards.get("simple")
 
             assert reward_scheme.registered_name == "rewards"
-            assert hasattr(reward_scheme.context, 'size')
+            assert hasattr(reward_scheme.context, "size")
             assert reward_scheme.context.size == 0
-            assert reward_scheme.context['size'] == 0
+            assert reward_scheme.context["size"] == 0
 
 
 @pytest.fixture
 def net_worths():
     return pd.Series([100, 400, 350, 450, 200, 400, 330, 560], name="net_worth")
+
 
 def net_worths_to_dict(net_worths):
     result = OrderedDict()
@@ -75,7 +69,6 @@ def stream_net_worths(net_worths):
 
 
 class TestSimpleProfit:
-
     def test_get_reward(self, net_worths):
         portfolio = Portfolio(USD)
         portfolio._performance = net_worths_to_dict(net_worths)
@@ -83,46 +76,47 @@ class TestSimpleProfit:
         pct_chg = net_worths.pct_change()
 
         reward_scheme = rewards.SimpleProfit()
-        assert reward_scheme.get_reward(portfolio) == pct_chg.iloc[-1]  # default window size 1
+        assert (
+            reward_scheme.get_reward(portfolio) == pct_chg.iloc[-1]
+        )  # default window size 1
 
         reward_scheme._window_size = 3
-        reward = ((1 + pct_chg.iloc[-1]) * (1 + pct_chg.iloc[-2]) * (1 + pct_chg.iloc[-3])) - 1
+        reward = (
+            (1 + pct_chg.iloc[-1]) * (1 + pct_chg.iloc[-2]) * (1 + pct_chg.iloc[-3])
+        ) - 1
         assert reward_scheme.get_reward(portfolio) == reward
 
 
 class TestRiskAdjustedReturns:
-
     def test_sharpe_ratio(self, net_worths):
         scheme = rewards.RiskAdjustedReturns(
-            return_algorithm='sharpe',
-            risk_free_rate=0,
-            window_size=1
+            return_algorithm="sharpe", risk_free_rate=0, window_size=1
         )
 
         returns = net_worths[-2:].pct_change().dropna()
 
-        expected_ratio = (np.mean(returns) + 1E-9) / (np.std(returns) + 1E-9)
+        expected_ratio = (np.mean(returns) + 1e-9) / (np.std(returns) + 1e-9)
         sharpe_ratio = scheme._sharpe_ratio(returns)
 
         assert sharpe_ratio == expected_ratio
 
     def test_sortino_ratio(self, net_worths):
         scheme = rewards.RiskAdjustedReturns(
-            return_algorithm='sortino',
+            return_algorithm="sortino",
             risk_free_rate=0,
             target_returns=0,
-            window_size=1
+            window_size=1,
         )
 
         returns = net_worths[-2:].pct_change().dropna()
 
         downside_returns = returns.copy()
-        downside_returns[returns < 0] = returns ** 2
+        downside_returns[returns < 0] = returns**2
 
         expected_return = np.mean(returns)
         downside_std = np.sqrt(np.std(downside_returns))
 
-        expected_ratio = (expected_return + 1E-9) / (downside_std + 1E-9)
+        expected_ratio = (expected_return + 1e-9) / (downside_std + 1e-9)
         sortino_ratio = scheme._sortino_ratio(returns)
 
         assert sortino_ratio == expected_ratio
@@ -177,7 +171,9 @@ class TestAdvancedPBR:
 
         env.step(1)  # Executed buy (flat -> long)
         env.step(0)  # Hold
-        _, reward, _, _, _ = env.step(1)  # No-op buy (already long), action_changed=True
+        _, reward, _, _, _ = env.step(
+            1
+        )  # No-op buy (already long), action_changed=True
 
         stats = scheme.get_stats()
         assert stats["trade_count"] == 1
@@ -232,8 +228,7 @@ class TestFractionalPBR:
         price = Stream.source(prices, dtype="float").rename("USD-BTC")
 
         exchange = Exchange(
-            "exchange", service=execute_order,
-            options=ExchangeOptions(commission=0.001)
+            "exchange", service=execute_order, options=ExchangeOptions(commission=0.001)
         )(price)
 
         cash = Wallet(exchange, initial_cash * USD)
@@ -295,8 +290,7 @@ class TestFractionalPBR:
         price = Stream.source(prices, dtype="float").rename("USD-BTC")
 
         exchange = Exchange(
-            "exchange", service=execute_order,
-            options=ExchangeOptions(commission=0.0)
+            "exchange", service=execute_order, options=ExchangeOptions(commission=0.0)
         )(price)
 
         cash = Wallet(exchange, 10000.0 * USD)
@@ -325,8 +319,8 @@ class TestFractionalPBR:
 
     def test_registry(self):
         """FractionalPBR should be in the registry."""
-        assert 'fractional-pbr' in rewards._registry
-        assert rewards._registry['fractional-pbr'] == rewards.FractionalPBR
+        assert "fractional-pbr" in rewards._registry
+        assert rewards._registry["fractional-pbr"] == rewards.FractionalPBR
 
 
 class TestMaxDrawdownPenalty:
@@ -425,5 +419,5 @@ class TestMaxDrawdownPenalty:
 
     def test_registry(self):
         """MaxDrawdownPenalty should be in the registry."""
-        assert 'max-drawdown-penalty' in rewards._registry
-        assert rewards._registry['max-drawdown-penalty'] == rewards.MaxDrawdownPenalty
+        assert "max-drawdown-penalty" in rewards._registry
+        assert rewards._registry["max-drawdown-penalty"] == rewards.MaxDrawdownPenalty

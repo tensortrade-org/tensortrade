@@ -5,16 +5,16 @@ from unittest.mock import MagicMock
 import pytest
 from starlette.testclient import TestClient
 
-from tensortrade.api.server import create_app
+from tensortrade_platform.api.server import create_app
 
 
 @pytest.fixture
 def stores(tmp_path):
     db_path = str(tmp_path / "test_launch.db")
 
-    from tensortrade.training.dataset_store import DatasetStore
-    from tensortrade.training.experiment_store import ExperimentStore
-    from tensortrade.training.hyperparameter_store import HyperparameterStore
+    from tensortrade_platform.training.dataset_store import DatasetStore
+    from tensortrade_platform.training.experiment_store import ExperimentStore
+    from tensortrade_platform.training.hyperparameter_store import HyperparameterStore
 
     exp_store = ExperimentStore(db_path=db_path)
     hp_store = HyperparameterStore(db_path=db_path)
@@ -37,7 +37,7 @@ def mock_launcher():
 
 @pytest.fixture
 def client(stores, mock_launcher):
-    import tensortrade.api.server as server_module
+    import tensortrade_platform.api.server as server_module
 
     exp_store, hp_store, ds_store = stores
     original_store = server_module._store

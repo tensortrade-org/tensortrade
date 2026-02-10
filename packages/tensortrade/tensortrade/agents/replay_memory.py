@@ -22,7 +22,8 @@ Transition = namedtuple("Transition", ["state", "action", "reward", "done"])
 
 
 @deprecated(
-    version="1.0.4", reason="Builtin agents are being deprecated in favor of external implementations (ie: Ray)"
+    version="1.0.4",
+    reason="Builtin agents are being deprecated in favor of external implementations (ie: Ray)",
 )
 class ReplayMemory:
     def __init__(self, capacity: int, transition_type: namedtuple = Transition):

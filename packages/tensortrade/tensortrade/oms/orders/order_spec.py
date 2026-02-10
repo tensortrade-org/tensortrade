@@ -91,7 +91,12 @@ class OrderSpec(Identifiable):
         dict
             The dictionary representation of specification.
         """
-        return {"id": self.id, "type": self.type, "exchange_pair": self.exchange_pair, "criteria": self.criteria}
+        return {
+            "id": self.id,
+            "type": self.type,
+            "exchange_pair": self.exchange_pair,
+            "criteria": self.criteria,
+        }
 
     def __str__(self) -> str:
         data = [f"{k}={v}" for k, v in self.to_dict().items()]

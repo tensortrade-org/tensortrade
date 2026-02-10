@@ -29,7 +29,9 @@ class RandomUniformSlippageModel(SlippageModel):
 
     def __init__(self, max_slippage_percent: float = 3.0):
         super().__init__()
-        self.max_slippage_percent = self.default("max_slippage_percent", max_slippage_percent)
+        self.max_slippage_percent = self.default(
+            "max_slippage_percent", max_slippage_percent
+        )
 
     def adjust_trade(self, trade: "Trade", **kwargs) -> "Trade":
         price_slippage = np.random.uniform(0, self.max_slippage_percent / 100)

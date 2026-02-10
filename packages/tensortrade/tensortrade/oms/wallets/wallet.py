@@ -105,7 +105,9 @@ class Wallet(Identifiable):
             raise DoubleLockedQuantity(quantity)
 
         if quantity > self.balance:
-            if (quantity - self.balance) > Decimal(10) ** (-self.instrument.precision + 2):
+            if (quantity - self.balance) > Decimal(10) ** (
+                -self.instrument.precision + 2
+            ):
                 raise InsufficientFunds(self.balance, quantity)
             else:
                 quantity = self.balance
@@ -237,7 +239,9 @@ class Wallet(Identifiable):
         if quantity.is_locked and self._locked.get(quantity.path_id, False):
             locked_quantity = self._locked[quantity.path_id]
             if quantity > locked_quantity:
-                if (quantity - locked_quantity) > Decimal(10) ** (-self.instrument.precision + 2):
+                if (quantity - locked_quantity) > Decimal(10) ** (
+                    -self.instrument.precision + 2
+                ):
                     raise InsufficientFunds(locked_quantity, quantity)
                 else:
                     quantity = locked_quantity
@@ -245,7 +249,9 @@ class Wallet(Identifiable):
 
         elif not quantity.is_locked:
             if quantity > self.balance:
-                if (quantity - self.balance) > Decimal(10) ** (-self.instrument.precision + 2):
+                if (quantity - self.balance) > Decimal(10) ** (
+                    -self.instrument.precision + 2
+                ):
                     raise InsufficientFunds(self.balance, quantity)
                 else:
                     quantity = self.balance
@@ -342,7 +348,9 @@ class Wallet(Identifiable):
 
         converted = Quantity(instrument, converted_size, quantity.path_id).quantize()
 
-        converted = target.deposit(converted, f"TRADED {quantity} {exchange_pair} @ {exchange_pair.price}")
+        converted = target.deposit(
+            converted, f"TRADED {quantity} {exchange_pair} @ {exchange_pair.price}"
+        )
 
         lsb2 = source.locked.get(poid).size
         ltb2 = target.locked.get(poid, 0 * pair.quote).size
@@ -350,7 +358,11 @@ class Wallet(Identifiable):
         q = quantity.size
         c = commission.size
         cv = converted.size
-        p = exchange_pair.inverse_price if pair == exchange_pair.pair else exchange_pair.price
+        p = (
+            exchange_pair.inverse_price
+            if pair == exchange_pair.pair
+            else exchange_pair.price
+        )
 
         source_quantization = Decimal(10) ** -source.instrument.precision
         target_quantization = Decimal(10) ** -target.instrument.precision
@@ -362,9 +374,7 @@ class Wallet(Identifiable):
         rhs_eq_zero = np.isclose(float(rhs), 0, atol=float(target_quantization))
 
         if not lhs_eq_zero or not rhs_eq_zero:
-            equation = (
-                f"({lsb1} - {lsb2}) - ({q} + {c}) != ({ltb2} - {ltb1}) - {cv}   [LHS = {lhs}, RHS = {rhs}, Price = {p}]"
-            )
+            equation = f"({lsb1} - {lsb2}) - ({q} + {c}) != ({ltb2} - {ltb1}) - {cv}   [LHS = {lhs}, RHS = {rhs}, Price = {p}]"
 
             raise Exception("Invalid Transfer: " + equation)
 

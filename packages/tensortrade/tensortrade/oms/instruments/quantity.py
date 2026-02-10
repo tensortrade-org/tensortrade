@@ -122,7 +122,11 @@ class Quantity:
         `Quantity`
             The quantized quantity.
         """
-        return Quantity(self.instrument, self.size.quantize(Decimal(10) ** -self.instrument.precision), self.path_id)
+        return Quantity(
+            self.instrument,
+            self.size.quantize(Decimal(10) ** -self.instrument.precision),
+            self.path_id,
+        )
 
     def as_float(self) -> float:
         """Gets the size as a `float`.
@@ -154,7 +158,9 @@ class Quantity:
 
         if exchange_pair.pair.base == self.instrument:
             size = self.size
-            return Quantity(self.instrument, min(size, options.max_trade_size), self.path_id)
+            return Quantity(
+                self.instrument, min(size, options.max_trade_size), self.path_id
+            )
 
         size = self.size * price
         if size < options.max_trade_size:
@@ -162,11 +168,15 @@ class Quantity:
 
         max_trade_size = Decimal(options.max_trade_size)
         contained_size = max_trade_size / price
-        contained_size = contained_size.quantize(Decimal(10) ** -self.instrument.precision, rounding=ROUND_DOWN)
+        contained_size = contained_size.quantize(
+            Decimal(10) ** -self.instrument.precision, rounding=ROUND_DOWN
+        )
         return Quantity(self.instrument, contained_size, self.path_id)
 
     @staticmethod
-    def validate(left: "Quantity | Number", right: "Quantity | Number") -> "tuple[Quantity, Quantity]":
+    def validate(
+        left: "Quantity | Number", right: "Quantity | Number"
+    ) -> "tuple[Quantity, Quantity]":
         """Validates the given left and right arguments of a numeric or boolean
         operation.
 
@@ -228,7 +238,11 @@ class Quantity:
         raise Exception(f"Invalid quantity operation arguments: {left} and {right}")
 
     @staticmethod
-    def _bool_op(left: "Quantity | Number", right: "Quantity | Number", op: "Callable[[T, T], bool]") -> bool:
+    def _bool_op(
+        left: "Quantity | Number",
+        right: "Quantity | Number",
+        op: "Callable[[T, T], bool]",
+    ) -> bool:
         """Performs a generic boolean operation on two quantities.
 
         Parameters
@@ -250,7 +264,9 @@ class Quantity:
         return boolean
 
     @staticmethod
-    def _math_op(left: "Quantity | Number", right: "Quantity | Number", op: "Callable[[T, T], T]") -> "Quantity":
+    def _math_op(
+        left: "Quantity | Number", right: "Quantity | Number", op: "Callable[[T, T], T]"
+    ) -> "Quantity":
         """Performs a generic numeric operation on two quantities.
 
         Parameters

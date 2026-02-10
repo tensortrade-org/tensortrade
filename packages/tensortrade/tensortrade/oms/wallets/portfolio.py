@@ -57,7 +57,9 @@ class Portfolio(Component, TimedIdentifiable):
 
         self.base_instrument = self.default("base_instrument", base_instrument)
         self.order_listener = self.default("order_listener", order_listener)
-        self.performance_listener = self.default("performance_listener", performance_listener)
+        self.performance_listener = self.default(
+            "performance_listener", performance_listener
+        )
         self._wallets = {}
 
         for wallet in wallets:
@@ -94,7 +96,9 @@ class Portfolio(Component, TimedIdentifiable):
         exchange_pairs = []
         for w in self.wallets:
             if w.instrument != self.base_instrument:
-                exchange_pairs += [ExchangePair(w.exchange, self.base_instrument / w.instrument)]
+                exchange_pairs += [
+                    ExchangePair(w.exchange, self.base_instrument / w.instrument)
+                ]
         return exchange_pairs
 
     @property

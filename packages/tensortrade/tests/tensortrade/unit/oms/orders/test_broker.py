@@ -4,7 +4,14 @@ from decimal import Decimal
 import pytest
 
 from tensortrade.oms.instruments import BTC, USD, ExchangePair, Quantity
-from tensortrade.oms.orders import Broker, Order, OrderSpec, OrderStatus, TradeSide, TradeType
+from tensortrade.oms.orders import (
+    Broker,
+    Order,
+    OrderSpec,
+    OrderStatus,
+    TradeSide,
+    TradeType,
+)
 from tensortrade.oms.orders.criteria import Stop
 from tensortrade.oms.wallets import Portfolio, Wallet
 
@@ -22,7 +29,11 @@ def test_init(mock_exchange_class):
     assert broker.executed == {}
     assert broker.trades == {}
 
-    exchanges = [mock_exchange_class.return_value, mock_exchange_class.return_value, mock_exchange_class.return_value]
+    exchanges = [
+        mock_exchange_class.return_value,
+        mock_exchange_class.return_value,
+        mock_exchange_class.return_value,
+    ]
     broker = Broker()
     broker.exchanges = exchanges
     assert broker
@@ -89,7 +100,9 @@ def test_cancel_executed_order(mock_order_class, mock_exchange_class):
 
 @mock.patch("tensortrade.orders.Order")
 @mock.patch("tensortrade.exchanges.Exchange")
-def test_update_on_single_exchange_with_single_order(mock_order_class, mock_exchange_class):
+def test_update_on_single_exchange_with_single_order(
+    mock_order_class, mock_exchange_class
+):
 
     exchange = mock_exchange_class.return_value
     broker = Broker()
@@ -221,8 +234,12 @@ def test_on_fill_with_complex_order(mock_trade_class, mock_exchange_class):
     base_size = trade.size + trade.commission.size
     quote_size = (order.price / trade.price) * (trade.size / trade.price)
 
-    base_wallet.withdraw(quantity=Quantity(USD, size=base_size, path_id=order.path_id), reason="test")
-    quote_wallet.deposit(quantity=Quantity(BTC, size=quote_size, path_id=order.path_id), reason="test")
+    base_wallet.withdraw(
+        quantity=Quantity(USD, size=base_size, path_id=order.path_id), reason="test"
+    )
+    quote_wallet.deposit(
+        quantity=Quantity(BTC, size=quote_size, path_id=order.path_id), reason="test"
+    )
 
     assert trade.order_id in broker.executed
     assert trade not in broker.trades

@@ -13,7 +13,7 @@ from collections.abc import Callable
 
 import pandas as pd
 
-from tensortrade.data.alpaca_crypto import (
+from tensortrade_platform.data.alpaca_crypto import (
     TIMEFRAME_MAP,
     AlpacaCryptoData,
     AlpacaCryptoError,
@@ -67,9 +67,13 @@ class AlpacaLiveStream:
 
         if timeframe not in TIMEFRAME_MAP:
             supported = ", ".join(sorted(TIMEFRAME_MAP.keys()))
-            raise AlpacaCryptoError(f"Unsupported timeframe: {timeframe}. Supported: {supported}")
+            raise AlpacaCryptoError(
+                f"Unsupported timeframe: {timeframe}. Supported: {supported}"
+            )
 
-        self._buffer: pd.DataFrame = pd.DataFrame(columns=["date", "open", "high", "low", "close", "volume"])
+        self._buffer: pd.DataFrame = pd.DataFrame(
+            columns=["date", "open", "high", "low", "close", "volume"]
+        )
         self._stream: object | None = None
         self._running = False
         self._reconnect_attempts = 0
@@ -205,7 +209,9 @@ class AlpacaLiveStream:
             self._buffer = pd.concat([self._buffer, new_row], ignore_index=True)
             # Trim to buffer_size
             if len(self._buffer) > self.buffer_size:
-                self._buffer = self._buffer.tail(self.buffer_size).reset_index(drop=True)
+                self._buffer = self._buffer.tail(self.buffer_size).reset_index(
+                    drop=True
+                )
 
             logger.debug(
                 "Bar received for %s: close=%.2f  buffer_len=%d",

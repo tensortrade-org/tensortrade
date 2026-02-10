@@ -76,10 +76,15 @@ class AlpacaCryptoData:
             Sorted ascending by date, with data quality applied.
         """
         try:
-            from alpaca.data.historical.crypto import CryptoBarsRequest, CryptoHistoricalDataClient
+            from alpaca.data.historical.crypto import (
+                CryptoBarsRequest,
+                CryptoHistoricalDataClient,
+            )
             from alpaca.data.timeframe import TimeFrame, TimeFrameUnit
         except ImportError as e:
-            raise AlpacaCryptoError("alpaca-py is not installed. Install with: uv pip install -e '.[alpaca]'") from e
+            raise AlpacaCryptoError(
+                "alpaca-py is not installed. Install with: uv pip install -e '.[alpaca]'"
+            ) from e
 
         # Build timeframe
         tf = self._build_timeframe(timeframe, TimeFrame, TimeFrameUnit)
@@ -101,7 +106,13 @@ class AlpacaCryptoData:
         else:
             client = CryptoHistoricalDataClient()
 
-        logger.info("Fetching %s %s from Alpaca (%s to %s)", symbol, timeframe, start.date(), end.date())
+        logger.info(
+            "Fetching %s %s from Alpaca (%s to %s)",
+            symbol,
+            timeframe,
+            start.date(),
+            end.date(),
+        )
 
         try:
             request = CryptoBarsRequest(
@@ -140,7 +151,9 @@ class AlpacaCryptoData:
         }
         if timeframe not in mapping:
             supported = ", ".join(sorted(mapping.keys()))
-            raise AlpacaCryptoError(f"Unsupported timeframe: {timeframe}. Supported: {supported}")
+            raise AlpacaCryptoError(
+                f"Unsupported timeframe: {timeframe}. Supported: {supported}"
+            )
         amount, unit_name = mapping[timeframe]
         unit = getattr(unit_class, unit_name)
         return tf_class(amount, unit)
@@ -172,7 +185,9 @@ class AlpacaCryptoData:
         }
         for col in ohlcv_map:
             if col not in df.columns:
-                raise AlpacaCryptoError(f"Missing column '{col}' in Alpaca response for {symbol}")
+                raise AlpacaCryptoError(
+                    f"Missing column '{col}' in Alpaca response for {symbol}"
+                )
 
         df = df[["date", "open", "high", "low", "close", "volume"]].copy()
 

@@ -4,9 +4,9 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from tensortrade.training.dataset_store import DatasetConfig
-from tensortrade.training.hyperparameter_store import HyperparameterPack
-from tensortrade.training.launcher import TrainingLauncher
+from tensortrade_platform.training.dataset_store import DatasetConfig
+from tensortrade_platform.training.hyperparameter_store import HyperparameterPack
+from tensortrade_platform.training.launcher import TrainingLauncher
 
 
 def _make_hp_pack(**overrides) -> HyperparameterPack:
@@ -64,7 +64,10 @@ class TestLaunchResolvesConfig:
 
         mock_process = MagicMock()
         mock_process.pid = 12345
-        with patch("tensortrade.training.launcher.subprocess.Popen", return_value=mock_process):
+        with patch(
+            "tensortrade_platform.training.launcher.subprocess.Popen",
+            return_value=mock_process,
+        ):
             exp_id = launcher.launch(
                 name="Test Run",
                 hp_pack_id="hp-1",
@@ -78,14 +81,19 @@ class TestLaunchResolvesConfig:
 
     def test_launch_merges_overrides(self, launcher, mock_stores):
         _, hp_store, ds_store = mock_stores
-        hp_store.get_pack.return_value = _make_hp_pack(config={"algorithm": "PPO", "learning_rate": 5e-5})
+        hp_store.get_pack.return_value = _make_hp_pack(
+            config={"algorithm": "PPO", "learning_rate": 5e-5}
+        )
         ds_store.get_config.return_value = _make_dataset_config()
 
         from unittest.mock import patch
 
         mock_process = MagicMock()
         mock_process.pid = 12345
-        with patch("tensortrade.training.launcher.subprocess.Popen", return_value=mock_process):
+        with patch(
+            "tensortrade_platform.training.launcher.subprocess.Popen",
+            return_value=mock_process,
+        ):
             launcher.launch(
                 name="Override Run",
                 hp_pack_id="hp-1",
@@ -141,7 +149,10 @@ class TestListRunning:
         mock_process.pid = 99999
         mock_process.poll.return_value = None  # Still running
 
-        with patch("tensortrade.training.launcher.subprocess.Popen", return_value=mock_process):
+        with patch(
+            "tensortrade_platform.training.launcher.subprocess.Popen",
+            return_value=mock_process,
+        ):
             launcher.launch(
                 name="Running Experiment",
                 hp_pack_id="hp-1",
@@ -171,9 +182,17 @@ class TestCancel:
         mock_process.poll.return_value = None
 
         with (
-            patch("tensortrade.training.launcher.os.path.expanduser", return_value="/tmp"),
-            patch.object(launcher, "_generate_script", return_value="/tmp/launch_test-exp-id.py"),
-            patch("tensortrade.training.launcher.subprocess.Popen", return_value=mock_process),
+            patch(
+                "tensortrade_platform.training.launcher.os.path.expanduser",
+                return_value="/tmp",
+            ),
+            patch.object(
+                launcher, "_generate_script", return_value="/tmp/launch_test-exp-id.py"
+            ),
+            patch(
+                "tensortrade_platform.training.launcher.subprocess.Popen",
+                return_value=mock_process,
+            ),
         ):
             exp_id = launcher.launch(
                 name="To Cancel",
@@ -181,7 +200,10 @@ class TestCancel:
                 dataset_id="ds-1",
             )
 
-        with patch("os.killpg"), patch("tensortrade.training.launcher.subprocess.run"):
+        with (
+            patch("os.killpg"),
+            patch("tensortrade_platform.training.launcher.subprocess.run"),
+        ):
             result = launcher.cancel(exp_id)
 
         assert result is True
@@ -191,7 +213,7 @@ class TestCancel:
     def test_stop_all_with_no_active_runs(self, launcher):
         from unittest.mock import patch
 
-        with patch("tensortrade.training.launcher.subprocess.run") as mock_run:
+        with patch("tensortrade_platform.training.launcher.subprocess.run") as mock_run:
             stopped = launcher.stop_all()
 
         assert stopped == 0
@@ -201,7 +223,7 @@ class TestCancel:
         from unittest.mock import patch
 
         monkeypatch.setenv("TENSORTRADE_RAY_ADDRESS", "ray://127.0.0.1:10001")
-        with patch("tensortrade.training.launcher.subprocess.run") as mock_run:
+        with patch("tensortrade_platform.training.launcher.subprocess.run") as mock_run:
             stopped = launcher.stop_all()
 
         assert stopped == 0
@@ -221,7 +243,10 @@ class TestCleanupFinished:
         # First poll returns None (running), then returns 0 (finished)
         mock_process.poll.side_effect = [None, 0]
 
-        with patch("tensortrade.training.launcher.subprocess.Popen", return_value=mock_process):
+        with patch(
+            "tensortrade_platform.training.launcher.subprocess.Popen",
+            return_value=mock_process,
+        ):
             launcher.launch(
                 name="Will Finish",
                 hp_pack_id="hp-1",

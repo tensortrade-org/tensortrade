@@ -3,7 +3,10 @@ from decimal import Decimal
 
 import pytest
 
-from tensortrade.core.exceptions import IncompatibleInstrumentOperation, InsufficientFunds
+from tensortrade.core.exceptions import (
+    IncompatibleInstrumentOperation,
+    InsufficientFunds,
+)
 from tensortrade.oms.exchanges import Exchange
 from tensortrade.oms.instruments import BTC, USD, ExchangePair, Quantity
 from tensortrade.oms.wallets import Wallet

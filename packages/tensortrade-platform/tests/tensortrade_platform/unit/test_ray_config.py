@@ -1,6 +1,6 @@
 """Tests for shared Ray configuration helpers."""
 
-from tensortrade.ray_config import build_ray_init_kwargs, resolve_ray_address
+from tensortrade_platform.ray_config import build_ray_init_kwargs, resolve_ray_address
 
 
 def test_resolve_ray_address_prefers_tensortrade_var(monkeypatch):

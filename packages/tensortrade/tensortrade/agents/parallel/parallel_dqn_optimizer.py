@@ -22,7 +22,8 @@ from tensortrade.agents import DQNTransition, ReplayMemory
 
 
 @deprecated(
-    version="1.0.4", reason="Builtin agents are being deprecated in favor of external implementations (ie: Ray)"
+    version="1.0.4",
+    reason="Builtin agents are being deprecated in favor of external implementations (ie: Ray)",
 )
 class ParallelDQNOptimizer(Process):
     def __init__(
@@ -78,16 +79,22 @@ class ParallelDQNOptimizer(Process):
 
             with tf.GradientTape() as tape:
                 state_action_values = tf.math.reduce_sum(
-                    self.model.policy_network(state_batch) * tf.one_hot(action_batch, self.model.n_actions), axis=1
+                    self.model.policy_network(state_batch)
+                    * tf.one_hot(action_batch, self.model.n_actions),
+                    axis=1,
                 )
 
                 next_state_values = tf.where(
                     done_batch,
                     tf.zeros(self.batch_size),
-                    tf.math.reduce_max(self.model.target_network(next_state_batch), axis=1),
+                    tf.math.reduce_max(
+                        self.model.target_network(next_state_batch), axis=1
+                    ),
                 )
 
-                expected_state_action_values = reward_batch + (self.discount_factor * next_state_values)
+                expected_state_action_values = reward_batch + (
+                    self.discount_factor * next_state_values
+                )
                 loss_value = loss_fn(expected_state_action_values, state_action_values)
 
             variables = self.model.policy_network.trainable_variables

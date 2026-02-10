@@ -7,14 +7,14 @@ import pytest
 
 class TestTensorBoardConfig:
     def test_defaults(self):
-        from tensortrade.training.tensorboard import TensorBoardConfig
+        from tensortrade_platform.training.tensorboard import TensorBoardConfig
 
         cfg = TensorBoardConfig()
         assert cfg.log_dir == "~/ray_results/tensortrade"
         assert cfg.flush_secs == 30
 
     def test_custom_values(self):
-        from tensortrade.training.tensorboard import TensorBoardConfig
+        from tensortrade_platform.training.tensorboard import TensorBoardConfig
 
         cfg = TensorBoardConfig(log_dir="/tmp/tb", flush_secs=10)
         assert cfg.log_dir == "/tmp/tb"
@@ -25,10 +25,12 @@ torch = pytest.importorskip("torch", reason="torch not installed")
 
 
 class TestTradingTensorBoardLogger:
-    @patch("tensortrade.training.tensorboard.TradingTensorBoardLogger._setup_layout")
+    @patch(
+        "tensortrade_platform.training.tensorboard.TradingTensorBoardLogger._setup_layout"
+    )
     @patch("torch.utils.tensorboard.SummaryWriter")
     def test_log_training_result(self, mock_writer_cls, mock_layout, tmp_path):
-        from tensortrade.training.tensorboard import (
+        from tensortrade_platform.training.tensorboard import (
             TensorBoardConfig,
             TradingTensorBoardLogger,
         )
@@ -72,10 +74,12 @@ class TestTradingTensorBoardLogger:
         assert "Performance/episode_return_mean" in tags_logged
         assert "Performance/total_loss" in tags_logged
 
-    @patch("tensortrade.training.tensorboard.TradingTensorBoardLogger._setup_layout")
+    @patch(
+        "tensortrade_platform.training.tensorboard.TradingTensorBoardLogger._setup_layout"
+    )
     @patch("torch.utils.tensorboard.SummaryWriter")
     def test_log_evaluation(self, mock_writer_cls, mock_layout, tmp_path):
-        from tensortrade.training.tensorboard import (
+        from tensortrade_platform.training.tensorboard import (
             TensorBoardConfig,
             TradingTensorBoardLogger,
         )
@@ -99,10 +103,12 @@ class TestTradingTensorBoardLogger:
         # Non-numeric fields should not be logged
         assert "Val/text_field" not in tags_logged
 
-    @patch("tensortrade.training.tensorboard.TradingTensorBoardLogger._setup_layout")
+    @patch(
+        "tensortrade_platform.training.tensorboard.TradingTensorBoardLogger._setup_layout"
+    )
     @patch("torch.utils.tensorboard.SummaryWriter")
     def test_flush_and_close(self, mock_writer_cls, mock_layout, tmp_path):
-        from tensortrade.training.tensorboard import (
+        from tensortrade_platform.training.tensorboard import (
             TensorBoardConfig,
             TradingTensorBoardLogger,
         )
@@ -119,10 +125,12 @@ class TestTradingTensorBoardLogger:
         logger.close()
         mock_writer.close.assert_called_once()
 
-    @patch("tensortrade.training.tensorboard.TradingTensorBoardLogger._setup_layout")
+    @patch(
+        "tensortrade_platform.training.tensorboard.TradingTensorBoardLogger._setup_layout"
+    )
     @patch("torch.utils.tensorboard.SummaryWriter")
     def test_handles_empty_result(self, mock_writer_cls, mock_layout, tmp_path):
-        from tensortrade.training.tensorboard import (
+        from tensortrade_platform.training.tensorboard import (
             TensorBoardConfig,
             TradingTensorBoardLogger,
         )

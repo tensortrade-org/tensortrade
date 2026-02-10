@@ -55,7 +55,9 @@ def portfolio(wallet_usd, wallet_btc, wallet_eth, wallet_xrp, exchange):
     portfolio = Portfolio(USD, wallets=[wallet_usd, wallet_btc, wallet_eth, wallet_xrp])
 
     with mock.patch.object(Portfolio, "clock", return_value=exchange.clock) as _clock:
-        portfolio = Portfolio(USD, wallets=[wallet_usd, wallet_btc, wallet_eth, wallet_xrp])
+        portfolio = Portfolio(
+            USD, wallets=[wallet_usd, wallet_btc, wallet_eth, wallet_xrp]
+        )
 
     return portfolio
 
@@ -91,7 +93,9 @@ def test_init_empty():
 
 def test_init_from_wallets(exchange):
 
-    portfolio = Portfolio(USD, wallets=[Wallet(exchange, 10000 * USD), Wallet(exchange, 0 * BTC)])
+    portfolio = Portfolio(
+        USD, wallets=[Wallet(exchange, 10000 * USD), Wallet(exchange, 0 * BTC)]
+    )
 
     assert portfolio.base_instrument == USD
     assert portfolio.base_balance == 10000 * USD

@@ -3,9 +3,9 @@ from itertools import product
 import numpy as np
 import pandas as pd
 import pytest
+from tests.utils.ops import assert_op
 
 from tensortrade.feed import Stream
-from tests.utils.ops import assert_op
 
 arrays = [[1, 2, 3, 4, 5, 6, 7], [1, np.nan, 3, 4, 5, 6, np.nan, 7]]
 

@@ -5,7 +5,14 @@ operators.py contains function for generic stream operators.
 from collections.abc import Callable
 
 from tensortrade.feed.core.base import Stream, T
-from tensortrade.feed.core.operators import Accumulator, Apply, Copy, Freeze, Lag, TypeVar
+from tensortrade.feed.core.operators import (
+    Accumulator,
+    Apply,
+    Copy,
+    Freeze,
+    Lag,
+    TypeVar,
+)
 
 K = TypeVar("K")
 

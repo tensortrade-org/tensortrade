@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING
 import optuna
 
 if TYPE_CHECKING:
-    from tensortrade.training.experiment_store import ExperimentStore
+    from tensortrade_platform.training.experiment_store import ExperimentStore
 
 
 class OptunaExperimentBridge:
@@ -102,7 +102,9 @@ class OptunaExperimentBridge:
     def get_study_summary(self, study: optuna.Study) -> dict:
         """Get a summary of the study results."""
         trials = study.trials
-        complete_trials = [t for t in trials if t.state == optuna.trial.TrialState.COMPLETE]
+        complete_trials = [
+            t for t in trials if t.state == optuna.trial.TrialState.COMPLETE
+        ]
         pruned_trials = [t for t in trials if t.state == optuna.trial.TrialState.PRUNED]
 
         values = [t.value for t in complete_trials if t.value is not None]
@@ -138,7 +140,9 @@ class OptunaExperimentBridge:
                         "trial_number": trial.number,
                         "value": trial.value,
                         "params": dict(trial.params),
-                        "duration": trial.duration.total_seconds() if trial.duration else None,
+                        "duration": trial.duration.total_seconds()
+                        if trial.duration
+                        else None,
                     }
                 )
         return history

@@ -28,7 +28,11 @@ class RollingNode(Stream[float]):
         rolling = self.inputs[0]
         history = rolling.value
 
-        output = np.nan if rolling.n - rolling.nan < rolling.min_periods else self.func(history)
+        output = (
+            np.nan
+            if rolling.n - rolling.nan < rolling.min_periods
+            else self.func(history)
+        )
 
         return output
 
@@ -209,7 +213,9 @@ class Rolling(Stream[list[float]]):
 
 
 @Float.register(["rolling"])
-def rolling(s: "Stream[float]", window: int, min_periods: int = 1) -> "Stream[list[float]]":
+def rolling(
+    s: "Stream[float]", window: int, min_periods: int = 1
+) -> "Stream[list[float]]":
     """Creates a stream that generates a rolling window of values from a stream.
 
     Parameters

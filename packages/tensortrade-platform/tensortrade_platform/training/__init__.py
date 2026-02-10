@@ -1,6 +1,9 @@
-from tensortrade.training.callbacks import make_training_callbacks
-from tensortrade.training.experiment_store import ExperimentStore
-from tensortrade.training.tensorboard import TensorBoardConfig, TradingTensorBoardLogger
+from tensortrade_platform.training.callbacks import make_training_callbacks
+from tensortrade_platform.training.experiment_store import ExperimentStore
+from tensortrade_platform.training.tensorboard import (
+    TensorBoardConfig,
+    TradingTensorBoardLogger,
+)
 
 __all__ = [
     "ExperimentStore",

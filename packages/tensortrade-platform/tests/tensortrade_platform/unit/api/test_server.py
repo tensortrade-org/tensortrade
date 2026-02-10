@@ -4,12 +4,12 @@ from unittest.mock import patch
 
 import pytest
 
-from tensortrade.api.server import ConnectionManager, create_app
+from tensortrade_platform.api.server import ConnectionManager, create_app
 
 
 @pytest.fixture
 def store(tmp_path):
-    from tensortrade.training.experiment_store import ExperimentStore
+    from tensortrade_platform.training.experiment_store import ExperimentStore
 
     db_path = str(tmp_path / "test_server.db")
     s = ExperimentStore(db_path=db_path)
@@ -20,7 +20,7 @@ def store(tmp_path):
 @pytest.fixture
 def app(store):
     """Create a FastAPI app with a test store."""
-    import tensortrade.api.server as server_module
+    import tensortrade_platform.api.server as server_module
 
     original_store = server_module._store
     server_module._store = store
@@ -140,7 +140,9 @@ class TestOptunaEndpoints:
 
     def test_param_importance(self, client, store):
         # Need at least 3 complete trials with numeric params
-        for i, (lr, val) in enumerate([(0.001, 0.5), (0.01, 0.7), (0.1, 0.9), (0.05, 0.8)]):
+        for i, (lr, val) in enumerate(
+            [(0.001, 0.5), (0.01, 0.7), (0.1, 0.9), (0.05, 0.8)]
+        ):
             store.log_optuna_trial("corr_study", i, {"lr": lr}, val, "complete", 60.0)
 
         resp = client.get("/api/optuna/studies/corr_study/importance")
@@ -185,7 +187,7 @@ class TestTrainingControls:
     def test_stop_training(self, client):
         from unittest.mock import MagicMock
 
-        import tensortrade.api.server as server_module
+        import tensortrade_platform.api.server as server_module
 
         mock_launcher = MagicMock()
         mock_launcher.stop_all.return_value = 1
@@ -260,7 +262,7 @@ class TestConnectionManager:
 
 class TestCorrelationHelper:
     def test_correlation(self):
-        from tensortrade.api.server import _correlation
+        from tensortrade_platform.api.server import _correlation
 
         # Perfect positive correlation
         assert abs(_correlation([1, 2, 3, 4], [2, 4, 6, 8]) - 1.0) < 1e-10
@@ -269,11 +271,11 @@ class TestCorrelationHelper:
         assert abs(_correlation([1, 2, 3, 4], [8, 6, 4, 2]) + 1.0) < 1e-10
 
     def test_correlation_insufficient_data(self):
-        from tensortrade.api.server import _correlation
+        from tensortrade_platform.api.server import _correlation
 
         assert _correlation([1], [2]) == 0.0
 
     def test_correlation_constant_values(self):
-        from tensortrade.api.server import _correlation
+        from tensortrade_platform.api.server import _correlation
 
         assert _correlation([5, 5, 5], [1, 2, 3]) == 0.0

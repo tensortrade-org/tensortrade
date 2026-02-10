@@ -48,7 +48,9 @@ class TrainingBridge:
             return
         self._should_stop.clear()
         self._is_paused.clear()
-        self._thread = threading.Thread(target=self._run, daemon=True, name="training-bridge")
+        self._thread = threading.Thread(
+            target=self._run, daemon=True, name="training-bridge"
+        )
         self._thread.start()
 
     def stop(self) -> None:
@@ -120,7 +122,9 @@ class TrainingBridge:
                     try:
                         while not self._should_stop.is_set():
                             try:
-                                msg = await asyncio.get_event_loop().run_in_executor(None, self._queue.get, True, 0.5)
+                                msg = await asyncio.get_event_loop().run_in_executor(
+                                    None, self._queue.get, True, 0.5
+                                )
                             except queue.Empty:
                                 continue
 

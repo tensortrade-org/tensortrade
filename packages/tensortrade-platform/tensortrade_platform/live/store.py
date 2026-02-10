@@ -12,7 +12,7 @@ import uuid
 from dataclasses import dataclass
 from datetime import UTC, datetime
 
-from tensortrade.training.experiment_store import DEFAULT_DB_PATH
+from tensortrade_platform.db import DEFAULT_DB_PATH
 
 
 @dataclass
@@ -154,7 +154,9 @@ class LiveTradingStore:
 
     def get_session(self, session_id: str) -> LiveSession | None:
         """Retrieve a single live session by ID."""
-        row = self._conn.execute("SELECT * FROM live_sessions WHERE id = ?", (session_id,)).fetchone()
+        row = self._conn.execute(
+            "SELECT * FROM live_sessions WHERE id = ?", (session_id,)
+        ).fetchone()
         if row is None:
             return None
         return self._row_to_session(row)

@@ -16,16 +16,16 @@ from typing import TYPE_CHECKING
 import numpy as np
 import pandas as pd
 
-from tensortrade.data.alpaca_live import AlpacaLiveStream
-from tensortrade.live.account_sync import AccountSync, PositionInfo
-from tensortrade.live.config import LiveTradingConfig
-from tensortrade.live.store import LiveTradingStore
 from tensortrade.oms.orders import TradeSide
 from tensortrade.oms.services.execution.alpaca import AlpacaExecutionService
-from tensortrade.training.feature_engine import FeatureEngine
+from tensortrade_platform.data.alpaca_live import AlpacaLiveStream
+from tensortrade_platform.live.account_sync import AccountSync, PositionInfo
+from tensortrade_platform.live.config import LiveTradingConfig
+from tensortrade_platform.live.store import LiveTradingStore
+from tensortrade_platform.training.feature_engine import FeatureEngine
 
 if TYPE_CHECKING:
-    from tensortrade.api.server import ConnectionManager
+    from tensortrade_platform.api.server import ConnectionManager
 
 logger = logging.getLogger(__name__)
 
@@ -237,7 +237,7 @@ class LiveTrader:
                 self._policy.stop()
             except Exception:
                 logger.debug("Failed to stop policy cleanly", exc_info=True)
-        from tensortrade.ray_manager import ray_manager
+        from tensortrade_platform.ray_manager import ray_manager
 
         ray_manager.release("live_trading")
 
@@ -253,7 +253,9 @@ class LiveTrader:
             return []
         result: list[dict[str, object]] = []
         for _, row in buf.iterrows():
-            ts = int(pd.Timestamp(row["date"]).timestamp()) if "date" in row.index else 0
+            ts = (
+                int(pd.Timestamp(row["date"]).timestamp()) if "date" in row.index else 0
+            )
             result.append(
                 {
                     "timestamp": ts,
@@ -300,7 +302,9 @@ class LiveTrader:
             "equity": self._current_equity,
             "initial_equity": self._initial_equity,
             "pnl": self._pnl,
-            "pnl_pct": (self._pnl / self._initial_equity * 100) if self._initial_equity > 0 else 0.0,
+            "pnl_pct": (self._pnl / self._initial_equity * 100)
+            if self._initial_equity > 0
+            else 0.0,
             "position": self._position,
             "position_qty": self._position_qty,
             "entry_price": self._entry_price,
@@ -319,7 +323,9 @@ class LiveTrader:
             return
         bars = self.get_initial_bars()
         if bars:
-            await self._manager.broadcast_to_dashboards({"type": "live_bars_history", "bars": bars})
+            await self._manager.broadcast_to_dashboards(
+                {"type": "live_bars_history", "bars": bars}
+            )
             logger.info("Broadcast %d initial bars to dashboard", len(bars))
 
     async def _run(self) -> None:
@@ -632,7 +638,7 @@ class LiveTrader:
 
         from ray.rllib.policy.policy import Policy
 
-        from tensortrade.ray_manager import ray_manager
+        from tensortrade_platform.ray_manager import ray_manager
 
         ray_manager.acquire("live_trading")
 
@@ -651,7 +657,11 @@ class LiveTrader:
     async def _broadcast_status(self, state: str) -> None:
         if self._manager is None:
             return
-        pnl_pct = (self._pnl / self._initial_equity * 100) if self._initial_equity > 0 else 0.0
+        pnl_pct = (
+            (self._pnl / self._initial_equity * 100)
+            if self._initial_equity > 0
+            else 0.0
+        )
         await self._manager.broadcast_to_dashboards(
             {
                 "type": "live_status",
@@ -673,7 +683,11 @@ class LiveTrader:
     async def _broadcast_bar(self, row: pd.Series) -> None:
         if self._manager is None:
             return
-        ts = int(pd.Timestamp(row["date"]).timestamp()) if "date" in row.index else self._step
+        ts = (
+            int(pd.Timestamp(row["date"]).timestamp())
+            if "date" in row.index
+            else self._step
+        )
         await self._manager.broadcast_to_dashboards(
             {
                 "type": "live_bar",
@@ -736,7 +750,11 @@ class LiveTrader:
     async def _broadcast_portfolio(self) -> None:
         if self._manager is None:
             return
-        pnl_pct = (self._pnl / self._initial_equity * 100) if self._initial_equity > 0 else 0.0
+        pnl_pct = (
+            (self._pnl / self._initial_equity * 100)
+            if self._initial_equity > 0
+            else 0.0
+        )
         await self._manager.broadcast_to_dashboards(
             {
                 "type": "live_portfolio",

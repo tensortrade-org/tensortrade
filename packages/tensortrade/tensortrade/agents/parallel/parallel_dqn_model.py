@@ -22,10 +22,15 @@ from deprecated import deprecated
 
 
 @deprecated(
-    version="1.0.4", reason="Builtin agents are being deprecated in favor of external implementations (ie: Ray)"
+    version="1.0.4",
+    reason="Builtin agents are being deprecated in favor of external implementations (ie: Ray)",
 )
 class ParallelDQNModel:
-    def __init__(self, create_env: Callable[[], "TradingEnvironment"], policy_network: tf.keras.Model = None):
+    def __init__(
+        self,
+        create_env: Callable[[], "TradingEnvironment"],
+        policy_network: tf.keras.Model = None,
+    ):
         temp_env = create_env()
 
         self.n_actions = temp_env.action_space.n
@@ -40,9 +45,13 @@ class ParallelDQNModel:
         network = tf.keras.Sequential(
             [
                 tf.keras.layers.InputLayer(input_shape=self.observation_shape),
-                tf.keras.layers.Conv1D(filters=64, kernel_size=6, padding="same", activation="tanh"),
+                tf.keras.layers.Conv1D(
+                    filters=64, kernel_size=6, padding="same", activation="tanh"
+                ),
                 tf.keras.layers.MaxPooling1D(pool_size=2),
-                tf.keras.layers.Conv1D(filters=32, kernel_size=3, padding="same", activation="tanh"),
+                tf.keras.layers.Conv1D(
+                    filters=32, kernel_size=3, padding="same", activation="tanh"
+                ),
                 tf.keras.layers.MaxPooling1D(pool_size=2),
                 tf.keras.layers.Flatten(),
                 tf.keras.layers.Dense(self.n_actions, activation="sigmoid"),
@@ -62,7 +71,9 @@ class ParallelDQNModel:
         episode: int = kwargs.get("episode")
 
         if episode:
-            filename = "policy_network__" + agent_id + "__" + str(episode).zfill(3) + ".hdf5"
+            filename = (
+                "policy_network__" + agent_id + "__" + str(episode).zfill(3) + ".hdf5"
+            )
         else:
             filename = "policy_network__" + agent_id + ".hdf5"
 

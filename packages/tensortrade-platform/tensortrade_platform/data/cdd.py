@@ -92,7 +92,9 @@ class CryptoDataDownload:
         info = SUPPORTED_EXCHANGES.get(exchange)
         if info is None:
             supported = ", ".join(sorted(SUPPORTED_EXCHANGES.keys()))
-            raise CryptoDataDownloadError(f"Exchange '{exchange_name}' is not supported. Supported: {supported}")
+            raise CryptoDataDownloadError(
+                f"Exchange '{exchange_name}' is not supported. Supported: {supported}"
+            )
 
         # Binance uses USDT, auto-convert USD -> USDT
         actual_quote = quote
@@ -141,7 +143,9 @@ class CryptoDataDownload:
                 ) from e
             raise CryptoDataDownloadError(f"HTTP error {e.code} fetching {url}") from e
         except urllib.error.URLError as e:
-            raise CryptoDataDownloadError(f"Network error fetching data: {e.reason}") from e
+            raise CryptoDataDownloadError(
+                f"Network error fetching data: {e.reason}"
+            ) from e
 
         # Skip first line (site header)
         lines = raw.split("\n", 1)
@@ -152,7 +156,9 @@ class CryptoDataDownload:
             raise CryptoDataDownloadError(f"Empty dataset returned from {url}")
         return df
 
-    def _fetch_standard(self, exchange: str, base: str, quote: str, timeframe: str) -> pd.DataFrame:
+    def _fetch_standard(
+        self, exchange: str, base: str, quote: str, timeframe: str
+    ) -> pd.DataFrame:
         """Fetch from exchanges with standard CSV format (Bitfinex, Bitstamp, Binance)."""
         pair = f"{base}{quote}"
         url = self._build_url(exchange, pair, timeframe)

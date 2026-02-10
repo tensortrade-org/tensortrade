@@ -30,7 +30,9 @@ def test_bool_accessor():
 
 def test_str_methods():
 
-    s = Stream.source(["hello", "my", "name", "i", "am", "the", "data", "feed"], dtype="string")
+    s = Stream.source(
+        ["hello", "my", "name", "i", "am", "the", "data", "feed"], dtype="string"
+    )
 
     w1 = s.upper().rename("w1")
     w2 = s.lower().rename("w2")
@@ -43,7 +45,9 @@ def test_str_methods():
 
 
 def test_bool_methods():
-    s = Stream.source(["hello", "my", "name", "i", "am", "the", "data", "feed"], dtype="string")
+    s = Stream.source(
+        ["hello", "my", "name", "i", "am", "the", "data", "feed"], dtype="string"
+    )
 
     w1 = s.upper().rename("w1")
     w2 = s.lower().rename("w2")

@@ -2,9 +2,9 @@ from itertools import product
 
 import numpy as np
 import pandas as pd
+from tests.utils.ops import assert_op
 
 from tensortrade.feed import Stream
-from tests.utils.ops import assert_op
 
 arrays = [
     [-1.5, 2.2, -3.3, 4.7, -5.1, 7.45, 8.8],

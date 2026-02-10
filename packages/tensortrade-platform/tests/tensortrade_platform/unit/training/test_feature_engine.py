@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from tensortrade.training.feature_engine import FEATURE_CATALOG, FeatureEngine
+from tensortrade_platform.training.feature_engine import FEATURE_CATALOG, FeatureEngine
 
 
 @pytest.fixture
@@ -307,7 +307,17 @@ class TestComputeMultipleFeatures:
         ]
         result = engine.compute(sample_df, specs)
 
-        expected_cols = ["ret_1h", "ret_4h", "rsi", "trend_10", "trend_50", "vol", "vol_norm", "vol_ratio", "bb_pos"]
+        expected_cols = [
+            "ret_1h",
+            "ret_4h",
+            "rsi",
+            "trend_10",
+            "trend_50",
+            "vol",
+            "vol_norm",
+            "vol_ratio",
+            "bb_pos",
+        ]
         for col in expected_cols:
             assert col in result.columns
 

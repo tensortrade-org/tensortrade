@@ -16,7 +16,7 @@ from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from tensortrade.training.experiment_store import ExperimentStore
+    from tensortrade_platform.training.experiment_store import ExperimentStore
 
 
 @dataclass
@@ -43,9 +43,13 @@ class InsightsEngine:
         import anthropic
 
         self.store = store
-        self.client = anthropic.Anthropic(api_key=api_key or os.environ.get("ANTHROPIC_API_KEY"))
+        self.client = anthropic.Anthropic(
+            api_key=api_key or os.environ.get("ANTHROPIC_API_KEY")
+        )
 
-    async def analyze_experiment(self, experiment_id: str, *, custom_prompt: str | None = None) -> InsightReport:
+    async def analyze_experiment(
+        self, experiment_id: str, *, custom_prompt: str | None = None
+    ) -> InsightReport:
         """Analyze a single experiment's performance."""
         exp = self.store.get_experiment(experiment_id)
         if not exp:
@@ -84,7 +88,9 @@ class InsightsEngine:
             custom_prompt=custom_prompt,
         )
 
-    async def suggest_next_strategy(self, study_name: str, *, custom_prompt: str | None = None) -> InsightReport:
+    async def suggest_next_strategy(
+        self, study_name: str, *, custom_prompt: str | None = None
+    ) -> InsightReport:
         """Analyze Optuna study and suggest next hyperparameter regions."""
         trials = self.store.get_optuna_trials(study_name)
         if not trials:
@@ -98,7 +104,9 @@ class InsightsEngine:
             custom_prompt=custom_prompt,
         )
 
-    async def analyze_campaign(self, study_name: str, *, custom_prompt: str | None = None) -> InsightReport:
+    async def analyze_campaign(
+        self, study_name: str, *, custom_prompt: str | None = None
+    ) -> InsightReport:
         """Comprehensive written analysis of an Optuna campaign's results."""
         trials = self.store.get_optuna_trials(study_name)
         if not trials:
@@ -227,7 +235,9 @@ class InsightsEngine:
         if not suggestions:
             raise ValueError("Insight has no suggestions to apply")
 
-        prompt = self._build_hp_pack_prompt(exp.config, suggestions, exp.name, user_guidance)
+        prompt = self._build_hp_pack_prompt(
+            exp.config, suggestions, exp.name, user_guidance
+        )
 
         loop = asyncio.get_event_loop()
         response = await loop.run_in_executor(
@@ -248,7 +258,9 @@ class InsightsEngine:
 
         return {
             "name": parsed.get("name", f"{exp.name} — Improved"),
-            "description": parsed.get("description", "AI-generated HP pack based on insight suggestions"),
+            "description": parsed.get(
+                "description", "AI-generated HP pack based on insight suggestions"
+            ),
             "config": parsed["config"],
         }
 
@@ -309,7 +321,9 @@ TrainingConfig schema:
 Respond with ONLY a JSON object in this exact format (no markdown fences, no explanation):
 {{"name": "descriptive pack name", "description": "1-2 sentence description of changes made", "config": {{ ...full TrainingConfig... }}}}"""
 
-    async def analyze_trades(self, experiment_id: str, *, custom_prompt: str | None = None) -> InsightReport:
+    async def analyze_trades(
+        self, experiment_id: str, *, custom_prompt: str | None = None
+    ) -> InsightReport:
         """Deep analysis of trade patterns."""
         exp = self.store.get_experiment(experiment_id)
         if not exp:
@@ -439,8 +453,12 @@ Format as JSON:
         avg_value = sum(values) / len(values) if values else None
 
         # Best trial details
-        best_trial = max(complete, key=lambda t: t.value or float("-inf")) if complete else None
-        best_params_str = json.dumps(best_trial.params, indent=2) if best_trial else "N/A"
+        best_trial = (
+            max(complete, key=lambda t: t.value or float("-inf")) if complete else None
+        )
+        best_params_str = (
+            json.dumps(best_trial.params, indent=2) if best_trial else "N/A"
+        )
 
         # Top-5 and bottom-5 trials
         sorted_complete = sorted(complete, key=lambda t: t.value or 0, reverse=True)
@@ -449,10 +467,14 @@ Format as JSON:
 
         top5_lines = []
         for t in top5:
-            top5_lines.append(f"  Trial {t.trial_number}: value={t.value}, params={json.dumps(t.params)}")
+            top5_lines.append(
+                f"  Trial {t.trial_number}: value={t.value}, params={json.dumps(t.params)}"
+            )
         bottom5_lines = []
         for t in bottom5:
-            bottom5_lines.append(f"  Trial {t.trial_number}: value={t.value}, params={json.dumps(t.params)}")
+            bottom5_lines.append(
+                f"  Trial {t.trial_number}: value={t.value}, params={json.dumps(t.params)}"
+            )
 
         # Parameter importance via correlation
         importance_lines = self._compute_param_importance(complete)
@@ -462,11 +484,15 @@ Format as JSON:
         if best_trial:
             convergence_info = f"Best found at trial {best_trial.trial_number} of {len(trials)} total. "
             if best_trial.trial_number < len(trials) * 0.3:
-                convergence_info += "Early convergence — search may benefit from wider exploration."
+                convergence_info += (
+                    "Early convergence — search may benefit from wider exploration."
+                )
             elif best_trial.trial_number > len(trials) * 0.8:
                 convergence_info += "Late improvement — search may still be converging, consider more trials."
             else:
-                convergence_info += "Mid-campaign best — reasonable convergence pattern."
+                convergence_info += (
+                    "Mid-campaign best — reasonable convergence pattern."
+                )
 
         return f"""Analyze this Optuna hyperparameter search campaign.
 Write like a human analyst presenting findings to a team.
@@ -543,7 +569,10 @@ Write Part 1 first (the human-readable analysis), then Part 2 (the JSON block) a
             n = len(param_vals)
             mean_p = sum(param_vals) / n
             mean_o = sum(obj_vals) / n
-            cov = sum((p - mean_p) * (o - mean_o) for p, o in zip(param_vals, obj_vals)) / n
+            cov = (
+                sum((p - mean_p) * (o - mean_o) for p, o in zip(param_vals, obj_vals))
+                / n
+            )
             std_p = (sum((p - mean_p) ** 2 for p in param_vals) / n) ** 0.5
             std_o = (sum((o - mean_o) ** 2 for o in obj_vals) / n) ** 0.5
             if std_p > 0 and std_o > 0:

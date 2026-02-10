@@ -1,5 +1,6 @@
-from tensortrade.feed import Stream
 from tests.utils.ops import assert_op
+
+from tensortrade.feed import Stream
 
 
 def test_reduce_sum():

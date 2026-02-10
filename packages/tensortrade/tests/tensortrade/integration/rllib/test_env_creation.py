@@ -31,12 +31,18 @@ from tensortrade.oms.wallets import Portfolio, Wallet
 
 def create_env(config: dict) -> gym.Env:
     """Create a TensorTrade environment from config."""
-    data = pd.read_csv(filepath_or_buffer=config["csv_filename"], parse_dates=["date"]).bfill().ffill()
+    data = (
+        pd.read_csv(filepath_or_buffer=config["csv_filename"], parse_dates=["date"])
+        .bfill()
+        .ffill()
+    )
 
     commission = config.get("commission", 0.001)
     price = Stream.source(list(data["close"]), dtype="float").rename("USD-BTC")
     exchange_options = ExchangeOptions(commission=commission)
-    exchange = Exchange("exchange", service=execute_order, options=exchange_options)(price)
+    exchange = Exchange("exchange", service=execute_order, options=exchange_options)(
+        price
+    )
 
     initial_cash = config.get("initial_cash", 10000)
     cash = Wallet(exchange, initial_cash * USD)
@@ -44,7 +50,8 @@ def create_env(config: dict) -> gym.Env:
     portfolio = Portfolio(USD, [cash, asset])
 
     features = [
-        Stream.source(list(data[c]), dtype="float").rename(c) for c in ["open", "high", "low", "close", "volume"]
+        Stream.source(list(data[c]), dtype="float").rename(c)
+        for c in ["open", "high", "low", "close", "volume"]
     ]
     feed = DataFeed(features)
     feed.compile()

@@ -19,7 +19,11 @@ from tensortrade.oms.wallets import Portfolio
 
 
 def market_order(
-    side: "TradeSide", exchange_pair: "ExchangePair", price: float, size: float, portfolio: "Portfolio"
+    side: "TradeSide",
+    exchange_pair: "ExchangePair",
+    price: float,
+    size: float,
+    portfolio: "Portfolio",
 ) -> "Order":
     """Creates a market order.
 
@@ -232,7 +236,9 @@ def risk_managed_order(
     return order
 
 
-def proportion_order(portfolio: "Portfolio", source: "Wallet", target: "Wallet", proportion: float) -> "Order":
+def proportion_order(
+    portfolio: "Portfolio", source: "Wallet", target: "Wallet", proportion: float
+) -> "Order":
     """Creates an order that sends a proportion of funds from one wallet to
     another.
 
@@ -305,7 +311,10 @@ def proportion_order(portfolio: "Portfolio", source: "Wallet", target: "Wallet",
 
     order.add_order_spec(
         OrderSpec(
-            side=TradeSide.BUY, trade_type=TradeType.MARKET, exchange_pair=ExchangePair(exchange, pair), criteria=None
+            side=TradeSide.BUY,
+            trade_type=TradeType.MARKET,
+            exchange_pair=ExchangePair(exchange, pair),
+            criteria=None,
         )
     )
     return order

@@ -77,7 +77,11 @@ class SimpleProfit(TensorTradeRewardScheme):
         """
         net_worths = [nw["net_worth"] for nw in portfolio.performance.values()]
         if len(net_worths) > 1:
-            return net_worths[-1] / net_worths[-min(len(net_worths), self._window_size + 1)] - 1.0
+            return (
+                net_worths[-1]
+                / net_worths[-min(len(net_worths), self._window_size + 1)]
+                - 1.0
+            )
         else:
             return 0.0
 
@@ -176,7 +180,9 @@ class RiskAdjustedReturns(TensorTradeRewardScheme):
         ----------
         .. [1] https://en.wikipedia.org/wiki/Sharpe_ratio
         """
-        return (np.mean(returns) - self._risk_free_rate + 1e-9) / (np.std(returns) + 1e-9)
+        return (np.mean(returns) - self._risk_free_rate + 1e-9) / (
+            np.std(returns) + 1e-9
+        )
 
     def _sortino_ratio(self, returns: "pd.Series") -> float:
         """Computes the sortino ratio for a given series of a returns.
@@ -220,7 +226,9 @@ class RiskAdjustedReturns(TensorTradeRewardScheme):
         float
             The reward corresponding to the selected risk-adjusted return metric.
         """
-        net_worths = [nw["net_worth"] for nw in portfolio.performance.values()][-(self._window_size + 1) :]
+        net_worths = [nw["net_worth"] for nw in portfolio.performance.values()][
+            -(self._window_size + 1) :
+        ]
         returns = pd.Series(net_worths).pct_change().dropna()
         risk_adjusted_return = self._return_algorithm(returns)
         return risk_adjusted_return
@@ -317,12 +325,16 @@ class PBR(TensorTradeRewardScheme):
         if self._traded:
             current_price = data.get("current_price", 0)
             if current_price > 0:
-                penalty = current_price * self.commission * self.trade_penalty_multiplier
+                penalty = (
+                    current_price * self.commission * self.trade_penalty_multiplier
+                )
                 if (
                     self._last_trade_step is not None
                     and (self._step_count - self._last_trade_step) <= self.churn_window
                 ):
-                    penalty += current_price * self.commission * self.churn_penalty_multiplier
+                    penalty += (
+                        current_price * self.commission * self.churn_penalty_multiplier
+                    )
                     self._churn_trade_count += 1
                 reward -= penalty
                 self._total_commission_penalty += penalty
@@ -339,8 +351,12 @@ class PBR(TensorTradeRewardScheme):
     def get_stats(self) -> dict:
         """Returns trading statistics for analysis."""
         trade_count = self.buy_count + self.sell_count
-        churn_ratio = (self._churn_trade_count / trade_count) if trade_count > 0 else 0.0
-        avg_penalty = (self._total_commission_penalty / trade_count) if trade_count > 0 else 0.0
+        churn_ratio = (
+            (self._churn_trade_count / trade_count) if trade_count > 0 else 0.0
+        )
+        avg_penalty = (
+            (self._total_commission_penalty / trade_count) if trade_count > 0 else 0.0
+        )
         return {
             "trade_count": trade_count,
             "buy_count": self.buy_count,
@@ -482,12 +498,16 @@ class AdvancedPBR(TensorTradeRewardScheme):
         # 2. Commission-aware trade penalty (price-scaled)
         if self._traded:
             if current_price > 0:
-                penalty = current_price * self.commission * self.trade_penalty_multiplier
+                penalty = (
+                    current_price * self.commission * self.trade_penalty_multiplier
+                )
                 if (
                     self._last_trade_step is not None
                     and (self._step_count - self._last_trade_step) <= self.churn_window
                 ):
-                    penalty += current_price * self.commission * self.churn_penalty_multiplier
+                    penalty += (
+                        current_price * self.commission * self.churn_penalty_multiplier
+                    )
                     self._churn_trade_count += 1
                 reward -= penalty
                 self._total_commission_penalty += penalty
@@ -533,8 +553,12 @@ class AdvancedPBR(TensorTradeRewardScheme):
     def get_stats(self) -> dict:
         """Returns trading statistics for analysis."""
         trade_count = self.buy_count + self.sell_count
-        churn_ratio = (self._churn_trade_count / trade_count) if trade_count > 0 else 0.0
-        avg_penalty = (self._total_commission_penalty / trade_count) if trade_count > 0 else 0.0
+        churn_ratio = (
+            (self._churn_trade_count / trade_count) if trade_count > 0 else 0.0
+        )
+        avg_penalty = (
+            (self._total_commission_penalty / trade_count) if trade_count > 0 else 0.0
+        )
         return {
             "trade_count": trade_count,
             "buy_count": self.buy_count,
@@ -810,10 +834,16 @@ class AdaptiveProfitSeeker(TensorTradeRewardScheme):
 
         # Position fraction from portfolio
         base_balance = portfolio.base_balance.as_float()
-        position_frac = max(0.0, min(1.0, 1.0 - base_balance / net_worth)) if net_worth > 0 else 0.0
+        position_frac = (
+            max(0.0, min(1.0, 1.0 - base_balance / net_worth)) if net_worth > 0 else 0.0
+        )
 
         # === CORE: SimpleProfit (this is what actually works) ===
-        nw_return = (net_worth / self._prev_net_worth - 1.0) if self._prev_net_worth > 0 else 0.0
+        nw_return = (
+            (net_worth / self._prev_net_worth - 1.0)
+            if self._prev_net_worth > 0
+            else 0.0
+        )
 
         # === ONLY ADDITION: tiny participation bonus ===
         # Breaks the tie between "do nothing" and "trade" when growth is ~0.

@@ -19,13 +19,13 @@ from fastapi import FastAPI, Query, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 
-from tensortrade.live.store import LiveTradingStore
-from tensortrade.live.trader import LiveTrader
-from tensortrade.training.dataset_store import DatasetStore
-from tensortrade.training.experiment_store import ExperimentStore
-from tensortrade.training.feature_engine import FeatureEngine
-from tensortrade.training.hyperparameter_store import HyperparameterStore
-from tensortrade.training.launcher import TrainingLauncher
+from tensortrade_platform.live.store import LiveTradingStore
+from tensortrade_platform.live.trader import LiveTrader
+from tensortrade_platform.training.dataset_store import DatasetStore
+from tensortrade_platform.training.experiment_store import ExperimentStore
+from tensortrade_platform.training.feature_engine import FeatureEngine
+from tensortrade_platform.training.hyperparameter_store import HyperparameterStore
+from tensortrade_platform.training.launcher import TrainingLauncher
 
 logger = logging.getLogger(__name__)
 
@@ -169,7 +169,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     if _live_trader and _live_trader.is_running:
         await _live_trader.stop()
     # Force-shutdown Ray if any consumers leaked
-    from tensortrade.ray_manager import ray_manager
+    from tensortrade_platform.ray_manager import ray_manager
 
     ray_manager.force_shutdown()
     if _live_store:
@@ -216,7 +216,9 @@ def _register_routes(app: FastAPI) -> None:
         offset: int = Query(default=0, ge=0),
     ) -> list[dict]:
         store = _get_store()
-        experiments = store.list_experiments(script=script, status=status, limit=limit, offset=offset)
+        experiments = store.list_experiments(
+            script=script, status=status, limit=limit, offset=offset
+        )
         return [asdict(e) for e in experiments]
 
     @app.get("/api/experiments/{experiment_id}")
@@ -239,7 +241,9 @@ def _register_routes(app: FastAPI) -> None:
         offset: int = Query(default=0, ge=0),
     ) -> list[dict]:
         store = _get_store()
-        trades = store.get_trades(experiment_id, episode=episode, limit=limit, offset=offset)
+        trades = store.get_trades(
+            experiment_id, episode=episode, limit=limit, offset=offset
+        )
         return [asdict(t) for t in trades]
 
     # --- REST: Leaderboard ---
@@ -285,7 +289,9 @@ def _register_routes(app: FastAPI) -> None:
             return {"error": "No trials found"}
 
         # Compute simple variance-based importance from stored trials
-        complete_trials = [t for t in trials if t.state == "complete" and t.value is not None]
+        complete_trials = [
+            t for t in trials if t.state == "complete" and t.value is not None
+        ]
         if len(complete_trials) < 3:
             return {"importance": {}, "note": "Need at least 3 complete trials"}
 
@@ -326,7 +332,7 @@ def _register_routes(app: FastAPI) -> None:
     @app.post("/api/inference/run")
     async def run_inference(body: dict) -> dict:
         """Start an inference episode in the background."""
-        from tensortrade.api.inference_runner import InferenceRunner
+        from tensortrade_platform.api.inference_runner import InferenceRunner
 
         experiment_id = body.get("experiment_id")
         dataset_id = body.get("dataset_id")
@@ -339,7 +345,11 @@ def _register_routes(app: FastAPI) -> None:
         store = _get_store()
         ds_store = _get_ds_store()
         runner = InferenceRunner(store, _manager, ds_store)
-        asyncio.create_task(runner.run_episode(experiment_id, dataset_id, start_date, end_date, test_only))
+        asyncio.create_task(
+            runner.run_episode(
+                experiment_id, dataset_id, start_date, end_date, test_only
+            )
+        )
         return {"status": "started"}
 
     # --- REST: Insights ---
@@ -351,37 +361,51 @@ def _register_routes(app: FastAPI) -> None:
         if not api_key:
             return {"error": "ANTHROPIC_API_KEY not set"}
 
-        from tensortrade.api.insights import InsightsEngine
+        from tensortrade_platform.api.insights import InsightsEngine
 
         engine = InsightsEngine(store, api_key)
         analysis_type = body.get("analysis_type", "experiment")
         experiment_ids = body.get("experiment_ids", [])
-        experiment_id = experiment_ids[0] if experiment_ids else body.get("experiment_id")
+        experiment_id = (
+            experiment_ids[0] if experiment_ids else body.get("experiment_id")
+        )
         custom_prompt = body.get("prompt")
 
         try:
             if analysis_type == "experiment":
                 if not experiment_id:
                     return {"error": "experiment_ids required for experiment analysis"}
-                report = await engine.analyze_experiment(experiment_id, custom_prompt=custom_prompt)
+                report = await engine.analyze_experiment(
+                    experiment_id, custom_prompt=custom_prompt
+                )
             elif analysis_type == "comparison":
                 if len(experiment_ids) < 2:
-                    return {"error": "At least 2 experiment_ids required for comparison"}
-                report = await engine.compare_experiments(experiment_ids, custom_prompt=custom_prompt)
+                    return {
+                        "error": "At least 2 experiment_ids required for comparison"
+                    }
+                report = await engine.compare_experiments(
+                    experiment_ids, custom_prompt=custom_prompt
+                )
             elif analysis_type == "strategy":
                 study_name = body.get("study_name")
                 if not study_name:
                     return {"error": "study_name required for strategy analysis"}
-                report = await engine.suggest_next_strategy(study_name, custom_prompt=custom_prompt)
+                report = await engine.suggest_next_strategy(
+                    study_name, custom_prompt=custom_prompt
+                )
             elif analysis_type == "campaign_analysis":
                 study_name = body.get("study_name")
                 if not study_name:
                     return {"error": "study_name required for campaign analysis"}
-                report = await engine.analyze_campaign(study_name, custom_prompt=custom_prompt)
+                report = await engine.analyze_campaign(
+                    study_name, custom_prompt=custom_prompt
+                )
             elif analysis_type == "trades":
                 if not experiment_id:
                     return {"error": "experiment_ids required for trade analysis"}
-                report = await engine.analyze_trades(experiment_id, custom_prompt=custom_prompt)
+                report = await engine.analyze_trades(
+                    experiment_id, custom_prompt=custom_prompt
+                )
             else:
                 return {"error": f"Unknown analysis type: {analysis_type}"}
 
@@ -428,7 +452,7 @@ def _register_routes(app: FastAPI) -> None:
                 headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
             )
 
-        from tensortrade.api.insights import InsightsEngine
+        from tensortrade_platform.api.insights import InsightsEngine
 
         engine = InsightsEngine(store, api_key)
         custom_prompt = body.get("prompt")
@@ -451,7 +475,7 @@ def _register_routes(app: FastAPI) -> None:
         if not experiment_id or not insight_id:
             return {"error": "experiment_id and insight_id are required"}
 
-        from tensortrade.api.insights import InsightsEngine
+        from tensortrade_platform.api.insights import InsightsEngine
 
         engine = InsightsEngine(store, api_key)
         try:
@@ -503,7 +527,9 @@ def _register_routes(app: FastAPI) -> None:
         offset: int = Query(default=0, ge=0),
     ) -> list[dict]:
         store = _get_store()
-        return store.get_all_trades(limit=limit, offset=offset, experiment_id=experiment_id, side=side)
+        return store.get_all_trades(
+            limit=limit, offset=offset, experiment_id=experiment_id, side=side
+        )
 
     # --- REST: Hyperparameter Packs ---
 
@@ -647,7 +673,7 @@ def _register_routes(app: FastAPI) -> None:
         try:
             # Load sample data based on source type
             if ds.source_type == "crypto_download":
-                from tensortrade.data.cdd import CryptoDataDownload
+                from tensortrade_platform.data.cdd import CryptoDataDownload
 
                 cdd = CryptoDataDownload()
                 data = cdd.fetch(
@@ -658,7 +684,7 @@ def _register_routes(app: FastAPI) -> None:
                 )
                 data = data[["date", "open", "high", "low", "close", "volume"]]
             elif ds.source_type == "alpaca_crypto":
-                from tensortrade.data.alpaca_crypto import AlpacaCryptoData
+                from tensortrade_platform.data.alpaca_crypto import AlpacaCryptoData
 
                 alpaca = AlpacaCryptoData()
                 data = alpaca.fetch(
@@ -674,11 +700,15 @@ def _register_routes(app: FastAPI) -> None:
                     base_price=ds.source_config.get("base_price", 50000),
                     base_volume=ds.source_config.get("base_volume", 1000),
                     start_date="2020-01-01",
-                    times_to_generate=min(ds.source_config.get("num_candles", 5000), 5000),
+                    times_to_generate=min(
+                        ds.source_config.get("num_candles", 5000), 5000
+                    ),
                     time_frame=ds.source_config.get("timeframe", "1h"),
                 )
             else:
-                return {"error": f"Preview not supported for source_type: {ds.source_type}"}
+                return {
+                    "error": f"Preview not supported for source_type: {ds.source_type}"
+                }
 
             preview = engine.preview(data, ds.features, sample_rows=100)
 
@@ -782,7 +812,7 @@ def _register_routes(app: FastAPI) -> None:
 
     @app.get("/api/status")
     async def get_status() -> dict:
-        from tensortrade.ray_manager import ray_manager
+        from tensortrade_platform.ray_manager import ray_manager
 
         status = _manager.get_status()
         status["ray"] = {
@@ -802,7 +832,9 @@ def _register_routes(app: FastAPI) -> None:
         await _manager.send_control_to_training("stop")
         if stopped_runs > 0:
             _manager._current_experiment_id = None
-            message = f"Stopped {stopped_runs} active run(s) and cleaned training runtime."
+            message = (
+                f"Stopped {stopped_runs} active run(s) and cleaned training runtime."
+            )
         else:
             message = "No active launched run found; sent stop command and attempted runtime cleanup."
         return {"status": "stop_sent", "message": message}
@@ -861,7 +893,7 @@ def _register_routes(app: FastAPI) -> None:
             return {"error": "A live trading session is already running"}
 
         # Extract checkpoint path (same as InferenceRunner)
-        from tensortrade.api.inference_runner import InferenceRunner
+        from tensortrade_platform.api.inference_runner import InferenceRunner
 
         checkpoint_path = InferenceRunner._get_checkpoint_path(exp)
         if not checkpoint_path:
@@ -870,7 +902,7 @@ def _register_routes(app: FastAPI) -> None:
         config = exp.config
         training_config = config.get("training_config", config)
 
-        from tensortrade.live.config import LiveTradingConfig
+        from tensortrade_platform.live.config import LiveTradingConfig
 
         live_config = LiveTradingConfig(
             symbol=body.get("symbol", "BTC/USD"),
@@ -1043,7 +1075,9 @@ def _register_routes(app: FastAPI) -> None:
                     await ws.send_json({"type": "live_bars_history", "bars": bars})
                 trades = trader.get_session_trades()
                 if trades:
-                    await ws.send_json({"type": "live_trades_history", "trades": trades})
+                    await ws.send_json(
+                        {"type": "live_trades_history", "trades": trades}
+                    )
             while True:
                 # Keep connection alive — ignore incoming messages
                 await ws.receive_text()
@@ -1103,14 +1137,14 @@ def _correlation(x: list[float], y: list[float]) -> float:
     return cov / (sx * sy)
 
 
-# Convenience: run with `python -m tensortrade.api.server`
+# Convenience: run with `python -m tensortrade_platform.api.server`
 if __name__ == "__main__":
     from pathlib import Path
 
     import uvicorn
 
     # Load .env from project root if present
-    env_file = Path(__file__).resolve().parents[2] / ".env"
+    env_file = Path(__file__).resolve().parents[4] / ".env"
     if env_file.exists():
         with open(env_file) as f:
             for line in f:

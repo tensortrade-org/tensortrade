@@ -229,7 +229,14 @@ class ExperimentStore:
         self._conn.execute(
             """INSERT INTO experiments (id, name, script, status, started_at, config, tags)
                VALUES (?, ?, ?, 'running', ?, ?, ?)""",
-            (exp_id, name, script, now, json.dumps(config or {}), json.dumps(tags or [])),
+            (
+                exp_id,
+                name,
+                script,
+                now,
+                json.dumps(config or {}),
+                json.dumps(tags or []),
+            ),
         )
         self._conn.commit()
         return exp_id
@@ -252,7 +259,9 @@ class ExperimentStore:
 
     def get_experiment(self, experiment_id: str) -> Experiment | None:
         """Retrieve a single experiment by ID."""
-        row = self._conn.execute("SELECT * FROM experiments WHERE id = ?", (experiment_id,)).fetchone()
+        row = self._conn.execute(
+            "SELECT * FROM experiments WHERE id = ?", (experiment_id,)
+        ).fetchone()
         if row is None:
             return None
         return self._row_to_experiment(row)
@@ -341,7 +350,18 @@ class ExperimentStore:
         self._conn.executemany(
             """INSERT INTO trades (experiment_id, episode, step, side, price, size, commission)
                VALUES (?, ?, ?, ?, ?, ?, ?)""",
-            [(t.experiment_id, t.episode, t.step, t.side, t.price, t.size, t.commission) for t in trades],
+            [
+                (
+                    t.experiment_id,
+                    t.episode,
+                    t.step,
+                    t.side,
+                    t.price,
+                    t.size,
+                    t.commission,
+                )
+                for t in trades
+            ],
         )
         self._conn.commit()
 
@@ -487,7 +507,10 @@ class ExperimentStore:
             }
             if trial.experiment_id:
                 iterations = self.get_iterations(trial.experiment_id)
-                trial_data["iterations"] = [{"iteration": it.iteration, "metrics": it.metrics} for it in iterations]
+                trial_data["iterations"] = [
+                    {"iteration": it.iteration, "metrics": it.metrics}
+                    for it in iterations
+                ]
             results.append(trial_data)
         return results
 
@@ -620,7 +643,9 @@ class ExperimentStore:
 
     def get_insight(self, insight_id: str) -> dict | None:
         """Retrieve a stored insight."""
-        row = self._conn.execute("SELECT * FROM insights WHERE id = ?", (insight_id,)).fetchone()
+        row = self._conn.execute(
+            "SELECT * FROM insights WHERE id = ?", (insight_id,)
+        ).fetchone()
         if row is None:
             return None
         return {
@@ -741,7 +766,9 @@ class ExperimentStore:
         """).fetchone()
 
         # Total trades count
-        trade_count_row = self._conn.execute("SELECT COUNT(*) as total_trades FROM trades").fetchone()
+        trade_count_row = self._conn.execute(
+            "SELECT COUNT(*) as total_trades FROM trades"
+        ).fetchone()
 
         # Optuna stats
         optuna_row = self._conn.execute("""

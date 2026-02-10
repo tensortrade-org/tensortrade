@@ -19,16 +19,16 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from tensortrade.ray_config import using_shared_ray_cluster
+from tensortrade_platform.ray_config import using_shared_ray_cluster
 
 if TYPE_CHECKING:
-    from tensortrade.training.dataset_store import DatasetStore
-    from tensortrade.training.experiment_store import ExperimentStore
-    from tensortrade.training.hyperparameter_store import HyperparameterStore
+    from tensortrade_platform.training.dataset_store import DatasetStore
+    from tensortrade_platform.training.experiment_store import ExperimentStore
+    from tensortrade_platform.training.hyperparameter_store import HyperparameterStore
 
 logger = logging.getLogger(__name__)
 
-PROJECT_ROOT = str(Path(__file__).resolve().parents[2])
+PROJECT_ROOT = str(Path(__file__).resolve().parents[4])
 
 
 @dataclass
@@ -73,7 +73,9 @@ class TrainingLauncher:
         """
         self._cleanup_finished()
         if self._running:
-            raise RuntimeError("A training run is already active. Cancel it before starting a new one.")
+            raise RuntimeError(
+                "A training run is already active. Cancel it before starting a new one."
+            )
 
         # Resolve HP pack
         hp_pack = self._hp_store.get_pack(hp_pack_id)
@@ -170,7 +172,9 @@ class TrainingLauncher:
         if running.process is not None:
             self._terminate_process_group(running.process)
 
-        self._experiment_store.complete_experiment(experiment_id, status="failed", final_metrics={"cancelled": True})
+        self._experiment_store.complete_experiment(
+            experiment_id, status="failed", final_metrics={"cancelled": True}
+        )
         del self._running[experiment_id]
         self._stop_ray_runtime()
         logger.info("Cancelled training %s", experiment_id)
@@ -191,7 +195,9 @@ class TrainingLauncher:
         return len(active_ids)
 
     @staticmethod
-    def _terminate_process_group(process: subprocess.Popen, timeout_seconds: float = 5.0) -> None:
+    def _terminate_process_group(
+        process: subprocess.Popen, timeout_seconds: float = 5.0
+    ) -> None:
         """Terminate a process group, escalating to SIGKILL if needed."""
         try:
             pid = process.pid
@@ -217,7 +223,9 @@ class TrainingLauncher:
     def _stop_ray_runtime() -> None:
         """Best-effort stop of Ray runtime to avoid orphan workers."""
         if using_shared_ray_cluster():
-            logger.info("Shared Ray cluster configured; skipping local 'ray stop --force'")
+            logger.info(
+                "Shared Ray cluster configured; skipping local 'ray stop --force'"
+            )
             return
         try:
             subprocess.run(
@@ -248,7 +256,9 @@ class TrainingLauncher:
         """
         self._cleanup_finished()
         if self._running:
-            raise RuntimeError("A training run is already active. Cancel it before starting a new one.")
+            raise RuntimeError(
+                "A training run is already active. Cancel it before starting a new one."
+            )
 
         dataset = self._dataset_store.get_config(dataset_id)
         if dataset is None:
@@ -319,7 +329,7 @@ class TrainingLauncher:
         dataset: object,
     ) -> str:
         """Generate a temporary training script and return its path."""
-        from tensortrade.training.dataset_store import DatasetConfig
+        from tensortrade_platform.training.dataset_store import DatasetConfig
 
         assert isinstance(dataset, DatasetConfig)
 
@@ -352,8 +362,8 @@ class TrainingLauncher:
             "from ray.rllib.algorithms.ppo import PPOConfig",
             "from ray.rllib.algorithms.callbacks import DefaultCallbacks",
             "",
-            "from tensortrade.data.cdd import CryptoDataDownload",
-            "from tensortrade.data.alpaca_crypto import AlpacaCryptoData",
+            "from tensortrade_platform.data.cdd import CryptoDataDownload",
+            "from tensortrade_platform.data.alpaca_crypto import AlpacaCryptoData",
             "from tensortrade.feed.core import DataFeed, Stream",
             "from tensortrade.oms.exchanges import Exchange, ExchangeOptions",
             "from tensortrade.oms.instruments import USD, BTC",
@@ -362,9 +372,9 @@ class TrainingLauncher:
             "from tensortrade.env.default import actions as tt_actions",
             "from tensortrade.env.default import rewards as tt_rewards",
             "import tensortrade.env.default as default",
-            "from tensortrade.ray_config import build_ray_init_kwargs",
-            "from tensortrade.training.experiment_store import ExperimentStore",
-            "from tensortrade.training.feature_engine import FeatureEngine",
+            "from tensortrade_platform.ray_config import build_ray_init_kwargs",
+            "from tensortrade_platform.training.experiment_store import ExperimentStore",
+            "from tensortrade_platform.training.feature_engine import FeatureEngine",
             "",
             f'EXPERIMENT_ID = "{experiment_id}"',
             f"CONFIG = json.loads('{config_json}')",
@@ -547,7 +557,7 @@ class TrainingLauncher:
             "    # Connect to dashboard",
             "    bridge = None",
             "    try:",
-            "        from tensortrade.api.training_bridge import TrainingBridge",
+            "        from tensortrade_platform.api.training_bridge import TrainingBridge",
             "        bridge = TrainingBridge()",
             "        bridge.start()",
             f'        bridge.send({{"type": "experiment_start", "experiment_id": EXPERIMENT_ID, "name": "{name}"}})',
@@ -706,7 +716,12 @@ class TrainingLauncher:
         return script_path
 
     # Compatibility matrix: actions that do NOT support PBR/AdvancedPBR
-    _NON_PBR_ACTIONS = {"ScaledEntryBSH", "PartialTakeProfitBSH", "SimpleOrders", "ManagedRiskOrders"}
+    _NON_PBR_ACTIONS = {
+        "ScaledEntryBSH",
+        "PartialTakeProfitBSH",
+        "SimpleOrders",
+        "ManagedRiskOrders",
+    }
     # Rewards that require BSH-style Discrete(3) semantics
     _BSH_ONLY_REWARDS = {"PBR", "AdvancedPBR"}
 
@@ -745,7 +760,7 @@ class TrainingLauncher:
         search_space: dict | None = None,
     ) -> str:
         """Generate a self-contained Optuna campaign script."""
-        from tensortrade.training.dataset_store import DatasetConfig
+        from tensortrade_platform.training.dataset_store import DatasetConfig
 
         assert isinstance(dataset, DatasetConfig)
 
@@ -786,8 +801,8 @@ class TrainingLauncher:
             "from ray.rllib.algorithms.ppo import PPOConfig",
             "from ray.rllib.algorithms.callbacks import DefaultCallbacks",
             "",
-            "from tensortrade.data.cdd import CryptoDataDownload",
-            "from tensortrade.data.alpaca_crypto import AlpacaCryptoData",
+            "from tensortrade_platform.data.cdd import CryptoDataDownload",
+            "from tensortrade_platform.data.alpaca_crypto import AlpacaCryptoData",
             "from tensortrade.feed.core import DataFeed, Stream",
             "from tensortrade.oms.exchanges import Exchange, ExchangeOptions",
             "from tensortrade.oms.instruments import USD, BTC",
@@ -796,10 +811,10 @@ class TrainingLauncher:
             "from tensortrade.env.default import actions as tt_actions",
             "from tensortrade.env.default import rewards as tt_rewards",
             "import tensortrade.env.default as default",
-            "from tensortrade.ray_config import build_ray_init_kwargs",
-            "from tensortrade.training.experiment_store import ExperimentStore",
-            "from tensortrade.training.feature_engine import FeatureEngine",
-            "from tensortrade.api.training_bridge import TrainingBridge",
+            "from tensortrade_platform.ray_config import build_ray_init_kwargs",
+            "from tensortrade_platform.training.experiment_store import ExperimentStore",
+            "from tensortrade_platform.training.feature_engine import FeatureEngine",
+            "from tensortrade_platform.api.training_bridge import TrainingBridge",
             "",
             f'STUDY_NAME = "{study_name}"',
             f"N_TRIALS = {n_trials}",

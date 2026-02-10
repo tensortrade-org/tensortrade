@@ -55,7 +55,9 @@ def scale_times_to_generate(times_to_generate: int, time_frame: str) -> int:
     elif "M" in time_frame.upper():
         times_to_generate *= int(re.findall(r"\d+", time_frame)[0]) * 60 * 24 * 7 * 30
     else:
-        raise ValueError("Timeframe must be either in minutes (min), hours (H), days (D), weeks (W), or months (M)")
+        raise ValueError(
+            "Timeframe must be either in minutes (min), hours (H), days (D), weeks (W), or months (M)"
+        )
 
     return times_to_generate
 
@@ -162,7 +164,9 @@ def generate(
     price_frame = pd.DataFrame([], columns=["date", "price"], dtype=float)
     volume_frame = pd.DataFrame([], columns=["date", "volume"], dtype=float)
 
-    price_frame["date"] = pd.date_range(start=start_date, periods=times_to_generate, freq="1min")
+    price_frame["date"] = pd.date_range(
+        start=start_date, periods=times_to_generate, freq="1min"
+    )
     price_frame["price"] = abs(prices)
 
     volume_frame["date"] = price_frame["date"].copy()

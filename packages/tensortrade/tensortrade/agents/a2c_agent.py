@@ -28,11 +28,14 @@ from deprecated import deprecated
 
 from tensortrade.agents import Agent, ReplayMemory
 
-A2CTransition = namedtuple("A2CTransition", ["state", "action", "reward", "done", "value"])
+A2CTransition = namedtuple(
+    "A2CTransition", ["state", "action", "reward", "done", "value"]
+)
 
 
 @deprecated(
-    version="1.0.4", reason="Builtin agents are being deprecated in favor of external implementations (ie: Ray)"
+    version="1.0.4",
+    reason="Builtin agents are being deprecated in favor of external implementations (ie: Ray)",
 )
 class A2CAgent(Agent):
     def __init__(
@@ -56,9 +59,13 @@ class A2CAgent(Agent):
         network = tf.keras.Sequential(
             [
                 tf.keras.layers.InputLayer(input_shape=self.observation_shape),
-                tf.keras.layers.Conv1D(filters=64, kernel_size=6, padding="same", activation="tanh"),
+                tf.keras.layers.Conv1D(
+                    filters=64, kernel_size=6, padding="same", activation="tanh"
+                ),
                 tf.keras.layers.MaxPooling1D(pool_size=2),
-                tf.keras.layers.Conv1D(filters=32, kernel_size=3, padding="same", activation="tanh"),
+                tf.keras.layers.Conv1D(
+                    filters=32, kernel_size=3, padding="same", activation="tanh"
+                ),
                 tf.keras.layers.MaxPooling1D(pool_size=2),
                 tf.keras.layers.Flatten(),
             ]
@@ -68,7 +75,10 @@ class A2CAgent(Agent):
 
     def _build_actor_network(self):
         actor_head = tf.keras.Sequential(
-            [tf.keras.layers.Dense(50, activation="relu"), tf.keras.layers.Dense(self.n_actions, activation="relu")]
+            [
+                tf.keras.layers.Dense(50, activation="relu"),
+                tf.keras.layers.Dense(self.n_actions, activation="relu"),
+            ]
         )
 
         return tf.keras.Sequential([self.shared_network, actor_head])
@@ -100,13 +110,25 @@ class A2CAgent(Agent):
         episode: int = kwargs.get("episode")
 
         if episode:
-            suffix = self.id[:7] + "__" + datetime.now().strftime("%Y%m%d_%H%M%S") + ".hdf5"
+            suffix = (
+                self.id[:7] + "__" + datetime.now().strftime("%Y%m%d_%H%M%S") + ".hdf5"
+            )
             actor_filename = "actor_network__" + suffix
             critic_filename = "critic_network__" + suffix
         else:
-            actor_filename = "actor_network__" + self.id[:7] + "__" + datetime.now().strftime("%Y%m%d_%H%M%S") + ".hdf5"
+            actor_filename = (
+                "actor_network__"
+                + self.id[:7]
+                + "__"
+                + datetime.now().strftime("%Y%m%d_%H%M%S")
+                + ".hdf5"
+            )
             critic_filename = (
-                "critic_network__" + self.id[:7] + "__" + datetime.now().strftime("%Y%m%d_%H%M%S") + ".hdf5"
+                "critic_network__"
+                + self.id[:7]
+                + "__"
+                + datetime.now().strftime("%Y%m%d_%H%M%S")
+                + ".hdf5"
             )
 
         self.actor_network.save(path + actor_filename)
@@ -121,7 +143,9 @@ class A2CAgent(Agent):
             return np.random.choice(self.n_actions)
         else:
             logits = self.actor_network(state[None, :], training=False)
-            return tf.squeeze(tf.squeeze(tf.random.categorical(logits, 1), axis=-1), axis=-1)
+            return tf.squeeze(
+                tf.squeeze(tf.random.categorical(logits, 1), axis=-1), axis=-1
+            )
 
     def _apply_gradient_descent(
         self,
@@ -148,7 +172,9 @@ class A2CAgent(Agent):
         exp_weighted_return = 0
 
         for reward, done in zip(rewards[::-1], dones[::-1]):
-            exp_weighted_return = reward + discount_factor * exp_weighted_return * (1 - int(done))
+            exp_weighted_return = reward + discount_factor * exp_weighted_return * (
+                1 - int(done)
+            )
             returns += [exp_weighted_return]
 
         returns = returns[::-1]
@@ -157,8 +183,12 @@ class A2CAgent(Agent):
             state_values = self.critic_network(states)
             critic_loss_value = huber_loss(returns, state_values)
 
-        gradients = tape.gradient(critic_loss_value, self.critic_network.trainable_variables)
-        optimizer.apply_gradients(zip(gradients, self.critic_network.trainable_variables))
+        gradients = tape.gradient(
+            critic_loss_value, self.critic_network.trainable_variables
+        )
+        optimizer.apply_gradients(
+            zip(gradients, self.critic_network.trainable_variables)
+        )
 
         with tf.GradientTape() as tape:
             returns = tf.reshape(returns, [batch_size, 1])
@@ -172,8 +202,12 @@ class A2CAgent(Agent):
             entropy_loss_value = tf.keras.losses.categorical_crossentropy(probs, probs)
             policy_total_loss_value = policy_loss_value - entropy_c * entropy_loss_value
 
-        gradients = tape.gradient(policy_total_loss_value, self.actor_network.trainable_variables)
-        optimizer.apply_gradients(zip(gradients, self.actor_network.trainable_variables))
+        gradients = tape.gradient(
+            policy_total_loss_value, self.actor_network.trainable_variables
+        )
+        optimizer.apply_gradients(
+            zip(gradients, self.actor_network.trainable_variables)
+        )
 
     def train(
         self,
@@ -208,10 +242,14 @@ class A2CAgent(Agent):
             state = self.env.reset()
             done = False
 
-            print(f"====      EPISODE ID ({episode + 1}/{n_episodes}): {self.env.episode_id}      ====")
+            print(
+                f"====      EPISODE ID ({episode + 1}/{n_episodes}): {self.env.episode_id}      ===="
+            )
 
             while not done:
-                threshold = eps_end + (eps_start - eps_end) * np.exp(-steps_done / eps_decay_steps)
+                threshold = eps_end + (eps_start - eps_end) * np.exp(
+                    -steps_done / eps_decay_steps
+                )
                 action = self.get_action(state, threshold=threshold)
                 next_state, reward, done, _ = self.env.step(action)
 
@@ -227,7 +265,9 @@ class A2CAgent(Agent):
                 if len(memory) < batch_size:
                     continue
 
-                self._apply_gradient_descent(memory, batch_size, learning_rate, discount_factor, entropy_c)
+                self._apply_gradient_descent(
+                    memory, batch_size, learning_rate, discount_factor, entropy_c
+                )
 
                 if n_steps and steps_done >= n_steps:
                     done = True

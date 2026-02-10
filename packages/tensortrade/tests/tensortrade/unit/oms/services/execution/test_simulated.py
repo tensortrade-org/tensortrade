@@ -4,7 +4,10 @@ from decimal import Decimal
 from tensortrade.oms.exchanges import ExchangeOptions
 from tensortrade.oms.instruments import BTC, USD, ExchangePair
 from tensortrade.oms.orders import Order, OrderStatus, TradeSide, TradeType
-from tensortrade.oms.services.execution.simulated import execute_buy_order, execute_sell_order
+from tensortrade.oms.services.execution.simulated import (
+    execute_buy_order,
+    execute_sell_order,
+)
 from tensortrade.oms.wallets import Portfolio, Wallet
 
 
@@ -63,11 +66,17 @@ def assert_execute_order(
         base_balance = base_wallet.locked["fake_id"].size
         quote_balance = quote_wallet.locked["fake_id"].size
 
-        expected_base_balance = order_quantity.size - (trade.size + trade.commission.size)
+        expected_base_balance = order_quantity.size - (
+            trade.size + trade.commission.size
+        )
         expected_quote_balance = trade.size / current_price
 
-        expected_base_balance = expected_base_balance.quantize(Decimal(10) ** -base.precision)
-        expected_quote_balance = expected_quote_balance.quantize(Decimal(10) ** -quote.precision)
+        expected_base_balance = expected_base_balance.quantize(
+            Decimal(10) ** -base.precision
+        )
+        expected_quote_balance = expected_quote_balance.quantize(
+            Decimal(10) ** -quote.precision
+        )
 
         assert base_balance == expected_base_balance
         assert quote_balance == expected_quote_balance
@@ -86,7 +95,9 @@ def assert_execute_order(
         quote_balance = quote_wallet.locked["fake_id"].size
 
         expected_base_balance = trade.size * current_price
-        expected_base_balance = expected_base_balance.quantize(Decimal(10) ** -base.precision)
+        expected_base_balance = expected_base_balance.quantize(
+            Decimal(10) ** -base.precision
+        )
 
         assert base_balance == expected_base_balance
         assert quote_balance == 0

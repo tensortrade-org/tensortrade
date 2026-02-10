@@ -66,7 +66,9 @@ class AccountSync:
         try:
             from alpaca.trading.client import TradingClient
         except ImportError as exc:
-            raise ImportError("alpaca-py is required for account sync. Install with: uv pip install alpaca-py") from exc
+            raise ImportError(
+                "alpaca-py is required for account sync. Install with: uv pip install alpaca-py"
+            ) from exc
 
         self._api_key = api_key or os.environ.get("ALPACA_API_KEY", "")
         self._secret_key = secret_key or os.environ.get("ALPACA_SECRET_KEY", "")

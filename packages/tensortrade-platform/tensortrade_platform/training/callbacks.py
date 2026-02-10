@@ -17,9 +17,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from tensortrade.api.training_bridge import TrainingBridge
-    from tensortrade.training.experiment_store import ExperimentStore
-    from tensortrade.training.tensorboard import TradingTensorBoardLogger
+    from tensortrade_platform.api.training_bridge import TrainingBridge
+    from tensortrade_platform.training.experiment_store import ExperimentStore
+    from tensortrade_platform.training.tensorboard import TradingTensorBoardLogger
 
 
 def make_training_callbacks(
@@ -66,7 +66,9 @@ def make_training_callbacks(
         Safe to send to Ray remote workers.
         """
 
-        def on_episode_start(self, *, worker, base_env, policies, episode, env_index=None, **kwargs):
+        def on_episode_start(
+            self, *, worker, base_env, policies, episode, env_index=None, **kwargs
+        ):
             super().on_episode_start(
                 worker=worker,
                 base_env=base_env,
@@ -79,7 +81,9 @@ def make_training_callbacks(
             if hasattr(env, "portfolio"):
                 episode.user_data["initial_net_worth"] = float(env.portfolio.net_worth)
 
-        def on_episode_end(self, *, worker, base_env, policies, episode, env_index=None, **kwargs):
+        def on_episode_end(
+            self, *, worker, base_env, policies, episode, env_index=None, **kwargs
+        ):
             super().on_episode_end(
                 worker=worker,
                 base_env=base_env,
@@ -100,7 +104,9 @@ def make_training_callbacks(
                 episode.custom_metrics["final_net_worth"] = final
                 episode.custom_metrics["initial_net_worth"] = initial
 
-            if hasattr(env, "reward_scheme") and hasattr(env.reward_scheme, "get_stats"):
+            if hasattr(env, "reward_scheme") and hasattr(
+                env.reward_scheme, "get_stats"
+            ):
                 stats = env.reward_scheme.get_stats()
                 episode.custom_metrics["trade_count"] = stats.get("trade_count", 0)
                 episode.custom_metrics["buy_count"] = stats.get("buy_count", 0)

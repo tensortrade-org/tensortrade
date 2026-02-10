@@ -18,7 +18,9 @@ class InvalidNegativeQuantity(Exception):
     """
 
     def __init__(self, size: float, *args) -> None:
-        super().__init__(f"Invalid Quantity: {size}. Amounts cannot be negative.", *args)
+        super().__init__(
+            f"Invalid Quantity: {size}. Amounts cannot be negative.", *args
+        )
 
 
 class InvalidNonNumericQuantity(Exception):
@@ -34,7 +36,9 @@ class InvalidNonNumericQuantity(Exception):
     """
 
     def __init__(self, size: float | int | Number, *args) -> None:
-        super().__init__(f"Invalid Quantity: {size}. Amounts cannot be non-numeric.", *args)
+        super().__init__(
+            f"Invalid Quantity: {size}. Amounts cannot be non-numeric.", *args
+        )
 
 
 class QuantityOpPathMismatch(Exception):
@@ -52,7 +56,10 @@ class QuantityOpPathMismatch(Exception):
     """
 
     def __init__(self, left_id: str, right_id: str, *args) -> None:
-        super().__init__(f"Invalid operation between quantities with unequal path id: {left_id} {right_id}.", *args)
+        super().__init__(
+            f"Invalid operation between quantities with unequal path id: {left_id} {right_id}.",
+            *args,
+        )
 
 
 class DoubleLockedQuantity(Exception):
@@ -67,7 +74,9 @@ class DoubleLockedQuantity(Exception):
     """
 
     def __init__(self, quantity: "Quantity", *args) -> None:
-        super().__init__(f"Cannot lock quantity that has previously been locked: {quantity}.", *args)
+        super().__init__(
+            f"Cannot lock quantity that has previously been locked: {quantity}.", *args
+        )
 
 
 class DoubleUnlockedQuantity(Exception):
@@ -82,7 +91,10 @@ class DoubleUnlockedQuantity(Exception):
     """
 
     def __init__(self, quantity: "Quantity", *args) -> None:
-        super().__init__(f"Cannot unlock quantity that has previously been unlocked: {quantity}.", *args)
+        super().__init__(
+            f"Cannot unlock quantity that has previously been unlocked: {quantity}.",
+            *args,
+        )
 
 
 class QuantityNotLocked(Exception):
@@ -98,7 +110,10 @@ class QuantityNotLocked(Exception):
     """
 
     def __init__(self, quantity: "Quantity", *args) -> None:
-        super().__init__(f"Cannot unlock quantity that has not been locked in this wallet: {quantity}.", *args)
+        super().__init__(
+            f"Cannot unlock quantity that has not been locked in this wallet: {quantity}.",
+            *args,
+        )
 
 
 # =============================================================================
@@ -118,7 +133,9 @@ class IncompatibleInstrumentOperation(Exception):
     """
 
     def __init__(self, left: "Quantity", right: "Quantity", *args) -> None:
-        super().__init__(f"Instruments are not of the same type ({left} and {right}).", *args)
+        super().__init__(
+            f"Instruments are not of the same type ({left} and {right}).", *args
+        )
 
 
 # =============================================================================
@@ -136,7 +153,9 @@ class InvalidOrderQuantity(Exception):
     """
 
     def __init__(self, quantity: "Quantity", *args) -> None:
-        super().__init__(f"Invalid Quantity: {quantity}. Order sizes must be positive.", *args)
+        super().__init__(
+            f"Invalid Quantity: {quantity}. Order sizes must be positive.", *args
+        )
 
 
 # =============================================================================
@@ -156,7 +175,10 @@ class InsufficientFunds(Exception):
     """
 
     def __init__(self, balance: "Quantity", size: "Quantity", *args) -> None:
-        super().__init__(f"Insufficient funds for allocating size {size} with balance {balance}.", *args)
+        super().__init__(
+            f"Insufficient funds for allocating size {size} with balance {balance}.",
+            *args,
+        )
 
 
 # =============================================================================

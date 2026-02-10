@@ -251,7 +251,11 @@ class TrailingStopBSH(TensorTradeActionScheme):
                 price = self._current_price()
                 self._entry_price = price
                 self._peak_price = price
-        elif effective_action == 2 and self._position == 1 and self.asset.balance.as_float() > 0:
+        elif (
+            effective_action == 2
+            and self._position == 1
+            and self.asset.balance.as_float() > 0
+        ):
             order = proportion_order(portfolio, self.asset, self.cash, 1.0)
             self._position = 0
             self._entry_price = 0.0
@@ -293,7 +297,13 @@ class BracketBSH(TensorTradeActionScheme):
 
     registered_name = "bracket-bsh"
 
-    def __init__(self, cash: "Wallet", asset: "Wallet", stop_loss_pct: float = 0.05, take_profit_pct: float = 0.10):
+    def __init__(
+        self,
+        cash: "Wallet",
+        asset: "Wallet",
+        stop_loss_pct: float = 0.05,
+        take_profit_pct: float = 0.10,
+    ):
         super().__init__()
         self.cash = cash
         self.asset = asset
@@ -326,9 +336,9 @@ class BracketBSH(TensorTradeActionScheme):
         if self._position == 1:
             price = self._current_price()
             # Check stop-loss
-            if price <= self._entry_price * (1 - self.stop_loss_pct) or price >= self._entry_price * (
-                1 + self.take_profit_pct
-            ):
+            if price <= self._entry_price * (
+                1 - self.stop_loss_pct
+            ) or price >= self._entry_price * (1 + self.take_profit_pct):
                 effective_action = 2
 
         if effective_action == 1 and self._position == 0:
@@ -336,7 +346,11 @@ class BracketBSH(TensorTradeActionScheme):
                 order = proportion_order(portfolio, self.cash, self.asset, 1.0)
                 self._position = 1
                 self._entry_price = self._current_price()
-        elif effective_action == 2 and self._position == 1 and self.asset.balance.as_float() > 0:
+        elif (
+            effective_action == 2
+            and self._position == 1
+            and self.asset.balance.as_float() > 0
+        ):
             order = proportion_order(portfolio, self.asset, self.cash, 1.0)
             self._position = 0
             self._entry_price = 0.0
@@ -376,7 +390,13 @@ class DrawdownBudgetBSH(TensorTradeActionScheme):
 
     registered_name = "drawdown-budget-bsh"
 
-    def __init__(self, cash: "Wallet", asset: "Wallet", max_drawdown_pct: float = 0.10, lockout_steps: int = 10):
+    def __init__(
+        self,
+        cash: "Wallet",
+        asset: "Wallet",
+        max_drawdown_pct: float = 0.10,
+        lockout_steps: int = 10,
+    ):
         super().__init__()
         self.cash = cash
         self.asset = asset
@@ -408,7 +428,8 @@ class DrawdownBudgetBSH(TensorTradeActionScheme):
         if (
             self._equity_peak > 0
             and net_worth is not None
-            and (self._equity_peak - net_worth) / self._equity_peak > self.max_drawdown_pct
+            and (self._equity_peak - net_worth) / self._equity_peak
+            > self.max_drawdown_pct
         ):
             if self._position == 1:
                 effective_action = 2  # Force sell
@@ -426,7 +447,11 @@ class DrawdownBudgetBSH(TensorTradeActionScheme):
             if self.cash.balance.as_float() > 0:
                 order = proportion_order(portfolio, self.cash, self.asset, 1.0)
                 self._position = 1
-        elif effective_action == 2 and self._position == 1 and self.asset.balance.as_float() > 0:
+        elif (
+            effective_action == 2
+            and self._position == 1
+            and self.asset.balance.as_float() > 0
+        ):
             order = proportion_order(portfolio, self.asset, self.cash, 1.0)
             self._position = 0
 
@@ -709,7 +734,9 @@ class PartialTakeProfitBSH(TensorTradeActionScheme):
 
     registered_name = "partial-tp-bsh"
 
-    def __init__(self, cash: "Wallet", asset: "Wallet", first_sell_proportion: float = 0.5):
+    def __init__(
+        self, cash: "Wallet", asset: "Wallet", first_sell_proportion: float = 0.5
+    ):
         super().__init__()
         self.cash = cash
         self.asset = asset
@@ -738,7 +765,9 @@ class PartialTakeProfitBSH(TensorTradeActionScheme):
         elif action == 2 and self._position == 1:
             # Sell partial from full position
             if self.asset.balance.as_float() > 0:
-                order = proportion_order(portfolio, self.asset, self.cash, self.first_sell_proportion)
+                order = proportion_order(
+                    portfolio, self.asset, self.cash, self.first_sell_proportion
+                )
                 self._position = 2
 
         elif action == 2 and self._position == 2:
@@ -863,10 +892,16 @@ class VolatilitySizedBSH(TensorTradeActionScheme):
             position_size = float(np.clip(position_size, self.min_size, self.max_size))
 
             if self.cash.balance.as_float() > 0:
-                order = proportion_order(portfolio, self.cash, self.asset, position_size)
+                order = proportion_order(
+                    portfolio, self.cash, self.asset, position_size
+                )
                 self._position = 1
 
-        elif effective_action == 2 and self._position == 1 and self.asset.balance.as_float() > 0:
+        elif (
+            effective_action == 2
+            and self._position == 1
+            and self.asset.balance.as_float() > 0
+        ):
             order = proportion_order(portfolio, self.asset, self.cash, 1.0)
             self._position = 0
 
@@ -940,7 +975,12 @@ class SimpleOrders(TensorTradeActionScheme):
     @property
     def action_space(self) -> Space:
         if not self._action_space:
-            self.actions = product(self.criteria, self.trade_sizes, self.durations, [TradeSide.BUY, TradeSide.SELL])
+            self.actions = product(
+                self.criteria,
+                self.trade_sizes,
+                self.durations,
+                [TradeSide.BUY, TradeSide.SELL],
+            )
             self.actions = list(self.actions)
             self.actions = list(product(self.portfolio.exchange_pairs, self.actions))
             self.actions = [None] + self.actions
@@ -1055,7 +1095,11 @@ class ManagedRiskOrders(TensorTradeActionScheme):
     def action_space(self) -> "Space":
         if not self._action_space:
             self.actions = product(
-                self.stop, self.take, self.trade_sizes, self.durations, [TradeSide.BUY, TradeSide.SELL]
+                self.stop,
+                self.take,
+                self.trade_sizes,
+                self.durations,
+                [TradeSide.BUY, TradeSide.SELL],
             )
             self.actions = list(self.actions)
             self.actions = list(product(self.portfolio.exchange_pairs, self.actions))
@@ -1143,5 +1187,7 @@ def get(identifier: str) -> "ActionScheme":
         Raised if the `identifier` is not associated with any `ActionScheme`.
     """
     if identifier not in _registry:
-        raise KeyError(f"Identifier {identifier} is not associated with any `ActionScheme`.")
+        raise KeyError(
+            f"Identifier {identifier} is not associated with any `ActionScheme`."
+        )
     return _registry[identifier]()

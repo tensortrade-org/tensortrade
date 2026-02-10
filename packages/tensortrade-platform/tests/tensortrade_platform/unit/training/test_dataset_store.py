@@ -4,7 +4,7 @@ import sqlite3
 
 import pytest
 
-from tensortrade.training.dataset_store import (
+from tensortrade_platform.training.dataset_store import (
     SEED_DATASETS,
     DatasetConfig,
     DatasetStore,
@@ -67,7 +67,11 @@ class TestCreateConfig:
         assert config.source_type == "csv_upload"
         assert config.source_config == {}
         assert config.features == []
-        assert config.split_config == {"train_pct": 0.7, "val_pct": 0.15, "test_pct": 0.15}
+        assert config.split_config == {
+            "train_pct": 0.7,
+            "val_pct": 0.15,
+            "test_pct": 0.15,
+        }
 
 
 class TestGetConfig:

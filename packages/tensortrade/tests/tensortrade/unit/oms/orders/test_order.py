@@ -365,7 +365,9 @@ def test_fill(mock_order_listener_class, mock_trade_class, mock_exchange_class):
 @mock.patch("tensortrade.exchanges.Exchange")
 @mock.patch("tensortrade.orders.Trade")
 @mock.patch("tensortrade.orders.OrderListener")
-def test_complete_basic_order(mock_order_listener_class, mock_trade_class, mock_exchange_class):
+def test_complete_basic_order(
+    mock_order_listener_class, mock_trade_class, mock_exchange_class
+):
 
     exchange = mock_exchange_class.return_value
     exchange.options = ExchangeOptions()
@@ -466,8 +468,12 @@ def test_complete_complex_order(mock_trade_class, mock_exchange_class):
     base_size = trade.size + trade.commission.size
     quote_size = (order.price / trade.price) * (trade.size / trade.price)
 
-    base_wallet.withdraw(quantity=Quantity(USD, size=base_size, path_id=order.path_id), reason="test")
-    quote_wallet.deposit(quantity=Quantity(BTC, size=quote_size, path_id=order.path_id), reason="test")
+    base_wallet.withdraw(
+        quantity=Quantity(USD, size=base_size, path_id=order.path_id), reason="test"
+    )
+    quote_wallet.deposit(
+        quantity=Quantity(BTC, size=quote_size, path_id=order.path_id), reason="test"
+    )
 
     # Fill fake trade
     order.fill(trade)
@@ -535,8 +541,12 @@ def test_cancel(mock_order_listener_class, mock_trade_class, mock_exchange_class
     base_size = trade.size + commission.size
     quote_size = (order.price / trade.price) * (trade.size / trade.price)
 
-    base_wallet.withdraw(quantity=Quantity(USD, size=base_size, path_id=order.path_id), reason="test")
-    quote_wallet.deposit(quantity=Quantity(BTC, size=quote_size, path_id=order.path_id), reason="test")
+    base_wallet.withdraw(
+        quantity=Quantity(USD, size=base_size, path_id=order.path_id), reason="test"
+    )
+    quote_wallet.deposit(
+        quantity=Quantity(BTC, size=quote_size, path_id=order.path_id), reason="test"
+    )
 
     order.fill(trade)
 

@@ -17,7 +17,11 @@ import pandas as pd
 from stochastic.processes.noise import GaussianNoise
 
 from tensortrade.stochastic.processes.brownian_motion import brownian_motion_log_returns
-from tensortrade.stochastic.utils.helpers import convert_to_prices, get_delta, scale_times_to_generate
+from tensortrade.stochastic.utils.helpers import (
+    convert_to_prices,
+    get_delta,
+    scale_times_to_generate,
+)
 from tensortrade.stochastic.utils.parameters import ModelParameters, default
 
 
@@ -39,7 +43,9 @@ def geometric_brownian_motion_log_returns(params: "ModelParameters") -> "np.arra
         The log returns of a geometric brownian motion process
     """
     wiener_process = np.array(brownian_motion_log_returns(params))
-    sigma_pow_mu_delta = (params.gbm_mu - 0.5 * pow(params.all_sigma, 2)) * params.all_delta
+    sigma_pow_mu_delta = (
+        params.gbm_mu - 0.5 * pow(params.all_sigma, 2)
+    ) * params.all_delta
     return wiener_process + sigma_pow_mu_delta
 
 
@@ -112,7 +118,9 @@ def gbm(
     price_frame = pd.DataFrame([], columns=["date", "price"], dtype=float)
     volume_frame = pd.DataFrame([], columns=["date", "volume"], dtype=float)
 
-    price_frame["date"] = pd.date_range(start=start_date, periods=times_to_generate, freq="1min")
+    price_frame["date"] = pd.date_range(
+        start=start_date, periods=times_to_generate, freq="1min"
+    )
     price_frame["price"] = abs(prices)
 
     volume_frame["date"] = price_frame["date"].copy()

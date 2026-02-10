@@ -1,37 +1,42 @@
 """Tests for BSH action scheme, PBR reward integration, and extended strategies."""
 
+from unittest.mock import MagicMock
+
 import pytest
-from unittest.mock import MagicMock, patch
 from gymnasium.spaces import Discrete
 
-from tensortrade.feed.core import DataFeed, Stream
-from tensortrade.oms.exchanges import Exchange, ExchangeOptions
-from tensortrade.oms.instruments import USD, BTC, Quantity
-from tensortrade.oms.services.execution.simulated import execute_order
-from tensortrade.oms.wallets import Portfolio, Wallet
+import tensortrade.env.default as default
 from tensortrade.env.default.actions import (
     BSH,
-    TrailingStopBSH,
     BracketBSH,
-    DrawdownBudgetBSH,
-    CooldownBSH,
-    HoldMinimumBSH,
     ConfirmationBSH,
-    ScaledEntryBSH,
+    CooldownBSH,
+    DrawdownBudgetBSH,
+    HoldMinimumBSH,
     PartialTakeProfitBSH,
+    ScaledEntryBSH,
+    TrailingStopBSH,
     VolatilitySizedBSH,
 )
 from tensortrade.env.default.rewards import PBR
-import tensortrade.env.default as default
+from tensortrade.feed.core import DataFeed, Stream
+from tensortrade.oms.exchanges import Exchange, ExchangeOptions
+from tensortrade.oms.instruments import BTC, USD
+from tensortrade.oms.services.execution.simulated import execute_order
+from tensortrade.oms.wallets import Portfolio, Wallet
 
 
-def make_env(n_steps: int = 50, initial_cash: float = 10000.0, initial_btc: float = 0.0):
+def make_env(
+    n_steps: int = 50, initial_cash: float = 10000.0, initial_btc: float = 0.0
+):
     """Create a minimal TensorTrade environment for testing."""
     prices = [100.0 + i * 0.5 for i in range(n_steps)]
     price = Stream.source(prices, dtype="float").rename("USD-BTC")
 
     exchange_options = ExchangeOptions(commission=0.0)
-    exchange = Exchange("exchange", service=execute_order, options=exchange_options)(price)
+    exchange = Exchange("exchange", service=execute_order, options=exchange_options)(
+        price
+    )
 
     cash = Wallet(exchange, initial_cash * USD)
     asset = Wallet(exchange, initial_btc * BTC)
@@ -304,8 +309,14 @@ class TestPBRRewardIntegration:
 # ---------------------------------------------------------------------------
 
 
-def make_env_with_scheme(action_scheme_cls, n_steps=50, initial_cash=10000.0,
-                         initial_btc=0.0, scheme_kwargs=None, prices=None):
+def make_env_with_scheme(
+    action_scheme_cls,
+    n_steps=50,
+    initial_cash=10000.0,
+    initial_btc=0.0,
+    scheme_kwargs=None,
+    prices=None,
+):
     """Create an env with a custom action scheme class."""
     if prices is None:
         prices = [100.0 + i * 0.5 for i in range(n_steps)]
@@ -315,7 +326,9 @@ def make_env_with_scheme(action_scheme_cls, n_steps=50, initial_cash=10000.0,
     price = Stream.source(prices, dtype="float").rename("USD-BTC")
 
     exchange_options = ExchangeOptions(commission=0.0)
-    exchange = Exchange("exchange", service=execute_order, options=exchange_options)(price)
+    exchange = Exchange("exchange", service=execute_order, options=exchange_options)(
+        price
+    )
 
     cash = Wallet(exchange, initial_cash * USD)
     asset = Wallet(exchange, initial_btc * BTC)
@@ -457,18 +470,23 @@ class TestBracketBSH:
         # So we need the take-profit price to be visible one step after it appears in the array.
         prices = [100.0, 100.0, 105.0, 112.0, 112.0] + [112.0] * 10
         env, scheme, _, _, _ = make_env_with_scheme(
-            BracketBSH, prices=prices,
-            scheme_kwargs={"stop_loss_pct": 0.05, "take_profit_pct": 0.10}
+            BracketBSH,
+            prices=prices,
+            scheme_kwargs={"stop_loss_pct": 0.05, "take_profit_pct": 0.10},
         )
         env.reset()  # observer reads prices[0]=100
 
         env.step(1)  # get_orders sees price=100, buy. Observer reads prices[1]=100
         assert scheme._position == 1
 
-        env.step(0)  # get_orders sees price=100, no trigger. Observer reads prices[2]=105
+        env.step(
+            0
+        )  # get_orders sees price=100, no trigger. Observer reads prices[2]=105
         assert scheme._position == 1
 
-        env.step(0)  # get_orders sees price=105, within range. Observer reads prices[3]=112
+        env.step(
+            0
+        )  # get_orders sees price=105, within range. Observer reads prices[3]=112
         assert scheme._position == 1
 
         env.step(0)  # get_orders sees price=112 (12% > 10%): take-profit triggers
@@ -479,8 +497,9 @@ class TestBracketBSH:
         # reset reads prices[0]=100. step(buy) sees 100. observer advances to prices[1].
         prices = [100.0, 100.0, 93.0, 93.0] + [93.0] * 10
         env, scheme, _, _, _ = make_env_with_scheme(
-            BracketBSH, prices=prices,
-            scheme_kwargs={"stop_loss_pct": 0.05, "take_profit_pct": 0.10}
+            BracketBSH,
+            prices=prices,
+            scheme_kwargs={"stop_loss_pct": 0.05, "take_profit_pct": 0.10},
         )
         env.reset()  # observer reads prices[0]=100
 
@@ -494,8 +513,9 @@ class TestBracketBSH:
         # All prices within [-5%, +10%] of entry=100
         prices = [100.0, 100.0, 103.0, 97.0, 102.0, 100.0] + [100.0] * 10
         env, scheme, _, _, _ = make_env_with_scheme(
-            BracketBSH, prices=prices,
-            scheme_kwargs={"stop_loss_pct": 0.05, "take_profit_pct": 0.10}
+            BracketBSH,
+            prices=prices,
+            scheme_kwargs={"stop_loss_pct": 0.05, "take_profit_pct": 0.10},
         )
         env.reset()  # observer reads prices[0]=100
 
@@ -533,8 +553,7 @@ class TestDrawdownBudgetBSH:
         """Normal operation without hitting drawdown limit."""
         prices = [100.0 + i * 0.5 for i in range(20)]
         env, scheme, _, _, _ = make_env_with_scheme(
-            DrawdownBudgetBSH, prices=prices,
-            scheme_kwargs={"max_drawdown_pct": 0.10}
+            DrawdownBudgetBSH, prices=prices, scheme_kwargs={"max_drawdown_pct": 0.10}
         )
         env.reset()
 
@@ -547,8 +566,9 @@ class TestDrawdownBudgetBSH:
         """During lockout, buy signals are suppressed to hold."""
         prices = [100.0 + i * 0.5 for i in range(30)]
         env, scheme, _, _, _ = make_env_with_scheme(
-            DrawdownBudgetBSH, prices=prices,
-            scheme_kwargs={"max_drawdown_pct": 0.10, "lockout_steps": 5}
+            DrawdownBudgetBSH,
+            prices=prices,
+            scheme_kwargs={"max_drawdown_pct": 0.10, "lockout_steps": 5},
         )
         env.reset()
 
@@ -562,8 +582,9 @@ class TestDrawdownBudgetBSH:
         """Sells should still be allowed during lockout."""
         prices = [100.0 + i * 0.5 for i in range(30)]
         env, scheme, _, _, _ = make_env_with_scheme(
-            DrawdownBudgetBSH, prices=prices,
-            scheme_kwargs={"max_drawdown_pct": 0.10, "lockout_steps": 5}
+            DrawdownBudgetBSH,
+            prices=prices,
+            scheme_kwargs={"max_drawdown_pct": 0.10, "lockout_steps": 5},
         )
         env.reset()
 
@@ -941,8 +962,9 @@ class TestPartialTakeProfitBSH:
         """Action 2 from full → half, action 2 from half → cash."""
         prices = [100.0 + i * 0.5 for i in range(20)]
         env, scheme, _, cash, asset = make_env_with_scheme(
-            PartialTakeProfitBSH, prices=prices,
-            scheme_kwargs={"first_sell_proportion": 0.5}
+            PartialTakeProfitBSH,
+            prices=prices,
+            scheme_kwargs={"first_sell_proportion": 0.5},
         )
         env.reset()
 
@@ -960,9 +982,7 @@ class TestPartialTakeProfitBSH:
     def test_sell_all_from_full(self):
         """Action 3 exits from full position directly."""
         prices = [100.0 + i * 0.5 for i in range(20)]
-        env, scheme, _, _, _ = make_env_with_scheme(
-            PartialTakeProfitBSH, prices=prices
-        )
+        env, scheme, _, _, _ = make_env_with_scheme(PartialTakeProfitBSH, prices=prices)
         env.reset()
 
         env.step(1)  # Buy
@@ -972,9 +992,7 @@ class TestPartialTakeProfitBSH:
     def test_sell_all_from_half(self):
         """Action 3 exits from half position."""
         prices = [100.0 + i * 0.5 for i in range(20)]
-        env, scheme, _, _, _ = make_env_with_scheme(
-            PartialTakeProfitBSH, prices=prices
-        )
+        env, scheme, _, _, _ = make_env_with_scheme(PartialTakeProfitBSH, prices=prices)
         env.reset()
 
         env.step(1)  # Buy
@@ -986,9 +1004,7 @@ class TestPartialTakeProfitBSH:
     def test_buy_from_half_is_noop(self):
         """Action 1 when in half position is a no-op (position != 0)."""
         prices = [100.0 + i * 0.5 for i in range(20)]
-        env, scheme, _, _, _ = make_env_with_scheme(
-            PartialTakeProfitBSH, prices=prices
-        )
+        env, scheme, _, _, _ = make_env_with_scheme(PartialTakeProfitBSH, prices=prices)
         env.reset()
 
         env.step(1)  # Buy → position 1
@@ -1018,8 +1034,9 @@ class TestVolatilitySizedBSH:
         """With no price history, should use max_size."""
         prices = [100.0 + i * 0.5 for i in range(20)]
         env, scheme, _, cash, asset = make_env_with_scheme(
-            VolatilitySizedBSH, prices=prices,
-            scheme_kwargs={"window": 5, "max_size": 1.0}
+            VolatilitySizedBSH,
+            prices=prices,
+            scheme_kwargs={"window": 5, "max_size": 1.0},
         )
         env.reset()
 
@@ -1033,9 +1050,14 @@ class TestVolatilitySizedBSH:
         # Very volatile prices
         prices = [100.0, 200.0, 50.0, 300.0, 10.0, 500.0] + [100.0] * 20
         env, scheme, _, cash, asset = make_env_with_scheme(
-            VolatilitySizedBSH, prices=prices,
-            scheme_kwargs={"window": 5, "min_size": 0.1, "max_size": 1.0,
-                           "target_risk": 0.001}
+            VolatilitySizedBSH,
+            prices=prices,
+            scheme_kwargs={
+                "window": 5,
+                "min_size": 0.1,
+                "max_size": 1.0,
+                "target_risk": 0.001,
+            },
         )
         env.reset()
 
@@ -1050,8 +1072,7 @@ class TestVolatilitySizedBSH:
         """Sell should exit entire position."""
         prices = [100.0 + i * 0.5 for i in range(20)]
         env, scheme, _, cash, asset = make_env_with_scheme(
-            VolatilitySizedBSH, prices=prices,
-            scheme_kwargs={"window": 3}
+            VolatilitySizedBSH, prices=prices, scheme_kwargs={"window": 3}
         )
         env.reset()
 
@@ -1063,8 +1084,7 @@ class TestVolatilitySizedBSH:
         """Price buffer should fill during operation."""
         prices = [100.0 + i * 0.5 for i in range(20)]
         env, scheme, _, _, _ = make_env_with_scheme(
-            VolatilitySizedBSH, prices=prices,
-            scheme_kwargs={"window": 5}
+            VolatilitySizedBSH, prices=prices, scheme_kwargs={"window": 5}
         )
         env.reset()
 
@@ -1096,11 +1116,20 @@ class TestActionRegistry:
 
     def test_registry_has_all_entries(self):
         from tensortrade.env.default.actions import _registry
+
         expected = [
-            'bsh', 'trailing-stop-bsh', 'bracket-bsh', 'drawdown-budget-bsh',
-            'cooldown-bsh', 'hold-minimum-bsh', 'confirmation-bsh',
-            'scaled-entry-bsh', 'partial-tp-bsh', 'volatility-bsh',
-            'simple', 'managed-risk',
+            "bsh",
+            "trailing-stop-bsh",
+            "bracket-bsh",
+            "drawdown-budget-bsh",
+            "cooldown-bsh",
+            "hold-minimum-bsh",
+            "confirmation-bsh",
+            "scaled-entry-bsh",
+            "partial-tp-bsh",
+            "volatility-bsh",
+            "simple",
+            "managed-risk",
         ]
         for name in expected:
             assert name in _registry, f"Missing registry entry: {name}"

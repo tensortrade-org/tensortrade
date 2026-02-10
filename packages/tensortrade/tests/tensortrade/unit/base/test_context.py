@@ -33,7 +33,12 @@ config = {
 
 
 def test_init():
-    c = TradingContext({"base_instrument": config["base_instrument"], "instruments": config["instruments"]})
+    c = TradingContext(
+        {
+            "base_instrument": config["base_instrument"],
+            "instruments": config["instruments"],
+        }
+    )
     assert c.shared.get("base_instrument") == "EURO"
     assert c.shared.get("instruments") == ["BTC", "ETH"]
 
@@ -84,7 +89,10 @@ def test_create_trading_context_from_json():
 
     actions = {"n_actions": 24, "action_type": "discrete"}
     exchanges = {
-        "credentials": {"api_key": "487r63835t4323", "api_secret_key": "do8u43hgiurwfnlveio"},
+        "credentials": {
+            "api_key": "487r63835t4323",
+            "api_secret_key": "do8u43hgiurwfnlveio",
+        },
         "name": "bitfinex",
     }
 
@@ -100,7 +108,10 @@ def test_create_trading_context_from_yaml():
 
     actions = {"n_actions": 24, "action_type": "discrete"}
     exchanges = {
-        "credentials": {"api_key": "487r63835t4323", "api_secret_key": "do8u43hgiurwfnlveio"},
+        "credentials": {
+            "api_key": "487r63835t4323",
+            "api_secret_key": "do8u43hgiurwfnlveio",
+        },
         "name": "bitfinex",
     }
 

@@ -22,7 +22,11 @@ def test_init(mock_exchange_class):
     trade_type = TradeType.MARKET
 
     # Create order specification without criteria
-    order_spec = OrderSpec(side=side, trade_type=trade_type, exchange_pair=ExchangePair(exchange, USD / BTC))
+    order_spec = OrderSpec(
+        side=side,
+        trade_type=trade_type,
+        exchange_pair=ExchangePair(exchange, USD / BTC),
+    )
 
     assert order_spec.id
     assert order_spec.side == side
@@ -72,7 +76,9 @@ def test_create_from_buy_order(mock_order_class, mock_exchange_class):
     assert float(wallet_btc.locked[order.path_id].size) == 0.4
 
     order_spec = OrderSpec(
-        side=TradeSide.SELL, trade_type=TradeType.MARKET, exchange_pair=ExchangePair(exchange, USD / BTC)
+        side=TradeSide.SELL,
+        trade_type=TradeType.MARKET,
+        exchange_pair=ExchangePair(exchange, USD / BTC),
     )
 
     next_order = order_spec.create_order(order)
@@ -113,7 +119,9 @@ def test_create_from_sell_order(mock_order_class, mock_exchange_class):
     assert float(wallet_usd.locked[order.path_id].size) == 1000
 
     order_spec = OrderSpec(
-        side=TradeSide.BUY, trade_type=TradeType.MARKET, exchange_pair=ExchangePair(exchange, USD / BTC)
+        side=TradeSide.BUY,
+        trade_type=TradeType.MARKET,
+        exchange_pair=ExchangePair(exchange, USD / BTC),
     )
 
     next_order = order_spec.create_order(order)
@@ -139,7 +147,9 @@ def test_to_dict(mock_exchange_class):
     exchange.quote_price = mock.Mock(return_value=Decimal(7000.00))
 
     order_spec = OrderSpec(
-        side=TradeSide.BUY, trade_type=TradeType.MARKET, exchange_pair=ExchangePair(exchange, USD / BTC)
+        side=TradeSide.BUY,
+        trade_type=TradeType.MARKET,
+        exchange_pair=ExchangePair(exchange, USD / BTC),
     )
 
     d = order_spec.to_dict()
@@ -178,7 +188,9 @@ def test_str(mock_exchange_class):
     exchange.quote_price = mock.Mock(return_value=Decimal(7000.00))
 
     order_spec = OrderSpec(
-        side=TradeSide.BUY, trade_type=TradeType.MARKET, exchange_pair=ExchangePair(exchange, USD / BTC)
+        side=TradeSide.BUY,
+        trade_type=TradeType.MARKET,
+        exchange_pair=ExchangePair(exchange, USD / BTC),
     )
 
     pattern = re.compile("<[A-Z][a-zA-Z]*:\\s(\\w+=.*,\\s)*(\\w+=.*)>")

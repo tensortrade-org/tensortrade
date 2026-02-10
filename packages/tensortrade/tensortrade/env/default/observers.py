@@ -10,7 +10,9 @@ from tensortrade.feed.core import DataFeed, NameSpace, Stream
 from tensortrade.oms.wallets import Wallet
 
 
-def _create_wallet_source(wallet: "Wallet", include_worth: bool = True) -> "list[Stream[float]]":
+def _create_wallet_source(
+    wallet: "Wallet", include_worth: bool = True
+) -> "list[Stream[float]]":
     """Creates a list of streams to describe a `Wallet`.
 
     Parameters
@@ -31,9 +33,15 @@ def _create_wallet_source(wallet: "Wallet", include_worth: bool = True) -> "list
     streams = []
 
     with NameSpace(exchange_name + ":/" + symbol):
-        free_balance = Stream.sensor(wallet, lambda w: w.balance.as_float(), dtype="float").rename("free")
-        locked_balance = Stream.sensor(wallet, lambda w: w.locked_balance.as_float(), dtype="float").rename("locked")
-        total_balance = Stream.sensor(wallet, lambda w: w.total_balance.as_float(), dtype="float").rename("total")
+        free_balance = Stream.sensor(
+            wallet, lambda w: w.balance.as_float(), dtype="float"
+        ).rename("free")
+        locked_balance = Stream.sensor(
+            wallet, lambda w: w.locked_balance.as_float(), dtype="float"
+        ).rename("locked")
+        total_balance = Stream.sensor(
+            wallet, lambda w: w.total_balance.as_float(), dtype="float"
+        ).rename("total")
 
         streams += [free_balance, locked_balance, total_balance]
 
@@ -42,7 +50,9 @@ def _create_wallet_source(wallet: "Wallet", include_worth: bool = True) -> "list
             price = Stream.select(
                 wallet.exchange.streams(),
                 lambda node: (
-                    node.name.endswith(f":{symbol}") or node.name.endswith(f"-{symbol}") or node.name.endswith(symbol)
+                    node.name.endswith(f":{symbol}")
+                    or node.name.endswith(f"-{symbol}")
+                    or node.name.endswith(symbol)
                 ),
             )
             worth = price.mul(total_balance).rename("worth")
@@ -191,7 +201,9 @@ class TensorTradeObserver(Observer):
         min_periods: int = None,
         **kwargs,
     ) -> None:
-        internal_group = Stream.group(_create_internal_streams(portfolio)).rename("internal")
+        internal_group = Stream.group(_create_internal_streams(portfolio)).rename(
+            "internal"
+        )
         external_group = Stream.group(feed.inputs).rename("external")
 
         if renderer_feed:
@@ -333,7 +345,9 @@ class IntradayObserver(Observer):
         randomize: bool = False,
         **kwargs,
     ) -> None:
-        internal_group = Stream.group(_create_internal_streams(portfolio)).rename("internal")
+        internal_group = Stream.group(_create_internal_streams(portfolio)).rename(
+            "internal"
+        )
         external_group = Stream.group(feed.inputs).rename("external")
 
         if renderer_feed:
@@ -414,7 +428,9 @@ class IntradayObserver(Observer):
         try:
             obs_ts = obs_row.pop("timestamp")
         except KeyError as err:
-            raise KeyError("Include Stream of Timestamps named 'timestamp' in feed") from err
+            raise KeyError(
+                "Include Stream of Timestamps named 'timestamp' in feed"
+            ) from err
         self.history.push(obs_row)
 
         # Check if episode should be stopped

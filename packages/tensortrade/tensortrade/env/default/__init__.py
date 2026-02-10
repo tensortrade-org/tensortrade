@@ -48,8 +48,12 @@ def create(
         The default trading environment.
     """
 
-    action_scheme = actions.get(action_scheme) if isinstance(action_scheme, str) else action_scheme
-    reward_scheme = rewards.get(reward_scheme) if isinstance(reward_scheme, str) else reward_scheme
+    action_scheme = (
+        actions.get(action_scheme) if isinstance(action_scheme, str) else action_scheme
+    )
+    reward_scheme = (
+        rewards.get(reward_scheme) if isinstance(reward_scheme, str) else reward_scheme
+    )
 
     action_scheme.portfolio = portfolio
 
@@ -61,7 +65,9 @@ def create(
         min_periods=min_periods,
     )
 
-    stopper = stoppers.MaxLossStopper(max_allowed_loss=kwargs.get("max_allowed_loss", 0.5))
+    stopper = stoppers.MaxLossStopper(
+        max_allowed_loss=kwargs.get("max_allowed_loss", 0.5)
+    )
 
     renderer_list = kwargs.get("renderer", renderers.EmptyRenderer())
 

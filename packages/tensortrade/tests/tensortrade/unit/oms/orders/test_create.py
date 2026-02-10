@@ -18,6 +18,8 @@ def test_proportion_order_init(mock_exchange_class):
     wallet_btc = Wallet(exchange, 0 * BTC)
     portfolio = Portfolio(USD, [wallet_usd, wallet_btc])
 
-    order = proportion_order(portfolio=portfolio, source=wallet_usd, target=wallet_btc, proportion=1.0)
+    order = proportion_order(
+        portfolio=portfolio, source=wallet_usd, target=wallet_btc, proportion=1.0
+    )
 
     assert order

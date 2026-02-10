@@ -21,7 +21,14 @@ import gymnasium
 import numpy as np
 
 from tensortrade.core import Clock, Component, TimeIndexed
-from tensortrade.env.generic import ActionScheme, Informer, Observer, Renderer, RewardScheme, Stopper
+from tensortrade.env.generic import (
+    ActionScheme,
+    Informer,
+    Observer,
+    Renderer,
+    RewardScheme,
+    Stopper,
+)
 
 
 class TradingEnv(gymnasium.Env, TimeIndexed):
@@ -151,7 +158,10 @@ class TradingEnv(gymnasium.Env, TimeIndexed):
         reward = self.reward_scheme.reward(self)
         terminated = self.stopper.stop(self)
         # Check if episode should be truncated due to max steps
-        truncated = self.max_episode_steps is not None and self.clock.step >= self.max_episode_steps
+        truncated = (
+            self.max_episode_steps is not None
+            and self.clock.step >= self.max_episode_steps
+        )
         info = self.informer.info(self)
 
         self.clock.increment()

@@ -9,7 +9,7 @@ so they are unaffected.
 
 Usage::
 
-    from tensortrade.ray_manager import ray_manager
+    from tensortrade_platform.ray_manager import ray_manager
 
     ray_manager.acquire("inference")   # starts Ray if not running
     policy = Policy.from_checkpoint(...)
@@ -22,7 +22,7 @@ from __future__ import annotations
 import logging
 import threading
 
-from tensortrade.ray_config import build_ray_init_kwargs, resolve_ray_address
+from tensortrade_platform.ray_config import build_ray_init_kwargs, resolve_ray_address
 
 logger = logging.getLogger(__name__)
 

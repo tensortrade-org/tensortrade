@@ -8,7 +8,7 @@ from unittest.mock import MagicMock
 
 import pandas as pd
 
-from tensortrade.api.inference_runner import InferenceRunner
+from tensortrade_platform.api.inference_runner import InferenceRunner
 
 
 class _FakeManager:
@@ -81,13 +81,23 @@ def _make_store() -> SimpleNamespace:
 def test_run_episode_errors_when_trained_policy_unavailable(monkeypatch):
     store = _make_store()
     manager = _FakeManager()
-    runner = InferenceRunner(store=store, manager=manager, dataset_store=SimpleNamespace())
+    runner = InferenceRunner(
+        store=store, manager=manager, dataset_store=SimpleNamespace()
+    )
 
-    monkeypatch.setattr(runner, "_load_trained_algo", lambda experiment: (_ for _ in ()).throw(ValueError("missing")))
+    monkeypatch.setattr(
+        runner,
+        "_load_trained_algo",
+        lambda experiment: (_ for _ in ()).throw(ValueError("missing")),
+    )
 
     asyncio.run(runner.run_episode("exp-1"))
 
-    error_msgs = [m for m in manager.messages if m.get("type") == "inference_status" and m.get("state") == "error"]
+    error_msgs = [
+        m
+        for m in manager.messages
+        if m.get("type") == "inference_status" and m.get("state") == "error"
+    ]
     assert len(error_msgs) == 1
     assert error_msgs[0]["error"] == "missing"
 
@@ -95,7 +105,9 @@ def test_run_episode_errors_when_trained_policy_unavailable(monkeypatch):
 def test_run_episode_uses_trained_policy(monkeypatch):
     store = _make_store()
     manager = _FakeManager()
-    runner = InferenceRunner(store=store, manager=manager, dataset_store=SimpleNamespace())
+    runner = InferenceRunner(
+        store=store, manager=manager, dataset_store=SimpleNamespace()
+    )
     env = _FakeEnv(sample_action=2)
 
     policy_algo = MagicMock()
@@ -109,7 +121,9 @@ def test_run_episode_uses_trained_policy(monkeypatch):
             _FakeWallet(),
         ),
     )
-    monkeypatch.setattr(runner, "_load_trained_algo", lambda experiment: (policy_algo, False))
+    monkeypatch.setattr(
+        runner, "_load_trained_algo", lambda experiment: (policy_algo, False)
+    )
 
     asyncio.run(runner.run_episode("exp-1"))
 
@@ -117,5 +131,9 @@ def test_run_episode_uses_trained_policy(monkeypatch):
     policy_algo.compute_single_action.assert_called_once()
     assert env.seen_actions == [1]
     policy_algo.stop.assert_called_once()
-    error_msgs = [m for m in manager.messages if m.get("type") == "inference_status" and m.get("state") == "error"]
+    error_msgs = [
+        m
+        for m in manager.messages
+        if m.get("type") == "inference_status" and m.get("state") == "error"
+    ]
     assert error_msgs == []

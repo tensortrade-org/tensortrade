@@ -1,10 +1,12 @@
-
-from tensortrade.env.default.observers import _create_internal_streams, _create_wallet_source
+from tensortrade.env.default.observers import (
+    _create_internal_streams,
+    _create_wallet_source,
+)
 from tensortrade.feed.core import DataFeed, Stream
 from tensortrade.oms.exchanges import Exchange
+from tensortrade.oms.instruments import BTC, ETH, LTC, USD, Quantity
 from tensortrade.oms.services.execution.simulated import execute_order
-from tensortrade.oms.wallets import Wallet, Portfolio
-from tensortrade.oms.instruments import USD, BTC, ETH, LTC, Quantity
+from tensortrade.oms.wallets import Portfolio, Wallet
 
 
 def test_price_ds():
@@ -22,10 +24,7 @@ def test_exchange_feed():
     btc_price = Stream.source([7000, 7500, 8300], dtype="float").rename("USD-BTC")
     eth_price = Stream.source([200, 212, 400], dtype="float").rename("USD-ETH")
 
-    exchange = Exchange("bitfinex", service=execute_order)(
-        btc_price,
-        eth_price
-    )
+    exchange = Exchange("bitfinex", service=execute_order)(btc_price, eth_price)
 
     feed = DataFeed(exchange.streams())
 
@@ -36,24 +35,27 @@ def test_create_internal_data_feed():
 
     ex1 = Exchange("bitfinex", service=execute_order)(
         Stream.source([7000, 7500, 8300], dtype="float").rename("USD-BTC"),
-        Stream.source([200, 212, 400], dtype="float").rename("USD-ETH")
+        Stream.source([200, 212, 400], dtype="float").rename("USD-ETH"),
     )
 
     ex2 = Exchange("binance", service=execute_order)(
         Stream.source([7005, 7600, 8200], dtype="float").rename("USD-BTC"),
         Stream.source([201, 208, 402], dtype="float").rename("USD-ETH"),
-        Stream.source([56, 52, 60], dtype="float").rename("USD-LTC")
+        Stream.source([56, 52, 60], dtype="float").rename("USD-LTC"),
     )
 
-    portfolio = Portfolio(USD, [
-        Wallet(ex1, 10000 * USD),
-        Wallet(ex1, 10 * BTC),
-        Wallet(ex1, 5 * ETH),
-        Wallet(ex2, 1000 * USD),
-        Wallet(ex2, 5 * BTC),
-        Wallet(ex2, 20 * ETH),
-        Wallet(ex2, 3 * LTC),
-    ])
+    portfolio = Portfolio(
+        USD,
+        [
+            Wallet(ex1, 10000 * USD),
+            Wallet(ex1, 10 * BTC),
+            Wallet(ex1, 5 * ETH),
+            Wallet(ex2, 1000 * USD),
+            Wallet(ex2, 5 * BTC),
+            Wallet(ex2, 20 * ETH),
+            Wallet(ex2, 3 * LTC),
+        ],
+    )
 
     feed = DataFeed(_create_internal_streams(portfolio))
 
@@ -91,10 +93,12 @@ def test_create_internal_data_feed():
         "binance:/LTC:/worth": 56 * 3,
     }
 
-    bitfinex_net_worth = 10000 + (10 * 7000) + (5 * 200)
-    binance_net_worth = 1000 + (5 * 7005) + (20 * 201) + (3 * 56)
+    _bitfinex_net_worth = 10000 + (10 * 7000) + (5 * 200)  # noqa: F841
+    _binance_net_worth = 1000 + (5 * 7005) + (20 * 201) + (3 * 56)  # noqa: F841
 
-    data['net_worth'] = sum(data[k] if k.endswith("worth") or k.endswith("USD:/total") else 0 for k in data)
+    data["net_worth"] = sum(
+        data[k] if k.endswith("worth") or k.endswith("USD:/total") else 0 for k in data
+    )
 
     assert feed.next() == data
 
@@ -103,27 +107,21 @@ def test_exchange_with_wallets_feed():
 
     ex1 = Exchange("bitfinex", service=execute_order)(
         Stream.source([7000, 7500, 8300], dtype="float").rename("USD-BTC"),
-        Stream.source([200, 212, 400], dtype="float").rename("USD-ETH")
+        Stream.source([200, 212, 400], dtype="float").rename("USD-ETH"),
     )
 
     ex2 = Exchange("binance", service=execute_order)(
         Stream.source([7005, 7600, 8200], dtype="float").rename("USD-BTC"),
         Stream.source([201, 208, 402], dtype="float").rename("USD-ETH"),
-        Stream.source([56, 52, 60], dtype="float").rename("USD-LTC")
+        Stream.source([56, 52, 60], dtype="float").rename("USD-LTC"),
     )
 
     wallet_btc = Wallet(ex1, 10 * BTC)
     wallet_btc_ds = _create_wallet_source(wallet_btc)
 
     wallet_usd = Wallet(ex2, 1000 * USD)
-    wallet_usd.withdraw(
-        quantity=400 * USD,
-        reason="test"
-    )
-    wallet_usd.deposit(
-        quantity=Quantity(USD, 400, path_id="fake_id"),
-        reason="test"
-    )
+    wallet_usd.withdraw(quantity=400 * USD, reason="test")
+    wallet_usd.deposit(quantity=Quantity(USD, 400, path_id="fake_id"), reason="test")
     wallet_usd_ds = _create_wallet_source(wallet_usd, include_worth=False)
 
     streams = ex1.streams() + ex2.streams() + wallet_btc_ds + wallet_usd_ds
@@ -141,5 +139,5 @@ def test_exchange_with_wallets_feed():
         "binance:/USD-LTC": 56,
         "binance:/USD:/free": 600,
         "binance:/USD:/locked": 400,
-        "binance:/USD:/total": 1000
+        "binance:/USD:/total": 1000,
     }

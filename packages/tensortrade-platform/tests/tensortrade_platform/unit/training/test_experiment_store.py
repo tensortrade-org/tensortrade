@@ -4,7 +4,7 @@ import os
 
 import pytest
 
-from tensortrade.training.experiment_store import (
+from tensortrade_platform.training.experiment_store import (
     Experiment,
     ExperimentStore,
     IterationRecord,
@@ -35,7 +35,9 @@ def experiment_id(store):
 
 class TestExperimentCRUD:
     def test_create_experiment(self, store):
-        exp_id = store.create_experiment(name="my_run", script="train_advanced", config={"lr": 0.001})
+        exp_id = store.create_experiment(
+            name="my_run", script="train_advanced", config={"lr": 0.001}
+        )
         assert isinstance(exp_id, str)
         assert len(exp_id) == 36  # UUID format
 
@@ -121,7 +123,9 @@ class TestIterationLogging:
 
 class TestTradeLogging:
     def test_log_single_trade(self, store, experiment_id):
-        store.log_trade(experiment_id, episode=0, step=10, side="buy", price=100.0, size=0.5)
+        store.log_trade(
+            experiment_id, episode=0, step=10, side="buy", price=100.0, size=0.5
+        )
         trades = store.get_trades(experiment_id)
         assert len(trades) == 1
         assert trades[0].side == "buy"
@@ -141,23 +145,33 @@ class TestTradeLogging:
         assert result[1].side == "sell"
 
     def test_get_trades_by_episode(self, store, experiment_id):
-        store.log_trade(experiment_id, episode=0, step=10, side="buy", price=100.0, size=0.5)
-        store.log_trade(experiment_id, episode=1, step=5, side="sell", price=110.0, size=0.5)
+        store.log_trade(
+            experiment_id, episode=0, step=10, side="buy", price=100.0, size=0.5
+        )
+        store.log_trade(
+            experiment_id, episode=1, step=5, side="sell", price=110.0, size=0.5
+        )
 
         ep0 = store.get_trades(experiment_id, episode=0)
         assert len(ep0) == 1
         assert ep0[0].episode == 0
 
     def test_get_all_trades_with_metadata(self, store, experiment_id):
-        store.log_trade(experiment_id, episode=0, step=10, side="buy", price=100.0, size=0.5)
+        store.log_trade(
+            experiment_id, episode=0, step=10, side="buy", price=100.0, size=0.5
+        )
         trades = store.get_all_trades()
         assert len(trades) == 1
         assert trades[0]["experiment_name"] == "test_run"
         assert trades[0]["script"] == "train_test"
 
     def test_get_all_trades_filter_side(self, store, experiment_id):
-        store.log_trade(experiment_id, episode=0, step=10, side="buy", price=100.0, size=0.5)
-        store.log_trade(experiment_id, episode=0, step=20, side="sell", price=110.0, size=0.5)
+        store.log_trade(
+            experiment_id, episode=0, step=10, side="buy", price=100.0, size=0.5
+        )
+        store.log_trade(
+            experiment_id, episode=0, step=20, side="sell", price=110.0, size=0.5
+        )
 
         buys = store.get_all_trades(side="buy")
         assert len(buys) == 1
@@ -210,7 +224,9 @@ class TestLeaderboard:
     def test_leaderboard_ranking(self, store):
         for i, pnl in enumerate([100, 500, 250, -50]):
             eid = store.create_experiment(name=f"run{i}", script="test")
-            store.complete_experiment(eid, final_metrics={"pnl": pnl, "net_worth": 10000 + pnl})
+            store.complete_experiment(
+                eid, final_metrics={"pnl": pnl, "net_worth": 10000 + pnl}
+            )
 
         board = store.get_leaderboard(metric="pnl")
         assert len(board) == 4
