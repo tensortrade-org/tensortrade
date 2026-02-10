@@ -1,5 +1,6 @@
 .venv
 .git
+.env
 .dev-pids
 .dev-logs
 dashboard/node_modules
@@ -13,4 +14,5 @@ build
 .pytest_cache
 ray_results
 *.db
-uv.lock
+*.db-wal
+*.db-shm

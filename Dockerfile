@@ -38,5 +38,5 @@ COPY . ./
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 RUN uv pip install --no-cache-dir --system \
         -e packages/tensortrade \
-        -e "packages/tensortrade-platform[insights,optuna,alpaca]" && \
+        -e "packages/tensortrade-platform[torch,insights,optuna,alpaca]" && \
     uv pip install --no-cache-dir --system -r examples/requirements.txt

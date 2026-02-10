@@ -41,10 +41,18 @@ docs = [
     "ipykernel>=6.29.0",
     "docutils>=0.20,<0.21",
 ]
+notebooks = [
+    "scikit-learn>=1.3.0",
+    "feature-engine>=1.6.0",
+    "anywidget>=0.9.0",
+    "ipywidgets>=8.0.0",
+    "jupyterlab>=3.0.0",
+]
 dev = [
     { include-group = "test" },
     { include-group = "lint" },
     { include-group = "docs" },
+    { include-group = "notebooks" },
 ]
 
 [tool.pytest.ini_options]
