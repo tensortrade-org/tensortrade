@@ -2,7 +2,7 @@
 name = "tensortrade"
 version = "1.0.5"
 description = "TensorTrade: A reinforcement learning library for training, evaluating, and deploying robust trading agents."
-readme = "../../README.md"
+# readme referenced at publish time; see repo root README.md
 license = "Apache-2.0"
 authors = [
     { name = "Adam King", email = "adamjking3@gmail.com" },
@@ -10,6 +10,7 @@ authors = [
 ]
 maintainers = [
     { name = "Carlo Grisetti", email = "carlo.grisetti@gmail.com" },
+    { name = "Rich Hamnett", email = "r.hamnett+tt@gmail.com" },
 ]
 requires-python = ">=3.12"
 classifiers = [

@@ -3345,7 +3345,7 @@ dev = [
     { name = "sphinx-rtd-theme" },
     { name = "sphinxcontrib-apidoc" },
     { name = "tensortrade" },
-    { name = "tensortrade-platform" },
+    { name = "tensortrade-platform", extra = ["alpaca", "insights", "optuna"] },
 ]
 docs = [
     { name = "docutils" },
@@ -3393,7 +3393,7 @@ dev = [
     { name = "sphinx-rtd-theme", specifier = ">=2.0.0" },
     { name = "sphinxcontrib-apidoc", specifier = ">=0.4.0" },
     { name = "tensortrade", editable = "packages/tensortrade" },
-    { name = "tensortrade-platform", editable = "packages/tensortrade-platform" },
+    { name = "tensortrade-platform", extras = ["insights", "optuna", "alpaca"], editable = "packages/tensortrade-platform" },
 ]
 docs = [
     { name = "docutils", specifier = ">=0.20,<0.21" },
