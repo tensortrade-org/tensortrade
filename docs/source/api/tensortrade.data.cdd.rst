@@ -1,7 +1,7 @@
-tensortrade.data.cdd module
-===========================
+tensortrade\_platform.data.cdd module
+=====================================
 
-.. automodule:: tensortrade.data.cdd
+.. automodule:: tensortrade_platform.data.cdd
    :members:
    :show-inheritance:
    :undoc-members:

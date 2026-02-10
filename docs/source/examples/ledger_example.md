@@ -21,7 +21,7 @@ from tensortrade.oms.instruments import USD, BTC, ETH, LTC
 
 <br>**Load Data for Exchanges**<br>
 
-Using the `tensortrade.data.cdd` module you can load data from any `csv` file provided at:
+Using the `tensortrade_platform.data.cdd` module you can load data from any `csv` file provided at:
 - https://www.cryptodatadownload.com/data/northamerican/
 
 using the `CryptoDataDownload` class.

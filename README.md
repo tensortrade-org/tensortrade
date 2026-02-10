@@ -128,7 +128,7 @@ TensorTrade includes a real-time training dashboard for monitoring experiments.
 make dev
 
 # Or start individually:
-.venv/bin/python -m tensortrade.api.server  # Backend API (port 8000)
+.venv/bin/python -m tensortrade_platform.api.server  # Backend API (port 8000)
 cd dashboard && npm run dev                  # Frontend (port 3000)
 ```
 

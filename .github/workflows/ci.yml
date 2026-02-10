@@ -24,10 +24,10 @@ jobs:
         run: uv sync --group lint
 
       - name: Ruff check
-        run: uv run ruff check tensortrade/
+        run: uv run ruff check packages/
 
       - name: Ruff format check
-        run: uv run ruff format --check tensortrade/
+        run: uv run ruff format --check packages/
 
   test:
     runs-on: ubuntu-latest
@@ -46,7 +46,10 @@ jobs:
         run: uv python install ${{ matrix.python-version }}
 
       - name: Install dependencies
-        run: uv sync --group test --extra dashboard
+        run: uv sync --all-extras --group test
 
-      - name: Run tests
-        run: uv run pytest tests/ -m "not rllib" --tb=short
+      - name: Run core tests
+        run: uv run pytest packages/tensortrade/tests/ -m "not rllib" --tb=short
+
+      - name: Run platform tests
+        run: uv run pytest packages/tensortrade-platform/tests/ --tb=short

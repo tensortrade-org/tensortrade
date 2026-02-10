@@ -1,7 +1,7 @@
 """Core live/paper trading engine.
 
 Loads a trained RLlib policy, subscribes to real-time bars via
-:class:`~tensortrade.data.alpaca_live.AlpacaLiveStream`, computes
+:class:`~tensortrade_platform.data.alpaca_live.AlpacaLiveStream`, computes
 features on each new bar, runs inference, and executes trades through
 Alpaca.  All state is persisted via :class:`LiveTradingStore`.
 """
@@ -629,7 +629,7 @@ class LiveTrader:
     def _load_policy(checkpoint_path: str) -> object:
         """Load an RLlib policy from a checkpoint directory.
 
-        Ray lifecycle is managed by :mod:`tensortrade.ray_manager`.
+        Ray lifecycle is managed by :mod:`tensortrade_platform.ray_manager`.
         """
         import os
 

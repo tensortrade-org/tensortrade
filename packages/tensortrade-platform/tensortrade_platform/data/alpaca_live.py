@@ -28,7 +28,7 @@ class AlpacaLiveStream:
     """Stream live crypto bars from Alpaca and maintain a rolling buffer.
 
     On startup the stream fetches historical bars via
-    :class:`~tensortrade.data.alpaca_crypto.AlpacaCryptoData` to pre-fill
+    :class:`~tensortrade_platform.data.alpaca_crypto.AlpacaCryptoData` to pre-fill
     the observation window, then subscribes to the Alpaca
     ``CryptoDataStream`` WebSocket for real-time updates.
 
