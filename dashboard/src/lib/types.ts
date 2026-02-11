@@ -255,6 +255,7 @@ export interface TrainingConfig {
 		| "RiskAdjustedReturns"
 		| "PBR"
 		| "AdvancedPBR"
+		| "TrendPBR"
 		| "FractionalPBR"
 		| "MaxDrawdownPenalty"
 		| "AdaptiveProfitSeeker";

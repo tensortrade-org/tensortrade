@@ -13,7 +13,7 @@ import {
 import { ACTION_GROUPS, ACTION_SCHEMES, REWARD_SCHEMES, isCompatible } from "@/lib/scheme-compat";
 import type { HyperparameterPack, ModelConfig, TrainingConfig } from "@/lib/types";
 import { useHyperparamStore } from "@/stores/hyperparamStore";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 interface SectionProps {
 	title: string;
@@ -212,7 +212,11 @@ export function PackEditor() {
 	}, [setPacks]);
 
 	const normalizeConfigForSave = useCallback((cfg: TrainingConfig): TrainingConfig => {
-		if (cfg.reward_scheme !== "PBR" && cfg.reward_scheme !== "AdvancedPBR") {
+		if (
+			cfg.reward_scheme !== "PBR" &&
+			cfg.reward_scheme !== "AdvancedPBR" &&
+			cfg.reward_scheme !== "TrendPBR"
+		) {
 			return {
 				...cfg,
 				reward_params: {},
@@ -317,19 +321,19 @@ export function PackEditor() {
 		}
 	}, [pack, isNewPack, showStatus, packs, setPacks, selectPack]);
 
-	// Initialize editing pack for new pack mode
-	if (!pack && isNewPack) {
-		const newPack: HyperparameterPack = {
-			id: "",
-			name: "New Pack",
-			description: "",
-			config: { ...DEFAULT_CONFIG, model: { ...DEFAULT_CONFIG.model } },
-			created_at: new Date().toISOString(),
-			updated_at: new Date().toISOString(),
-		};
-		setEditingPack(newPack);
-		return null;
-	}
+	// Initialize editing pack for new pack mode (in effect to avoid setState during render)
+	useEffect(() => {
+		if (!editingPack && isNewPack) {
+			setEditingPack({
+				id: "",
+				name: "New Pack",
+				description: "",
+				config: { ...DEFAULT_CONFIG, model: { ...DEFAULT_CONFIG.model } },
+				created_at: new Date().toISOString(),
+				updated_at: new Date().toISOString(),
+			});
+		}
+	}, [editingPack, isNewPack, setEditingPack]);
 
 	if (!pack) {
 		return (
@@ -567,7 +571,9 @@ export function PackEditor() {
 						not compatible — use SimpleProfit or RiskAdjustedReturns.
 					</p>
 				)}
-				{(config.reward_scheme === "PBR" || config.reward_scheme === "AdvancedPBR") && (
+				{(config.reward_scheme === "PBR" ||
+					config.reward_scheme === "AdvancedPBR" ||
+					config.reward_scheme === "TrendPBR") && (
 					<div className="rounded-md border border-[var(--border-color)] bg-[var(--bg-tertiary)] p-3 mt-3 space-y-3">
 						<div className="flex items-center justify-between">
 							<p className="text-xs font-medium text-[var(--text-primary)]">

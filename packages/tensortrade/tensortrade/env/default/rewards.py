@@ -572,6 +572,258 @@ class AdvancedPBR(TensorTradeRewardScheme):
         }
 
 
+class TrendPBR(TensorTradeRewardScheme):
+    """Position-based returns with EMA trend detection.
+
+    Augments PBR with a trend component that rewards being long in uptrends
+    and penalizes being long in downtrends. Cash (position=0) is unaffected.
+
+    EMA state is tracked manually in get_reward() (not in the Stream feed)
+    so warmup(historical_prices) can pre-load EMAs before the episode starts.
+
+    Reward formula::
+
+        base_reward     = position * price_diff
+        trend_component = position * trend_strength * current_price * trend_weight
+        reward          = base_reward + trend_component - trade_penalty
+
+    Where trend_strength = tanh((fast_ema - slow_ema) / slow_ema * trend_scale),
+    bounded to [-1, 1].
+
+    Parameters
+    ----------
+    price : `Stream`
+        The price stream to use for computing rewards.
+    commission : float
+        The exchange commission rate. Default 0.003.
+    ema_fast : int
+        Fast EMA period. Default 12.
+    ema_slow : int
+        Slow EMA period. Default 26.
+    trend_weight : float
+        Price-scaled weight for trend component. Default 0.001.
+    trend_scale : float
+        Sensitivity of trend_strength to EMA crossover. Default 20.0.
+    """
+
+    registered_name = "trend-pbr"
+
+    def __init__(
+        self,
+        price: "Stream",
+        commission: float = 0.003,
+        trade_penalty_multiplier: float = 1.0,
+        churn_penalty_multiplier: float = 0.75,
+        churn_window: int = 4,
+        hold_bonus: float = 0.0,
+        reward_clip: float | None = None,
+        ema_fast: int = 12,
+        ema_slow: int = 26,
+        trend_weight: float = 0.001,
+        trend_scale: float = 20.0,
+    ) -> None:
+        super().__init__()
+        self.position = 0
+        self.commission = commission
+        self.trade_penalty_multiplier = trade_penalty_multiplier
+        self.churn_penalty_multiplier = churn_penalty_multiplier
+        self.churn_window = max(0, int(churn_window))
+        self.hold_bonus = hold_bonus
+        self.reward_clip = reward_clip
+        self.trend_weight = trend_weight
+        self.trend_scale = trend_scale
+        self._traded = False
+        self._step_count = 0
+        self._last_trade_step: int | None = None
+        self._churn_trade_count = 0
+        self._total_commission_penalty = 0.0
+        self._total_reward = 0.0
+        self.buy_count = 0
+        self.sell_count = 0
+        self.hold_count = 0
+
+        # EMA state (manual, not in feed — enables warmup)
+        self._fast_alpha = 2.0 / (ema_fast + 1)
+        self._slow_alpha = 2.0 / (ema_slow + 1)
+        self._fast_ema: float | None = None
+        self._slow_ema: float | None = None
+
+        # Trend stats (inspectable for diagnostics / logging)
+        self._last_trend_strength: float = 0.0
+        self._last_trend_component: float = 0.0
+        self._uptrend_steps = 0
+        self._downtrend_steps = 0
+        self._total_trend_reward = 0.0
+
+        # Build feed (same as PBR)
+        r = Stream.sensor(price, lambda p: p.value, dtype="float").diff()
+        position_stream = Stream.sensor(self, lambda rs: rs.position, dtype="float")
+        current_price = Stream.sensor(price, lambda p: p.value, dtype="float")
+
+        reward = (position_stream * r).fillna(0).rename("reward")
+        self.feed = DataFeed([reward, current_price.rename("current_price")])
+        self.feed.compile()
+
+    def warmup(self, historical_prices: list[float]) -> None:
+        """Pre-feed historical prices through EMAs before episode starts.
+
+        Call after reset(), before the first step().
+
+        Parameters
+        ----------
+        historical_prices : list[float]
+            Historical price bars to warm up EMAs with.
+        """
+        for price in historical_prices:
+            if self._fast_ema is None:
+                self._fast_ema = price
+                self._slow_ema = price
+            else:
+                self._fast_ema = (
+                    self._fast_alpha * price + (1 - self._fast_alpha) * self._fast_ema
+                )
+                self._slow_ema = (
+                    self._slow_alpha * price + (1 - self._slow_alpha) * self._slow_ema
+                )
+
+    def on_action(self, action: int) -> None:
+        self._traded = False
+        if action == 1:
+            if self.position == 0:
+                self._traded = True
+                self.buy_count += 1
+            self.position = 1
+        elif action == 2:
+            if self.position == 1:
+                self._traded = True
+                self.sell_count += 1
+            self.position = 0
+        else:
+            self.hold_count += 1
+
+    def get_reward(self, portfolio: "Portfolio") -> float:
+        data = self.feed.next()
+        reward = data["reward"]
+        current_price = data.get("current_price", 0)
+        self._step_count += 1
+
+        # Update EMAs
+        if current_price > 0:
+            if self._fast_ema is None:
+                self._fast_ema = current_price
+                self._slow_ema = current_price
+            else:
+                self._fast_ema = (
+                    self._fast_alpha * current_price
+                    + (1 - self._fast_alpha) * self._fast_ema
+                )
+                self._slow_ema = (
+                    self._slow_alpha * current_price
+                    + (1 - self._slow_alpha) * self._slow_ema
+                )
+
+        # Trend component
+        if self._slow_ema is not None and self._slow_ema > 0:
+            crossover = (self._fast_ema - self._slow_ema) / self._slow_ema
+            trend_strength = float(np.tanh(crossover * self.trend_scale))
+            self._last_trend_strength = trend_strength
+
+            if trend_strength > 0:
+                self._uptrend_steps += 1
+            elif trend_strength < 0:
+                self._downtrend_steps += 1
+
+            trend_component = (
+                self.position * trend_strength * current_price * self.trend_weight
+            )
+            self._last_trend_component = trend_component
+            reward += trend_component
+            self._total_trend_reward += trend_component
+        else:
+            self._last_trend_strength = 0.0
+            self._last_trend_component = 0.0
+
+        # Trade / churn penalties (same as PBR)
+        if self._traded:
+            if current_price > 0:
+                penalty = (
+                    current_price * self.commission * self.trade_penalty_multiplier
+                )
+                if (
+                    self._last_trade_step is not None
+                    and (self._step_count - self._last_trade_step) <= self.churn_window
+                ):
+                    penalty += (
+                        current_price * self.commission * self.churn_penalty_multiplier
+                    )
+                    self._churn_trade_count += 1
+                reward -= penalty
+                self._total_commission_penalty += penalty
+            self._last_trade_step = self._step_count
+        elif self.hold_bonus:
+            reward += self.hold_bonus
+
+        if self.reward_clip is not None and self.reward_clip > 0:
+            reward = float(np.clip(reward, -self.reward_clip, self.reward_clip))
+
+        self._total_reward += reward
+        return reward
+
+    def get_stats(self) -> dict:
+        """Returns trading statistics including trend metrics."""
+        trade_count = self.buy_count + self.sell_count
+        churn_ratio = (
+            (self._churn_trade_count / trade_count) if trade_count > 0 else 0.0
+        )
+        avg_penalty = (
+            (self._total_commission_penalty / trade_count) if trade_count > 0 else 0.0
+        )
+        total_trend_steps = self._uptrend_steps + self._downtrend_steps
+        avg_trend_strength = (
+            (self._total_trend_reward / total_trend_steps)
+            if total_trend_steps > 0
+            else 0.0
+        )
+        return {
+            "trade_count": trade_count,
+            "buy_count": self.buy_count,
+            "sell_count": self.sell_count,
+            "hold_count": self.hold_count,
+            "churn_trade_count": self._churn_trade_count,
+            "churn_ratio": churn_ratio,
+            "avg_penalty_per_trade": avg_penalty,
+            "total_commission_penalty": self._total_commission_penalty,
+            "cumulative_reward": self._total_reward,
+            "avg_trend_strength": avg_trend_strength,
+            "last_trend_strength": self._last_trend_strength,
+            "last_trend_component": self._last_trend_component,
+            "uptrend_steps": self._uptrend_steps,
+            "downtrend_steps": self._downtrend_steps,
+            "total_trend_reward": self._total_trend_reward,
+        }
+
+    def reset(self) -> None:
+        """Resets all state including EMA and trend stats."""
+        self.position = 0
+        self._traded = False
+        self._step_count = 0
+        self._last_trade_step = None
+        self._churn_trade_count = 0
+        self._total_commission_penalty = 0.0
+        self._total_reward = 0.0
+        self.buy_count = 0
+        self.sell_count = 0
+        self.hold_count = 0
+        self._fast_ema = None
+        self._slow_ema = None
+        self._last_trend_strength = 0.0
+        self._last_trend_component = 0.0
+        self._uptrend_steps = 0
+        self._downtrend_steps = 0
+        self._total_trend_reward = 0.0
+        self.feed.reset()
+
+
 class FractionalPBR(TensorTradeRewardScheme):
     """Position-based returns for fractional positions (0.0 to 1.0).
 
@@ -884,6 +1136,7 @@ _registry = {
     "risk-adjusted": RiskAdjustedReturns,
     "pbr": PBR,
     "advanced-pbr": AdvancedPBR,
+    "trend-pbr": TrendPBR,
     "fractional-pbr": FractionalPBR,
     "max-drawdown-penalty": MaxDrawdownPenalty,
     "adaptive-profit-seeker": AdaptiveProfitSeeker,

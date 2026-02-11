@@ -476,6 +476,12 @@ class InferenceRunner:
                 commission=commission,
                 **{**anti_churn_defaults, **reward_params},
             )
+        elif reward_name == "TrendPBR":
+            reward_scheme = tt_rewards.TrendPBR(
+                price=price,
+                commission=commission,
+                **{**anti_churn_defaults, **reward_params},
+            )
         elif reward_name == "FractionalPBR":
             reward_scheme = tt_rewards.FractionalPBR(price=price, commission=commission)
         elif reward_name == "RiskAdjustedReturns":

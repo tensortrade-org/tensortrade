@@ -78,6 +78,7 @@ export const REWARD_SCHEMES: RewardSchemeInfo[] = [
 	{ value: "RiskAdjustedReturns", label: "Risk-Adjusted Returns", requiresBshSemantics: false },
 	{ value: "PBR", label: "PBR", requiresBshSemantics: true },
 	{ value: "AdvancedPBR", label: "Advanced PBR", requiresBshSemantics: true },
+	{ value: "TrendPBR", label: "Trend PBR", requiresBshSemantics: true },
 	{ value: "FractionalPBR", label: "Fractional PBR", requiresBshSemantics: false },
 	{ value: "MaxDrawdownPenalty", label: "Max Drawdown Penalty", requiresBshSemantics: false },
 	{ value: "AdaptiveProfitSeeker", label: "Adaptive Profit Seeker", requiresBshSemantics: false },

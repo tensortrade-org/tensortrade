@@ -486,6 +486,9 @@ class TrainingLauncher:
             '    elif reward_name == "AdvancedPBR":',
             "        advanced_params = {**anti_churn_defaults, **reward_params}",
             "        reward_scheme = tt_rewards.AdvancedPBR(price=price, commission=commission, **advanced_params)",
+            '    elif reward_name == "TrendPBR":',
+            "        trend_params = {**anti_churn_defaults, **reward_params}",
+            "        reward_scheme = tt_rewards.TrendPBR(price=price, commission=commission, **trend_params)",
             '    elif reward_name == "FractionalPBR":',
             "        reward_scheme = tt_rewards.FractionalPBR(price=price, commission=commission)",
             '    elif reward_name == "RiskAdjustedReturns":',
@@ -723,7 +726,7 @@ class TrainingLauncher:
         "ManagedRiskOrders",
     }
     # Rewards that require BSH-style Discrete(3) semantics
-    _BSH_ONLY_REWARDS = {"PBR", "AdvancedPBR"}
+    _BSH_ONLY_REWARDS = {"PBR", "AdvancedPBR", "TrendPBR"}
 
     _ALL_ACTION_SCHEMES = [
         "BSH",
@@ -744,6 +747,7 @@ class TrainingLauncher:
         "RiskAdjustedReturns",
         "PBR",
         "AdvancedPBR",
+        "TrendPBR",
         "FractionalPBR",
         "MaxDrawdownPenalty",
         "AdaptiveProfitSeeker",
@@ -829,7 +833,7 @@ class TrainingLauncher:
             "",
             "# Compatibility: actions that cannot use PBR/AdvancedPBR",
             'NON_PBR_ACTIONS = {"ScaledEntryBSH", "PartialTakeProfitBSH", "SimpleOrders", "ManagedRiskOrders"}',
-            'BSH_ONLY_REWARDS = {"PBR", "AdvancedPBR"}',
+            'BSH_ONLY_REWARDS = {"PBR", "AdvancedPBR", "TrendPBR"}',
             "",
             "",
             "def compatible_rewards(action_name):",
@@ -951,6 +955,9 @@ class TrainingLauncher:
             '    elif reward_name == "AdvancedPBR":',
             "        advanced_params = {**anti_churn_defaults, **reward_params}",
             "        reward_scheme = tt_rewards.AdvancedPBR(price=price, commission=commission, **advanced_params)",
+            '    elif reward_name == "TrendPBR":',
+            "        trend_params = {**anti_churn_defaults, **reward_params}",
+            "        reward_scheme = tt_rewards.TrendPBR(price=price, commission=commission, **trend_params)",
             '    elif reward_name == "FractionalPBR":',
             "        reward_scheme = tt_rewards.FractionalPBR(price=price, commission=commission)",
             '    elif reward_name == "RiskAdjustedReturns":',
@@ -1144,7 +1151,7 @@ class TrainingLauncher:
             '        params["action_scheme"] = action_scheme_name',
             '        params["reward_scheme"] = reward_scheme_name',
             "        reward_params = {}",
-            '        if reward_scheme_name in ("PBR", "AdvancedPBR"):',
+            '        if reward_scheme_name in ("PBR", "AdvancedPBR", "TrendPBR"):',
             '            reward_params["trade_penalty_multiplier"] = sample_param(trial, "trade_penalty_multiplier")',
             '            reward_params["churn_penalty_multiplier"] = sample_param(trial, "churn_penalty_multiplier")',
             '            reward_params["churn_window"] = sample_param(trial, "churn_window")',
