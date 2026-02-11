@@ -159,6 +159,82 @@ SEED_PACKS: list[dict[str, object]] = [
             "num_iterations": 40,
         },
     },
+    {
+        "name": "Trend PBR",
+        "description": (
+            "TrendPBR reward with EMA(12,26) trend detection. "
+            "Rewards being long in uptrends, penalizes being long in downtrends. "
+            "Uses Best Known PPO params with wider network for trend learning."
+        ),
+        "config": {
+            "algorithm": "PPO",
+            "learning_rate": 3e-05,
+            "gamma": 0.993,
+            "lambda_": 0.92,
+            "clip_param": 0.15,
+            "entropy_coeff": 0.02,
+            "vf_loss_coeff": 0.5,
+            "num_sgd_iter": 8,
+            "sgd_minibatch_size": 256,
+            "train_batch_size": 4000,
+            "num_rollout_workers": 4,
+            "rollout_fragment_length": 200,
+            "model": {"fcnet_hiddens": [128, 128, 64], "fcnet_activation": "tanh"},
+            "action_scheme": "BSH",
+            "reward_scheme": "TrendPBR",
+            "reward_params": {
+                "trade_penalty_multiplier": 1.2,
+                "churn_penalty_multiplier": 1.0,
+                "churn_window": 6,
+                "reward_clip": 200.0,
+            },
+            "commission": 0.003,
+            "initial_cash": 10000,
+            "window_size": 30,
+            "max_allowed_loss": 0.35,
+            "max_episode_steps": None,
+            "num_iterations": 100,
+        },
+    },
+    {
+        "name": "Trend PBR Cautious",
+        "description": (
+            "TrendPBR with zero commission, high entropy (0.10), and strong trend signal "
+            "(weight=0.003, scale=40). Achieved positive test PnL (+$47) on a 30-day BTC "
+            "downtrend by learning to stay in cash and selectively catch upswings. "
+            "Uses compact [64,64] network for generalization."
+        ),
+        "config": {
+            "algorithm": "PPO",
+            "learning_rate": 3.29e-05,
+            "gamma": 0.992,
+            "lambda_": 0.9,
+            "clip_param": 0.123,
+            "entropy_coeff": 0.10,
+            "vf_loss_coeff": 0.5,
+            "num_sgd_iter": 7,
+            "sgd_minibatch_size": 256,
+            "train_batch_size": 2000,
+            "num_rollout_workers": 2,
+            "rollout_fragment_length": 200,
+            "model": {"fcnet_hiddens": [64, 64], "fcnet_activation": "tanh"},
+            "action_scheme": "BSH",
+            "reward_scheme": "TrendPBR",
+            "reward_params": {
+                "trade_penalty_multiplier": 1.0,
+                "churn_penalty_multiplier": 0.75,
+                "churn_window": 4,
+                "trend_weight": 0.003,
+                "trend_scale": 40.0,
+            },
+            "commission": 0.0,
+            "initial_cash": 10000,
+            "window_size": 17,
+            "max_allowed_loss": 0.32,
+            "max_episode_steps": None,
+            "num_iterations": 170,
+        },
+    },
 ]
 
 
