@@ -839,9 +839,7 @@ class TestTrendPBRDiagnostics:
         prices = [200.0 + i * 2.0 for i in range(20)]
         actions = [1, 0, 0, 0, 0]
 
-        snaps_warm, _ = _run_trend_episode(
-            prices, actions, warmup_prices=warmup_data
-        )
+        snaps_warm, _ = _run_trend_episode(prices, actions, warmup_prices=warmup_data)
         snaps_cold, _ = _run_trend_episode(prices, actions)
 
         # After buy + first hold, warmed-up version should have stronger signal
@@ -924,13 +922,24 @@ class TestTrendPBRDiagnostics:
 # ---------------------------------------------------------------------------
 
 # Path to Coinbase daily BTC CSV (shipped with repo in examples/data/)
-_BTC_CSV = Path(__file__).resolve().parents[7] / "examples" / "data" / "Coinbase_BTCUSD_d.csv"
+_BTC_CSV = (
+    Path(__file__).resolve().parents[7] / "examples" / "data" / "Coinbase_BTCUSD_d.csv"
+)
 
 
 def _load_btc_daily() -> pd.DataFrame:
     """Load Coinbase daily BTC data, sorted ascending by date."""
     df = pd.read_csv(_BTC_CSV, skiprows=1)
-    df.columns = ["date", "symbol", "open", "high", "low", "close", "volume_btc", "volume"]
+    df.columns = [
+        "date",
+        "symbol",
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume_btc",
+        "volume",
+    ]
     df["date"] = pd.to_datetime(df["date"])
     return df.sort_values("date").reset_index(drop=True)
 
@@ -1043,8 +1052,7 @@ class TestTrendPBRvsBTC:
         negative_pct = negative_count / total if total > 0 else 0
 
         assert negative_pct > 0.8, (
-            f"Nov 2018 crash: only {negative_pct:.0%} negative "
-            f"(expected >80%)"
+            f"Nov 2018 crash: only {negative_pct:.0%} negative (expected >80%)"
         )
 
     def test_q2_2019_rally_trend_positive(self):
