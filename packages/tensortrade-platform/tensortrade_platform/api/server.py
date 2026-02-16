@@ -155,6 +155,64 @@ def _get_live_trader() -> LiveTrader:
     return _live_trader
 
 
+def _build_resume_config(
+    session_row: dict,
+    experiment_store: ExperimentStore,
+) -> LiveTradingConfig:
+    """Reconstruct a :class:`LiveTradingConfig` from a persisted session row.
+
+    The session's ``config`` JSON stores checkpoint_path, feature_specs,
+    window_size, etc.  We also look up the experiment to resolve the
+    checkpoint path if it was stored relatively.
+    """
+    from tensortrade_platform.live.config import LiveTradingConfig
+
+    cfg = session_row.get("config") or {}
+    experiment_id = session_row["experiment_id"]
+
+    checkpoint_path = cfg.get("checkpoint_path", "")
+    if not checkpoint_path:
+        # Fallback: look up from experiment
+        exp = experiment_store.get_experiment(experiment_id)
+        if exp:
+            from tensortrade_platform.api.inference_runner import InferenceRunner
+
+            checkpoint_path = InferenceRunner._get_checkpoint_path(exp) or ""
+
+    return LiveTradingConfig(
+        symbol=session_row.get("symbol", "BTC/USD"),
+        timeframe=session_row.get("timeframe", "1h"),
+        paper=cfg.get("paper", True),
+        checkpoint_path=checkpoint_path,
+        experiment_id=experiment_id,
+        feature_specs=cfg.get("feature_specs", []),
+        window_size=cfg.get("window_size", 10),
+        max_position_size_usd=cfg.get("max_position_size_usd", 10_000.0),
+        max_drawdown_pct=cfg.get("max_drawdown_pct", 20.0),
+    )
+
+
+async def _auto_resume_live_session() -> None:
+    """Background task: resume any live session left running in the DB."""
+    global _live_trader
+    assert _live_store is not None
+    assert _store is not None
+
+    running = _live_store.get_running_session()
+    if not running:
+        return
+
+    session_id = running["id"]
+    try:
+        cfg = _build_resume_config(running, _store)
+        _live_trader = LiveTrader()
+        await _live_trader.resume(running, cfg, _manager)
+        logger.info("Resumed live session %s", session_id)
+    except Exception:
+        logger.exception("Failed to resume live session %s", session_id)
+        _live_store.update_session(session_id, status="error")
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     global _store, _hp_store, _ds_store, _feature_engine, _live_store, _live_trader
@@ -164,10 +222,23 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     _feature_engine = FeatureEngine()
     _live_store = LiveTradingStore()
     logger.info("TensorTrade API server started")
+
+    # Schedule auto-resume as a background task so it doesn't block startup
+    resume_task = asyncio.create_task(_auto_resume_live_session())
+
     yield
-    # Stop live trader if running
+
+    # Cancel resume task if still running
+    if not resume_task.done():
+        resume_task.cancel()
+        try:
+            await resume_task
+        except asyncio.CancelledError:
+            pass
+
+    # Pause (not stop) live trader so session stays 'running' in DB
     if _live_trader and _live_trader.is_running:
-        await _live_trader.stop()
+        await _live_trader.pause()
     # Force-shutdown Ray if any consumers leaked
     from tensortrade_platform.ray_manager import ray_manager
 
@@ -1051,11 +1122,23 @@ def _register_routes(app: FastAPI) -> None:
             raw = trader.get_status()
             state = "running" if raw.get("running") else "idle"
             position = "asset" if raw.get("position") == 1 else "cash"
+
+            # Look up experiment name so new clients can show it
+            exp_id = raw.get("experiment_id", "") or ""
+            exp_name = ""
+            if exp_id:
+                store = _get_store()
+                exp = store.get_experiment(str(exp_id))
+                if exp:
+                    exp_name = exp.name or ""
+
             await ws.send_json(
                 {
                     "type": "live_status",
                     "state": state,
                     "session_id": raw.get("session_id") or None,
+                    "experiment_id": exp_id,
+                    "experiment_name": exp_name,
                     "symbol": raw.get("symbol", ""),
                     "equity": raw.get("equity", 0),
                     "pnl": raw.get("pnl", 0),

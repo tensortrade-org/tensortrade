@@ -512,6 +512,8 @@ export interface LiveStatusMessage {
 	type: "live_status";
 	state: "idle" | "running" | "stopped" | "error";
 	session_id: string | null;
+	experiment_id: string;
+	experiment_name: string;
 	symbol: string;
 	equity: number;
 	pnl: number;

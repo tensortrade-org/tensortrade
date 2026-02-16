@@ -205,8 +205,130 @@ class LiveTrader:
         # --- Launch the main loop as a background task ---
         self._task = asyncio.create_task(self._run())
 
+    async def resume(
+        self,
+        session_row: dict,
+        config: LiveTradingConfig,
+        manager: ConnectionManager,
+    ) -> None:
+        """Resume an existing session from DB state + Alpaca account.
+
+        Parameters
+        ----------
+        session_row : dict
+            Row from ``live_sessions`` (as returned by
+            :meth:`LiveTradingStore.get_running_session`).
+        config : LiveTradingConfig
+            Reconstructed config with checkpoint path, feature specs, etc.
+        manager : ConnectionManager
+            WebSocket connection manager for broadcasting updates.
+        """
+        errors = config.validate()
+        if errors:
+            raise ValueError(f"Invalid config: {'; '.join(errors)}")
+
+        self._config = config
+        self._manager = manager
+        self._running = True
+
+        # --- Store ---
+        self._store = LiveTradingStore()
+
+        # --- Reuse existing session ID ---
+        self._session_id = session_row["id"]
+
+        # --- Restore counters from DB ---
+        self._step = session_row.get("total_bars") or 0
+        self._total_trades = session_row.get("total_trades") or 0
+        self._pnl = session_row.get("pnl") or 0.0
+        self._max_drawdown_pct = session_row.get("max_drawdown_pct") or 0.0
+        self._initial_equity = session_row.get("initial_equity") or 0.0
+
+        # --- Alpaca services ---
+        self._execution = AlpacaExecutionService(
+            config.api_key,
+            config.secret_key,
+            paper=config.is_paper,
+        )
+        self._account_sync = AccountSync(
+            config.api_key,
+            config.secret_key,
+            paper=config.is_paper,
+        )
+
+        # --- Load policy (blocking, run in executor) ---
+        loop = asyncio.get_event_loop()
+        self._policy = await loop.run_in_executor(
+            None,
+            self._load_policy,
+            config.checkpoint_path,
+        )
+
+        # --- Feature columns ---
+        if config.feature_specs:
+            self._feature_cols = self._feature_engine.get_feature_columns(
+                config.feature_specs,  # type: ignore[arg-type]
+            )
+        else:
+            self._feature_cols = []
+
+        # --- Fetch current equity and sync positions from Alpaca ---
+        snap = await loop.run_in_executor(None, self._account_sync.snapshot)
+        self._current_equity = snap.equity
+
+        for pos in snap.positions:
+            if pos.symbol.replace("/", "") == config.symbol.replace("/", ""):
+                self._position = 1
+                self._position_qty = pos.qty
+                self._entry_price = pos.avg_entry_price
+                self._account_sync.set_local_position(config.symbol, pos.qty)
+                break
+
+        # Restore peak equity from DB (or derive from current)
+        db_peak = session_row.get("peak_equity")
+        if db_peak and db_peak > 0:
+            self._peak_equity = max(db_peak, snap.equity)
+        else:
+            self._peak_equity = max(self._initial_equity, snap.equity)
+
+        # Recalculate PnL and drawdown from live Alpaca equity
+        # (the DB values may be stale if the session didn't hit a save checkpoint)
+        if self._initial_equity > 0:
+            self._pnl = snap.equity - self._initial_equity
+            if self._peak_equity > 0:
+                dd = ((self._peak_equity - snap.equity) / self._peak_equity) * 100
+                self._max_drawdown_pct = max(self._max_drawdown_pct, dd)
+
+        logger.info(
+            "Resuming session %s at step=%d trades=%d position=%d "
+            "equity=%.2f pnl=%.2f drawdown=%.2f%%",
+            self._session_id,
+            self._step,
+            self._total_trades,
+            self._position,
+            self._current_equity,
+            self._pnl,
+            self._max_drawdown_pct,
+        )
+
+        # --- Live stream ---
+        self._stream = AlpacaLiveStream(
+            symbol=config.symbol,
+            timeframe=config.timeframe,
+            api_key=config.api_key,
+            secret_key=config.secret_key,
+            buffer_size=max(config.window_size * 10, 500),
+            on_bar=self._on_bar_callback,
+        )
+
+        # --- Broadcast initial status ---
+        await self._broadcast_status("running")
+
+        # --- Launch the main loop as a background task ---
+        self._task = asyncio.create_task(self._run())
+
     async def stop(self) -> None:
-        """Gracefully stop the trading session."""
+        """Gracefully stop the trading session (user-initiated)."""
         self._running = False
 
         if self._stream is not None:
@@ -229,6 +351,7 @@ class LiveTrader:
                 total_bars=self._step,
                 pnl=self._pnl,
                 max_drawdown_pct=self._max_drawdown_pct,
+                peak_equity=self._peak_equity,
             )
 
         # Cleanup policy / Ray
@@ -243,6 +366,50 @@ class LiveTrader:
 
         await self._broadcast_status("stopped")
         logger.info("LiveTrader stopped for session %s", self._session_id)
+
+    async def pause(self) -> None:
+        """Suspend trading without finalizing the DB session.
+
+        Called during server shutdown so the session remains ``status='running'``
+        in the database and can be auto-resumed on next startup.
+        """
+        self._running = False
+
+        # Save latest state before shutting down
+        if self._store and self._session_id:
+            self._store.update_session(
+                self._session_id,
+                total_bars=self._step,
+                total_trades=self._total_trades,
+                pnl=self._pnl,
+                max_drawdown_pct=self._max_drawdown_pct,
+                peak_equity=self._peak_equity,
+            )
+
+        if self._stream is not None:
+            await self._stream.stop()
+
+        if self._task is not None and not self._task.done():
+            self._task.cancel()
+            try:
+                await self._task
+            except asyncio.CancelledError:
+                pass
+
+        # Cleanup policy / Ray
+        if self._policy is not None and hasattr(self._policy, "stop"):
+            try:
+                self._policy.stop()
+            except Exception:
+                logger.debug("Failed to stop policy cleanly", exc_info=True)
+        from tensortrade_platform.ray_manager import ray_manager
+
+        ray_manager.release("live_trading")
+
+        logger.info(
+            "LiveTrader paused for session %s (will resume on restart)",
+            self._session_id,
+        )
 
     def get_initial_bars(self) -> list[dict[str, object]]:
         """Return buffered bars as a list of LiveBar-shaped dicts."""
@@ -296,6 +463,7 @@ class LiveTrader:
         return {
             "running": self._running,
             "session_id": self._session_id,
+            "experiment_id": config.experiment_id if config else "",
             "symbol": config.symbol if config else "",
             "timeframe": config.timeframe if config else "",
             "paper": config.is_paper if config else True,
@@ -466,6 +634,7 @@ class LiveTrader:
                 total_trades=self._total_trades,
                 pnl=self._pnl,
                 max_drawdown_pct=self._max_drawdown_pct,
+                peak_equity=self._peak_equity,
             )
 
     def _build_observation(

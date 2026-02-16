@@ -738,6 +738,8 @@ export default function PaperTradingPage() {
 
 	const status = useLiveStore((s) => s.status);
 	const sessionId = useLiveStore((s) => s.sessionId);
+	const experimentId = useLiveStore((s) => s.experimentId);
+	const experimentName = useLiveStore((s) => s.experimentName);
 	const equity = useLiveStore((s) => s.equity);
 	const pnl = useLiveStore((s) => s.pnl);
 	const pnlPct = useLiveStore((s) => s.pnlPct);
@@ -771,6 +773,14 @@ export default function PaperTradingPage() {
 	} = useApi<LiveSession[]>(sessionsFetcher, []);
 
 	const isRunning = status === "running" || status === "starting";
+
+	// Sync local dropdown selection when a running session is detected
+	// (e.g. when opening the page in a new tab while a session is active)
+	useEffect(() => {
+		if (experimentId && (status === "running" || status === "starting")) {
+			setSelectedExperiment(experimentId);
+		}
+	}, [experimentId, status]);
 
 	const setError = useLiveStore((s) => s.setError);
 

@@ -32,6 +32,7 @@ class LiveSession:
     pnl: float
     max_drawdown_pct: float
     model_version: int
+    peak_equity: float | None = None
 
 
 @dataclass
@@ -74,8 +75,37 @@ class LiveTradingStore:
         self._conn.row_factory = sqlite3.Row
         self._conn.execute("PRAGMA journal_mode=WAL")
         self._conn.execute("PRAGMA foreign_keys=ON")
+        self._migrate()
+
+    def _migrate(self) -> None:
+        """Add columns introduced after the initial schema."""
+        for col, coltype in [("peak_equity", "REAL")]:
+            try:
+                self._conn.execute(
+                    f"ALTER TABLE live_sessions ADD COLUMN {col} {coltype}"
+                )
+                self._conn.commit()
+            except sqlite3.OperationalError:
+                pass  # column already exists
 
     # --- Session CRUD ---
+
+    def get_running_session(self) -> dict | None:
+        """Return the most recent session with status='running', or None.
+
+        The returned dict includes the parsed ``config`` JSON and all
+        columns from ``live_sessions``.
+        """
+        row = self._conn.execute(
+            """SELECT * FROM live_sessions
+               WHERE status = 'running'
+               ORDER BY started_at DESC LIMIT 1""",
+        ).fetchone()
+        if row is None:
+            return None
+        d = dict(row)
+        d["config"] = json.loads(d.get("config") or "{}")
+        return d
 
     def create_session(
         self,
@@ -118,6 +148,7 @@ class LiveTradingStore:
         total_bars: int | None = None,
         pnl: float | None = None,
         max_drawdown_pct: float | None = None,
+        peak_equity: float | None = None,
     ) -> None:
         """Update fields on a live session. Only non-None values are written."""
         updates: list[str] = []
@@ -143,6 +174,9 @@ class LiveTradingStore:
         if max_drawdown_pct is not None:
             updates.append("max_drawdown_pct = ?")
             params.append(max_drawdown_pct)
+        if peak_equity is not None:
+            updates.append("peak_equity = ?")
+            params.append(peak_equity)
         if not updates:
             return
         params.append(session_id)
@@ -287,6 +321,11 @@ class LiveTradingStore:
 
     @staticmethod
     def _row_to_session(row: sqlite3.Row) -> LiveSession:
+        peak = None
+        try:
+            peak = row["peak_equity"]
+        except (IndexError, KeyError):
+            pass
         return LiveSession(
             id=row["id"],
             experiment_id=row["experiment_id"],
@@ -303,6 +342,7 @@ class LiveTradingStore:
             pnl=row["pnl"],
             max_drawdown_pct=row["max_drawdown_pct"],
             model_version=row["model_version"],
+            peak_equity=peak,
         )
 
     @staticmethod

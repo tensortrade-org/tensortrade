@@ -19,6 +19,8 @@ interface PortfolioSnapshot {
 interface LiveStore {
 	status: LiveState;
 	sessionId: string | null;
+	experimentId: string;
+	experimentName: string;
 	symbol: string;
 	equity: number;
 	pnl: number;
@@ -50,6 +52,8 @@ const initialState: Pick<
 	LiveStore,
 	| "status"
 	| "sessionId"
+	| "experimentId"
+	| "experimentName"
 	| "symbol"
 	| "equity"
 	| "pnl"
@@ -67,6 +71,8 @@ const initialState: Pick<
 > = {
 	status: "idle",
 	sessionId: null,
+	experimentId: "",
+	experimentName: "",
 	symbol: "",
 	equity: 0,
 	pnl: 0,
@@ -92,6 +98,8 @@ export const useLiveStore = create<LiveStore>((set) => ({
 		set({
 			status: msg.state,
 			sessionId: msg.session_id,
+			experimentId: msg.experiment_id || "",
+			experimentName: msg.experiment_name || "",
 			symbol: msg.symbol,
 			equity: msg.equity,
 			pnl: msg.pnl,
