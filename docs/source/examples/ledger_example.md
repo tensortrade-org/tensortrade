@@ -12,7 +12,7 @@
 import tensortrade.env.default as default
 
 from tensortrade.feed.core import Stream, DataFeed
-from tensortrade.data.cdd import CryptoDataDownload
+from tensortrade_platform.data.cdd import CryptoDataDownload
 from tensortrade.oms.wallets import Portfolio, Wallet
 from tensortrade.oms.exchanges import Exchange
 from tensortrade.oms.services.execution.simulated import execute_order
@@ -21,7 +21,7 @@ from tensortrade.oms.instruments import USD, BTC, ETH, LTC
 
 <br>**Load Data for Exchanges**<br>
 
-Using the `tensortrade.data.cdd` module you can load data from any `csv` file provided at:
+Using the `tensortrade_platform.data.cdd` module you can load data from any `csv` file provided at:
 - https://www.cryptodatadownload.com/data/northamerican/
 
 using the `CryptoDataDownload` class.

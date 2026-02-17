@@ -1,0 +1,37 @@
+line-length = 88
+indent-width = 4
+target-version = "py312"
+
+[lint]
+select = [
+    "E",      # pycodestyle errors
+    "W",      # pycodestyle warnings
+    "F",      # pyflakes
+    "I",      # isort
+    "B",      # flake8-bugbear
+    "UP",     # pyupgrade
+]
+ignore = [
+    "E501",   # line too long (handled by formatter)
+    "B008",   # do not perform function calls in argument defaults
+    "B905",   # zip without strict= (Python 3.10+)
+    "F403",   # star imports
+    "F405",   # may be undefined from star import
+    "F821",   # undefined name (often forward references)
+    "B006",   # mutable argument default
+    "B024",   # abstract base class without abstract methods
+    "B027",   # empty method without abstract decorator
+    "UP046",  # non-PEP695 generic class (Python 3.12+ syntax)
+]
+
+[lint.per-file-ignores]
+"__init__.py" = ["F401", "F403", "E402", "I001"]
+
+[lint.isort]
+known-first-party = ["tensortrade", "tensortrade_platform"]
+
+[format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"

@@ -15,6 +15,10 @@ build/
 .vscode/
 *.sublime-*
 tags
+.venv
+
+dashboard/.next
+dashboard/node_modules
 
 # OS
 .DS_Store
@@ -34,7 +38,14 @@ htmlcov/
 # Virtual environments
 venv/
 tensortrade-env/
+.env
 .env/
+
+.claude-octopus/
+
+# Dev server runtime
+.dev-pids/
+.dev-logs/
 
 # Training artifacts
 ray_results/

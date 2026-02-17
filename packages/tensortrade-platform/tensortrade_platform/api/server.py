@@ -1,0 +1,1240 @@
+"""
+FastAPI server for the TensorTrade training dashboard.
+
+Provides REST endpoints for experiment data and WebSocket
+endpoints for real-time training data streaming.
+"""
+
+from __future__ import annotations
+
+import asyncio
+import json
+import logging
+import os
+from collections.abc import AsyncGenerator
+from contextlib import asynccontextmanager
+from dataclasses import asdict
+
+from fastapi import FastAPI, Query, WebSocket, WebSocketDisconnect
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
+
+from tensortrade_platform.live.store import LiveTradingStore
+from tensortrade_platform.live.trader import LiveTrader
+from tensortrade_platform.training.dataset_store import DatasetStore
+from tensortrade_platform.training.experiment_store import ExperimentStore
+from tensortrade_platform.training.feature_engine import FeatureEngine
+from tensortrade_platform.training.hyperparameter_store import HyperparameterStore
+from tensortrade_platform.training.launcher import TrainingLauncher
+
+logger = logging.getLogger(__name__)
+
+
+class ConnectionManager:
+    """Manages WebSocket connections for dashboard clients and training producers."""
+
+    def __init__(self) -> None:
+        self.dashboard_clients: list[WebSocket] = []
+        self.training_producers: list[WebSocket] = []
+        self._is_training = False
+        self._is_paused = False
+        self._current_experiment_id: str | None = None
+        self._current_iteration = 0
+        self._is_campaign = False
+        self._campaign_name: str | None = None
+
+    async def connect_dashboard(self, ws: WebSocket) -> None:
+        await ws.accept()
+        self.dashboard_clients.append(ws)
+
+    async def connect_training(self, ws: WebSocket) -> None:
+        await ws.accept()
+        self.training_producers.append(ws)
+        self._is_training = True
+
+    def disconnect_dashboard(self, ws: WebSocket) -> None:
+        if ws in self.dashboard_clients:
+            self.dashboard_clients.remove(ws)
+
+    def disconnect_training(self, ws: WebSocket) -> None:
+        if ws in self.training_producers:
+            self.training_producers.remove(ws)
+        if not self.training_producers:
+            self._is_training = False
+
+    async def broadcast_to_dashboards(self, message: dict) -> None:
+        """Send a message to all connected dashboard clients."""
+        disconnected: list[WebSocket] = []
+        for client in self.dashboard_clients:
+            try:
+                await client.send_json(message)
+            except (WebSocketDisconnect, RuntimeError):
+                disconnected.append(client)
+        for client in disconnected:
+            self.disconnect_dashboard(client)
+
+    async def send_control_to_training(self, command: str) -> None:
+        """Send a control command to all training producers."""
+        for producer in self.training_producers:
+            try:
+                await producer.send_json({"command": command})
+            except (WebSocketDisconnect, RuntimeError):
+                pass
+
+    def get_status(self) -> dict:
+        return {
+            "type": "status",
+            "is_training": self._is_training,
+            "is_paused": self._is_paused,
+            "experiment_id": self._current_experiment_id,
+            "current_iteration": self._current_iteration,
+            "dashboard_clients": len(self.dashboard_clients),
+            "training_producers": len(self.training_producers),
+            "is_campaign": self._is_campaign,
+            "campaign_name": self._campaign_name,
+        }
+
+
+# Module-level state
+_manager = ConnectionManager()
+_store: ExperimentStore | None = None
+_hp_store: HyperparameterStore | None = None
+_ds_store: DatasetStore | None = None
+_launcher: TrainingLauncher | None = None
+_feature_engine: FeatureEngine | None = None
+_live_store: LiveTradingStore | None = None
+_live_trader: LiveTrader | None = None
+
+
+def _get_store() -> ExperimentStore:
+    global _store
+    if _store is None:
+        _store = ExperimentStore()
+    return _store
+
+
+def _get_hp_store() -> HyperparameterStore:
+    global _hp_store
+    if _hp_store is None:
+        _hp_store = HyperparameterStore()
+    return _hp_store
+
+
+def _get_ds_store() -> DatasetStore:
+    global _ds_store
+    if _ds_store is None:
+        _ds_store = DatasetStore()
+    return _ds_store
+
+
+def _get_launcher() -> TrainingLauncher:
+    global _launcher
+    if _launcher is None:
+        _launcher = TrainingLauncher(_get_store(), _get_hp_store(), _get_ds_store())
+    return _launcher
+
+
+def _get_feature_engine() -> FeatureEngine:
+    global _feature_engine
+    if _feature_engine is None:
+        _feature_engine = FeatureEngine()
+    return _feature_engine
+
+
+def _get_live_store() -> LiveTradingStore:
+    global _live_store
+    if _live_store is None:
+        _live_store = LiveTradingStore()
+    return _live_store
+
+
+def _get_live_trader() -> LiveTrader:
+    global _live_trader
+    if _live_trader is None:
+        _live_trader = LiveTrader()
+    return _live_trader
+
+
+def _build_resume_config(
+    session_row: dict,
+    experiment_store: ExperimentStore,
+) -> LiveTradingConfig:
+    """Reconstruct a :class:`LiveTradingConfig` from a persisted session row.
+
+    The session's ``config`` JSON stores checkpoint_path, feature_specs,
+    window_size, etc.  We also look up the experiment to resolve the
+    checkpoint path if it was stored relatively.
+    """
+    from tensortrade_platform.live.config import LiveTradingConfig
+
+    cfg = session_row.get("config") or {}
+    experiment_id = session_row["experiment_id"]
+
+    checkpoint_path = cfg.get("checkpoint_path", "")
+    if not checkpoint_path:
+        # Fallback: look up from experiment
+        exp = experiment_store.get_experiment(experiment_id)
+        if exp:
+            from tensortrade_platform.api.inference_runner import InferenceRunner
+
+            checkpoint_path = InferenceRunner._get_checkpoint_path(exp) or ""
+
+    return LiveTradingConfig(
+        symbol=session_row.get("symbol", "BTC/USD"),
+        timeframe=session_row.get("timeframe", "1h"),
+        paper=cfg.get("paper", True),
+        checkpoint_path=checkpoint_path,
+        experiment_id=experiment_id,
+        feature_specs=cfg.get("feature_specs", []),
+        window_size=cfg.get("window_size", 10),
+        max_position_size_usd=cfg.get("max_position_size_usd", 10_000.0),
+        max_drawdown_pct=cfg.get("max_drawdown_pct", 20.0),
+    )
+
+
+async def _auto_resume_live_session() -> None:
+    """Background task: resume any live session left running in the DB."""
+    global _live_trader
+    assert _live_store is not None
+    assert _store is not None
+
+    running = _live_store.get_running_session()
+    if not running:
+        return
+
+    session_id = running["id"]
+    try:
+        cfg = _build_resume_config(running, _store)
+        _live_trader = LiveTrader()
+        await _live_trader.resume(running, cfg, _manager)
+        logger.info("Resumed live session %s", session_id)
+    except Exception:
+        logger.exception("Failed to resume live session %s", session_id)
+        _live_store.update_session(session_id, status="error")
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+    global _store, _hp_store, _ds_store, _feature_engine, _live_store, _live_trader
+    _store = ExperimentStore()
+    _hp_store = HyperparameterStore()
+    _ds_store = DatasetStore()
+    _feature_engine = FeatureEngine()
+    _live_store = LiveTradingStore()
+    logger.info("TensorTrade API server started")
+
+    # Schedule auto-resume as a background task so it doesn't block startup
+    resume_task = asyncio.create_task(_auto_resume_live_session())
+
+    yield
+
+    # Cancel resume task if still running
+    if not resume_task.done():
+        resume_task.cancel()
+        try:
+            await resume_task
+        except asyncio.CancelledError:
+            pass
+
+    # Pause (not stop) live trader so session stays 'running' in DB
+    if _live_trader and _live_trader.is_running:
+        await _live_trader.pause()
+    # Force-shutdown Ray if any consumers leaked
+    from tensortrade_platform.ray_manager import ray_manager
+
+    ray_manager.force_shutdown()
+    if _live_store:
+        _live_store.close()
+    if _store:
+        _store.close()
+    if _hp_store:
+        _hp_store.close()
+    if _ds_store:
+        _ds_store.close()
+    logger.info("TensorTrade API server stopped")
+
+
+def create_app() -> FastAPI:
+    """Create and configure the FastAPI application."""
+    app = FastAPI(
+        title="TensorTrade Dashboard API",
+        version="1.0.0",
+        lifespan=lifespan,
+    )
+
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
+    _register_routes(app)
+    return app
+
+
+def _register_routes(app: FastAPI) -> None:
+    """Register all REST and WebSocket routes."""
+
+    # --- REST: Experiments ---
+
+    @app.get("/api/experiments")
+    async def list_experiments(
+        script: str | None = None,
+        status: str | None = None,
+        limit: int = Query(default=100, le=500),
+        offset: int = Query(default=0, ge=0),
+    ) -> list[dict]:
+        store = _get_store()
+        experiments = store.list_experiments(
+            script=script, status=status, limit=limit, offset=offset
+        )
+        return [asdict(e) for e in experiments]
+
+    @app.get("/api/experiments/{experiment_id}")
+    async def get_experiment(experiment_id: str) -> dict:
+        store = _get_store()
+        exp = store.get_experiment(experiment_id)
+        if not exp:
+            return {"error": "not found"}
+        iterations = store.get_iterations(experiment_id)
+        return {
+            "experiment": asdict(exp),
+            "iterations": [asdict(it) for it in iterations],
+        }
+
+    @app.get("/api/experiments/{experiment_id}/trades")
+    async def get_experiment_trades(
+        experiment_id: str,
+        episode: int | None = None,
+        limit: int = Query(default=1000, le=5000),
+        offset: int = Query(default=0, ge=0),
+    ) -> list[dict]:
+        store = _get_store()
+        trades = store.get_trades(
+            experiment_id, episode=episode, limit=limit, offset=offset
+        )
+        return [asdict(t) for t in trades]
+
+    # --- REST: Leaderboard ---
+
+    @app.get("/api/leaderboard")
+    async def get_leaderboard(
+        metric: str = Query(default="pnl"),
+        script: str | None = None,
+        limit: int = Query(default=50, le=200),
+    ) -> list[dict]:
+        store = _get_store()
+        entries = store.get_leaderboard(metric=metric, script=script, limit=limit)
+        return [asdict(e) for e in entries]
+
+    # --- REST: Optuna ---
+
+    @app.get("/api/optuna/studies")
+    async def list_optuna_studies() -> list[dict]:
+        store = _get_store()
+        return store.get_optuna_studies()
+
+    @app.get("/api/optuna/studies/{name}")
+    async def get_optuna_study(name: str) -> dict:
+        store = _get_store()
+        trials = store.get_optuna_trials(name)
+        return {
+            "study_name": name,
+            "trials": [asdict(t) for t in trials],
+            "total": len(trials),
+            "completed": sum(1 for t in trials if t.state == "complete"),
+            "pruned": sum(1 for t in trials if t.state == "pruned"),
+        }
+
+    @app.get("/api/optuna/studies/{name}/importance")
+    async def get_param_importance(name: str) -> dict:
+        """Get parameter importance (requires optuna study object).
+
+        Falls back to trial-based heuristic if study not available.
+        """
+        store = _get_store()
+        trials = store.get_optuna_trials(name)
+        if not trials:
+            return {"error": "No trials found"}
+
+        # Compute simple variance-based importance from stored trials
+        complete_trials = [
+            t for t in trials if t.state == "complete" and t.value is not None
+        ]
+        if len(complete_trials) < 3:
+            return {"importance": {}, "note": "Need at least 3 complete trials"}
+
+        param_keys = set()
+        for t in complete_trials:
+            param_keys.update(t.params.keys())
+
+        importance: dict[str, float] = {}
+        for key in param_keys:
+            values = []
+            objectives = []
+            for t in complete_trials:
+                if key in t.params:
+                    val = t.params[key]
+                    if isinstance(val, (int, float)):
+                        values.append(float(val))
+                        objectives.append(float(t.value))  # type: ignore[arg-type]
+
+            if len(values) >= 3:
+                # Correlation-based importance
+                corr = abs(_correlation(values, objectives))
+                importance[key] = round(corr, 4)
+
+        # Normalize
+        total = sum(importance.values()) or 1.0
+        importance = {k: round(v / total, 4) for k, v in importance.items()}
+        return {"importance": dict(sorted(importance.items(), key=lambda x: -x[1]))}
+
+    @app.get("/api/optuna/studies/{name}/curves")
+    async def get_study_curves(name: str) -> dict:
+        """Get all trials for a study with per-iteration training curves."""
+        store = _get_store()
+        trials = store.get_study_trial_curves(name)
+        return {"study_name": name, "trials": trials}
+
+    # --- REST: Inference ---
+
+    @app.post("/api/inference/run")
+    async def run_inference(body: dict) -> dict:
+        """Start an inference episode in the background."""
+        from tensortrade_platform.api.inference_runner import InferenceRunner
+
+        experiment_id = body.get("experiment_id")
+        dataset_id = body.get("dataset_id")
+        start_date = body.get("start_date")
+        end_date = body.get("end_date")
+        test_only = body.get("test_only", False)
+        if not experiment_id:
+            return {"error": "experiment_id is required"}
+
+        store = _get_store()
+        ds_store = _get_ds_store()
+        runner = InferenceRunner(store, _manager, ds_store)
+        asyncio.create_task(
+            runner.run_episode(
+                experiment_id, dataset_id, start_date, end_date, test_only
+            )
+        )
+        return {"status": "started"}
+
+    # --- REST: Insights ---
+
+    @app.post("/api/insights/analyze")
+    async def analyze(body: dict) -> dict:
+        store = _get_store()
+        api_key = os.environ.get("ANTHROPIC_API_KEY")
+        if not api_key:
+            return {"error": "ANTHROPIC_API_KEY not set"}
+
+        from tensortrade_platform.api.insights import InsightsEngine
+
+        engine = InsightsEngine(store, api_key)
+        analysis_type = body.get("analysis_type", "experiment")
+        experiment_ids = body.get("experiment_ids", [])
+        experiment_id = (
+            experiment_ids[0] if experiment_ids else body.get("experiment_id")
+        )
+        custom_prompt = body.get("prompt")
+
+        try:
+            if analysis_type == "experiment":
+                if not experiment_id:
+                    return {"error": "experiment_ids required for experiment analysis"}
+                report = await engine.analyze_experiment(
+                    experiment_id, custom_prompt=custom_prompt
+                )
+            elif analysis_type == "comparison":
+                if len(experiment_ids) < 2:
+                    return {
+                        "error": "At least 2 experiment_ids required for comparison"
+                    }
+                report = await engine.compare_experiments(
+                    experiment_ids, custom_prompt=custom_prompt
+                )
+            elif analysis_type == "strategy":
+                study_name = body.get("study_name")
+                if not study_name:
+                    return {"error": "study_name required for strategy analysis"}
+                report = await engine.suggest_next_strategy(
+                    study_name, custom_prompt=custom_prompt
+                )
+            elif analysis_type == "campaign_analysis":
+                study_name = body.get("study_name")
+                if not study_name:
+                    return {"error": "study_name required for campaign analysis"}
+                report = await engine.analyze_campaign(
+                    study_name, custom_prompt=custom_prompt
+                )
+            elif analysis_type == "trades":
+                if not experiment_id:
+                    return {"error": "experiment_ids required for trade analysis"}
+                report = await engine.analyze_trades(
+                    experiment_id, custom_prompt=custom_prompt
+                )
+            else:
+                return {"error": f"Unknown analysis type: {analysis_type}"}
+
+            return asdict(report)
+        except Exception as e:
+            return {"error": str(e)}
+
+    @app.post("/api/insights/analyze/stream")
+    async def analyze_stream(body: dict) -> StreamingResponse:
+        store = _get_store()
+        api_key = os.environ.get("ANTHROPIC_API_KEY")
+        if not api_key:
+
+            async def _error_gen() -> AsyncGenerator[str, None]:
+                yield f"event: error\ndata: {json.dumps({'error': 'ANTHROPIC_API_KEY not set'})}\n\n"
+
+            return StreamingResponse(
+                _error_gen(),
+                media_type="text/event-stream",
+                headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+            )
+
+        analysis_type = body.get("analysis_type", "experiment")
+        if analysis_type != "campaign_analysis":
+
+            async def _unsupported_gen() -> AsyncGenerator[str, None]:
+                yield f"event: error\ndata: {json.dumps({'error': f'Streaming not supported for type: {analysis_type}'})}\n\n"
+
+            return StreamingResponse(
+                _unsupported_gen(),
+                media_type="text/event-stream",
+                headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+            )
+
+        study_name = body.get("study_name")
+        if not study_name:
+
+            async def _missing_gen() -> AsyncGenerator[str, None]:
+                yield f"event: error\ndata: {json.dumps({'error': 'study_name required for campaign analysis'})}\n\n"
+
+            return StreamingResponse(
+                _missing_gen(),
+                media_type="text/event-stream",
+                headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+            )
+
+        from tensortrade_platform.api.insights import InsightsEngine
+
+        engine = InsightsEngine(store, api_key)
+        custom_prompt = body.get("prompt")
+        return StreamingResponse(
+            engine.stream_campaign_analysis(study_name, custom_prompt=custom_prompt),
+            media_type="text/event-stream",
+            headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+        )
+
+    @app.post("/api/insights/generate-pack")
+    async def generate_pack(body: dict) -> dict:
+        store = _get_store()
+        hp_store = _get_hp_store()
+        api_key = os.environ.get("ANTHROPIC_API_KEY")
+        if not api_key:
+            return {"error": "ANTHROPIC_API_KEY not set"}
+
+        experiment_id = body.get("experiment_id")
+        insight_id = body.get("insight_id")
+        if not experiment_id or not insight_id:
+            return {"error": "experiment_id and insight_id are required"}
+
+        from tensortrade_platform.api.insights import InsightsEngine
+
+        engine = InsightsEngine(store, api_key)
+        try:
+            pack_data = await engine.generate_hp_pack(
+                experiment_id,
+                insight_id,
+                user_guidance=body.get("prompt"),
+            )
+            pack_id = hp_store.create_pack(
+                name=pack_data["name"],
+                description=pack_data["description"],
+                config=pack_data["config"],
+            )
+            pack = hp_store.get_pack(pack_id)
+            if not pack:
+                return {"error": "Failed to create pack"}
+            return asdict(pack)
+        except Exception as e:
+            return {"error": str(e)}
+
+    @app.get("/api/insights/study/{study_name}")
+    async def get_study_insight(study_name: str) -> dict:
+        store = _get_store()
+        insight = store.get_latest_insight_for_study(study_name)
+        if not insight:
+            return {"error": "not found"}
+        return insight
+
+    @app.get("/api/insights/{insight_id}")
+    async def get_insight(insight_id: str) -> dict:
+        store = _get_store()
+        insight = store.get_insight(insight_id)
+        if not insight:
+            return {"error": "not found"}
+        return insight
+
+    @app.get("/api/insights")
+    async def list_insights(limit: int = Query(default=50, le=200)) -> list[dict]:
+        store = _get_store()
+        return store.list_insights(limit=limit)
+
+    # --- REST: Trades ---
+
+    @app.get("/api/trades")
+    async def list_all_trades(
+        experiment_id: str | None = None,
+        side: str | None = None,
+        limit: int = Query(default=1000, le=5000),
+        offset: int = Query(default=0, ge=0),
+    ) -> list[dict]:
+        store = _get_store()
+        return store.get_all_trades(
+            limit=limit, offset=offset, experiment_id=experiment_id, side=side
+        )
+
+    # --- REST: Hyperparameter Packs ---
+
+    @app.get("/api/packs")
+    async def list_packs() -> list[dict]:
+        hp_store = _get_hp_store()
+        packs = hp_store.list_packs()
+        return [asdict(p) for p in packs]
+
+    @app.get("/api/packs/{pack_id}")
+    async def get_pack(pack_id: str) -> dict:
+        hp_store = _get_hp_store()
+        pack = hp_store.get_pack(pack_id)
+        if not pack:
+            return {"error": "not found"}
+        return asdict(pack)
+
+    @app.post("/api/packs")
+    async def create_pack(body: dict) -> dict:
+        hp_store = _get_hp_store()
+        name = body.get("name", "")
+        if not name:
+            return {"error": "name is required"}
+        try:
+            pack_id = hp_store.create_pack(
+                name=name,
+                description=body.get("description", ""),
+                config=body.get("config"),
+            )
+            pack = hp_store.get_pack(pack_id)
+            return asdict(pack) if pack else {"error": "creation failed"}
+        except Exception as e:
+            return {"error": str(e)}
+
+    @app.put("/api/packs/{pack_id}")
+    async def update_pack(pack_id: str, body: dict) -> dict:
+        hp_store = _get_hp_store()
+        updated = hp_store.update_pack(
+            pack_id,
+            name=body.get("name"),
+            description=body.get("description"),
+            config=body.get("config"),
+        )
+        if not updated:
+            return {"error": "not found"}
+        pack = hp_store.get_pack(pack_id)
+        return asdict(pack) if pack else {"error": "not found"}
+
+    @app.delete("/api/packs/{pack_id}")
+    async def delete_pack(pack_id: str) -> dict:
+        hp_store = _get_hp_store()
+        deleted = hp_store.delete_pack(pack_id)
+        if not deleted:
+            return {"error": "not found"}
+        return {"status": "deleted"}
+
+    @app.post("/api/packs/{pack_id}/duplicate")
+    async def duplicate_pack(pack_id: str) -> dict:
+        hp_store = _get_hp_store()
+        try:
+            new_id = hp_store.duplicate_pack(pack_id)
+            pack = hp_store.get_pack(new_id)
+            return asdict(pack) if pack else {"error": "duplication failed"}
+        except ValueError as e:
+            return {"error": str(e)}
+
+    # --- REST: Datasets ---
+
+    @app.get("/api/datasets")
+    async def list_datasets() -> list[dict]:
+        ds_store = _get_ds_store()
+        datasets = ds_store.list_configs()
+        return [asdict(d) for d in datasets]
+
+    @app.get("/api/datasets/features")
+    async def list_feature_types() -> list[dict]:
+        engine = _get_feature_engine()
+        return engine.list_available()
+
+    @app.get("/api/datasets/{dataset_id}")
+    async def get_dataset(dataset_id: str) -> dict:
+        ds_store = _get_ds_store()
+        ds = ds_store.get_config(dataset_id)
+        if not ds:
+            return {"error": "not found"}
+        return asdict(ds)
+
+    @app.post("/api/datasets")
+    async def create_dataset(body: dict) -> dict:
+        ds_store = _get_ds_store()
+        name = body.get("name", "")
+        if not name:
+            return {"error": "name is required"}
+        try:
+            ds_id = ds_store.create_config(
+                name=name,
+                description=body.get("description", ""),
+                source_type=body.get("source_type", "csv_upload"),
+                source_config=body.get("source_config"),
+                features=body.get("features"),
+                split_config=body.get("split_config"),
+            )
+            ds = ds_store.get_config(ds_id)
+            return asdict(ds) if ds else {"error": "creation failed"}
+        except Exception as e:
+            return {"error": str(e)}
+
+    @app.put("/api/datasets/{dataset_id}")
+    async def update_dataset(dataset_id: str, body: dict) -> dict:
+        ds_store = _get_ds_store()
+        updated = ds_store.update_config(
+            dataset_id,
+            name=body.get("name"),
+            description=body.get("description"),
+            source_type=body.get("source_type"),
+            source_config=body.get("source_config"),
+            features=body.get("features"),
+            split_config=body.get("split_config"),
+        )
+        if not updated:
+            return {"error": "not found"}
+        ds = ds_store.get_config(dataset_id)
+        return asdict(ds) if ds else {"error": "not found"}
+
+    @app.delete("/api/datasets/{dataset_id}")
+    async def delete_dataset(dataset_id: str) -> dict:
+        ds_store = _get_ds_store()
+        deleted = ds_store.delete_config(dataset_id)
+        if not deleted:
+            return {"error": "not found"}
+        return {"status": "deleted"}
+
+    @app.get("/api/datasets/{dataset_id}/preview")
+    async def preview_dataset(dataset_id: str) -> dict:
+        ds_store = _get_ds_store()
+        ds = ds_store.get_config(dataset_id)
+        if not ds:
+            return {"error": "not found"}
+
+        engine = _get_feature_engine()
+        try:
+            # Load sample data based on source type
+            if ds.source_type == "crypto_download":
+                from tensortrade_platform.data.cdd import CryptoDataDownload
+
+                cdd = CryptoDataDownload()
+                data = cdd.fetch(
+                    ds.source_config.get("exchange", "Bitfinex"),
+                    ds.source_config.get("base", "BTC"),
+                    ds.source_config.get("quote", "USD"),
+                    ds.source_config.get("timeframe", "1h"),
+                )
+                data = data[["date", "open", "high", "low", "close", "volume"]]
+            elif ds.source_type == "alpaca_crypto":
+                from tensortrade_platform.data.alpaca_crypto import AlpacaCryptoData
+
+                alpaca = AlpacaCryptoData()
+                data = alpaca.fetch(
+                    symbol=ds.source_config.get("symbol", "BTC/USD"),
+                    timeframe=ds.source_config.get("timeframe", "1h"),
+                    start_date=ds.source_config.get("start_date", ""),
+                    end_date=ds.source_config.get("end_date", ""),
+                )
+            elif ds.source_type == "synthetic":
+                from tensortrade.stochastic.processes.gbm import gbm
+
+                data = gbm(
+                    base_price=ds.source_config.get("base_price", 50000),
+                    base_volume=ds.source_config.get("base_volume", 1000),
+                    start_date="2020-01-01",
+                    times_to_generate=min(
+                        ds.source_config.get("num_candles", 5000), 5000
+                    ),
+                    time_frame=ds.source_config.get("timeframe", "1h"),
+                )
+            else:
+                return {
+                    "error": f"Preview not supported for source_type: {ds.source_type}"
+                }
+
+            preview = engine.preview(data, ds.features, sample_rows=100)
+
+            # Add OHLCV sample and date range
+            ohlcv_cols = ["date", "open", "high", "low", "close", "volume"]
+            available = [c for c in ohlcv_cols if c in data.columns]
+            ohlcv_sample = data[available].tail(100).to_dict(orient="records")
+
+            date_range = {}
+            if "date" in data.columns:
+                date_range = {
+                    "start": str(data["date"].iloc[0]),
+                    "end": str(data["date"].iloc[-1]),
+                }
+
+            return {
+                "rows": preview["rows"],
+                "columns": list(data.columns),
+                "date_range": date_range,
+                "ohlcv_sample": ohlcv_sample,
+                "feature_stats": preview["stats"],
+            }
+        except Exception as e:
+            return {"error": str(e)}
+
+    # --- REST: Training Launcher ---
+
+    @app.post("/api/training/launch")
+    async def launch_training(body: dict) -> dict:
+        launcher = _get_launcher()
+        name = body.get("name", "")
+        hp_pack_id = body.get("hp_pack_id", "")
+        dataset_id = body.get("dataset_id", "")
+        if not name or not hp_pack_id or not dataset_id:
+            return {"error": "name, hp_pack_id, and dataset_id are required"}
+        try:
+            experiment_id = launcher.launch(
+                name=name,
+                hp_pack_id=hp_pack_id,
+                dataset_id=dataset_id,
+                tags=body.get("tags", []),
+                overrides=body.get("overrides"),
+            )
+            return {"experiment_id": experiment_id, "status": "launched"}
+        except ValueError as e:
+            return {"error": str(e)}
+
+    @app.get("/api/training/running")
+    async def list_running() -> list[dict]:
+        launcher = _get_launcher()
+        return launcher.list_running()
+
+    @app.post("/api/training/{experiment_id}/cancel")
+    async def cancel_training(experiment_id: str) -> dict:
+        launcher = _get_launcher()
+        cancelled = launcher.cancel(experiment_id)
+        if not cancelled:
+            return {"error": "not found or not running"}
+        return {"status": "cancelled"}
+
+    # --- REST: Campaign (Live Optuna) ---
+
+    @app.post("/api/campaign/launch")
+    async def launch_campaign(body: dict) -> dict:
+        launcher = _get_launcher()
+        study_name = body.get("study_name", "")
+        dataset_id = body.get("dataset_id", "")
+        if not study_name or not dataset_id:
+            return {"error": "study_name and dataset_id are required"}
+        try:
+            campaign_id = launcher.launch_campaign(
+                study_name=study_name,
+                dataset_id=dataset_id,
+                n_trials=body.get("n_trials", 50),
+                iterations_per_trial=body.get("iterations_per_trial", 40),
+                action_schemes=body.get("action_schemes"),
+                reward_schemes=body.get("reward_schemes"),
+                search_space=body.get("search_space"),
+            )
+            return {"study_name": campaign_id, "status": "launched"}
+        except (ValueError, RuntimeError) as e:
+            return {"error": str(e)}
+
+    @app.get("/api/campaign/running")
+    async def get_running_campaign() -> dict:
+        if _manager._is_campaign and _manager._campaign_name:
+            return {
+                "study_name": _manager._campaign_name,
+                "is_active": True,
+            }
+        return {"is_active": False}
+
+    # --- REST: Dashboard Stats ---
+
+    @app.get("/api/stats")
+    async def get_dashboard_stats() -> dict:
+        store = _get_store()
+        return store.get_dashboard_stats()
+
+    # --- REST: Status ---
+
+    @app.get("/api/status")
+    async def get_status() -> dict:
+        from tensortrade_platform.ray_manager import ray_manager
+
+        status = _manager.get_status()
+        status["ray"] = {
+            "active": ray_manager.is_active,
+            "consumers": ray_manager.active_consumers,
+        }
+        return status
+
+    # --- REST: Training Controls ---
+
+    @app.post("/api/training/stop")
+    async def stop_training() -> dict:
+        launcher = _get_launcher()
+        stopped_runs = launcher.stop_all()
+        _manager._is_training = False
+        _manager._is_paused = False
+        await _manager.send_control_to_training("stop")
+        if stopped_runs > 0:
+            _manager._current_experiment_id = None
+            message = (
+                f"Stopped {stopped_runs} active run(s) and cleaned training runtime."
+            )
+        else:
+            message = "No active launched run found; sent stop command and attempted runtime cleanup."
+        return {"status": "stop_sent", "message": message}
+
+    @app.post("/api/training/pause")
+    async def pause_training() -> dict:
+        _manager._is_paused = True
+        await _manager.send_control_to_training("pause")
+        return {"status": "pause_sent"}
+
+    @app.post("/api/training/resume")
+    async def resume_training() -> dict:
+        _manager._is_paused = False
+        await _manager.send_control_to_training("resume")
+        return {"status": "resume_sent"}
+
+    # --- WebSocket: Dashboard (consumer) ---
+
+    @app.websocket("/ws/dashboard")
+    async def ws_dashboard(ws: WebSocket) -> None:
+        await _manager.connect_dashboard(ws)
+        try:
+            # Send current status on connect
+            await ws.send_json(_manager.get_status())
+            while True:
+                # Keep connection alive, listen for commands
+                data = await ws.receive_text()
+                try:
+                    msg = json.loads(data)
+                    cmd = msg.get("command")
+                    if cmd in ("stop", "pause", "resume"):
+                        await _manager.send_control_to_training(cmd)
+                except json.JSONDecodeError:
+                    pass
+        except WebSocketDisconnect:
+            _manager.disconnect_dashboard(ws)
+
+    # --- REST: Live Trading ---
+
+    @app.post("/api/live/start")
+    async def start_live_trading(body: dict) -> dict:
+        """Start a paper/live trading session."""
+        global _live_trader
+        experiment_id = body.get("experiment_id")
+        if not experiment_id:
+            return {"error": "experiment_id is required"}
+
+        store = _get_store()
+        exp = store.get_experiment(experiment_id)
+        if not exp:
+            return {"error": "Experiment not found"}
+
+        # Check if already running
+        trader = _get_live_trader()
+        if trader.is_running:
+            return {"error": "A live trading session is already running"}
+
+        # Extract checkpoint path (same as InferenceRunner)
+        from tensortrade_platform.api.inference_runner import InferenceRunner
+
+        checkpoint_path = InferenceRunner._get_checkpoint_path(exp)
+        if not checkpoint_path:
+            return {"error": "No checkpoint found for this experiment"}
+
+        config = exp.config
+        training_config = config.get("training_config", config)
+
+        from tensortrade_platform.live.config import LiveTradingConfig
+
+        live_config = LiveTradingConfig(
+            symbol=body.get("symbol", "BTC/USD"),
+            timeframe=body.get("timeframe", "1h"),
+            paper=body.get("paper", True),
+            checkpoint_path=checkpoint_path,
+            experiment_id=experiment_id,
+            feature_specs=config.get("features", []),
+            window_size=training_config.get(
+                "window_size",
+                config.get("window_size", 10),
+            ),
+            max_position_size_usd=body.get("max_position_size_usd", 10_000.0),
+            max_drawdown_pct=body.get("max_drawdown_pct", 20.0),
+        )
+
+        errors = live_config.validate()
+        if errors:
+            return {"error": "; ".join(errors)}
+
+        try:
+            # Create a fresh trader instance
+            _live_trader = LiveTrader()
+            await _live_trader.start(live_config, _manager)
+            return {
+                "status": "started",
+                "session_id": _live_trader._session_id,
+            }
+        except Exception as e:
+            logger.exception("Failed to start live trading")
+            return {"error": str(e)}
+
+    @app.post("/api/live/stop")
+    async def stop_live_trading() -> dict:
+        """Stop the active live trading session."""
+        trader = _get_live_trader()
+        if not trader.is_running:
+            return {"error": "No active live trading session"}
+        await trader.stop()
+        return {"status": "stopped"}
+
+    @app.get("/api/live/status")
+    async def get_live_status() -> dict:
+        """Get current live trading status and portfolio snapshot."""
+        trader = _get_live_trader()
+        return trader.get_status()
+
+    @app.get("/api/live/sessions")
+    async def list_live_sessions(
+        experiment_id: str | None = None,
+        status: str | None = None,
+        limit: int = Query(default=100, le=500),
+        offset: int = Query(default=0, ge=0),
+    ) -> list[dict]:
+        """List past and current live trading sessions."""
+        live_store = _get_live_store()
+        sessions = live_store.list_sessions(
+            experiment_id=experiment_id,
+            status=status,
+            limit=limit,
+            offset=offset,
+        )
+        return [
+            {
+                "id": s.id,
+                "experiment_id": s.experiment_id,
+                "status": s.status,
+                "started_at": s.started_at,
+                "stopped_at": s.stopped_at,
+                "symbol": s.symbol,
+                "timeframe": s.timeframe,
+                "initial_equity": s.initial_equity,
+                "final_equity": s.final_equity,
+                "total_trades": s.total_trades,
+                "total_bars": s.total_bars,
+                "pnl": s.pnl,
+                "max_drawdown_pct": s.max_drawdown_pct,
+                "model_version": s.model_version,
+            }
+            for s in sessions
+        ]
+
+    @app.get("/api/live/sessions/{session_id}")
+    async def get_live_session(session_id: str) -> dict:
+        """Get detail for a specific live session."""
+        live_store = _get_live_store()
+        session = live_store.get_session(session_id)
+        if not session:
+            return {"error": "not found"}
+        return {
+            "id": session.id,
+            "experiment_id": session.experiment_id,
+            "config": session.config,
+            "status": session.status,
+            "started_at": session.started_at,
+            "stopped_at": session.stopped_at,
+            "symbol": session.symbol,
+            "timeframe": session.timeframe,
+            "initial_equity": session.initial_equity,
+            "final_equity": session.final_equity,
+            "total_trades": session.total_trades,
+            "total_bars": session.total_bars,
+            "pnl": session.pnl,
+            "max_drawdown_pct": session.max_drawdown_pct,
+            "model_version": session.model_version,
+        }
+
+    @app.get("/api/live/sessions/{session_id}/trades")
+    async def get_live_session_trades(
+        session_id: str,
+        limit: int = Query(default=1000, le=5000),
+        offset: int = Query(default=0, ge=0),
+    ) -> list[dict]:
+        """Get trades for a specific live session."""
+        live_store = _get_live_store()
+        trades = live_store.get_session_trades(
+            session_id,
+            limit=limit,
+            offset=offset,
+        )
+        return [
+            {
+                "id": t.id,
+                "session_id": t.session_id,
+                "timestamp": t.timestamp,
+                "step": t.step,
+                "side": t.side,
+                "symbol": t.symbol,
+                "price": t.price,
+                "size": t.size,
+                "commission": t.commission,
+                "alpaca_order_id": t.alpaca_order_id,
+                "model_version": t.model_version,
+            }
+            for t in trades
+        ]
+
+    # --- WebSocket: Live (consumer) ---
+
+    @app.websocket("/ws/live")
+    async def ws_live(ws: WebSocket) -> None:
+        await _manager.connect_dashboard(ws)
+        try:
+            # Send current live status on connect
+            trader = _get_live_trader()
+            raw = trader.get_status()
+            state = "running" if raw.get("running") else "idle"
+            position = "asset" if raw.get("position") == 1 else "cash"
+
+            # Look up experiment name so new clients can show it
+            exp_id = raw.get("experiment_id", "") or ""
+            exp_name = ""
+            if exp_id:
+                store = _get_store()
+                exp = store.get_experiment(str(exp_id))
+                if exp:
+                    exp_name = exp.name or ""
+
+            await ws.send_json(
+                {
+                    "type": "live_status",
+                    "state": state,
+                    "session_id": raw.get("session_id") or None,
+                    "experiment_id": exp_id,
+                    "experiment_name": exp_name,
+                    "symbol": raw.get("symbol", ""),
+                    "equity": raw.get("equity", 0),
+                    "pnl": raw.get("pnl", 0),
+                    "pnl_pct": raw.get("pnl_pct", 0),
+                    "position": position,
+                    "total_bars": raw.get("total_bars", 0),
+                    "total_trades": raw.get("total_trades", 0),
+                    "drawdown_pct": raw.get("max_drawdown_pct", 0),
+                    "entry_price": raw.get("entry_price", 0),
+                }
+            )
+            # Send bar history and trade history so refreshed clients
+            # can restore the chart immediately.
+            if trader.is_running:
+                bars = trader.get_initial_bars()
+                if bars:
+                    await ws.send_json({"type": "live_bars_history", "bars": bars})
+                trades = trader.get_session_trades()
+                if trades:
+                    await ws.send_json(
+                        {"type": "live_trades_history", "trades": trades}
+                    )
+            while True:
+                # Keep connection alive — ignore incoming messages
+                await ws.receive_text()
+        except WebSocketDisconnect:
+            _manager.disconnect_dashboard(ws)
+
+    # --- WebSocket: Training (producer) ---
+
+    @app.websocket("/ws/training")
+    async def ws_training(ws: WebSocket) -> None:
+        await _manager.connect_training(ws)
+        try:
+            while True:
+                data = await ws.receive_text()
+                try:
+                    msg = json.loads(data)
+                    # Track iteration progress
+                    msg_type = msg.get("type")
+                    if msg_type == "training_update":
+                        _manager._current_iteration = msg.get("iteration", 0)
+                    if msg_type == "experiment_start":
+                        _manager._current_experiment_id = msg.get("experiment_id")
+
+                    # Track campaign lifecycle
+                    if msg_type == "campaign_start":
+                        _manager._is_campaign = True
+                        _manager._campaign_name = msg.get("study_name")
+                    elif msg_type == "campaign_end":
+                        _manager._is_campaign = False
+                        _manager._campaign_name = None
+
+                    # Forward to all dashboard clients
+                    await _manager.broadcast_to_dashboards(msg)
+                except json.JSONDecodeError:
+                    pass
+        except WebSocketDisconnect:
+            _manager.disconnect_training(ws)
+            await _manager.broadcast_to_dashboards(
+                {
+                    "type": "training_disconnected",
+                }
+            )
+
+
+def _correlation(x: list[float], y: list[float]) -> float:
+    """Pearson correlation coefficient."""
+    n = len(x)
+    if n < 2:
+        return 0.0
+    mx = sum(x) / n
+    my = sum(y) / n
+    sx = (sum((xi - mx) ** 2 for xi in x) / (n - 1)) ** 0.5
+    sy = (sum((yi - my) ** 2 for yi in y) / (n - 1)) ** 0.5
+    if sx == 0 or sy == 0:
+        return 0.0
+    cov = sum((xi - mx) * (yi - my) for xi, yi in zip(x, y)) / (n - 1)
+    return cov / (sx * sy)
+
+
+# Convenience: run with `python -m tensortrade_platform.api.server`
+if __name__ == "__main__":
+    from pathlib import Path
+
+    import uvicorn
+
+    # Load .env from project root if present
+    env_file = Path(__file__).resolve().parents[4] / ".env"
+    if env_file.exists():
+        with open(env_file) as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith("#") and "=" in line:
+                    key, _, value = line.partition("=")
+                    os.environ.setdefault(key.strip(), value.strip())
+
+    app = create_app()
+    uvicorn.run(app, host="0.0.0.0", port=8000)

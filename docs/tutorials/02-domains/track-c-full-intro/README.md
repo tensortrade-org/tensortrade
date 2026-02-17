@@ -193,12 +193,12 @@ Episode 1000 (refined strategy):
 
 ```bash
 # Create Python environment
-python3.12 -m venv tensortrade-env
-source tensortrade-env/bin/activate
+uv venv --python 3.12 .venv
+source .venv/bin/activate
 
 # Install TensorTrade
-pip install -r requirements.txt
-pip install -e .
+uv pip install -r requirements.txt
+uv pip install -e .
 ```
 
 ### Step 2: Run Demo

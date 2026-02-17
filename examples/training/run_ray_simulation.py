@@ -35,12 +35,12 @@ def macd(price: pd.Series, fast: float, slow: float, signal: float) -> pd.Series
 
 def prepare_data():
     """Fetch and prepare data, save to CSV files."""
-    from tensortrade.data.cdd import CryptoDataDownload
+    from tensortrade_platform.data.cdd import CryptoDataDownload
     from sklearn.model_selection import train_test_split
 
     print("Fetching crypto data...")
     cdd = CryptoDataDownload()
-    data = cdd.fetch("Bitfinex", "USD", "BTC", "1h")
+    data = cdd.fetch("Bitfinex", "BTC", "USD", "1h")
     data = data[['date', 'open', 'high', 'low', 'close', 'volume']]
     data['volume'] = np.int64(data['volume'])
     data['date'] = pd.to_datetime(data['date'])

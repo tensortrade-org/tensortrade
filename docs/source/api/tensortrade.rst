@@ -15,7 +15,6 @@ Subpackages
    tensortrade.agents
    tensortrade.contrib
    tensortrade.core
-   tensortrade.data
    tensortrade.env
    tensortrade.feed
    tensortrade.oms

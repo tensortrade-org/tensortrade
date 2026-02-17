@@ -402,7 +402,7 @@ import pandas as pd
 import numpy as np
 from tensortrade.feed.core import DataFeed, Stream
 from tensortrade.env.default.observers import TensorTradeObserver
-from tensortrade.data.cdd import CryptoDataDownload
+from tensortrade_platform.data.cdd import CryptoDataDownload
 
 # 1. Get data
 cdd = CryptoDataDownload()

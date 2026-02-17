@@ -126,7 +126,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### From 1.0.3 to 1.0.4
 
 1. **Update Python**: Upgrade to Python 3.11.9 or higher
-2. **Update Dependencies**: Run `pip install -r requirements.txt --upgrade`
+2. **Update Dependencies**: Run `uv pip install -r requirements.txt --upgrade`
 3. **Update Ray Code**: Replace `tune.run()` with `tune.Tuner()` (see Migration Guide)
 4. **Test Your Code**: Run tests to ensure compatibility
 5. **Update Examples**: Use new example notebooks as reference

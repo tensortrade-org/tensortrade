@@ -74,62 +74,59 @@ This document provides tested version combinations for TensorTrade and its depen
 #### 1. Ray Installation Issues
 ```bash
 # If Ray installation fails, try:
-pip install --upgrade pip
-pip install ray[default,tune,rllib,serve]==2.37.0
+uv pip install ray[default,tune,rllib,serve]==2.37.0
 ```
 
 #### 2. TensorFlow CUDA Issues
 ```bash
 # For CUDA support:
-pip install tensorflow[and-cuda]>=2.15.1
+uv pip install tensorflow[and-cuda]==2.15.1
 ```
 
 #### 3. NumPy Compatibility
 ```bash
 # Ensure NumPy < 2.0 for TensorFlow compatibility:
-pip install "numpy>=1.26.4,<2.0"
+uv pip install "numpy>=1.26.4,<2.0"
 ```
 
 #### 4. Pandas Compatibility
 ```bash
 # Ensure Pandas < 3.0 for API compatibility:
-pip install "pandas>=2.2.3,<3.0"
+uv pip install "pandas>=2.2.3,<3.0"
 ```
 
 #### 5. Importlib-metadata Issues
 ```bash
 # If you encounter EntryPoints errors:
-pip install "importlib-metadata>=4.13.0,<6.0"
+uv pip install "importlib-metadata>=4.13.0,<6.0"
 ```
 
 #### 6. Python 3.14 Not Supported
 ```bash
 # TensorFlow doesn't support Python 3.14 yet
 # Use Python 3.11 or 3.12 instead:
-python3.12 -m venv tensortrade-env
+uv venv --python 3.12 .venv
 ```
 
 ### Environment Setup
 
 #### Quick Setup (Recommended)
 ```bash
-# Use Python 3.11 or 3.12 (NOT 3.14)
-python3.12 -m venv tensortrade-env
-source tensortrade-env/bin/activate  # On Windows: tensortrade-env\Scripts\activate
+# Use Python 3.12+ (NOT 3.14) — requires uv (https://docs.astral.sh/uv/)
+uv venv --python 3.12 .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 
 # Install TensorTrade
-pip install --upgrade pip
-pip install -r requirements.txt
-pip install -e .
+uv pip install -r requirements.txt
+uv pip install -e .
 
-# Verify installation (232 tests should pass)
-pip install pytest
+# Verify installation (251 tests should pass)
 pytest tests/tensortrade/unit -v
 ```
 
 #### Google Colab Setup
 ```python
-# Run in Colab cell:
+# Run in Colab cell (Colab uses pip directly):
 !pip install --upgrade pip
 !pip install -r requirements.txt
 !pip install -r examples/requirements.txt

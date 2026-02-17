@@ -10,7 +10,7 @@ Before running the examples, make sure you have:
 2. **TensorTrade** installed (see [Installation Guide](../docs/ENVIRONMENT_SETUP.md))
 3. **Example dependencies** installed:
    ```bash
-   pip install -r requirements.txt
+   uv pip install -r requirements.txt
    ```
 
 ## Examples Overview
@@ -165,7 +165,7 @@ jupyter lab
 
 **Solution:**
 ```bash
-pip install ray[default,tune,rllib,serve]==2.37.0
+uv pip install ray[default,tune,rllib,serve]==2.37.0
 ```
 
 ### Issue: pandas_ta study() not found

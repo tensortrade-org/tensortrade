@@ -5,7 +5,7 @@ Simple training demo showing actual wallet balances and trade execution.
 
 import numpy as np
 import pandas as pd
-from tensortrade.data.cdd import CryptoDataDownload
+from tensortrade_platform.data.cdd import CryptoDataDownload
 from tensortrade.feed.core import DataFeed, Stream
 from tensortrade.oms.exchanges import Exchange, ExchangeOptions
 from tensortrade.oms.instruments import USD, BTC
@@ -24,7 +24,7 @@ def main():
     # Fetch data
     print("\nFetching BTC/USD data...")
     cdd = CryptoDataDownload()
-    data = cdd.fetch("Bitfinex", "USD", "BTC", "1h")
+    data = cdd.fetch("Bitfinex", "BTC", "USD", "1h")
     data = data[['date', 'open', 'high', 'low', 'close', 'volume']]
     data = data.tail(200).reset_index(drop=True)
     print(f"Using {len(data)} rows | Price range: ${data['close'].min():,.0f} - ${data['close'].max():,.0f}")
@@ -69,7 +69,7 @@ def main():
 
     # Run episodes
     num_episodes = 5
-    action_names = {0: "BUY ", 1: "SELL", 2: "HOLD"}
+    action_names = {0: "HOLD", 1: "BUY ", 2: "SELL"}
 
     for episode in range(num_episodes):
         # Reset for new episode
@@ -114,12 +114,12 @@ def main():
         while not done and not truncated and step < 150:  # Limit steps for readability
             # Simple policy: random with bias towards holding
             rand = np.random.random()
-            if rand < 0.15:
-                action = 0  # Buy
-            elif rand < 0.30:
-                action = 1  # Sell
+            if rand < 0.70:
+                action = 0  # Hold
+            elif rand < 0.85:
+                action = 1  # Buy
             else:
-                action = 2  # Hold
+                action = 2  # Sell
 
             obs, reward, done, truncated, info = env.step(action)
             total_reward += reward
@@ -130,10 +130,10 @@ def main():
             worth = portfolio.net_worth
 
             # Log trades and periodic status
-            if action != 2 or step == 1 or step % 30 == 0:
+            if action in (1, 2) or step == 1 or step % 30 == 0:
                 print(f"{step:5d} | {action_names[action]} | ${usd_bal:>12,.2f} | {btc_bal:>13.6f} | ${worth:>10,.2f} | {reward:>+10.2f}")
 
-            if action != 2:
+            if action in (1, 2):
                 trades.append({"step": step, "action": action, "worth": worth})
 
         final_worth = portfolio.net_worth

@@ -1,7 +1,7 @@
-tensortrade.data package
-========================
+tensortrade\_platform.data package
+==================================
 
-.. automodule:: tensortrade.data
+.. automodule:: tensortrade_platform.data
    :members:
    :show-inheritance:
    :undoc-members:

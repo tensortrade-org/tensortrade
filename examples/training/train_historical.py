@@ -7,6 +7,7 @@ Uses all available historical data for training, then tests on recent market.
 import os
 import numpy as np
 import pandas as pd
+import argparse
 from datetime import datetime
 from typing import Dict, Any, Optional
 
@@ -26,7 +27,7 @@ except ImportError:
     HAS_PANDAS_TA = False
     print("Warning: pandas_ta not installed, using basic indicators")
 
-from tensortrade.data.cdd import CryptoDataDownload
+from tensortrade_platform.data.cdd import CryptoDataDownload
 from tensortrade.feed.core import DataFeed, Stream
 from tensortrade.oms.exchanges import Exchange, ExchangeOptions
 from tensortrade.oms.instruments import USD, BTC
@@ -225,6 +226,12 @@ def create_env(config: Dict[str, Any]):
 
 
 def main():
+    import sys, pathlib; sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2]))
+    from examples.training._common import create_training_parser, setup_experiment, build_composed_callbacks, finish_experiment, log_training_iteration
+
+    parser = create_training_parser("TensorTrade - Historical Training")
+    args = parser.parse_args()
+
     print("=" * 70)
     print("TensorTrade - Train on History, Evaluate on Recent Prices")
     print("=" * 70)
@@ -232,7 +239,7 @@ def main():
     # Fetch ALL available historical data
     print("\nFetching all available BTC/USD historical data...")
     cdd = CryptoDataDownload()
-    data = cdd.fetch("Bitfinex", "USD", "BTC", "1h")
+    data = cdd.fetch("Bitfinex", "BTC", "USD", "1h")
     data = data[['date', 'open', 'high', 'low', 'close', 'volume']]
     data['date'] = pd.to_datetime(data['date'])
     data.sort_values(by='date', ascending=True, inplace=True)
@@ -300,6 +307,10 @@ def main():
         "feature_cols": feature_cols,
     }
 
+    # Experiment tracking
+    store, experiment_id, tb_logger, bridge = setup_experiment(args, "train_historical", train_config)
+    ComposedCallbacks = build_composed_callbacks(WalletTrackingCallbacks, store, experiment_id, tb_logger, bridge)
+
     # More extensive training config
     num_iterations = 100  # More iterations for better learning
 
@@ -308,7 +319,7 @@ def main():
         .environment(env="TradingEnv", env_config=train_config)
         .framework("torch")
         .env_runners(num_env_runners=6)  # More parallel workers
-        .callbacks(WalletTrackingCallbacks)
+        .callbacks(ComposedCallbacks)
         .training(
             lr=1e-4,  # Lower learning rate for stability
             gamma=0.995,  # Higher gamma for longer-term rewards
@@ -337,6 +348,7 @@ def main():
 
     for i in range(num_iterations):
         result = algo.train()
+        log_training_iteration(result, i + 1, store, experiment_id, tb_logger, bridge)
 
         hist = result.get('env_runners', {})
         ep_reward_mean = hist.get('episode_return_mean')
@@ -427,8 +439,6 @@ def main():
         print(f"Episode {ep+1:2d} | Steps: {steps:4d} | Reward: {total_reward:>+10,.0f} | "
               f"Net Worth: ${final_worth:>10,.2f} | P&L: ${pnl:>+8,.2f} ({pnl_pct:>+6.2f}%)")
 
-    algo.stop()
-
     # Summary
     print("-" * 70)
     print(f"\n{'='*70}")
@@ -466,6 +476,11 @@ def main():
         print(f"\n  AGENT OUTPERFORMED buy-and-hold by ${avg_pnl - bh_pnl:+,.2f}")
     else:
         print(f"\n  Buy-and-hold outperformed agent by ${bh_pnl - avg_pnl:+,.2f}")
+
+    final_metrics = {"avg_pnl": float(avg_pnl), "avg_pnl_pct": float(avg_pnl_pct), "bh_pnl": float(bh_pnl)}
+    finish_experiment(store, experiment_id, "completed", final_metrics, tb_logger, bridge)
+
+    algo.stop()
 
     ray.shutdown()
 

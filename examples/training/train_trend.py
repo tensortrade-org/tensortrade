@@ -12,6 +12,7 @@ Goal: Learn when to be IN market (holding BTC) vs OUT (holding USD)
 """
 
 import os
+import argparse
 import numpy as np
 import pandas as pd
 from typing import Dict, Any
@@ -21,7 +22,7 @@ from ray.tune.registry import register_env
 from ray.rllib.algorithms.ppo import PPOConfig
 from ray.rllib.algorithms.callbacks import DefaultCallbacks
 
-from tensortrade.data.cdd import CryptoDataDownload
+from tensortrade_platform.data.cdd import CryptoDataDownload
 from tensortrade.feed.core import DataFeed, Stream
 from tensortrade.oms.exchanges import Exchange, ExchangeOptions
 from tensortrade.oms.instruments import USD, BTC
@@ -132,6 +133,12 @@ def evaluate(algo, data, feature_cols, n=20):
 
 
 def main():
+    import sys, pathlib; sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2]))
+    from examples.training._common import create_training_parser, setup_experiment, build_composed_callbacks, finish_experiment, log_training_iteration
+
+    parser = create_training_parser("TensorTrade - Trend Following")
+    args = parser.parse_args()
+
     print("=" * 70)
     print("TensorTrade - Simple Trend-Following Strategy")
     print("=" * 70)
@@ -139,7 +146,7 @@ def main():
     # Get data
     print("\nFetching data...")
     cdd = CryptoDataDownload()
-    data = cdd.fetch("Bitfinex", "USD", "BTC", "1h")
+    data = cdd.fetch("Bitfinex", "BTC", "USD", "1h")
     data = data[['date', 'open', 'high', 'low', 'close', 'volume']]
     data['date'] = pd.to_datetime(data['date'])
     data.sort_values('date', inplace=True)
@@ -177,13 +184,17 @@ def main():
     cfg = {"csv_filename": train_csv, "feature_cols": feature_cols,
            "window_size": 10, "max_allowed_loss": 0.3, "initial_cash": 10000}
 
+    # Experiment tracking
+    store, experiment_id, tb_logger, bridge = setup_experiment(args, "train_trend", cfg)
+    ComposedCallbacks = build_composed_callbacks(SimpleCallbacks, store, experiment_id, tb_logger, bridge)
+
     # Tiny network, high entropy
     config = (
         PPOConfig().api_stack(enable_rl_module_and_learner=False, enable_env_runner_and_connector_v2=False)
         .environment(env="TradingEnv", env_config=cfg)
         .framework("torch")
         .env_runners(num_env_runners=4)
-        .callbacks(SimpleCallbacks)
+        .callbacks(ComposedCallbacks)
         .training(
             lr=5e-5,
             gamma=0.99,
@@ -214,6 +225,7 @@ def main():
 
     for i in range(100):
         result = algo.train()
+        log_training_iteration(result, i + 1, store, experiment_id, tb_logger, bridge)
         reward = result.get('env_runners', {}).get('episode_return_mean', 0)
         pnl = result.get('env_runners', {}).get('custom_metrics', {}).get('pnl_mean', 0)
 
@@ -259,6 +271,9 @@ def main():
         print(f"\n✓ Agent WINS by ${diff:+,.0f}!")
     else:
         print(f"\nB&H wins by ${-diff:+,.0f}")
+
+    final_metrics = {"test_pnl": float(test_pnl), "test_std": float(test_std), "test_bh": float(test_bh)}
+    finish_experiment(store, experiment_id, "completed", final_metrics, tb_logger, bridge)
 
     os.remove(train_csv)
     algo.stop()

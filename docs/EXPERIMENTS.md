@@ -319,8 +319,8 @@ python examples/training/train_profit.py
 
 ### Requirements
 ```bash
-pip install -r examples/requirements.txt
-pip install optuna
+uv pip install -r examples/requirements.txt
+uv pip install optuna
 ```
 
 ### Customization

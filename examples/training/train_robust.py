@@ -12,6 +12,7 @@ Robust training with anti-overfitting techniques:
 import os
 import numpy as np
 import pandas as pd
+import argparse
 from typing import Dict, Any, Optional
 
 import ray
@@ -23,7 +24,7 @@ from ray.rllib.evaluation.episode_v2 import EpisodeV2
 from ray.rllib.policy import Policy
 from ray.rllib.utils.typing import PolicyID
 
-from tensortrade.data.cdd import CryptoDataDownload
+from tensortrade_platform.data.cdd import CryptoDataDownload
 from tensortrade.feed.core import DataFeed, Stream
 from tensortrade.oms.exchanges import Exchange, ExchangeOptions
 from tensortrade.oms.instruments import USD, BTC
@@ -207,6 +208,12 @@ def evaluate_on_data(algo, data: pd.DataFrame, feature_cols: list, num_episodes:
 
 
 def main():
+    import sys, pathlib; sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2]))
+    from examples.training._common import create_training_parser, setup_experiment, build_composed_callbacks, finish_experiment, log_training_iteration
+
+    parser = create_training_parser("TensorTrade - Robust Training")
+    args = parser.parse_args()
+
     print("=" * 80)
     print("TensorTrade - Robust Training (Anti-Overfitting)")
     print("=" * 80)
@@ -214,7 +221,7 @@ def main():
     # Fetch data
     print("\nFetching BTC/USD data...")
     cdd = CryptoDataDownload()
-    data = cdd.fetch("Bitfinex", "USD", "BTC", "1h")
+    data = cdd.fetch("Bitfinex", "BTC", "USD", "1h")
     data = data[['date', 'open', 'high', 'low', 'close', 'volume']]
     data['date'] = pd.to_datetime(data['date'])
     data.sort_values('date', inplace=True)
@@ -265,13 +272,17 @@ def main():
         "initial_cash": 10000,
     }
 
+    # Experiment tracking
+    store, experiment_id, tb_logger, bridge = setup_experiment(args, "train_robust", base_config)
+    ComposedCallbacks = build_composed_callbacks(WalletCallbacks, store, experiment_id, tb_logger, bridge)
+
     # PPO config with anti-overfitting settings
     config = (
         PPOConfig().api_stack(enable_rl_module_and_learner=False, enable_env_runner_and_connector_v2=False)
         .environment(env="TradingEnv", env_config=base_config)
         .framework("torch")
         .env_runners(num_env_runners=4)
-        .callbacks(WalletCallbacks)
+        .callbacks(ComposedCallbacks)
         .training(
             lr=1e-4,
             gamma=0.99,
@@ -326,6 +337,7 @@ def main():
 
     for i in range(max_iterations):
         result = algo.train()
+        log_training_iteration(result, i + 1, store, experiment_id, tb_logger, bridge)
 
         train_reward = result.get('env_runners', {}).get('episode_return_mean', 0)
         train_pnl = result.get('env_runners', {}).get('custom_metrics', {}).get('pnl_mean', 0)
@@ -398,6 +410,9 @@ def main():
             print(f"  (Agent lost {test_result['avg_pnl_pct']:.1f}% vs B&H lost {test_bh_pct:.1f}%)")
         else:
             print(f"  (Agent: {test_result['avg_pnl_pct']:+.1f}% vs B&H: {test_bh_pct:+.1f}%)")
+
+    final_metrics = {"test_avg_pnl": float(test_result['avg_pnl']), "test_avg_pnl_pct": float(test_result['avg_pnl_pct']), "test_bh_pnl": float(test_bh_pnl), "best_val_pnl": float(best_val_pnl)}
+    finish_experiment(store, experiment_id, "completed", final_metrics, tb_logger, bridge)
 
     # Cleanup
     os.remove(train_csv)

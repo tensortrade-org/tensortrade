@@ -1,0 +1,35 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+:root {
+	--bg-primary: #0f1117;
+	--bg-secondary: #1a1d2e;
+	--bg-card: #1e2235;
+	--border-color: #2a2e45;
+	--text-primary: #e4e6f0;
+	--text-secondary: #8b8fa3;
+	--accent-green: #22c55e;
+	--accent-red: #ef4444;
+	--accent-blue: #3b82f6;
+	--accent-purple: #8b5cf6;
+	--accent-amber: #f59e0b;
+}
+
+body {
+	background-color: var(--bg-primary);
+	color: var(--text-primary);
+	font-family: system-ui, -apple-system, sans-serif;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+	width: 6px;
+	height: 6px;
+}
+::-webkit-scrollbar-track {
+	background: var(--bg-primary);
+}
+::-webkit-scrollbar-thumb {
+	background: var(--border-color);
+	border-radius: 3px;
+}
