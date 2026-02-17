@@ -41,6 +41,8 @@ tensortrade-env/
 .env
 .env/
 
+.claude-octopus/
+
 # Dev server runtime
 .dev-pids/
 .dev-logs/

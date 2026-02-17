@@ -202,9 +202,9 @@ class RiskAdjustedReturns(TensorTradeRewardScheme):
         .. [1] https://en.wikipedia.org/wiki/Sortino_ratio
         """
         downside_returns = returns.copy()
-        # Only square the returns that are below target (downside)
+        # Square the deviation from target for below-target returns
         mask = returns < self._target_returns
-        downside_returns[mask] = returns[mask] ** 2
+        downside_returns[mask] = (returns[mask] - self._target_returns) ** 2
         # Set non-downside returns to 0 for proper downside deviation calculation
         downside_returns[~mask] = 0
 

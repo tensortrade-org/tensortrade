@@ -116,7 +116,15 @@ class AlpacaExecutionService:
         from alpaca.trading.enums import OrderSide, OrderType, TimeInForce
         from alpaca.trading.requests import MarketOrderRequest
 
-        int_qty = max(1, math.floor(qty))
+        int_qty = math.floor(qty)
+        if int_qty < 1:
+            logger.warning(
+                "BUY qty %.6f rounds to 0 for %s — skipping order "
+                "(Alpaca paper trading requires integer qty for crypto)",
+                qty,
+                symbol,
+            )
+            return None
 
         logger.info(
             "Submitting BUY market order: %s qty %d (requested %.6f)",

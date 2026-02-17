@@ -510,7 +510,7 @@ class FeatureEngine:
         if rolling_norm_period > 0:
             vol_mean = df["vol"].rolling(rolling_norm_period).mean()
             vol_std = df["vol"].rolling(rolling_norm_period).std()
-            df["vol_norm"] = np.tanh((df["vol"] - vol_mean) / vol_std)
+            df["vol_norm"] = np.tanh((df["vol"] - vol_mean) / (vol_std + 1e-10))
         return df
 
     @staticmethod

@@ -111,15 +111,41 @@ class TestRiskAdjustedReturns:
         returns = net_worths[-2:].pct_change().dropna()
 
         downside_returns = returns.copy()
-        downside_returns[returns < 0] = returns**2
+        mask = returns < 0
+        downside_returns[mask] = (returns[mask] - 0) ** 2
+        downside_returns[~mask] = 0
 
         expected_return = np.mean(returns)
-        downside_std = np.sqrt(np.std(downside_returns))
+        downside_std = np.sqrt(np.mean(downside_returns))
 
         expected_ratio = (expected_return + 1e-9) / (downside_std + 1e-9)
         sortino_ratio = scheme._sortino_ratio(returns)
 
         assert sortino_ratio == expected_ratio
+
+    def test_sortino_ratio_nonzero_target(self):
+        """Sortino with non-zero target must use (return - target)² for downside."""
+        scheme = rewards.RiskAdjustedReturns(
+            return_algorithm="sortino",
+            risk_free_rate=0,
+            target_returns=0.05,
+            window_size=4,
+        )
+
+        returns = pd.Series([-0.03, 0.02, 0.08, -0.01])
+        target = 0.05
+
+        downside_returns = returns.copy()
+        mask = returns < target
+        downside_returns[mask] = (returns[mask] - target) ** 2
+        downside_returns[~mask] = 0
+
+        expected_return = np.mean(returns)
+        downside_std = np.sqrt(np.mean(downside_returns))
+        expected_ratio = (expected_return + 1e-9) / (downside_std + 1e-9)
+
+        ratio = scheme._sortino_ratio(returns)
+        assert abs(ratio - expected_ratio) < 1e-10
 
 
 class TestAdvancedPBR:
