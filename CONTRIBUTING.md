@@ -1,10 +1,13 @@
 # On Github Issues and Pull Requests
 
 Updating the sample file for testing purposes
+
 Found a bug? Have a new feature to suggest? Want to contribute changes to the codebase? Make sure to read this first.
 
-Things for testing to check the compatibility for tensor trade
 
+Things for testing to check the compatibility for tensor trade
+=======
+## Tensor Trading in Work
 ## Bug reporting
 
 Your code doesn't work, and you have determined that the issue lies with TensorTrade? Follow these steps to report a bug.
