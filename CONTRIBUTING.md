@@ -7,7 +7,7 @@ Found a bug? Have a new feature to suggest? Want to contribute changes to the co
 
 Things for testing to check the compatibility for tensor trade
 =======
-## Tensor Trading in Work
+## Tensor Trading in Work in Progress
 ## Bug reporting
 
 Your code doesn't work, and you have determined that the issue lies with TensorTrade? Follow these steps to report a bug.
