@@ -18,7 +18,7 @@ class ForwardFill(Stream[T]):
 
     def forward(self) -> T:
         node = self.inputs[0]
-        if not self.previous or np.isfinite(node.value):
+        if self.previous is None or np.isfinite(node.value):
             self.previous = node.value
         return self.previous
 

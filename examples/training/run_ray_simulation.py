@@ -42,7 +42,7 @@ def prepare_data():
     cdd = CryptoDataDownload()
     data = cdd.fetch("Bitfinex", "USD", "BTC", "1h")
     data = data[['date', 'open', 'high', 'low', 'close', 'volume']]
-    data['volume'] = np.int64(data['volume'])
+    data['volume'] = data['volume'].astype(np.int64)
     data['date'] = pd.to_datetime(data['date'])
     data.sort_values(by='date', ascending=True, inplace=True)
     data.reset_index(drop=True, inplace=True)
