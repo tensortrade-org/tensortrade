@@ -131,7 +131,7 @@ class BaseRenderer(Renderer):
             max_steps=kwargs.get("max_steps", None),
             price_history=price_history,
             net_worth=performance.net_worth,
-            performance=performance.drop(columns=['base_symbol']),
+            performance=performance.drop(columns=[c for c in ['base_symbol'] if c in performance.columns]),
             trades=env.action_scheme.broker.trades
         )
 
