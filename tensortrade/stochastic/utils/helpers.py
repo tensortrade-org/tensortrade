@@ -159,20 +159,19 @@ def generate(price_fn: 'Callable[[ModelParameters], np.array]',
     volumes = volume_gen.sample(times_to_generate) + base_volume
 
     start_date = pd.to_datetime(start_date, format=start_date_format)
-    price_frame = pd.DataFrame([], columns=['date', 'price'], dtype=float)
-    volume_frame = pd.DataFrame([], columns=['date', 'volume'], dtype=float)
+    date_range = pd.date_range(start=start_date, periods=times_to_generate, freq="1min")
 
-    price_frame['date'] = pd.date_range(start=start_date, periods=times_to_generate, freq="1min")
-    price_frame['price'] = abs(prices)
+    price_frame = pd.DataFrame({
+        'date': date_range,
+        'price': abs(prices)
+    })
+    volume_frame = pd.DataFrame({
+        'date': date_range.copy(),
+        'volume': abs(volumes)
+    })
 
-    volume_frame['date'] = price_frame['date'].copy()
-    volume_frame['volume'] = abs(volumes)
-
-    price_frame.set_index('date')
-    price_frame.index = pd.to_datetime(price_frame.index, unit='m', origin=start_date)
-
-    volume_frame.set_index('date')
-    volume_frame.index = pd.to_datetime(volume_frame.index, unit='m', origin=start_date)
+    price_frame = price_frame.set_index('date')
+    volume_frame = volume_frame.set_index('date')
 
     data_frame = price_frame['price'].resample(time_frame).ohlc()
     data_frame['volume'] = volume_frame['volume'].resample(time_frame).sum()
