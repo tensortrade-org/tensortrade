@@ -129,7 +129,7 @@ class TradingEnv(gymnasium.Env, TimeIndexed):
             "renderer": self.renderer
         }
 
-    def step(self, action: Any) -> 'Tuple[np.array, float, bool, dict]':
+    def step(self, action: Any) -> 'Tuple[np.array, float, bool, bool, dict]':
         """Makes one step through the environment.
 
         Parameters
@@ -145,7 +145,9 @@ class TradingEnv(gymnasium.Env, TimeIndexed):
         float
             The computed reward for performing the action.
         bool
-            Whether or not the episode is complete.
+            Whether the episode has terminated (reached a terminal state).
+        bool
+            Whether the episode was truncated (e.g. time limit reached).
         dict
             The information gathered after completing the step.
         """
