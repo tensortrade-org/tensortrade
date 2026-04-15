@@ -24,20 +24,43 @@ from tensortrade.core import Identifiable
 
 @deprecated(version='1.0.4', reason="Builtin agents are being deprecated in favor of external implementations (ie: Ray)")
 class Agent(Identifiable, metaclass=ABCMeta):
+    """An abstract base class for defining reinforcement learning agents.
+    
+    Agents are responsible for interacting with the environment, querying policies
+    to select actions based on observed states, and training their internal models.
+    """
 
     @abstractmethod
     def restore(self, path: str, **kwargs):
-        """Restore the agent from the file specified in `path`."""
+        """Restore the agent from a saved model at the specified file path.
+        
+        Args:
+            path (str): The file path where the agent's model is stored.
+            **kwargs: Additional keyword arguments for the restoration process.
+        """
         raise NotImplementedError()
 
     @abstractmethod
     def save(self, path: str, **kwargs):
-        """Save the agent to the directory specified in `path`."""
+        """Save the current agent's model to the specified file path.
+        
+        Args:
+            path (str): The file path where the agent's model will be saved.
+            **kwargs: Additional keyword arguments for the saving process.
+        """
         raise NotImplementedError()
 
     @abstractmethod
     def get_action(self, state: np.ndarray, **kwargs) -> int:
-        """Get an action for a specific state in the environment."""
+        """Get an action for a specific state in the environment.
+        
+        Args:
+            state (np.ndarray): The current state observation from the environment.
+            **kwargs: Additional keyword arguments for action selection.
+            
+        Returns:
+            int: The chosen action for the given state.
+        """
         raise NotImplementedError()
 
     @abstractmethod
@@ -48,5 +71,17 @@ class Agent(Identifiable, metaclass=ABCMeta):
               save_path: str = None,
               callback: callable = None,
               **kwargs) -> float:
-        """Train the agent in the environment and return the mean reward."""
+        """Train the agent in the environment and return the mean reward.
+        
+        Args:
+            n_steps (int, optional): The maximum number of steps to train the agent. Defaults to None.
+            n_episodes (int, optional): The number of episodes to train the agent. Defaults to 10000.
+            save_every (int, optional): The frequency to save the agent's model. Defaults to None.
+            save_path (str, optional): The directory path to save the agent during training. Defaults to None.
+            callback (callable, optional): A callback function to be called periodically during training. Defaults to None.
+            **kwargs: Additional keyword arguments for the training process.
+            
+        Returns:
+            float: The mean reward obtained by the agent over the training period.
+        """
         raise NotImplementedError()
