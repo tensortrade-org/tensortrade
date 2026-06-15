@@ -191,7 +191,153 @@ def execute_order(order: 'Order',
         trade = execute_buy_order(**kwargs)
     elif order.is_sell:
         trade = execute_sell_order(**kwargs)
+    elif order.is_short:
+        trade = execute_short_order(**kwargs)
+    elif order.is_cover:
+        trade = execute_cover_order(**kwargs)
     else:
         trade = None
+
+    return trade
+
+
+def execute_short_order(order: 'Order',
+                        base_wallet: 'Wallet',
+                        quote_wallet: 'Wallet',
+                        current_price: float,
+                        options: 'ExchangeOptions',
+                        clock: 'Clock') -> Union[None, 'Trade']:
+    """Executes a short order on the exchange (sell borrowed base).
+
+    Parameters
+    ----------
+    order : `Order`
+        The order that is being filled.
+    base_wallet : `Wallet`
+        The wallet of the base instrument.
+    quote_wallet : `Wallet`
+        The wallet of the quote instrument.
+    current_price : float
+        The current price of the exchange pair.
+    options : `ExchangeOptions`
+        The exchange options.
+    clock : `Clock`
+        The clock for the trading process.
+
+    Returns
+    -------
+    `Trade`
+        The executed trade that was made.
+    """
+    if order.type == TradeType.LIMIT and order.price > current_price:
+        return None
+
+    filled = order.remaining.contain(order.exchange_pair)
+
+    # Short orders (like sell orders) do NOT scale fills —
+    # the scaling formula (order.price / max(current_price, order.price))
+    # is specific to buy orders and would under-fill shorts when
+    # current_price exceeds the order price.
+    commission = options.commission * filled
+
+    minimum_commission = Decimal(10) ** -filled.instrument.precision
+    if options.commission > 0 and commission < minimum_commission:
+        logging.warning("Commission is > 0 but less than instrument precision. "
+                        "Setting commission to the minimum allowed amount. "
+                        "Consider defining a custom instrument with a higher precision.")
+        commission.size = minimum_commission
+
+    quantity = filled - commission
+
+    transfer = Wallet.transfer(
+        source=quote_wallet,
+        target=base_wallet,
+        quantity=quantity,
+        commission=commission,
+        exchange_pair=order.exchange_pair,
+        reason="SHORT"
+    )
+
+    trade = Trade(
+        order_id=order.id,
+        step=clock.step,
+        exchange_pair=order.exchange_pair,
+        side=TradeSide.SHORT,
+        trade_type=order.type,
+        quantity=transfer.quantity,
+        price=transfer.price,
+        commission=transfer.commission
+    )
+
+    return trade
+
+
+def execute_cover_order(order: 'Order',
+                        base_wallet: 'Wallet',
+                        quote_wallet: 'Wallet',
+                        current_price: float,
+                        options: 'ExchangeOptions',
+                        clock: 'Clock') -> Union[None, 'Trade']:
+    """Executes a cover order on the exchange (buy back borrowed base).
+
+    Parameters
+    ----------
+    order : `Order`
+        The order that is being filled.
+    base_wallet : `Wallet`
+        The wallet of the base instrument.
+    quote_wallet : `Wallet`
+        The wallet of the quote instrument.
+    current_price : float
+        The current price of the exchange pair.
+    options : `ExchangeOptions`
+        The exchange options.
+    clock : `Clock`
+        The clock for the trading process.
+
+    Returns
+    -------
+    `Trade`
+        The executed trade that was made.
+    """
+    if order.type == TradeType.LIMIT and order.price < current_price:
+        return None
+
+    filled = order.remaining.contain(order.exchange_pair)
+
+    if order.type == TradeType.MARKET:
+        scale = order.price / max(current_price, order.price)
+        filled = scale * filled
+
+    commission = options.commission * filled
+
+    minimum_commission = Decimal(10) ** -filled.instrument.precision
+    if options.commission > 0 and commission < minimum_commission:
+        logging.warning("Commission is > 0 but less than instrument precision. "
+                        "Setting commission to the minimum allowed amount. "
+                        "Consider defining a custom instrument with a higher precision.")
+        commission.size = minimum_commission
+
+    quantity = filled - commission
+
+    transfer = Wallet.transfer(
+        source=base_wallet,
+        target=quote_wallet,
+        quantity=quantity,
+        commission=commission,
+        exchange_pair=order.exchange_pair,
+        reason="COVER"
+    )
+
+    trade = Trade(
+        order_id=order.id,
+        step=clock.step,
+        exchange_pair=order.exchange_pair,
+        side=TradeSide.COVER,
+        trade_type=order.type,
+        quantity=transfer.quantity,
+        price=transfer.price,
+        commission=transfer.commission
+    )
 
     return trade

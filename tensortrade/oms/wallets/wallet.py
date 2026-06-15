@@ -43,16 +43,30 @@ class Wallet(Identifiable):
         The exchange associated with this wallet.
     balance : `Quantity`
         The initial balance quantity for the wallet.
+    borrow : bool, default False
+        Whether this wallet can borrow (go into negative balance for
+        short selling). When enabled the :meth:`lock` method skips the
+        normal ``InsufficientFunds`` check.
+    max_borrow : float or None, default None
+        When ``borrow=True``, caps how negative the balance can go
+        (in instrument units).  ``None`` means no limit (unlimited
+        borrowing — use with caution).  Example: ``max_borrow=5`` on a
+        BTC wallet allows a short position of up to 5 BTC.
     """
 
     ledger = Ledger()
 
-    def __init__(self, exchange: 'Exchange', balance: 'Quantity'):
+    def __init__(self, exchange: 'Exchange', balance: 'Quantity',
+                 borrow: bool = False, max_borrow: float = None):
         self.exchange = exchange
         self._initial_size = balance.size
         self.instrument = balance.instrument
         self.balance = balance.quantize()
         self._locked = {}
+        self.borrow = borrow
+        self._max_borrow = max_borrow
+        self._initial_borrow = borrow
+        self._initial_max_borrow = max_borrow
 
     @property
     def locked_balance(self) -> 'Quantity':
@@ -107,10 +121,26 @@ class Wallet(Identifiable):
             raise DoubleLockedQuantity(quantity)
 
         if quantity > self.balance:
-            if (quantity-self.balance)>Decimal(10)**(-self.instrument.precision+2):
-                raise InsufficientFunds(self.balance, quantity)
-            else:
-                quantity = self.balance
+            if not self.borrow:
+                if (quantity-self.balance)>Decimal(10)**(-self.instrument.precision+2):
+                    raise InsufficientFunds(self.balance, quantity)
+                else:
+                    quantity = self.balance
+            elif self._max_borrow is not None:
+                # When a borrow limit is set, cap how negative the balance
+                # can go so that the short position never exceeds the limit.
+                projected = self.balance - quantity.size
+                max_negative = -Decimal(str(self._max_borrow))
+                if projected < max_negative:
+                    # Cap the quantity to respect the borrow limit
+                    allowed = self.balance.size - max_negative
+                    allowed_qty = Quantity(self.instrument, allowed, quantity.path_id)
+                    if allowed <= 0:
+                        raise InsufficientFunds(
+                            self.balance,
+                            Quantity(self.instrument, self._max_borrow)
+                        )
+                    quantity = allowed_qty
 
         self.balance -= quantity
 
@@ -368,6 +398,8 @@ class Wallet(Identifiable):
         """Resets the wallet."""
         self.balance = Quantity(self.instrument, self._initial_size).quantize()
         self._locked = {}
+        self.borrow = self._initial_borrow
+        self._max_borrow = self._initial_max_borrow
 
     def __str__(self) -> str:
         return '<Wallet: balance={}, locked={}>'.format(self.balance, self.locked_balance)

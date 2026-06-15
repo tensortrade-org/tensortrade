@@ -28,8 +28,10 @@ def test_valid_init():
 
 def test_invalid_init():
 
-    with pytest.raises(InvalidNegativeQuantity):
-        q = Quantity(BTC, -10000)
+    # Negative quantities are now allowed for short/borrow positions
+    q = Quantity(BTC, -10000)
+    assert q.size < 0
+    assert float(q.size) == -10000
 
     with pytest.raises(TypeError):
         q = Quantity(BTC, "BTC")
@@ -211,11 +213,12 @@ def test_valid_sub():
 
 def test_invalid_sub():
 
-    # Quantity with negative difference
+    # Quantity with negative difference — now allowed
     q1 = Quantity(BTC, 500)
     q2 = Quantity(BTC, 1000)
-    with pytest.raises(InvalidNegativeQuantity):
-        q = q1 - q2
+    q = q1 - q2
+    assert q.size < 0
+    assert float(q.size) == -500
 
     # Quantity with different instruments
     q1 = Quantity(BTC, 500)
@@ -229,17 +232,17 @@ def test_invalid_sub():
     with pytest.raises(QuantityOpPathMismatch):
         q = q1 - q2
 
-    # int
+    # int — negative result now allowed
     q1 = Quantity(BTC, 500)
     q2 = 1000
-    with pytest.raises(InvalidNegativeQuantity):
-        q = q1 - q2
+    q = q1 - q2
+    assert q.size < 0
 
-    # float
+    # float — negative result now allowed
     q1 = Quantity(BTC, 500)
     q2 = 1000.0
-    with pytest.raises(InvalidNegativeQuantity):
-        q = q1 - q2
+    q = q1 - q2
+    assert q.size < 0
 
     # Not a number
     q1 = Quantity(BTC, 500)
@@ -286,10 +289,10 @@ def test_valid_isub():
 
 def test_invalid_isub():
 
-    # Quantity with negative difference
+    # Quantity with negative difference — now allowed
     q = Quantity(BTC, 1000)
-    with pytest.raises(InvalidNegativeQuantity):
-        q -= Quantity(BTC, 1500)
+    q -= Quantity(BTC, 1500)
+    assert q.size < 0
 
     # Quantity with different instruments
     q = Quantity(BTC, 1000)
@@ -301,15 +304,15 @@ def test_invalid_isub():
     with pytest.raises(QuantityOpPathMismatch):
         q -= Quantity(BTC, 500, path_id=other_id)
 
-    # int
+    # int — negative result now allowed
     q = Quantity(BTC, 1000)
-    with pytest.raises(InvalidNegativeQuantity):
-        q -= 1500
+    q -= 1500
+    assert q.size < 0
 
-    # float
+    # float — negative result now allowed
     q = Quantity(BTC, 1000)
-    with pytest.raises(InvalidNegativeQuantity):
-        q -= 1500
+    q -= 1500
+    assert q.size < 0
 
     # Not a number
     q = Quantity(ETH, 5)
