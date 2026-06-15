@@ -52,6 +52,7 @@ class ExponentialWeightedMovingAverage(Stream[float]):
         self.factor = 1 - alpha
         self.new_wt = 1 if self.adjust else self.alpha
         self.old_wt = 1
+        self._gap = 0
 
     def forward(self) -> float:
         value = self.inputs[0].value
@@ -59,6 +60,7 @@ class ExponentialWeightedMovingAverage(Stream[float]):
             is_observation = (value == value)
             self.n += int(is_observation)
             self.avg = value
+            self._gap = 0 if is_observation else 1
             return self.avg if self.n >= self.min_periods else np.nan
 
         is_observation = (value == value)
@@ -70,19 +72,28 @@ class ExponentialWeightedMovingAverage(Stream[float]):
 
                 self.old_wt *= self.factor
                 if is_observation:
-                    # avoid numerical errors on constant series
                     if self.avg != value:
-                        num = self.old_wt * self.avg + self.new_wt * value
-                        den = self.old_wt + self.new_wt
-                        self.avg = num / den
+                        if not self.adjust and self._gap > 0:
+                            # pandas 3.0 compat: compound (1-alpha)^k over NaN gaps
+                            k = self._gap + 1
+                            compound_decay = self.factor ** k
+                            self.avg = compound_decay * self.avg + (1 - compound_decay) * value
+                        else:
+                            num = self.old_wt * self.avg + self.new_wt * value
+                            den = self.old_wt + self.new_wt
+                            self.avg = num / den
 
                     if self.adjust:
                         self.old_wt += self.new_wt
                     else:
                         self.old_wt = 1
+                    self._gap = 0
+                else:
+                    self._gap += 1
 
         elif is_observation:
             self.avg = value
+            self._gap = 0
 
         return self.avg if self.n >= self.min_periods else np.nan
 
