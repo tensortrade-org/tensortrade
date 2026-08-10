@@ -158,6 +158,16 @@ class Order(TimedIdentifiable, Observable):
         return self.side == TradeSide.SELL
 
     @property
+    def is_short(self) -> bool:
+        """If this is a short order. (bool, read-only)"""
+        return self.side == TradeSide.SHORT
+
+    @property
+    def is_cover(self) -> bool:
+        """If this is a cover order. (bool, read-only)"""
+        return self.side == TradeSide.COVER
+
+    @property
     def is_limit_order(self) -> bool:
         """If this is a limit order. (bool, read-only)"""
         return self.type == TradeType.LIMIT

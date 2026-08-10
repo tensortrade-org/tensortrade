@@ -15,6 +15,8 @@ from tensortrade.oms.orders import (
     OrderSpec,
     proportion_order,
     risk_managed_order,
+    short_order,
+    cover_order,
     TradeSide,
     TradeType
 )
@@ -121,7 +123,7 @@ class TensorTradeActionScheme(ActionScheme):
 
 class BSH(TensorTradeActionScheme):
     """A simple discrete action scheme where the only options are to buy, sell,
-    or hold.
+    short, or hold.
 
     Parameters
     ----------
@@ -129,38 +131,103 @@ class BSH(TensorTradeActionScheme):
         The wallet to hold funds in the base intrument.
     asset : `Wallet`
         The wallet to hold funds in the quote instrument.
+    allow_short : bool, default False
+        Whether to allow short selling (adds a 3rd discrete action).
     """
 
     registered_name = "bsh"
 
-    def __init__(self, cash: 'Wallet', asset: 'Wallet'):
+    def __init__(self, cash: 'Wallet', asset: 'Wallet', allow_short: bool = False):
         super().__init__()
         self.cash = cash
         self.asset = asset
+        self.allow_short = allow_short
 
         self.listeners = []
         self.action = 0
 
     @property
     def action_space(self):
-        return Discrete(2)
+        return Discrete(3 if self.allow_short else 2)
 
     def attach(self, listener):
         self.listeners += [listener]
         return self
 
     def get_orders(self, action: int, portfolio: 'Portfolio') -> 'Order':
+        if action == self.action:
+            for listener in self.listeners:
+                listener.on_action(action)
+            return []
+
         order = None
 
-        if abs(action - self.action) > 0:
-            src = self.cash if self.action == 0 else self.asset
-            tgt = self.asset if self.action == 0 else self.cash
+        if self.action == 0 and action == 1:
+            # CASH → LONG: buy asset with cash
+            if self.cash.balance == 0:
+                return []
+            order = proportion_order(portfolio, self.cash, self.asset, 1.0)
+        elif self.action == 1 and action == 0:
+            # LONG → CASH: sell asset
+            if self.asset.balance == 0:
+                return []
+            order = proportion_order(portfolio, self.asset, self.cash, 1.0)
+        elif self.allow_short and self.action == 0 and action == 2:
+            # CASH → SHORT: short sell borrowed asset
+            pair = self.asset.instrument / self.cash.instrument
+            ep = portfolio.exchange_pairs[0]
+            for e in portfolio.exchange_pairs:
+                if str(e.pair) == str(pair):
+                    ep = e
+                    break
+            # Size is the number of base-instrument units that can be
+            # shorted with available cash (e.g. $10000 / $7000 = ~1.43 BTC).
+            if float(ep.price) <= 0:
+                return []
+            size = float(self.cash.balance.as_float()) / float(ep.price)
+            if size <= 0:
+                return []
+            order = short_order(ep, float(ep.price), size, portfolio)
+        elif self.allow_short and self.action == 2 and action == 0:
+            # SHORT → CASH: cover short position
+            if self.cash.balance == 0:
+                return []
+            pair = self.asset.instrument / self.cash.instrument
+            ep = portfolio.exchange_pairs[0]
+            for e in portfolio.exchange_pairs:
+                if str(e.pair) == str(pair):
+                    ep = e
+                    break
+            # Cover the amount of asset we are short (the negative balance)
+            short_amount = -float(self.asset.total_balance.as_float())
+            size = min(float(self.cash.balance.as_float()) / float(ep.price), short_amount)
+            if size <= 0:
+                return []
+            order = cover_order(ep, float(ep.price), size, portfolio)
+        elif self.allow_short and self.action == 1 and action == 2:
+            # LONG → SHORT: sell all, short next step
+            if self.asset.balance == 0:
+                return []
+            order = proportion_order(portfolio, self.asset, self.cash, 1.0)
+        elif self.allow_short and self.action == 2 and action == 1:
+            # SHORT → LONG: cover all, buy next step
+            if self.cash.balance == 0:
+                return []
+            pair = self.asset.instrument / self.cash.instrument
+            ep = portfolio.exchange_pairs[0]
+            for e in portfolio.exchange_pairs:
+                if str(e.pair) == str(pair):
+                    ep = e
+                    break
+            short_amount = -float(self.asset.total_balance.as_float())
+            size = min(float(self.cash.balance.as_float()) / float(ep.price), short_amount)
+            if size <= 0:
+                return []
+            order = cover_order(ep, float(ep.price), size, portfolio)
+        else:
+            return []
 
-            if src.balance == 0:  # We need to check, regardless of the proposed order, if we have balance in 'src'
-                return []  # Otherwise just return an empty order list
-
-            order = proportion_order(portfolio, src, tgt, 1.0)
-            self.action = action
+        self.action = action
 
         for listener in self.listeners:
             listener.on_action(action)
@@ -204,7 +271,8 @@ class SimpleOrders(TensorTradeActionScheme):
                  trade_type: 'TradeType' = TradeType.MARKET,
                  order_listener: 'OrderListener' = None,
                  min_order_pct: float = 0.02,
-                 min_order_abs: float = 0.00) -> None:
+                 min_order_abs: float = 0.00,
+                 sides: 'List[TradeSide]' = None) -> None:
         super().__init__()
         self.min_order_pct = min_order_pct
         self.min_order_abs = min_order_abs
@@ -222,6 +290,7 @@ class SimpleOrders(TensorTradeActionScheme):
 
         self._trade_type = self.default('trade_type', trade_type)
         self._order_listener = self.default('order_listener', order_listener)
+        self._sides = sides if sides else [TradeSide.BUY, TradeSide.SELL]
 
         self._action_space = None
         self.actions = None
@@ -233,7 +302,7 @@ class SimpleOrders(TensorTradeActionScheme):
                 self.criteria,
                 self.trade_sizes,
                 self.durations,
-                [TradeSide.BUY, TradeSide.SELL]
+                self._sides
             )
             self.actions = list(self.actions)
             self.actions = list(product(self.portfolio.exchange_pairs, self.actions))
@@ -255,6 +324,16 @@ class SimpleOrders(TensorTradeActionScheme):
         wallet = portfolio.get_wallet(ep.exchange.id, instrument=instrument)
 
         balance = wallet.balance.as_float()
+        if side == TradeSide.SHORT and balance <= 0:
+            # For short orders with no balance, use available cash as margin
+            cash_wallet = portfolio.get_wallet(ep.exchange.id, instrument=ep.pair.base)
+            balance = float(cash_wallet.balance.as_float()) / float(ep.price)
+        elif side == TradeSide.COVER:
+            # For cover orders, the size is limited by the short position
+            quote_wallet = portfolio.get_wallet(ep.exchange.id, instrument=ep.pair.quote)
+            short_amount = -float(quote_wallet.total_balance.as_float())
+            balance = min(balance, short_amount) if short_amount > 0 else 0
+
         size = (balance * proportion)
         size = min(balance, size)
 
@@ -317,7 +396,8 @@ class ManagedRiskOrders(TensorTradeActionScheme):
                  trade_type: 'TradeType' = TradeType.MARKET,
                  order_listener: 'OrderListener' = None,
                  min_order_pct: float = 0.02,
-                 min_order_abs: float = 0.00) -> None:
+                 min_order_abs: float = 0.00,
+                 sides: 'List[TradeSide]' = None) -> None:
         super().__init__()
         self.min_order_pct = min_order_pct
         self.min_order_abs = min_order_abs
@@ -335,6 +415,7 @@ class ManagedRiskOrders(TensorTradeActionScheme):
 
         self._trade_type = self.default('trade_type', trade_type)
         self._order_listener = self.default('order_listener', order_listener)
+        self._sides = sides if sides else [TradeSide.BUY, TradeSide.SELL]
 
         self._action_space = None
         self.actions = None
@@ -347,7 +428,7 @@ class ManagedRiskOrders(TensorTradeActionScheme):
                 self.take,
                 self.trade_sizes,
                 self.durations,
-                [TradeSide.BUY, TradeSide.SELL]
+                self._sides
             )
             self.actions = list(self.actions)
             self.actions = list(product(self.portfolio.exchange_pairs, self.actions))
@@ -369,6 +450,14 @@ class ManagedRiskOrders(TensorTradeActionScheme):
         wallet = portfolio.get_wallet(ep.exchange.id, instrument=instrument)
 
         balance = wallet.balance.as_float()
+        if side == TradeSide.SHORT and balance <= 0:
+            cash_wallet = portfolio.get_wallet(ep.exchange.id, instrument=ep.pair.base)
+            balance = float(cash_wallet.balance.as_float()) / float(ep.price)
+        elif side == TradeSide.COVER:
+            quote_wallet = portfolio.get_wallet(ep.exchange.id, instrument=ep.pair.quote)
+            short_amount = -float(quote_wallet.total_balance.as_float())
+            balance = min(balance, short_amount) if short_amount > 0 else 0
+
         size = (balance * proportion)
         size = min(balance, size)
         quantity = (size * instrument).quantize()

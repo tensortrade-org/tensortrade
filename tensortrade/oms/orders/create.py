@@ -216,8 +216,20 @@ def risk_managed_order(side: "TradeSide",
     )
 
     risk_criteria = Stop("down", down_percent) ^ Stop("up", up_percent)
+
+    if side == TradeSide.BUY:
+        exit_side = TradeSide.SELL
+    elif side == TradeSide.SELL:
+        exit_side = TradeSide.BUY
+    elif side == TradeSide.SHORT:
+        exit_side = TradeSide.COVER
+    elif side == TradeSide.COVER:
+        exit_side = TradeSide.SHORT
+    else:
+        exit_side = TradeSide.BUY
+
     risk_management = OrderSpec(
-        side=TradeSide.SELL if side == TradeSide.BUY else TradeSide.BUY,
+        side=exit_side,
         trade_type=TradeType.MARKET,
         exchange_pair=exchange_pair,
         criteria=risk_criteria
@@ -225,6 +237,76 @@ def risk_managed_order(side: "TradeSide",
 
     order.add_order_spec(risk_management)
 
+    return order
+
+
+def short_order(exchange_pair: "ExchangePair",
+                price: float,
+                size: float,
+                portfolio: "Portfolio") -> "Order":
+    """Creates a short order (sell borrowed base instrument).
+
+    Parameters
+    ----------
+    exchange_pair : `ExchangePair`
+        The exchange pair to perform the order for.
+    price : float
+        The current price.
+    size : float
+        The size of the order.
+    portfolio : `Portfolio`
+        The portfolio being used in the order.
+
+    Returns
+    -------
+    `Order`
+        A short order.
+    """
+    instrument = TradeSide.SHORT.instrument(exchange_pair.pair)
+    order = Order(
+        step=portfolio.clock.step,
+        side=TradeSide.SHORT,
+        trade_type=TradeType.MARKET,
+        exchange_pair=exchange_pair,
+        price=price,
+        quantity=(size * instrument),
+        portfolio=portfolio
+    )
+    return order
+
+
+def cover_order(exchange_pair: "ExchangePair",
+                price: float,
+                size: float,
+                portfolio: "Portfolio") -> "Order":
+    """Creates a cover order (buy back borrowed base instrument).
+
+    Parameters
+    ----------
+    exchange_pair : `ExchangePair`
+        The exchange pair to perform the order for.
+    price : float
+        The current price.
+    size : float
+        The size of the order.
+    portfolio : `Portfolio`
+        The portfolio being used in the order.
+
+    Returns
+    -------
+    `Order`
+        A cover order.
+    """
+    instrument = TradeSide.COVER.instrument(exchange_pair.pair)
+    order = Order(
+        step=portfolio.clock.step,
+        side=TradeSide.COVER,
+        trade_type=TradeType.MARKET,
+        exchange_pair=exchange_pair,
+        price=price,
+        quantity=(size * instrument),
+        portfolio=portfolio
+    )
     return order
 
 

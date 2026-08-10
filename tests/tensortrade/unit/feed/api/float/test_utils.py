@@ -74,13 +74,14 @@ def test_pct_change():
         s = Stream.source(array, dtype="float")
         w = s.pct_change(**config).rename("w")
 
-        # Get expected from pandas with same config
-        import warnings
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", FutureWarning)
-            expected = list(pd.Series(array).pct_change(**config))
+        # pandas 3.0 removed fill_method from pct_change;
+        # manually ffill to compute expected values
+        series = pd.Series(array)
+        fill = config.get("fill_method")
+        if fill in ("pad", "ffill"):
+            series = series.ffill()
+        expected = list(series.pct_change(periods=config["periods"]))
 
-        print(config)
         assert_op([w], expected)
 
 

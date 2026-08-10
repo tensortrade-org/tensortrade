@@ -53,7 +53,7 @@ class Quantity:
     def __init__(self, instrument: 'Instrument', size: Decimal, path_id: str = None):
         if size < 0:
             if abs(size) > Decimal(10)**(-instrument.precision):
-                raise InvalidNegativeQuantity(float(size))
+                pass  # allow negative quantities for borrowed positions
             else:
                 size = 0
 
